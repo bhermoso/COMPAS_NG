@@ -7,6 +7,8 @@ import type { LT1Result } from "../lt1";
 import { generateLT1 } from "../lt1";
 import type { OITResult } from "../oit";
 import { generateOIT } from "../oit";
+import type { PrioritizationResult } from "../prioritization";
+import { generatePrioritization } from "../prioritization";
 
 export interface MunicipalityRuntime {
   workspace: MunicipalityWorkspace;
@@ -15,6 +17,7 @@ export interface MunicipalityRuntime {
   pipeline: CompasPipelineResult;
   lt1: LT1Result;
   oit: OITResult;
+  prioritization: PrioritizationResult;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -33,6 +36,7 @@ export function createMunicipalityRuntime(
   };
 
   const lt1 = generateLT1(input.evidenceStore);
+  const oit = generateOIT(lt1);
 
   return {
     workspace,
@@ -40,6 +44,7 @@ export function createMunicipalityRuntime(
     evidenceStore: input.evidenceStore,
     pipeline: createEmptyPipelineResult(workspace),
     lt1,
-    oit: generateOIT(lt1),
+    oit,
+    prioritization: generatePrioritization(oit),
   };
 }

@@ -17,6 +17,7 @@ import {
   EvidenceStorePanel,
   LT1Panel,
   OITPanel,
+  PrioritizationPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -146,6 +147,8 @@ export default function App() {
       <LT1Panel lt1={runtime.lt1} />
 
       <OITPanel oit={runtime.oit} />
+
+      <PrioritizationPanel prioritization={runtime.prioritization} />
     </main>
   );
 }
