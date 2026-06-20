@@ -19,6 +19,7 @@ import {
 } from "./domain/thematic-prioritisation";
 import { createMunicipalSnapshot } from "./domain/municipality-context";
 import { createMunicipalInventory } from "./application/municipal-inventory";
+import { createStrategicFramework } from "./domain/strategic-framework";
 import {
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
@@ -31,6 +32,7 @@ import {
   HealthReportViewer,
   IBSEPanel,
   MunicipalInventoryPanel,
+  StrategicFrameworkPanel,
   ThematicPrioritisationPanel,
   PipelineTracePanel,
   LT1Panel,
@@ -124,6 +126,14 @@ export default function App() {
 
   const pipelineIsEmpty = runtime.workspace.evidenceStore.atoms.length === 0;
   const municipality = runtime.workspace.municipality.identity;
+
+  const strategicFramework = useMemo(
+    () =>
+      createStrategicFramework({
+        municipalityName: municipality.name,
+      }),
+    [municipality.name]
+  );
 
   function handleProcessDocument() {
     const result = ingestManualDocument({
@@ -497,6 +507,7 @@ export default function App() {
                 <p>Ve a Análisis territorial para consultar el informe.</p>
               </article>
             </section>
+            <StrategicFrameworkPanel framework={strategicFramework} />
             <MunicipalInventoryPanel inventory={municipalInventory} />
           </>
         )}
