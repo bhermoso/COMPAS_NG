@@ -789,6 +789,10 @@ h3 {
 
 /* ── Informe de Salud Viewer ───────────────────────────── */
 
+.hr-viewer {
+  text-align: left;
+}
+
 .hr-viewer__header {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -948,6 +952,36 @@ h3 {
   color: #334155;
 }
 
+.hr-viewer__section-html h1,
+.hr-viewer__section-html h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #172033;
+  margin: 18px 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.hr-viewer__section-html h3,
+.hr-viewer__section-html h4,
+.hr-viewer__section-html h5,
+.hr-viewer__section-html h6 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 14px 0 8px;
+}
+
+.hr-viewer__section-html ul,
+.hr-viewer__section-html ol {
+  padding-left: 22px;
+  margin: 8px 0 12px;
+}
+
+.hr-viewer__section-html li {
+  margin-bottom: 4px;
+  line-height: 1.65;
+}
+
 .hr-viewer__section-pre {
   white-space: pre-wrap;
   word-break: break-word;
@@ -957,6 +991,7 @@ h3 {
   line-height: 1.65;
   margin: 0;
   padding: 0;
+  text-align: left;
 }
 
 @media (max-width: 900px) {
