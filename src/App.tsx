@@ -9,9 +9,9 @@ import {
   type EvidenceStore,
 } from "./domain/evidence";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
-import { createEmptyPipelineResult } from "./domain/pipeline";
+import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
-import { generateLT1 } from "./application/lt1";
+ 
 import {
   DocumentIngestionPanel,
   EvidenceStorePanel,
@@ -55,18 +55,15 @@ export default function App() {
   const [lastProcessedDocument, setLastProcessedDocument] =
     useState<MunicipalDocument | null>(null);
 
-  const workspace = useMemo(
-    () => ({
-      ...INITIAL_WORKSPACE,
-      repository,
-      evidence: INITIAL_WORKSPACE.evidence,
-      updatedAt: new Date().toISOString(),
-    }),
-    [repository]
+  const runtime = useMemo(
+    () =>
+      createMunicipalityRuntime({
+        workspace: INITIAL_WORKSPACE,
+        repository,
+        evidenceStore,
+      }),
+    [repository, evidenceStore]
   );
-
-  const pipeline = createEmptyPipelineResult(workspace);
-  const lt1 = generateLT1(evidenceStore);
 
   function handleProcessDocument() {
     const result = ingestManualDocument({
@@ -101,14 +98,14 @@ export default function App() {
       <section className="grid">
         <article className="card">
           <h2>Municipio activo</h2>
-          <p><strong>{workspace.municipality.identity.name}</strong></p>
-          <p>{workspace.municipality.identity.province}</p>
-          <p>INE: {workspace.municipality.identity.ineCode}</p>
+          <p><strong>{runtime.workspace.municipality.identity.name}</strong></p>
+          <p>{runtime.workspace.municipality.identity.province}</p>
+          <p>INE: {runtime.workspace.municipality.identity.ineCode}</p>
         </article>
 
         <article className="card">
           <h2>Repositorio documental</h2>
-          <p><strong>{workspace.repository.documents.length}</strong> documentos registrados</p>
+          <p><strong>{runtime.repository.documents.length}</strong> documentos registrados</p>
           <p>Entrada única municipal de evidencias.</p>
         </article>
 
@@ -121,7 +118,7 @@ export default function App() {
         <article className="card">
           <h2>Pipeline</h2>
           <ol>
-            {pipeline.trace.map((item) => (
+            {runtime.pipeline.trace.map((item) => (
               <li key={`${item.stage}-${item.createdAt}`}>
                 <strong>{item.stage}</strong>: {item.status}
               </li>
@@ -145,7 +142,7 @@ export default function App() {
 
       <EvidenceStorePanel evidenceStore={evidenceStore} />
 
-      <LT1Panel lt1={lt1} />
+      <LT1Panel lt1={runtime.lt1} />
     </main>
   );
 }
