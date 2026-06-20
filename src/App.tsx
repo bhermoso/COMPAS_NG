@@ -20,6 +20,7 @@ import {
   PrioritizationPanel,
   EPVSAPanel,
   ActionPlanPanel,
+  AgendaPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -155,6 +156,8 @@ export default function App() {
       <EPVSAPanel epvsa={runtime.epvsa} />
 
       <ActionPlanPanel actionPlan={runtime.actionPlan} />
+
+      <AgendaPanel agenda={runtime.agenda} />
     </main>
   );
 }

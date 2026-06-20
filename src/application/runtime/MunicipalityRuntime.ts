@@ -13,6 +13,8 @@ import type { EPVSATranslationResult } from "../epvsa";
 import { translatePrioritizationToEPVSA } from "../epvsa";
 import type { ActionPlanDraft } from "../action-plan";
 import { generateActionPlanDraft } from "../action-plan";
+import type { AgendaDraft } from "../agenda";
+import { generateAgendaDraft } from "../agenda";
 
 export interface MunicipalityRuntime {
   workspace: MunicipalityWorkspace;
@@ -24,6 +26,7 @@ export interface MunicipalityRuntime {
   prioritization: PrioritizationResult;
   epvsa: EPVSATranslationResult;
   actionPlan: ActionPlanDraft;
+  agenda: AgendaDraft;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -45,6 +48,7 @@ export function createMunicipalityRuntime(
   const oit = generateOIT(lt1);
   const prioritization = generatePrioritization(oit);
   const epvsa = translatePrioritizationToEPVSA(prioritization);
+  const actionPlan = generateActionPlanDraft(epvsa);
 
   return {
     workspace,
@@ -55,6 +59,7 @@ export function createMunicipalityRuntime(
     oit,
     prioritization,
     epvsa,
-    actionPlan: generateActionPlanDraft(epvsa),
+    actionPlan,
+    agenda: generateAgendaDraft(actionPlan),
   };
 }
