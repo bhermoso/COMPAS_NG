@@ -5,6 +5,8 @@ import type { CompasPipelineResult } from "../../domain/pipeline";
 import { createEmptyPipelineResult } from "../../domain/pipeline";
 import type { LT1Result } from "../lt1";
 import { generateLT1 } from "../lt1";
+import type { OITResult } from "../oit";
+import { generateOIT } from "../oit";
 
 export interface MunicipalityRuntime {
   workspace: MunicipalityWorkspace;
@@ -12,6 +14,7 @@ export interface MunicipalityRuntime {
   evidenceStore: EvidenceStore;
   pipeline: CompasPipelineResult;
   lt1: LT1Result;
+  oit: OITResult;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -29,11 +32,14 @@ export function createMunicipalityRuntime(
     updatedAt: new Date().toISOString(),
   };
 
+  const lt1 = generateLT1(input.evidenceStore);
+
   return {
     workspace,
     repository: input.repository,
     evidenceStore: input.evidenceStore,
     pipeline: createEmptyPipelineResult(workspace),
-    lt1: generateLT1(input.evidenceStore),
+    lt1,
+    oit: generateOIT(lt1),
   };
 }

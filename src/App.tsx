@@ -16,6 +16,7 @@ import {
   DocumentIngestionPanel,
   EvidenceStorePanel,
   LT1Panel,
+  OITPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -143,6 +144,8 @@ export default function App() {
       <EvidenceStorePanel evidenceStore={evidenceStore} />
 
       <LT1Panel lt1={runtime.lt1} />
+
+      <OITPanel oit={runtime.oit} />
     </main>
   );
 }
