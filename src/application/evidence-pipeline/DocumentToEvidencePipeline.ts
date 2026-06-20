@@ -23,6 +23,10 @@ export interface TransformDocumentToEvidenceResult {
 export function transformDocumentToEvidence(
   input: TransformDocumentToEvidenceInput
 ): TransformDocumentToEvidenceResult {
+  if (input.document.canGenerateEvidence === false) {
+    return { store: input.store, atomsCreated: [] };
+  }
+
   const lines = input.plainText
     .split(/\r?\n/)
     .map((line) => line.trim())
