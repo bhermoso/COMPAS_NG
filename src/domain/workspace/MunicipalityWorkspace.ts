@@ -1,11 +1,13 @@
 import type { MunicipalityContext } from "../municipality";
 import type { MunicipalDocumentRepository } from "../repository";
 import type { EvidenceStore } from "../evidence";
+import type { HealthReportDocument } from "../health-report";
 
 export interface MunicipalityWorkspace {
   municipality: MunicipalityContext;
   repository: MunicipalDocumentRepository;
   evidenceStore: EvidenceStore;
+  healthReports?: HealthReportDocument[];
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;
