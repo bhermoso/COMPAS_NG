@@ -14,6 +14,7 @@ import { parseIBSECSV } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
 import {
   THEMATIC_TOPICS,
+  MAX_SELECTED_TOPICS,
   createThematicPrioritisation,
 } from "./domain/thematic-prioritisation";
 import { createMunicipalSnapshot } from "./domain/municipality-context";
@@ -106,6 +107,10 @@ export default function App() {
   useEffect(() => {
     saveWorkspaceToLocalStorage(workspace);
   }, [workspace]);
+
+  useEffect(() => {
+    setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
+  }, [workspace.municipality.identity.id]);
 
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
@@ -220,7 +225,7 @@ export default function App() {
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
-      if (prev.length >= THEMATIC_TOPICS.length / 2) return prev;
+      if (prev.length >= MAX_SELECTED_TOPICS) return prev;
       return [...prev, topicId];
     });
   }
@@ -246,7 +251,7 @@ export default function App() {
       createCompleteMunicipalityWorkspace(demo);
 
     setWorkspace(nextWorkspace);
-    setPendingTopics(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? []);
+    setPendingTopics([...(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
     setTitle("");
     setPlainText("");
     setKind("health-report");
