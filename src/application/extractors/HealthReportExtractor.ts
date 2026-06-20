@@ -1,12 +1,14 @@
 // NOT YET INTEGRATED — extrae hacia EvidenceGraph, no hacia EvidenceStore.
 // Candidato a migrar a EvidenceStore cuando se defina el pipeline de extracción estructurada.
+// EvidenceGraph ya no forma parte del barrel público de domain/evidence;
+// este fichero importa directamente del fuente para mantener la dependencia explícita.
 import type { MunicipalDocument } from "../../domain/repository";
 import type {
   EvidenceGraph,
   EvidenceNode,
-} from "../../domain/evidence";
+} from "../../domain/evidence/EvidenceGraph";
 
-import { addEvidenceNode } from "../../domain/evidence";
+import { addEvidenceNode } from "../../domain/evidence/EvidenceGraph";
 
 export interface ExtractHealthReportInput {
   graph: EvidenceGraph;
