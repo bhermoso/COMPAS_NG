@@ -137,6 +137,7 @@ export default function App() {
         kind: "health-report" as const,
         title: docTitle,
         source: { system: "Carga directa DOCX", collectedAt: new Date().toISOString() },
+        sourceFileName: file.name,
         tags: ["health-report"],
       };
 

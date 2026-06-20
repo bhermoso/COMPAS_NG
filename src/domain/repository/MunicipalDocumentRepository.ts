@@ -35,6 +35,8 @@ export interface MunicipalDocument {
   title: string;
   status: DocumentStatus;
   source: DocumentSource;
+  sourceFileName?: string;
+  canGenerateEvidence?: boolean;
   tags: string[];
   createdAt: string;
   updatedAt: string;
@@ -56,7 +58,13 @@ export interface AddMunicipalDocumentInput {
   kind: DocumentKind;
   title: string;
   source?: DocumentSource;
+  sourceFileName?: string;
+  canGenerateEvidence?: boolean;
   tags?: string[];
+}
+
+function defaultCanGenerateEvidence(kind: DocumentKind): boolean {
+  return kind !== "health-report";
 }
 
 export function createMunicipalDocumentRepository(
@@ -85,6 +93,9 @@ export function addMunicipalDocument(
     title: input.title,
     status: "uploaded",
     source: input.source ?? {},
+    sourceFileName: input.sourceFileName,
+    canGenerateEvidence:
+      input.canGenerateEvidence ?? defaultCanGenerateEvidence(input.kind),
     tags: input.tags ?? [],
     createdAt: now,
     updatedAt: now,
