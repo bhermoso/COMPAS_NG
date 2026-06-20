@@ -12,6 +12,8 @@ import { ingestManualDocument } from "./application/document-ingestion";
 import { createHealthReportDocumentFromDocx } from "./application/health-report";
 import { parseIBSECSV } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
+import { createMunicipalSnapshot } from "./domain/municipality-context";
+import { createMunicipalInventory } from "./application/municipal-inventory";
 import {
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
@@ -23,6 +25,7 @@ import {
   EvidenceStorePanel,
   HealthReportViewer,
   IBSEPanel,
+  MunicipalInventoryPanel,
   PipelineTracePanel,
   LT1Panel,
   OITPanel,
@@ -100,6 +103,11 @@ export default function App() {
     () => createMunicipalityRuntime({ workspace }),
     [workspace]
   );
+
+  const municipalInventory = useMemo(() => {
+    const snapshot = createMunicipalSnapshot(workspace);
+    return createMunicipalInventory(snapshot);
+  }, [workspace]);
 
   const pipelineIsEmpty = runtime.workspace.evidenceStore.atoms.length === 0;
   const municipality = runtime.workspace.municipality.identity;
@@ -454,6 +462,7 @@ export default function App() {
                 <p>Ve a Análisis territorial para consultar el informe.</p>
               </article>
             </section>
+            <MunicipalInventoryPanel inventory={municipalInventory} />
           </>
         )}
 
