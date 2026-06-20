@@ -101,43 +101,57 @@ function buildPipelineTrace(
     {
       stage: "lt1",
       status: motorStatus,
-      message: `Lectura territorial: ${stages.lt1.determinants.length} determinante(s), ${stages.lt1.assets.length} activo(s), ${stages.lt1.indicators.length} indicador(es), ${stages.lt1.methodologicalCautions.length} cautela(s).`,
+      message: hasAtoms
+        ? `Lectura territorial: ${stages.lt1.determinants.length} determinante(s), ${stages.lt1.assets.length} activo(s), ${stages.lt1.indicators.length} indicador(es), ${stages.lt1.methodologicalCautions.length} cautela(s).`
+        : "Sin EvidenceAtom. La lectura territorial no puede construirse sin base documental.",
       createdAt: now,
     },
     {
       stage: "oit",
       status: motorStatus,
-      message: `${stages.oit.opportunities.length} oportunidad(es) inicial(es) de intervención identificadas.`,
+      message: hasAtoms
+        ? `${stages.oit.opportunities.length} oportunidad(es) inicial(es) de intervención identificadas.`
+        : "Sin evidencia real. Resultado de fallback: ampliar base documental.",
       createdAt: now,
     },
     {
       stage: "prioritization",
       status: motorStatus,
-      message: `${stages.prioritization.candidatePriorities.length} candidata(s) a priorización. Requieren validación humana.`,
+      message: hasAtoms
+        ? `${stages.prioritization.candidatePriorities.length} candidata(s) a priorización. Requieren validación humana.`
+        : "Sin evidencia real. Candidata de fallback heredada del pipeline vacío.",
       createdAt: now,
     },
     {
       stage: "epvsa",
       status: motorStatus,
-      message: `${stages.epvsa.suggestions.length} sugerencia(s) de encaje estratégico. Requieren validación técnica.`,
+      message: hasAtoms
+        ? `${stages.epvsa.suggestions.length} sugerencia(s) de encaje estratégico. Requieren validación técnica.`
+        : "Sin evidencia real. Sugerencia EPVSA pendiente de revisión por ausencia de base documental.",
       createdAt: now,
     },
     {
       stage: "action-plan",
       status: motorStatus,
-      message: `${stages.actionPlan.objectives.length} objetivo(s) y ${stages.actionPlan.actions.length} actuación(es) en borrador inicial.`,
+      message: hasAtoms
+        ? `${stages.actionPlan.objectives.length} objetivo(s) y ${stages.actionPlan.actions.length} actuación(es) en borrador inicial.`
+        : "Sin evidencia real. Borrador de plan generado sobre pipeline vacío. No representa acciones reales.",
       createdAt: now,
     },
     {
       stage: "agenda",
       status: motorStatus,
-      message: `${stages.agenda.annualItems.length} ítem(s) de agenda anual propuesto(s). Pendiente de validación.`,
+      message: hasAtoms
+        ? `${stages.agenda.annualItems.length} ítem(s) de agenda anual propuesto(s). Pendiente de validación.`
+        : "Sin evidencia real. Agenda generada sobre pipeline vacío. No representa compromisos ejecutivos.",
       createdAt: now,
     },
     {
       stage: "monitoring",
       status: motorStatus,
-      message: `${stages.monitoring.trackedItems.length} actuación(es) en seguimiento inicial. Estado: pendiente de validación.`,
+      message: hasAtoms
+        ? `${stages.monitoring.trackedItems.length} actuación(es) en seguimiento inicial. Estado: pendiente de validación.`
+        : "Sin evidencia real. Seguimiento generado sobre pipeline vacío. No refleja ejecución real.",
       createdAt: now,
     },
   ];

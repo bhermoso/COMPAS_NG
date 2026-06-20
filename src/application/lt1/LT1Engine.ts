@@ -60,10 +60,20 @@ function buildSummary(input: {
   qualitativeFindings: EvidenceAtom[];
   methodologicalCautions: EvidenceAtom[];
 }): string {
+  const total = totalEvidence(input);
+
+  if (total === 0) {
+    return (
+      "El repositorio no contiene EvidenceAtom. No es posible construir una lectura territorial " +
+      "basada en evidencia documental. Incorpora documentos al repositorio, conviértelos en " +
+      "EvidenceAtom mediante el pipeline de ingesta y vuelve a ejecutar el análisis."
+    );
+  }
+
   const parts: string[] = [];
 
   parts.push(
-    `Lectura territorial construida a partir de ${totalEvidence(input)} evidencias estructuradas.`
+    `Lectura territorial construida a partir de ${total} evidencias estructuradas.`
   );
 
   if (input.determinants.length > 0) {
