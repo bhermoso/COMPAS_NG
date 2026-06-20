@@ -1,7 +1,6 @@
 import type {
   DocumentKind,
   MunicipalDocument,
-  MunicipalDocumentRepository,
 } from "../../domain/repository";
 
 interface DocumentKindOption {
@@ -11,7 +10,6 @@ interface DocumentKindOption {
 
 interface DocumentIngestionPanelProps {
   documentKinds: DocumentKindOption[];
-  repository: MunicipalDocumentRepository;
   kind: DocumentKind;
   title: string;
   plainText: string;
@@ -28,7 +26,6 @@ interface DocumentIngestionPanelProps {
 
 export function DocumentIngestionPanel({
   documentKinds,
-  repository,
   kind,
   title,
   plainText,
@@ -161,31 +158,12 @@ export function DocumentIngestionPanel({
               Último documento registrado:{" "}
               <strong>{lastProcessedDocument.title}</strong>
               {atomsCreated !== undefined && atomsCreated > 0 && (
-                <> · <strong>{atomsCreated}</strong> unidades de evidencia generadas — ver panel inferior</>
+                <> · <strong>{atomsCreated}</strong> unidades de evidencia generadas</>
               )}
             </p>
           )}
         </>
       )}
-
-      <div className="document-list">
-        {repository.documents.length === 0 ? (
-          <p className="empty-state">
-            Todavía no hay documentos registrados. Sigue los pasos de la guía
-            superior para añadir el primer documento.
-          </p>
-        ) : (
-          repository.documents.map((document) => (
-            <article className="document-row" key={document.id}>
-              <div>
-                <p className="document-kind">{document.kind}</p>
-                <h3>{document.title}</h3>
-              </div>
-              <span className="status-pill">{document.status}</span>
-            </article>
-          ))
-        )}
-      </div>
     </section>
   );
 }

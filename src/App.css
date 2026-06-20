@@ -695,6 +695,31 @@ h3 {
   white-space: nowrap;
 }
 
+/* ── Repositorio Documental Panel ──────────────────────── */
+
+.doc-repo__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  margin-left: 10px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #0074c8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+.doc-repo__source {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
 /* ── Carga DOCX Informe de Salud ───────────────────────── */
 
 .docx-upload {

@@ -13,6 +13,7 @@ import { createHealthReportDocumentFromDocx } from "./application/health-report"
 
 import {
   DocumentIngestionPanel,
+  DocumentRepositoryPanel,
   EvidenceStorePanel,
   HealthReportViewer,
   PipelineTracePanel,
@@ -432,7 +433,6 @@ export default function App() {
 
             <DocumentIngestionPanel
               documentKinds={DOCUMENT_KINDS}
-              repository={runtime.workspace.repository}
               kind={kind}
               title={title}
               plainText={plainText}
@@ -445,6 +445,9 @@ export default function App() {
               onPlainTextChange={setPlainText}
               onProcessDocument={handleProcessDocument}
               onLoadHealthReport={handleLoadHealthReport}
+            />
+            <DocumentRepositoryPanel
+              repository={runtime.workspace.repository}
             />
             <EvidenceStorePanel
               evidenceStore={runtime.workspace.evidenceStore}

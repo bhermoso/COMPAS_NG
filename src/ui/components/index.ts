@@ -1,4 +1,5 @@
 export * from "./DocumentIngestionPanel";
+export * from "./DocumentRepositoryPanel";
 export * from "./HealthReportViewer";
 export * from "./EvidenceStorePanel";
 export * from "./PipelineTracePanel";
