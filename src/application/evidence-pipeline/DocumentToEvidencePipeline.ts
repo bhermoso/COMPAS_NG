@@ -37,7 +37,7 @@ export function transformDocumentToEvidence(
       id: `${input.document.id}-atom-${index + 1}`,
       municipalityId: input.store.municipalityId,
       kind,
-      title: buildTitle(kind, index + 1),
+      title: extractAtomTitle(content, kind, index + 1),
       content,
       provenance: {
         origin: mapDocumentKindToEvidenceOrigin(input.document.kind),
@@ -143,6 +143,18 @@ function classifyEvidenceKind(
   }
 
   return "qualitative-observation";
+}
+
+function extractAtomTitle(
+  content: string,
+  kind: EvidenceAtomKind,
+  index: number
+): string {
+  if (kind === "asset" && content.includes("|")) {
+    const firstField = content.split("|")[0].trim();
+    if (firstField.length > 0) return firstField;
+  }
+  return buildTitle(kind, index);
 }
 
 function buildTitle(kind: EvidenceAtomKind, index: number): string {
