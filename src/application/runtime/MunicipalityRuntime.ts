@@ -52,6 +52,7 @@ export function createMunicipalityRuntime(
   const prioritization = generatePrioritization(oit);
   const epvsa = translatePrioritizationToEPVSA(prioritization);
   const actionPlan = generateActionPlanDraft(epvsa);
+  const agenda = generateAgendaDraft(actionPlan);
 
   return {
     workspace,
@@ -63,7 +64,7 @@ export function createMunicipalityRuntime(
     prioritization,
     epvsa,
     actionPlan,
-    agenda: generateAgendaDraft(actionPlan),
-    monitoring: generateMonitoringDraft(generateAgendaDraft(actionPlan)),
+    agenda,
+    monitoring: generateMonitoringDraft(agenda),
   };
 }
