@@ -31,7 +31,7 @@ export function transformDocumentToEvidence(
 
   for (let index = 0; index < lines.length; index++) {
     const content = lines[index];
-    const kind = classifyEvidenceKind(content);
+    const kind = classifyEvidenceKind(content, input.document.kind);
 
     const atom = createEvidenceAtom({
       id: `${input.document.id}-atom-${index + 1}`,
@@ -68,9 +68,13 @@ export function transformDocumentToEvidence(
   };
 }
 
-function classifyEvidenceKind(text: string): EvidenceAtomKind {
+function classifyEvidenceKind(
+  text: string,
+  documentKind: MunicipalDocument["kind"]
+): EvidenceAtomKind {
   const normalized = text.toLowerCase();
 
+  // Heurística textual — tiene prioridad sobre el tipo de documento
   if (
     normalized.includes("tasa") ||
     normalized.includes("porcentaje") ||
@@ -122,6 +126,20 @@ function classifyEvidenceKind(text: string): EvidenceAtomKind {
     normalized.includes("representatividad")
   ) {
     return "methodological-caution";
+  }
+
+  // Fallback semántico: el tipo de documento es un prior fuerte
+  // cuando el texto no contiene patrones reconocibles
+  if (documentKind === "community-asset" || documentKind === "localiza-salud") {
+    return "asset";
+  }
+
+  if (documentKind === "eas-variable" || documentKind === "cmi-indicator") {
+    return "indicator";
+  }
+
+  if (documentKind === "redcap-export") {
+    return "participation";
   }
 
   return "qualitative-observation";
