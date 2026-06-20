@@ -24,13 +24,13 @@ import "./App.css";
 
 // ── Tipos y constantes de módulo ────────────────────────────
 
-type AppView = "inicio" | "workspace" | "repositorio" | "pipeline";
+type AppView = "inicio" | "repositorio" | "analisis" | "plan";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",      label: "Inicio" },
-  { id: "workspace",   label: "Espacio de trabajo" },
   { id: "repositorio", label: "Repositorio documental" },
-  { id: "pipeline",    label: "Pipeline técnico" },
+  { id: "analisis",    label: "Análisis territorial" },
+  { id: "plan",        label: "Plan Local de Salud" },
 ];
 
 const INITIAL_WORKSPACE = createCompleteMunicipalityWorkspace({
@@ -42,17 +42,17 @@ const INITIAL_WORKSPACE = createCompleteMunicipalityWorkspace({
 });
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
-  { value: "health-report",            label: "Informe de Salud" },
-  { value: "complementary-study",      label: "Estudio complementario" },
-  { value: "eas-variable",             label: "Variables EAS" },
-  { value: "cmi-indicator",            label: "CMI / Indicadores" },
-  { value: "community-asset",          label: "Activos comunitarios" },
-  { value: "localiza-salud",           label: "Localiza Salud" },
-  { value: "redcap-export",            label: "REDCap" },
-  { value: "territorial-documentation",label: "Documentación territorial" },
-  { value: "qualitative-material",     label: "Material endocualitativo" },
-  { value: "longitudinal-evidence",    label: "Evidencia longitudinal" },
-  { value: "other",                    label: "Otro" },
+  { value: "health-report",             label: "Informe de Salud" },
+  { value: "complementary-study",       label: "Estudio complementario" },
+  { value: "eas-variable",              label: "Variables EAS" },
+  { value: "cmi-indicator",             label: "CMI / Indicadores" },
+  { value: "community-asset",           label: "Activos comunitarios" },
+  { value: "localiza-salud",            label: "Localiza Salud" },
+  { value: "redcap-export",             label: "REDCap" },
+  { value: "territorial-documentation", label: "Documentación territorial" },
+  { value: "qualitative-material",      label: "Material cualitativo" },
+  { value: "longitudinal-evidence",     label: "Evidencia longitudinal" },
+  { value: "other",                     label: "Otro" },
 ];
 
 // ── Componente principal ─────────────────────────────────────
@@ -103,7 +103,7 @@ export default function App() {
 
   return (
     <>
-      {/* Barra de navegación principal */}
+      {/* Barra de navegación con indicadores de etapa */}
       <nav className="app-nav">
         <div className="app-nav__bar" />
         <div className="app-nav__inner">
@@ -111,7 +111,7 @@ export default function App() {
             COMPÁS <span className="app-nav__brand-ng">NG</span>
           </span>
           <div className="app-nav__tabs">
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEMS.map((item, index) => (
               <button
                 key={item.id}
                 type="button"
@@ -122,6 +122,7 @@ export default function App() {
                 }
                 onClick={() => setView(item.id)}
               >
+                <span className="app-nav__step-num">{index + 1}</span>
                 {item.label}
               </button>
             ))}
@@ -131,39 +132,99 @@ export default function App() {
 
       <main className="app-shell">
 
-        {/* ── Vista: Inicio ───────────────────────────────── */}
+        {/* ── ① Inicio ────────────────────────────────────── */}
         {view === "inicio" && (
-          <section className="hero">
-            <div className="gradient-bar" />
-            <p className="eyebrow">
-              Planificación local de salud · Junta de Andalucía
-            </p>
-            <div className="compas-brand-row">
-              <h1 className="compas-wordmark">COMPÁS</h1>
-              <span className="compas-ng-badge">NG</span>
-            </div>
-            <p className="compas-hero-subtitle">
-              Apoyo a la elaboración del Plan Local de Salud 2027–2030
-            </p>
-            <p className="lead">
-              COMPÁS NG ayuda a los equipos de salud pública municipal a
-              recopilar evidencia territorial, identificar oportunidades de
-              mejora y elaborar el Plan Local de Salud de su municipio con
-              enfoque salutogénico, comunitario y basado en activos.
-            </p>
-            <div className="hero-tags">
-              <span className="hero-tag">Planes Locales de Salud 2027–2030</span>
-              <span className="hero-tag">Junta de Andalucía</span>
-              <span className="hero-tag">RELAS · EPVSA</span>
-              <span className="hero-tag">Localiza Salud</span>
-              <span className="hero-tag">Salud comunitaria y activos</span>
-            </div>
-          </section>
-        )}
-
-        {/* ── Vista: Espacio de trabajo ───────────────────── */}
-        {view === "workspace" && (
           <>
+            <section className="hero">
+              <div className="gradient-bar" />
+              <p className="eyebrow">
+                Planificación local de salud · Junta de Andalucía
+              </p>
+              <div className="compas-brand-row">
+                <h1 className="compas-wordmark">COMPÁS</h1>
+                <span className="compas-ng-badge">NG</span>
+              </div>
+              <p className="compas-hero-subtitle">
+                Apoyo a la elaboración del Plan Local de Salud 2027–2030
+              </p>
+              <p className="lead">
+                COMPÁS NG acompaña a los equipos de salud pública municipal en
+                la recopilación de evidencia territorial, el análisis de la
+                situación y la elaboración del Plan Local de Salud con enfoque
+                salutogénico, comunitario y basado en activos.
+              </p>
+              <div className="hero-tags">
+                <span className="hero-tag">Planes Locales de Salud 2027–2030</span>
+                <span className="hero-tag">Junta de Andalucía</span>
+                <span className="hero-tag">RELAS · EPVSA</span>
+                <span className="hero-tag">Localiza Salud</span>
+                <span className="hero-tag">Salud comunitaria y activos</span>
+              </div>
+            </section>
+
+            {/* Flujo de trabajo */}
+            <div className="workflow-steps">
+              <button
+                type="button"
+                className="workflow-step"
+                onClick={() => setView("repositorio")}
+              >
+                <span className="workflow-step__num">1</span>
+                <p className="workflow-step__title">
+                  Incorporar documentación municipal
+                </p>
+                <p className="workflow-step__desc">
+                  Añade informes de salud, estudios, diagnósticos de barrio,
+                  encuestas de participación o cualquier documento municipal
+                  relevante.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className="workflow-step"
+                onClick={() => setView("analisis")}
+              >
+                <span className="workflow-step__num">2</span>
+                <p className="workflow-step__title">
+                  Analizar la información disponible
+                </p>
+                <p className="workflow-step__desc">
+                  Consulta la lectura territorial, los determinantes de salud,
+                  los activos comunitarios y las oportunidades de intervención
+                  identificadas.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className="workflow-step"
+                onClick={() => setView("plan")}
+              >
+                <span className="workflow-step__num">3</span>
+                <p className="workflow-step__title">
+                  Elaborar el borrador del Plan Local
+                </p>
+                <p className="workflow-step__desc">
+                  Revisa el borrador de Plan de Acción, la agenda anual de
+                  intervenciones y el registro de seguimiento inicial.
+                </p>
+              </button>
+
+              <div className="workflow-step workflow-step--info">
+                <span className="workflow-step__num workflow-step__num--info">4</span>
+                <p className="workflow-step__title">
+                  Revisar y continuar el trabajo
+                </p>
+                <p className="workflow-step__desc">
+                  Valida los resultados con el equipo técnico y la ciudadanía.
+                  Actualiza la documentación e itera hasta consolidar el Plan
+                  Local de Salud.
+                </p>
+              </div>
+            </div>
+
+            {/* Estado del municipio activo */}
             <div className="workspace-divider">
               <span className="workspace-divider-label">
                 {municipality.name} · {municipality.province} · INE {municipality.ineCode}
@@ -178,14 +239,14 @@ export default function App() {
               </article>
 
               <article className="card">
-                <h2>Repositorio documental</h2>
+                <h2>Documentación registrada</h2>
                 <p>
                   <strong>
                     {runtime.workspace.repository.documents.length}
                   </strong>{" "}
-                  documentos registrados
+                  documentos
                 </p>
-                <p>Entrada única municipal de evidencias.</p>
+                <p>Ve a Repositorio documental para añadir más fuentes.</p>
               </article>
 
               <article className="card">
@@ -196,22 +257,22 @@ export default function App() {
                   </strong>{" "}
                   unidades procesadas
                 </p>
-                <p>Documentación transformada y lista para el análisis.</p>
+                <p>Listas para alimentar el análisis territorial.</p>
               </article>
 
               <article className="card">
                 <h2>Análisis en curso</h2>
                 <p>
                   <strong>{runtime.pipeline.trace.length}</strong> etapas
-                  ejecutadas.
+                  ejecutadas
                 </p>
-                <p>Consulta el informe en la pestaña Pipeline técnico.</p>
+                <p>Ve a Análisis territorial para consultar el informe.</p>
               </article>
             </section>
           </>
         )}
 
-        {/* ── Vista: Repositorio documental ───────────────── */}
+        {/* ── ② Repositorio documental ─────────────────────── */}
         {view === "repositorio" && (
           <>
             <section className="workspace-panel">
@@ -229,7 +290,7 @@ export default function App() {
                   el texto en unidades de evidencia estructurada.
                 </li>
                 <li>
-                  Ve a <strong>Pipeline técnico</strong> para ver la lectura
+                  Ve a <strong>Análisis territorial</strong> para ver la lectura
                   territorial, las oportunidades de intervención y el análisis
                   completo hasta el Plan de Acción.
                 </li>
@@ -254,14 +315,20 @@ export default function App() {
           </>
         )}
 
-        {/* ── Vista: Pipeline técnico ─────────────────────── */}
-        {view === "pipeline" && (
+        {/* ── ③ Análisis territorial ──────────────────────── */}
+        {view === "analisis" && (
           <>
             <PipelineTracePanel pipeline={runtime.pipeline} />
             <LT1Panel lt1={runtime.lt1} />
             <OITPanel oit={runtime.oit} />
             <PrioritizationPanel prioritization={runtime.prioritization} />
             <EPVSAPanel epvsa={runtime.epvsa} />
+          </>
+        )}
+
+        {/* ── ④ Plan Local de Salud ───────────────────────── */}
+        {view === "plan" && (
+          <>
             <ActionPlanPanel
               actionPlan={runtime.actionPlan}
               isEmpty={pipelineIsEmpty}
