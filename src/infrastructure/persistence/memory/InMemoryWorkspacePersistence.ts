@@ -1,3 +1,5 @@
+// NOT YET INJECTED — implementación disponible pero no instanciada en la aplicación.
+// El workspace vive actualmente en estado React. Conectar cuando se añada persistencia real.
 import type { MunicipalityId } from "../../../domain/municipality";
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
 import type { WorkspacePersistence } from "../../../contracts/workspace";

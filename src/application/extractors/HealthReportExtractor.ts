@@ -1,3 +1,5 @@
+// NOT YET INTEGRATED — extrae hacia EvidenceGraph, no hacia EvidenceStore.
+// Candidato a migrar a EvidenceStore cuando se defina el pipeline de extracción estructurada.
 import type { MunicipalDocument } from "../../domain/repository";
 import type {
   EvidenceGraph,
