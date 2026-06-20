@@ -8,13 +8,20 @@ body {
   margin: 0;
 }
 
+button,
+input,
+select {
+  font: inherit;
+}
+
 .app-shell {
   min-height: 100vh;
   padding: 48px;
 }
 
-.hero {
-  max-width: 1040px;
+.hero,
+.workspace-panel {
+  max-width: 1120px;
   margin: 0 auto 32px;
   background: #ffffff;
   border: 1px solid #d9e2ef;
@@ -48,15 +55,20 @@ body {
 }
 
 h1 {
-  max-width: 840px;
+  max-width: 880px;
   margin: 0;
   font-size: clamp(2.1rem, 4vw, 4.2rem);
   line-height: 1.02;
   letter-spacing: -0.05em;
 }
 
+h2,
+h3 {
+  margin: 0;
+}
+
 .lead {
-  max-width: 760px;
+  max-width: 780px;
   margin: 20px 0 0;
   font-size: 1.12rem;
   line-height: 1.7;
@@ -64,8 +76,8 @@ h1 {
 }
 
 .grid {
-  max-width: 1040px;
-  margin: 0 auto;
+  max-width: 1120px;
+  margin: 0 auto 32px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
@@ -92,12 +104,106 @@ h1 {
   padding-left: 20px;
 }
 
+.panel-header {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.panel-header h2 {
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+.panel-note {
+  margin: 0;
+  color: #526070;
+  line-height: 1.6;
+}
+
+.document-form {
+  display: grid;
+  grid-template-columns: 240px 1fr auto;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.document-form input,
+.document-form select {
+  border: 1px solid #c9d6e6;
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: #ffffff;
+  color: #172033;
+}
+
+.document-form button {
+  border: 0;
+  border-radius: 14px;
+  padding: 13px 18px;
+  background: #0074c8;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.document-form button:hover {
+  filter: brightness(0.95);
+}
+
+.document-list {
+  display: grid;
+  gap: 12px;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed #b6c6d8;
+  border-radius: 18px;
+  color: #526070;
+  background: #f8fbff;
+}
+
+.document-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid #d9e2ef;
+  border-radius: 18px;
+  background: #fbfdff;
+}
+
+.document-kind {
+  margin: 0 0 6px;
+  color: #0074c8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: #eef6ff;
+  color: #0074c8;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     padding: 24px;
   }
 
-  .grid {
+  .grid,
+  .panel-header,
+  .document-form {
     grid-template-columns: 1fr;
   }
 }
