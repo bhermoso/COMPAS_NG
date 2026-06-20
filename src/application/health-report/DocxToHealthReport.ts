@@ -5,6 +5,7 @@ import type {
   HealthReportBody,
   HealthReportSection,
 } from "../../domain/health-report";
+import { parseHealthReportSections } from "./HealthReportSectionParser";
 
 export interface CreateHealthReportDocumentInput {
   arrayBuffer: ArrayBuffer;
@@ -37,17 +38,10 @@ export async function createHealthReportDocumentFromDocx(
     isAuthoritative: true,
   };
 
-  // Primera sección: documento íntegro como bloque único, pendiente de segmentación.
-  const sections: HealthReportSection[] = [
-    {
-      key: "other",
-      title: input.title,
-      bodyText: originalText,
-      bodyHtml: originalHtml,
-      sortOrder: 0,
-      isAuthoritative: true,
-    },
-  ];
+  const parsed = parseHealthReportSections({ text: originalText, html: originalHtml });
+  const sections: HealthReportSection[] = parsed.length > 0
+    ? parsed
+    : [{ key: "other", title: input.title, bodyText: originalText, bodyHtml: originalHtml, sortOrder: 0, isAuthoritative: true }];
 
   const now = new Date().toISOString();
 
