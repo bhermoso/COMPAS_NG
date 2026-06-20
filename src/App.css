@@ -34,6 +34,10 @@ select {
   overflow: hidden;
 }
 
+.workspace-panel {
+  text-align: left;
+}
+
 .gradient-bar {
   /* full-bleed: compensa el padding del hero (40px top, 44px laterales) */
   margin: -40px -44px 32px;

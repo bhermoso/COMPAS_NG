@@ -21,7 +21,10 @@ function stripHtmlFields(workspace: MunicipalityWorkspace): MunicipalityWorkspac
       (hr): HealthReportDocument => ({
         ...hr,
         body: { ...hr.body, originalHtml: undefined },
-        sections: hr.sections.map((sec) => ({ ...sec, bodyHtml: undefined })),
+        sections: hr.sections.map((sec) => ({
+          ...sec,
+          bodyHtml: sec.bodyHtml?.includes("<table") ? sec.bodyHtml : undefined,
+        })),
       })
     ),
   };
