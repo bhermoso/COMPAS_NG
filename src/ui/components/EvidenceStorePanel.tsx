@@ -1,4 +1,28 @@
-import type { EvidenceStore } from "../../domain/evidence";
+import type {
+  EvidenceStore,
+  EvidenceAtomKind,
+  EvidenceConfidence,
+} from "../../domain/evidence";
+
+const KIND_LABEL: Record<EvidenceAtomKind, string> = {
+  "indicator":               "Indicador",
+  "determinant":             "Determinante",
+  "asset":                   "Activo comunitario",
+  "participation":           "Participación",
+  "qualitative-observation": "Observación cualitativa",
+  "territorial-context":     "Contexto territorial",
+  "sample-quality":          "Calidad muestral",
+  "longitudinal-snapshot":   "Snapshot longitudinal",
+  "strategic-priority":      "Prioridad estratégica",
+  "methodological-caution":  "Cautela metodológica",
+  "other":                   "Evidencia",
+};
+
+const CONFIDENCE_LABEL: Record<EvidenceConfidence, string> = {
+  "low":    "Confianza baja",
+  "medium": "Confianza media",
+  "high":   "Confianza alta",
+};
 
 interface EvidenceStorePanelProps {
   evidenceStore: EvidenceStore;
@@ -28,15 +52,19 @@ export function EvidenceStorePanel({ evidenceStore }: EvidenceStorePanelProps) {
           evidenceStore.atoms.map((atom) => (
             <article className="document-row" key={atom.id}>
               <div>
-                <p className="document-kind">{atom.kind}</p>
+                <p className="document-kind">
+                  {KIND_LABEL[atom.kind] ?? atom.kind}
+                </p>
                 <h3>{atom.title}</h3>
-                <p>{atom.content}</p>
+                <p className="evidence-atom__content">{atom.content}</p>
                 <p className="panel-note">
                   Origen: {atom.provenance.origin} · Validación humana requerida:{" "}
                   {atom.methodology.requiresHumanValidation ? "sí" : "no"}
                 </p>
               </div>
-              <span className="status-pill">{atom.confidence}</span>
+              <span className="status-pill">
+                {CONFIDENCE_LABEL[atom.confidence] ?? atom.confidence}
+              </span>
             </article>
           ))
         )}

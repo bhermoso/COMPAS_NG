@@ -22,12 +22,12 @@ select {
 .hero,
 .workspace-panel {
   max-width: 1120px;
-  margin: 0 auto 32px;
+  margin: 0 auto 40px;
   background: #ffffff;
   border: 1px solid #e4eaf3;
   border-radius: 16px;
   padding: 40px 44px;
-  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 2px 16px rgba(15, 23, 42, 0.05);
 }
 
 .hero {
@@ -122,7 +122,8 @@ h3 {
 }
 
 .panel-header h2 {
-  font-size: 2rem;
+  font-size: 1.85rem;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 
@@ -222,7 +223,7 @@ h3 {
 
 .document-list {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .empty-state {
@@ -239,7 +240,7 @@ h3 {
   justify-content: space-between;
   gap: 18px;
   align-items: center;
-  padding: 18px 20px;
+  padding: 20px 22px;
   border: 1px solid #e4eaf3;
   border-radius: 10px;
   background: #fafcff;
@@ -791,6 +792,19 @@ h3 {
   cursor: not-allowed;
 }
 
+/* ── EvidenceStore — contenido de átomo ─────────────────── */
+
+.evidence-atom__content {
+  margin: 4px 0 6px;
+  font-size: 0.88rem;
+  color: #526070;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ── IBSE Panel ─────────────────────────────────────────── */
 
 .ibse-upload {
@@ -798,6 +812,16 @@ h3 {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 22px;
+}
+
+.ibse-upload__zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px dashed #c9d6e6;
+  border-radius: 12px;
+  background: #f8fbff;
 }
 
 .ibse-aggregates {
@@ -976,7 +1000,7 @@ h3 {
 }
 
 .hr-viewer__section {
-  padding: 28px 0;
+  padding: 36px 0;
   border-bottom: 1px solid #e4eaf3;
 }
 
@@ -986,17 +1010,18 @@ h3 {
 }
 
 .hr-viewer__section-title {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #172033;
   letter-spacing: -0.02em;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 }
 
 .hr-viewer__section-html {
   color: #334155;
-  line-height: 1.7;
-  font-size: 0.93rem;
+  line-height: 1.75;
+  font-size: 0.95rem;
+  max-width: 72ch;
 }
 
 .hr-viewer__section-html p {
@@ -1062,12 +1087,13 @@ h3 {
   white-space: pre-wrap;
   word-break: break-word;
   font-family: inherit;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: #334155;
-  line-height: 1.65;
+  line-height: 1.75;
   margin: 0;
   padding: 0;
   text-align: left;
+  max-width: 72ch;
 }
 
 @media (max-width: 900px) {

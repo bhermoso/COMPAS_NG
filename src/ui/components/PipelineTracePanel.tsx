@@ -1,25 +1,37 @@
-import type { CompasPipelineResult, PipelineStatus } from "../../domain/pipeline";
+import type { CompasPipelineResult, PipelineStage, PipelineStatus } from "../../domain/pipeline";
 
-interface PipelineTracePanelProps {
-  pipeline: CompasPipelineResult;
-}
+const STAGE_LABEL: Record<PipelineStage, string> = {
+  "repository":    "Repositorio documental",
+  "evidence":      "Evidencias estructuradas",
+  "lt1":           "Lectura territorial (LT-1)",
+  "oit":           "Oportunidades de intervención",
+  "prioritization":"Priorización",
+  "epvsa":         "Encaje estratégico EPVSA",
+  "action-plan":   "Plan de acción",
+  "agenda":        "Agenda anual",
+  "monitoring":    "Seguimiento inicial",
+  "evaluation":    "Evaluación",
+  "longi":         "Seguimiento longitudinal",
+  "compiler":      "Compilador",
+};
 
-function statusLabel(status: PipelineStatus): string {
-  const labels: Record<PipelineStatus, string> = {
-    pending:   "pendiente",
-    empty:     "sin datos",
-    ready:     "listo",
-    partial:   "parcial",
-    blocked:   "bloqueado",
-    completed: "completado",
-  };
-  return labels[status];
-}
+const STATUS_LABEL: Record<PipelineStatus, string> = {
+  pending:   "pendiente",
+  empty:     "sin datos",
+  ready:     "listo",
+  partial:   "parcial",
+  blocked:   "bloqueado",
+  completed: "completado",
+};
 
 function statusClass(status: PipelineStatus): string {
   if (status === "partial") return "status-pill status-pill--partial";
   if (status === "empty")   return "status-pill status-pill--empty";
   return "status-pill";
+}
+
+interface PipelineTracePanelProps {
+  pipeline: CompasPipelineResult;
 }
 
 export function PipelineTracePanel({ pipeline }: PipelineTracePanelProps) {
@@ -40,11 +52,13 @@ export function PipelineTracePanel({ pipeline }: PipelineTracePanelProps) {
         {pipeline.trace.map((item) => (
           <article className="document-row" key={item.stage}>
             <div>
-              <p className="document-kind">{item.stage}</p>
+              <p className="document-kind">
+                {STAGE_LABEL[item.stage] ?? item.stage}
+              </p>
               <p className="panel-note">{item.message}</p>
             </div>
             <span className={statusClass(item.status)}>
-              {statusLabel(item.status)}
+              {STATUS_LABEL[item.status]}
             </span>
           </article>
         ))}

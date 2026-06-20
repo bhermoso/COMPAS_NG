@@ -28,23 +28,25 @@ export function IBSEPanel({
       </div>
 
       <div className="ibse-upload">
-        <label htmlFor="ibse-csv-input" className="docx-upload__label">
-          Cargar exportación REDCap (.csv)
-        </label>
-        <input
-          id="ibse-csv-input"
-          type="file"
-          accept=".csv"
-          disabled={isLoading === true}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file !== undefined && onLoadCSV !== undefined) {
-              onLoadCSV(file);
-            }
-            e.target.value = "";
-          }}
-          className="docx-upload__input"
-        />
+        <div className="ibse-upload__zone">
+          <label htmlFor="ibse-csv-input" className="docx-upload__label">
+            Cargar exportación REDCap (.csv)
+          </label>
+          <input
+            id="ibse-csv-input"
+            type="file"
+            accept=".csv"
+            disabled={isLoading === true}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file !== undefined && onLoadCSV !== undefined) {
+                onLoadCSV(file);
+              }
+              e.target.value = "";
+            }}
+            className="docx-upload__input"
+          />
+        </div>
         {isLoading === true && (
           <p className="ingestion-hint">Procesando CSV IBSE…</p>
         )}
