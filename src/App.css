@@ -1,7 +1,7 @@
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #172033;
-  background: #f5f7fb;
+  background: #f7f8fc;
 }
 
 body {
@@ -24,15 +24,15 @@ select {
   max-width: 1120px;
   margin: 0 auto 32px;
   background: #ffffff;
-  border: 1px solid #d9e2ef;
-  border-radius: 24px;
-  padding: 36px;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e4eaf3;
+  border-radius: 16px;
+  padding: 40px 44px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
 }
 
 .gradient-bar {
-  height: 6px;
-  border-radius: 999px;
+  height: 3px;
+  border-radius: 2px;
   background: linear-gradient(
     90deg,
     #0074c8,
@@ -42,7 +42,7 @@ select {
     #ff6600,
     #dc143c
   );
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .eyebrow {
@@ -85,9 +85,9 @@ h3 {
 
 .card {
   background: #ffffff;
-  border: 1px solid #d9e2ef;
-  border-radius: 20px;
-  padding: 22px;
+  border: 1px solid #e4eaf3;
+  border-radius: 12px;
+  padding: 24px;
 }
 
 .card h2 {
@@ -153,6 +153,43 @@ h3 {
   filter: brightness(0.95);
 }
 
+.workspace-panel textarea {
+  width: 100%;
+  border: 1px solid #c9d6e6;
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: #f9fbff;
+  color: #172033;
+  resize: vertical;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.workspace-panel textarea:focus {
+  outline: none;
+  border-color: #0074c8;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 116, 200, 0.08);
+}
+
+.repo-guide__list {
+  margin: 12px 0 0;
+  padding: 0 0 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.repo-guide__list li::marker {
+  color: #0074c8;
+  font-weight: 800;
+}
+
 .document-list {
   display: grid;
   gap: 12px;
@@ -161,10 +198,10 @@ h3 {
 .empty-state {
   margin: 0;
   padding: 22px;
-  border: 1px dashed #b6c6d8;
-  border-radius: 18px;
+  border: 1px dashed #c8d6e8;
+  border-radius: 10px;
   color: #526070;
-  background: #f8fbff;
+  background: #f9fbff;
 }
 
 .document-row {
@@ -172,10 +209,10 @@ h3 {
   justify-content: space-between;
   gap: 18px;
   align-items: center;
-  padding: 18px;
-  border: 1px solid #d9e2ef;
-  border-radius: 18px;
-  background: #fbfdff;
+  padding: 18px 20px;
+  border: 1px solid #e4eaf3;
+  border-radius: 10px;
+  background: #fafcff;
 }
 
 .document-kind {
@@ -210,8 +247,8 @@ h3 {
 .pipeline-empty-notice {
   margin: 0 0 24px;
   padding: 18px 22px;
-  border: 1px solid #cbd5e1;
-  border-radius: 18px;
+  border: 1px solid #dde5ef;
+  border-radius: 10px;
   background: #f8fafc;
   color: #475569;
 }
@@ -323,13 +360,9 @@ h3 {
   margin: 0;
   max-width: none;
   background: linear-gradient(
-    90deg,
+    135deg,
     #0074c8 0%,
-    #00acd9 20%,
-    #94d40b 42%,
-    #ffb61b 60%,
-    #ff6600 80%,
-    #dc143c 100%
+    #0056a3 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

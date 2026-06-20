@@ -136,19 +136,20 @@ export default function App() {
           <section className="hero">
             <div className="gradient-bar" />
             <p className="eyebrow">
-              Sistema de Información para la Acción Local en Salud
+              Planificación local de salud · Junta de Andalucía
             </p>
             <div className="compas-brand-row">
               <h1 className="compas-wordmark">COMPÁS</h1>
               <span className="compas-ng-badge">NG</span>
             </div>
             <p className="compas-hero-subtitle">
-              Infraestructura digital para la Acción Local en Salud
+              Apoyo a la elaboración del Plan Local de Salud 2027–2030
             </p>
             <p className="lead">
-              Sistema modular para la elaboración de Planes Locales de Salud
-              2027–2030 con enfoque salutogénico, comunitario y basado en
-              activos. Alineado con RELAS, EPVSA y Localiza Salud.
+              COMPÁS NG ayuda a los equipos de salud pública municipal a
+              recopilar evidencia territorial, identificar oportunidades de
+              mejora y elaborar el Plan Local de Salud de su municipio con
+              enfoque salutogénico, comunitario y basado en activos.
             </p>
             <div className="hero-tags">
               <span className="hero-tag">Planes Locales de Salud 2027–2030</span>
@@ -188,23 +189,23 @@ export default function App() {
               </article>
 
               <article className="card">
-                <h2>EvidenceStore</h2>
+                <h2>Evidencias estructuradas</h2>
                 <p>
                   <strong>
                     {runtime.workspace.evidenceStore.atoms.length}
                   </strong>{" "}
-                  EvidenceAtom
+                  unidades procesadas
                 </p>
-                <p>Unidad canónica de conocimiento para motores.</p>
+                <p>Documentación transformada y lista para el análisis.</p>
               </article>
 
               <article className="card">
-                <h2>Pipeline</h2>
+                <h2>Análisis en curso</h2>
                 <p>
                   <strong>{runtime.pipeline.trace.length}</strong> etapas
                   ejecutadas.
                 </p>
-                <p>Ver análisis completo en Pipeline técnico.</p>
+                <p>Consulta el informe en la pestaña Pipeline técnico.</p>
               </article>
             </section>
           </>
@@ -213,6 +214,28 @@ export default function App() {
         {/* ── Vista: Repositorio documental ───────────────── */}
         {view === "repositorio" && (
           <>
+            <section className="workspace-panel">
+              <p className="eyebrow">Cómo añadir documentación</p>
+              <ol className="repo-guide__list">
+                <li>
+                  Pega el texto de un informe, estudio, diagnóstico o documento
+                  municipal en el área de abajo.
+                </li>
+                <li>
+                  Elige el tipo de documento en el menú y escribe un título breve.
+                </li>
+                <li>
+                  Pulsa <strong>«Registrar documento»</strong> para transformar
+                  el texto en unidades de evidencia estructurada.
+                </li>
+                <li>
+                  Ve a <strong>Pipeline técnico</strong> para ver la lectura
+                  territorial, las oportunidades de intervención y el análisis
+                  completo hasta el Plan de Acción.
+                </li>
+              </ol>
+            </section>
+
             <DocumentIngestionPanel
               documentKinds={DOCUMENT_KINDS}
               repository={runtime.workspace.repository}

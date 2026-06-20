@@ -9,18 +9,21 @@ export function EvidenceStorePanel({ evidenceStore }: EvidenceStorePanelProps) {
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">EvidenceStore</p>
-          <h2>Evidencias estructuradas</h2>
+          <p className="eyebrow">Evidencias registradas</p>
+          <h2>Unidades de evidencia</h2>
         </div>
         <p className="panel-note">
-          Todas las fuentes deben convertirse en EvidenceAtom antes de alimentar
-          motores.
+          Cada texto procesado genera unidades de evidencia estructurada que
+          alimentan la lectura territorial y el análisis de intervención.
         </p>
       </div>
 
       <div className="document-list">
         {evidenceStore.atoms.length === 0 ? (
-          <p className="empty-state">Aún no hay EvidenceAtom generados.</p>
+          <p className="empty-state">
+            Todavía no hay evidencias registradas. Añade documentación en el
+            panel superior para generar las primeras unidades de evidencia.
+          </p>
         ) : (
           evidenceStore.atoms.map((atom) => (
             <article className="document-row" key={atom.id}>

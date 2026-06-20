@@ -38,12 +38,14 @@ export function DocumentIngestionPanel({
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Repositorio Documental Municipal</p>
-          <h2>Fuente manual → EvidenceAtom → LT1</h2>
+          <p className="eyebrow">Repositorio documental municipal</p>
+          <h2>Añadir documentación municipal</h2>
         </div>
         <p className="panel-note">
-          Esta primera tubería registra una fuente, transforma su texto en
-          EvidenceAtom y alimenta la lectura territorial LT1.
+          Pega el texto de cualquier documento municipal —informe de salud,
+          memoria de actividades, diagnóstico de barrio, encuesta de
+          participación— y el sistema lo transforma en unidades de evidencia
+          que alimentan la lectura territorial y el análisis completo.
         </p>
       </div>
 
@@ -66,28 +68,29 @@ export function DocumentIngestionPanel({
         />
 
         <button type="button" onClick={onProcessDocument}>
-          Procesar documento
+          Registrar documento
         </button>
       </div>
 
       <textarea
         value={plainText}
         onChange={(event) => onPlainTextChange(event.target.value)}
-        placeholder="Pega aquí texto simulado o manual. Cada línea no vacía generará un EvidenceAtom."
-        rows={8}
+        placeholder="Pega aquí el contenido de un informe, estudio o documento municipal. Cada párrafo o línea no vacía se convertirá en una unidad de evidencia estructurada."
+        rows={9}
       />
 
       {lastProcessedDocument && (
         <p className="panel-note">
-          Última fuente procesada: <strong>{lastProcessedDocument.title}</strong>
+          Último documento registrado:{" "}
+          <strong>{lastProcessedDocument.title}</strong>
         </p>
       )}
 
       <div className="document-list">
         {repository.documents.length === 0 ? (
           <p className="empty-state">
-            Aún no hay documentos registrados. Añade texto manual para crear las
-            primeras evidencias estructuradas.
+            Todavía no hay documentos registrados. Sigue los pasos de la guía
+            superior para añadir el primer documento.
           </p>
         ) : (
           repository.documents.map((document) => (
