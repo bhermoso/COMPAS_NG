@@ -1,5 +1,6 @@
 import { convertToHtml, extractRawText } from "mammoth";
 import type {
+  HealthReportAuthor,
   HealthReportDocument,
   HealthReportBody,
   HealthReportSection,
@@ -12,7 +13,7 @@ export interface CreateHealthReportDocumentInput {
   sourceFileName: string;
   title: string;
   reportingPeriod?: string;
-  authors?: string[];
+  authors?: HealthReportAuthor[];
 }
 
 export async function createHealthReportDocumentFromDocx(
@@ -57,7 +58,7 @@ export async function createHealthReportDocumentFromDocx(
     sourceFileName: input.sourceFileName,
     title: input.title,
     reportingPeriod: input.reportingPeriod,
-    authors: input.authors,
+    authors: input.authors ?? [],
     body,
     sections,
     createdAt: now,

@@ -18,6 +18,13 @@ export type HealthReportSectionKey =
   | "autores"
   | "other";
 
+export interface HealthReportAuthor {
+  name: string;
+  role?: string;
+  organisation?: string;
+  signatureOrder: number;
+}
+
 export type HealthReportBodyFormat = "html" | "plain";
 
 export interface HealthReportBody {
@@ -45,7 +52,7 @@ export interface HealthReportDocument {
   sourceFileName: string;
   title: string;
   reportingPeriod?: string;
-  authors?: string[];
+  authors: HealthReportAuthor[];
   body: HealthReportBody;
   sections: HealthReportSection[];
   createdAt: string;
