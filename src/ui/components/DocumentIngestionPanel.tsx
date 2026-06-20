@@ -34,6 +34,17 @@ export function DocumentIngestionPanel({
   onPlainTextChange,
   onProcessDocument,
 }: DocumentIngestionPanelProps) {
+  const hasTitle = title.trim().length > 0;
+  const hasText = plainText.trim().length > 0;
+  const canSubmit = hasTitle && hasText;
+
+  const hint =
+    !hasTitle && !hasText
+      ? "Escribe un título y pega el texto del documento para poder registrarlo."
+      : !hasTitle
+      ? "Escribe un título para el documento."
+      : "Pega el texto del documento en el área de abajo.";
+
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -48,6 +59,14 @@ export function DocumentIngestionPanel({
           que alimentan la lectura territorial y el análisis completo.
         </p>
       </div>
+
+      {/* Textarea primero: es la acción principal */}
+      <textarea
+        value={plainText}
+        onChange={(event) => onPlainTextChange(event.target.value)}
+        placeholder="Pega aquí el contenido del documento municipal. Cada párrafo o línea no vacía se convertirá en una unidad de evidencia estructurada."
+        rows={9}
+      />
 
       <div className="document-form">
         <select
@@ -64,20 +83,22 @@ export function DocumentIngestionPanel({
         <input
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
-          placeholder="Título del documento o fuente"
+          placeholder="Título del documento o fuente (obligatorio)"
         />
 
-        <button type="button" onClick={onProcessDocument}>
+        <button
+          type="button"
+          onClick={onProcessDocument}
+          disabled={!canSubmit}
+          title={canSubmit ? undefined : hint}
+        >
           Registrar documento
         </button>
       </div>
 
-      <textarea
-        value={plainText}
-        onChange={(event) => onPlainTextChange(event.target.value)}
-        placeholder="Pega aquí el contenido de un informe, estudio o documento municipal. Cada párrafo o línea no vacía se convertirá en una unidad de evidencia estructurada."
-        rows={9}
-      />
+      {!canSubmit && (
+        <p className="ingestion-hint">{hint}</p>
+      )}
 
       {lastProcessedDocument && (
         <p className="panel-note">
