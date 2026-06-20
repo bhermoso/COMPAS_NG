@@ -19,6 +19,7 @@ import {
   OITPanel,
   PrioritizationPanel,
   EPVSAPanel,
+  ActionPlanPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -152,6 +153,8 @@ export default function App() {
       <PrioritizationPanel prioritization={runtime.prioritization} />
 
       <EPVSAPanel epvsa={runtime.epvsa} />
+
+      <ActionPlanPanel actionPlan={runtime.actionPlan} />
     </main>
   );
 }

@@ -1,0 +1,75 @@
+import type { ActionPlanDraft } from "../../application/action-plan";
+
+interface ActionPlanPanelProps {
+  actionPlan: ActionPlanDraft;
+}
+
+export function ActionPlanPanel({ actionPlan }: ActionPlanPanelProps) {
+  return (
+    <section className="workspace-panel">
+      <div className="panel-header">
+        <div>
+          <p className="eyebrow">Plan de Acción</p>
+          <h2>{actionPlan.title}</h2>
+        </div>
+        <p className="panel-note">
+          Borrador técnico inicial. No genera agenda ni compromisos ejecutivos
+          hasta validación humana.
+        </p>
+      </div>
+
+      <article className="card">
+        <h3>Objetivos</h3>
+        <ul>
+          {actionPlan.objectives.map((objective) => (
+            <li key={objective.id}>
+              <strong>{objective.title}</strong> · {objective.linkedStrategicLine}
+            </li>
+          ))}
+        </ul>
+      </article>
+
+      <div className="document-list">
+        {actionPlan.actions.map((action) => (
+          <article className="document-row" key={action.id}>
+            <div>
+              <p className="document-kind">Actuación</p>
+              <h3>{action.title}</h3>
+              <p>{action.description}</p>
+              <p className="panel-note">
+                Evidencias relacionadas: {action.relatedEvidenceIds.length}
+              </p>
+              <ul>
+                {action.cautions.map((caution) => (
+                  <li key={caution}>{caution}</li>
+                ))}
+              </ul>
+            </div>
+            <span className="status-pill">borrador</span>
+          </article>
+        ))}
+      </div>
+
+      <article className="card">
+        <h3>Indicadores preliminares</h3>
+        <ul>
+          {actionPlan.indicators.map((indicator) => (
+            <li key={indicator.id}>
+              <strong>{indicator.title}</strong> ({indicator.type}) ·{" "}
+              {indicator.measurementNote}
+            </li>
+          ))}
+        </ul>
+      </article>
+
+      <article className="card">
+        <h3>Cautelas</h3>
+        <ul>
+          {actionPlan.cautions.map((caution) => (
+            <li key={caution}>{caution}</li>
+          ))}
+        </ul>
+      </article>
+    </section>
+  );
+}
