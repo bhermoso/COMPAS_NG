@@ -72,3 +72,45 @@ export function searchEvidenceAtomsByTag(
 ): EvidenceAtom[] {
   return store.atoms.filter((atom) => atom.tags.includes(tag));
 }
+
+// Clave semántica estable para activos: reproducible entre recargas del mismo listado.
+export type EvidenceAtomStableKey = string;
+
+export function stableAssetKey(
+  municipalityId: string,
+  origin: EvidenceOrigin,
+  title: string
+): EvidenceAtomStableKey {
+  const normalized = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return `${origin}:${municipalityId}:${normalized}`;
+}
+
+export function upsertEvidenceAtom(
+  store: EvidenceStore,
+  incoming: EvidenceAtom,
+  key: EvidenceAtomStableKey
+): EvidenceStore {
+  const now = new Date().toISOString();
+  const existingIndex = store.atoms.findIndex(
+    (a) => stableAssetKey(a.municipalityId, a.provenance.origin, a.title) === key
+  );
+
+  if (existingIndex === -1) {
+    return { ...store, atoms: [...store.atoms, incoming], updatedAt: now };
+  }
+
+  const existing = store.atoms[existingIndex];
+  const updated: EvidenceAtom = {
+    ...existing,
+    content: incoming.content,
+    provenance: incoming.provenance,
+    updatedAt: now,
+  };
+  const atoms = store.atoms.map((a, i) => (i === existingIndex ? updated : a));
+  return { ...store, atoms, updatedAt: now };
+}

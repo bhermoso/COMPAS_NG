@@ -1,6 +1,8 @@
 import type { MunicipalDocument } from "../../domain/repository";
 import {
   addEvidenceAtom,
+  upsertEvidenceAtom,
+  stableAssetKey,
   type EvidenceStore,
   createEvidenceAtom,
   type EvidenceAtom,
@@ -58,7 +60,12 @@ export function transformDocumentToEvidence(
       tags: [input.document.kind, kind],
     });
 
-    store = addEvidenceAtom(store, atom);
+    if (input.document.kind === "localiza-salud") {
+      const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+      store = upsertEvidenceAtom(store, atom, key);
+    } else {
+      store = addEvidenceAtom(store, atom);
+    }
     atomsCreated.push(atom);
   }
 
