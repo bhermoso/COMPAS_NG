@@ -4,6 +4,7 @@ import {
   type MunicipalDocument,
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
+import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
@@ -22,7 +23,15 @@ import {
 } from "./ui/components";
 import "./App.css";
 
-// ── Tipos y constantes de módulo ────────────────────────────
+// ── Municipios de demostración ───────────────────────────────
+
+const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
+  { id: "atarfe",    name: "Atarfe",              province: "Granada", ineCode: "18022", createdBy: "COMPÁS NG" },
+  { id: "alfacar",   name: "Alfacar",              province: "Granada", ineCode: "18009", createdBy: "COMPÁS NG" },
+  { id: "churriana", name: "Churriana de la Vega", province: "Granada", ineCode: "18052", createdBy: "COMPÁS NG" },
+];
+
+// ── Tipos y constantes de módulo ─────────────────────────────
 
 type AppView = "inicio" | "repositorio" | "analisis" | "plan";
 
@@ -32,14 +41,6 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "analisis",    label: "Análisis territorial" },
   { id: "plan",        label: "Plan Local de Salud" },
 ];
-
-const INITIAL_WORKSPACE = createCompleteMunicipalityWorkspace({
-  id: "atarfe",
-  name: "Atarfe",
-  province: "Granada",
-  ineCode: "18022",
-  createdBy: "COMPÁS NG",
-});
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "health-report",             label: "Informe de Salud" },
@@ -59,9 +60,11 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
 
 export default function App() {
   const [view, setView] = useState<AppView>("inicio");
+  const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
 
-  const [workspace, setWorkspace] =
-    useState<MunicipalityWorkspace>(INITIAL_WORKSPACE);
+  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(
+    () => createCompleteMunicipalityWorkspace(DEMO_MUNICIPALITIES[0])
+  );
 
   const [title, setTitle] = useState("");
   const [plainText, setPlainText] = useState("");
@@ -99,11 +102,23 @@ export default function App() {
     setPlainText("");
   }
 
+  function handleChangeMunicipality(municipalityId: string) {
+    const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
+    if (demo === undefined) return;
+
+    setWorkspace(createCompleteMunicipalityWorkspace(demo));
+    setTitle("");
+    setPlainText("");
+    setKind("health-report");
+    setLastProcessedDocument(null);
+    setShowMunicipalitySelector(false);
+  }
+
   // ── Render ──────────────────────────────────────────────────
 
   return (
     <>
-      {/* Barra de navegación con indicadores de etapa */}
+      {/* Barra de navegación con contexto municipal */}
       <nav className="app-nav">
         <div className="app-nav__bar" />
         <div className="app-nav__inner">
@@ -128,9 +143,72 @@ export default function App() {
             ))}
           </div>
         </div>
+
+        {/* Franja de contexto municipal — siempre visible */}
+        <div className="app-nav__municipality">
+          <div className="app-nav__municipality-row">
+            <span className="app-nav__municipality-name">
+              {municipality.name}
+            </span>
+            <span className="app-nav__municipality-sep">·</span>
+            <span>{municipality.province}</span>
+            <span className="app-nav__municipality-sep">·</span>
+            <span>Plan Local de Salud 2027–2030</span>
+            {municipality.ineCode && (
+              <>
+                <span className="app-nav__municipality-sep">·</span>
+                <span>INE {municipality.ineCode}</span>
+              </>
+            )}
+            <span className="app-nav__municipality-badge">Demostración</span>
+            <button
+              type="button"
+              className="app-nav__municipality-btn"
+              onClick={() => setShowMunicipalitySelector((v) => !v)}
+            >
+              {showMunicipalitySelector ? "Cerrar ▲" : "Cambiar municipio ▾"}
+            </button>
+          </div>
+        </div>
       </nav>
 
       <main className="app-shell">
+
+        {/* Selector de municipio (se muestra sobre cualquier vista) */}
+        {showMunicipalitySelector && (
+          <section className="municipality-selector">
+            <p className="municipality-selector__warning">
+              Cambiar de municipio reiniciará el espacio de trabajo local
+              actual. Los documentos y evidencias de esta sesión se eliminarán.
+            </p>
+            <div className="municipality-selector__options">
+              {DEMO_MUNICIPALITIES.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={
+                    municipality.id === m.id
+                      ? "municipality-selector__option municipality-selector__option--active"
+                      : "municipality-selector__option"
+                  }
+                  onClick={() => handleChangeMunicipality(m.id)}
+                >
+                  <span className="municipality-selector__option-name">{m.name}</span>
+                  <span className="municipality-selector__option-meta">
+                    {m.province} · INE {m.ineCode}
+                  </span>
+                </button>
+              ))}
+              <button
+                type="button"
+                className="municipality-selector__cancel"
+                onClick={() => setShowMunicipalitySelector(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* ── ① Inicio ────────────────────────────────────── */}
         {view === "inicio" && (
@@ -224,10 +302,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* Estado del municipio activo */}
+            {/* Estado del espacio de trabajo */}
             <div className="workspace-divider">
               <span className="workspace-divider-label">
-                {municipality.name} · {municipality.province} · INE {municipality.ineCode}
+                Estado del espacio de trabajo
               </span>
             </div>
             <section className="grid">
