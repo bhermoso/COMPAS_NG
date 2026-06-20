@@ -17,6 +17,7 @@ import type { MunicipalDocumentRepository } from "../repository";
 import type { HealthReportDocument } from "../health-report";
 import type { IBSEStudy } from "../ibse";
 import type { EvidenceStore } from "../evidence";
+import type { ThematicPrioritisation } from "../thematic-prioritisation";
 
 export interface MunicipalSnapshot {
   municipality: MunicipalityContext;
@@ -29,9 +30,7 @@ export interface MunicipalSnapshot {
 
   evidenceStore: EvidenceStore;
 
-  // Reservado: priorización temática (5/10 temáticas de salud)
-  // No implementar hasta que exista el motor correspondiente.
-  thematicPrioritisation?: unknown;
+  thematicPrioritisation?: ThematicPrioritisation;
 
   // Reservado: priorización estratégica (EPVSA / Plan de Acción)
   // No implementar hasta que exista el motor correspondiente.

@@ -12,6 +12,10 @@ import { ingestManualDocument } from "./application/document-ingestion";
 import { createHealthReportDocumentFromDocx } from "./application/health-report";
 import { parseIBSECSV } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
+import {
+  THEMATIC_TOPICS,
+  createThematicPrioritisation,
+} from "./domain/thematic-prioritisation";
 import { createMunicipalSnapshot } from "./domain/municipality-context";
 import { createMunicipalInventory } from "./application/municipal-inventory";
 import {
@@ -26,6 +30,7 @@ import {
   HealthReportViewer,
   IBSEPanel,
   MunicipalInventoryPanel,
+  ThematicPrioritisationPanel,
   PipelineTracePanel,
   LT1Panel,
   OITPanel,
@@ -94,6 +99,9 @@ export default function App() {
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
   const [isLoadingIBSE, setIsLoadingIBSE] = useState(false);
   const [ibseMessage, setIbseMessage] = useState<string | null>(null);
+  const [pendingTopics, setPendingTopics] = useState<string[]>(
+    () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
+  );
 
   useEffect(() => {
     saveWorkspaceToLocalStorage(workspace);
@@ -209,14 +217,36 @@ export default function App() {
     }
   }
 
+  function handleTopicToggle(topicId: string) {
+    setPendingTopics((prev) => {
+      if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
+      if (prev.length >= THEMATIC_TOPICS.length / 2) return prev;
+      return [...prev, topicId];
+    });
+  }
+
+  function handleSaveThematicPrioritisation() {
+    const prioritisation = createThematicPrioritisation(
+      workspace.municipality.identity.id,
+      pendingTopics
+    );
+    setWorkspace((prev) => ({
+      ...prev,
+      thematicPrioritisation: prioritisation,
+      updatedAt: new Date().toISOString(),
+    }));
+  }
+
   function handleChangeMunicipality(municipalityId: string) {
     const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
     if (demo === undefined) return;
 
-    setWorkspace(
+    const nextWorkspace =
       loadWorkspaceFromLocalStorage(municipalityId) ??
-      createCompleteMunicipalityWorkspace(demo)
-    );
+      createCompleteMunicipalityWorkspace(demo);
+
+    setWorkspace(nextWorkspace);
+    setPendingTopics(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? []);
     setTitle("");
     setPlainText("");
     setKind("health-report");
@@ -520,6 +550,15 @@ export default function App() {
               isLoading={isLoadingIBSE}
               message={ibseMessage}
               onLoadCSV={handleLoadIBSECSV}
+            />
+            <ThematicPrioritisationPanel
+              topics={THEMATIC_TOPICS}
+              selectedIds={pendingTopics}
+              savedIds={
+                runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
+              }
+              onToggle={handleTopicToggle}
+              onSave={handleSaveThematicPrioritisation}
             />
           </>
         )}

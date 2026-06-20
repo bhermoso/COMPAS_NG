@@ -20,10 +20,11 @@ export function createMunicipalSnapshot(
   workspace: MunicipalityWorkspace
 ): MunicipalSnapshot {
   return {
-    municipality:  workspace.municipality,
-    repository:    workspace.repository,
-    healthReport:  workspace.healthReports?.[0],
-    ibseStudy:     workspace.ibseStudy,
-    evidenceStore: workspace.evidenceStore,
+    municipality:            workspace.municipality,
+    repository:              workspace.repository,
+    healthReport:            workspace.healthReports?.[0],
+    ibseStudy:               workspace.ibseStudy,
+    thematicPrioritisation:  workspace.thematicPrioritisation,
+    evidenceStore:           workspace.evidenceStore,
   };
 }
