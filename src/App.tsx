@@ -18,6 +18,7 @@ import {
   LT1Panel,
   OITPanel,
   PrioritizationPanel,
+  EPVSAPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -149,6 +150,8 @@ export default function App() {
       <OITPanel oit={runtime.oit} />
 
       <PrioritizationPanel prioritization={runtime.prioritization} />
+
+      <EPVSAPanel epvsa={runtime.epvsa} />
     </main>
   );
 }

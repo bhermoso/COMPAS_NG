@@ -3,3 +3,4 @@ export * from "./EvidenceStorePanel";
 export * from "./LT1Panel";
 export * from "./OITPanel";
 export * from "./PrioritizationPanel";
+export * from "./EPVSAPanel";

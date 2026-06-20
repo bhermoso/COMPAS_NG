@@ -9,6 +9,8 @@ import type { OITResult } from "../oit";
 import { generateOIT } from "../oit";
 import type { PrioritizationResult } from "../prioritization";
 import { generatePrioritization } from "../prioritization";
+import type { EPVSATranslationResult } from "../epvsa";
+import { translatePrioritizationToEPVSA } from "../epvsa";
 
 export interface MunicipalityRuntime {
   workspace: MunicipalityWorkspace;
@@ -18,6 +20,7 @@ export interface MunicipalityRuntime {
   lt1: LT1Result;
   oit: OITResult;
   prioritization: PrioritizationResult;
+  epvsa: EPVSATranslationResult;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -37,6 +40,7 @@ export function createMunicipalityRuntime(
 
   const lt1 = generateLT1(input.evidenceStore);
   const oit = generateOIT(lt1);
+  const prioritization = generatePrioritization(oit);
 
   return {
     workspace,
@@ -45,6 +49,7 @@ export function createMunicipalityRuntime(
     pipeline: createEmptyPipelineResult(workspace),
     lt1,
     oit,
-    prioritization: generatePrioritization(oit),
+    prioritization,
+    epvsa: translatePrioritizationToEPVSA(prioritization),
   };
 }
