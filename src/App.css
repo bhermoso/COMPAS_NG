@@ -194,6 +194,12 @@ h3 {
   color: #0074c8;
   font-size: 0.82rem;
   font-weight: 800;
+  white-space: nowrap;
+}
+
+.status-pill--partial {
+  background: #fff7e6;
+  color: #b45309;
 }
 
 @media (max-width: 900px) {

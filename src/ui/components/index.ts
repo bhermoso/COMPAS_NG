@@ -1,5 +1,6 @@
 export * from "./DocumentIngestionPanel";
 export * from "./EvidenceStorePanel";
+export * from "./PipelineTracePanel";
 export * from "./LT1Panel";
 export * from "./OITPanel";
 export * from "./PrioritizationPanel";

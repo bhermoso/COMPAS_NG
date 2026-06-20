@@ -11,6 +11,7 @@ import { ingestManualDocument } from "./application/document-ingestion";
 import {
   DocumentIngestionPanel,
   EvidenceStorePanel,
+  PipelineTracePanel,
   LT1Panel,
   OITPanel,
   PrioritizationPanel,
@@ -120,15 +121,12 @@ export default function App() {
 
         <article className="card">
           <h2>Pipeline</h2>
-          <ol>
-            {runtime.pipeline.trace.map((item) => (
-              <li key={`${item.stage}-${item.createdAt}`}>
-                <strong>{item.stage}</strong>: {item.status}
-              </li>
-            ))}
-          </ol>
+          <p><strong>{runtime.pipeline.trace.length}</strong> etapas ejecutadas.</p>
+          <p>Ver traza completa en el panel inferior.</p>
         </article>
       </section>
+
+      <PipelineTracePanel pipeline={runtime.pipeline} />
 
       <DocumentIngestionPanel
         documentKinds={DOCUMENT_KINDS}
