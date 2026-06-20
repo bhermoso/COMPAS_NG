@@ -6,3 +6,4 @@ export * from "./PrioritizationPanel";
 export * from "./EPVSAPanel";
 export * from "./ActionPlanPanel";
 export * from "./AgendaPanel";
+export * from "./MonitoringPanel";

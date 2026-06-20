@@ -15,6 +15,8 @@ import type { ActionPlanDraft } from "../action-plan";
 import { generateActionPlanDraft } from "../action-plan";
 import type { AgendaDraft } from "../agenda";
 import { generateAgendaDraft } from "../agenda";
+import type { MonitoringDraft } from "../monitoring";
+import { generateMonitoringDraft } from "../monitoring";
 
 export interface MunicipalityRuntime {
   workspace: MunicipalityWorkspace;
@@ -27,6 +29,7 @@ export interface MunicipalityRuntime {
   epvsa: EPVSATranslationResult;
   actionPlan: ActionPlanDraft;
   agenda: AgendaDraft;
+  monitoring: MonitoringDraft;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -61,5 +64,6 @@ export function createMunicipalityRuntime(
     epvsa,
     actionPlan,
     agenda: generateAgendaDraft(actionPlan),
+    monitoring: generateMonitoringDraft(generateAgendaDraft(actionPlan)),
   };
 }
