@@ -59,6 +59,8 @@ export default function App() {
     [workspace]
   );
 
+  const pipelineIsEmpty = runtime.workspace.evidenceStore.atoms.length === 0;
+
   function handleProcessDocument() {
     const result = ingestManualDocument({
       repository: workspace.repository,
@@ -151,11 +153,11 @@ export default function App() {
 
       <EPVSAPanel epvsa={runtime.epvsa} />
 
-      <ActionPlanPanel actionPlan={runtime.actionPlan} />
+      <ActionPlanPanel actionPlan={runtime.actionPlan} isEmpty={pipelineIsEmpty} />
 
-      <AgendaPanel agenda={runtime.agenda} />
+      <AgendaPanel agenda={runtime.agenda} isEmpty={pipelineIsEmpty} />
 
-      <MonitoringPanel monitoring={runtime.monitoring} />
+      <MonitoringPanel monitoring={runtime.monitoring} isEmpty={pipelineIsEmpty} />
     </main>
   );
 }

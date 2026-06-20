@@ -207,6 +207,21 @@ h3 {
   color: #64748b;
 }
 
+.pipeline-empty-notice {
+  margin: 0 0 24px;
+  padding: 18px 22px;
+  border: 1px solid #cbd5e1;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.pipeline-empty-notice strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #334155;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     padding: 24px;

@@ -2,9 +2,10 @@ import type { AgendaDraft } from "../../application/agenda";
 
 interface AgendaPanelProps {
   agenda: AgendaDraft;
+  isEmpty?: boolean;
 }
 
-export function AgendaPanel({ agenda }: AgendaPanelProps) {
+export function AgendaPanel({ agenda, isEmpty = false }: AgendaPanelProps) {
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -18,26 +19,35 @@ export function AgendaPanel({ agenda }: AgendaPanelProps) {
         </p>
       </div>
 
-      <div className="document-list">
-        {agenda.annualItems.map((item) => (
-          <article className="document-row" key={item.id}>
-            <div>
-              <p className="document-kind">{item.suggestedQuarter}</p>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-              <p className="panel-note">
-                Perfil responsable: {item.responsibleProfile}
-              </p>
-              <ul>
-                {item.cautions.map((caution) => (
-                  <li key={caution}>{caution}</li>
-                ))}
-              </ul>
-            </div>
-            <span className="status-pill">borrador</span>
-          </article>
-        ))}
-      </div>
+      {isEmpty ? (
+        <div className="pipeline-empty-notice">
+          <strong>Sin evidencia documental</strong>
+          Esta agenda ha sido generada sobre un pipeline sin evidencia.
+          Los ítems mostrados no representan compromisos ejecutivos ni calendarios reales.
+          Incorpora documentos al repositorio para obtener una agenda basada en el Plan de Acción.
+        </div>
+      ) : (
+        <div className="document-list">
+          {agenda.annualItems.map((item) => (
+            <article className="document-row" key={item.id}>
+              <div>
+                <p className="document-kind">{item.suggestedQuarter}</p>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+                <p className="panel-note">
+                  Perfil responsable: {item.responsibleProfile}
+                </p>
+                <ul>
+                  {item.cautions.map((caution) => (
+                    <li key={caution}>{caution}</li>
+                  ))}
+                </ul>
+              </div>
+              <span className="status-pill">borrador</span>
+            </article>
+          ))}
+        </div>
+      )}
 
       <article className="card">
         <h3>Cautelas de agenda</h3>

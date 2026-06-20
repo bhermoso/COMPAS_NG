@@ -2,9 +2,10 @@ import type { ActionPlanDraft } from "../../application/action-plan";
 
 interface ActionPlanPanelProps {
   actionPlan: ActionPlanDraft;
+  isEmpty?: boolean;
 }
 
-export function ActionPlanPanel({ actionPlan }: ActionPlanPanelProps) {
+export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanelProps) {
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -18,49 +19,60 @@ export function ActionPlanPanel({ actionPlan }: ActionPlanPanelProps) {
         </p>
       </div>
 
-      <article className="card">
-        <h3>Objetivos</h3>
-        <ul>
-          {actionPlan.objectives.map((objective) => (
-            <li key={objective.id}>
-              <strong>{objective.title}</strong> · {objective.linkedStrategicLine}
-            </li>
-          ))}
-        </ul>
-      </article>
-
-      <div className="document-list">
-        {actionPlan.actions.map((action) => (
-          <article className="document-row" key={action.id}>
-            <div>
-              <p className="document-kind">Actuación</p>
-              <h3>{action.title}</h3>
-              <p>{action.description}</p>
-              <p className="panel-note">
-                Evidencias relacionadas: {action.relatedEvidenceIds.length}
-              </p>
-              <ul>
-                {action.cautions.map((caution) => (
-                  <li key={caution}>{caution}</li>
-                ))}
-              </ul>
-            </div>
-            <span className="status-pill">borrador</span>
+      {isEmpty ? (
+        <div className="pipeline-empty-notice">
+          <strong>Sin evidencia documental</strong>
+          Este borrador de Plan de Acción ha sido generado sobre un pipeline sin evidencia.
+          Los objetivos y actuaciones mostrados no representan intervenciones reales.
+          Incorpora documentos al repositorio para generar un plan basado en evidencia territorial.
+        </div>
+      ) : (
+        <>
+          <article className="card">
+            <h3>Objetivos</h3>
+            <ul>
+              {actionPlan.objectives.map((objective) => (
+                <li key={objective.id}>
+                  <strong>{objective.title}</strong> · {objective.linkedStrategicLine}
+                </li>
+              ))}
+            </ul>
           </article>
-        ))}
-      </div>
 
-      <article className="card">
-        <h3>Indicadores preliminares</h3>
-        <ul>
-          {actionPlan.indicators.map((indicator) => (
-            <li key={indicator.id}>
-              <strong>{indicator.title}</strong> ({indicator.type}) ·{" "}
-              {indicator.measurementNote}
-            </li>
-          ))}
-        </ul>
-      </article>
+          <div className="document-list">
+            {actionPlan.actions.map((action) => (
+              <article className="document-row" key={action.id}>
+                <div>
+                  <p className="document-kind">Actuación</p>
+                  <h3>{action.title}</h3>
+                  <p>{action.description}</p>
+                  <p className="panel-note">
+                    Evidencias relacionadas: {action.relatedEvidenceIds.length}
+                  </p>
+                  <ul>
+                    {action.cautions.map((caution) => (
+                      <li key={caution}>{caution}</li>
+                    ))}
+                  </ul>
+                </div>
+                <span className="status-pill">borrador</span>
+              </article>
+            ))}
+          </div>
+
+          <article className="card">
+            <h3>Indicadores preliminares</h3>
+            <ul>
+              {actionPlan.indicators.map((indicator) => (
+                <li key={indicator.id}>
+                  <strong>{indicator.title}</strong> ({indicator.type}) ·{" "}
+                  {indicator.measurementNote}
+                </li>
+              ))}
+            </ul>
+          </article>
+        </>
+      )}
 
       <article className="card">
         <h3>Cautelas</h3>
