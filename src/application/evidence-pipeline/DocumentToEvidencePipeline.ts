@@ -37,7 +37,7 @@ export function transformDocumentToEvidence(
       id: `${input.document.id}-atom-${index + 1}`,
       municipalityId: input.store.municipalityId,
       kind,
-      title: extractAtomTitle(content, kind, index + 1),
+      title: resolveAtomTitle(content, kind, input.document.kind, index + 1),
       content,
       provenance: {
         origin: mapDocumentKindToEvidenceOrigin(input.document.kind),
@@ -72,6 +72,12 @@ function classifyEvidenceKind(
   text: string,
   documentKind: MunicipalDocument["kind"]
 ): EvidenceAtomKind {
+  // Para localiza-salud y community-asset el tipo documental es un prior absoluto:
+  // todas sus líneas son activos comunitarios, sin excepción textual.
+  if (documentKind === "localiza-salud" || documentKind === "community-asset") {
+    return "asset";
+  }
+
   const normalized = text.toLowerCase();
 
   // Heurística textual — tiene prioridad sobre el tipo de documento
@@ -130,10 +136,6 @@ function classifyEvidenceKind(
 
   // Fallback semántico: el tipo de documento es un prior fuerte
   // cuando el texto no contiene patrones reconocibles
-  if (documentKind === "community-asset" || documentKind === "localiza-salud") {
-    return "asset";
-  }
-
   if (documentKind === "eas-variable" || documentKind === "cmi-indicator") {
     return "indicator";
   }
@@ -143,6 +145,52 @@ function classifyEvidenceKind(
   }
 
   return "qualitative-observation";
+}
+
+function resolveAtomTitle(
+  content: string,
+  kind: EvidenceAtomKind,
+  documentKind: MunicipalDocument["kind"],
+  index: number
+): string {
+  if (documentKind === "localiza-salud") {
+    return extractLocalizaSaludTitle(content, index);
+  }
+  return extractAtomTitle(content, kind, index);
+}
+
+function extractLocalizaSaludTitle(content: string, index: number): string {
+  if (content.includes("|")) {
+    const first = content.split("|")[0].trim();
+    if (first.length > 0) return first;
+  }
+
+  if (content.includes("\t")) {
+    const first = content.split("\t")[0].trim();
+    if (first.length > 0) return first;
+  }
+
+  // Patrones que inician la descripción en Localiza Salud (no son nombres de activo)
+  const lowerContent = content.toLowerCase();
+  const descriptionStarters = [
+    "los centros",
+    "grupos de",
+    "piscina pública",
+    "los puntos",
+    "en este taller",
+    "las piscinas",
+    "este centro",
+    "este taller",
+  ];
+  for (const starter of descriptionStarters) {
+    const idx = lowerContent.indexOf(starter);
+    if (idx > 0) {
+      const candidate = content.slice(0, idx).trim();
+      if (candidate.length > 0) return candidate;
+    }
+  }
+
+  return buildTitle("asset", index);
 }
 
 function extractAtomTitle(
