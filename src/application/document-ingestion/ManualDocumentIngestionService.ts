@@ -1,0 +1,68 @@
+import {
+  addMunicipalDocument,
+  type DocumentKind,
+  type MunicipalDocument,
+  type MunicipalDocumentRepository,
+} from "../../domain/repository";
+import type { EvidenceStore } from "../../domain/evidence";
+import { transformDocumentToEvidence } from "../evidence-pipeline";
+
+export interface IngestManualDocumentInput {
+  repository: MunicipalDocumentRepository;
+  evidenceStore: EvidenceStore;
+  kind: DocumentKind;
+  title: string;
+  plainText: string;
+}
+
+export interface IngestManualDocumentResult {
+  repository: MunicipalDocumentRepository;
+  evidenceStore: EvidenceStore;
+  document: MunicipalDocument;
+  atomsCreated: number;
+}
+
+export function ingestManualDocument(
+  input: IngestManualDocumentInput
+): IngestManualDocumentResult | null {
+  const cleanTitle = input.title.trim();
+  const cleanText = input.plainText.trim();
+
+  if (cleanTitle.length === 0 || cleanText.length === 0) {
+    return null;
+  }
+
+  const documentId = crypto.randomUUID();
+
+  const nextRepository = addMunicipalDocument(input.repository, {
+    id: documentId,
+    kind: input.kind,
+    title: cleanTitle,
+    source: {
+      system: "Entrada manual inicial",
+      collectedAt: new Date().toISOString(),
+    },
+    tags: [input.kind],
+  });
+
+  const registeredDocument = nextRepository.documents.find(
+    (document) => document.id === documentId
+  );
+
+  if (registeredDocument === undefined) {
+    return null;
+  }
+
+  const evidenceResult = transformDocumentToEvidence({
+    store: input.evidenceStore,
+    document: registeredDocument,
+    plainText: cleanText,
+  });
+
+  return {
+    repository: nextRepository,
+    evidenceStore: evidenceResult.store,
+    document: registeredDocument,
+    atomsCreated: evidenceResult.atomsCreated.length,
+  };
+}

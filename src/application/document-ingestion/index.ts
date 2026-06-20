@@ -1,1 +1,1 @@
-export * from "./DocumentIngestionService";
+export * from "./ManualDocumentIngestionService";

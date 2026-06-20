@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-  addMunicipalDocument,
   type DocumentKind,
   type MunicipalDocument,
   type MunicipalDocumentRepository,
@@ -11,7 +10,7 @@ import {
 } from "./domain/evidence";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createEmptyPipelineResult } from "./domain/pipeline";
-import { transformDocumentToEvidence } from "./application/evidence-pipeline";
+import { ingestManualDocument } from "./application/document-ingestion";
 import { generateLT1 } from "./application/lt1";
 import {
   DocumentIngestionPanel,
@@ -70,39 +69,19 @@ export default function App() {
   const lt1 = generateLT1(evidenceStore);
 
   function handleProcessDocument() {
-    const cleanTitle = title.trim();
-    const cleanText = plainText.trim();
-
-    if (!cleanTitle || !cleanText) return;
-
-    const documentId = crypto.randomUUID();
-
-    const nextRepository = addMunicipalDocument(repository, {
-      id: documentId,
+    const result = ingestManualDocument({
+      repository,
+      evidenceStore,
       kind,
-      title: cleanTitle,
-      source: {
-        system: "Entrada manual inicial",
-        collectedAt: new Date().toISOString(),
-      },
-      tags: [kind],
+      title,
+      plainText,
     });
 
-    const registeredDocument = nextRepository.documents.find(
-      (document) => document.id === documentId
-    );
+    if (result === null) return;
 
-    if (!registeredDocument) return;
-
-    const result = transformDocumentToEvidence({
-      store: evidenceStore,
-      document: registeredDocument,
-      plainText: cleanText,
-    });
-
-    setRepository(nextRepository);
-    setEvidenceStore(result.store);
-    setLastProcessedDocument(registeredDocument);
+    setRepository(result.repository);
+    setEvidenceStore(result.evidenceStore);
+    setLastProcessedDocument(result.document);
     setTitle("");
     setPlainText("");
   }
