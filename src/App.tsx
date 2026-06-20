@@ -12,6 +12,7 @@ import { ingestManualDocument } from "./application/document-ingestion";
 import {
   DocumentIngestionPanel,
   EvidenceStorePanel,
+  HealthReportViewer,
   PipelineTracePanel,
   LT1Panel,
   OITPanel,
@@ -393,6 +394,9 @@ export default function App() {
             />
             <EvidenceStorePanel
               evidenceStore={runtime.workspace.evidenceStore}
+            />
+            <HealthReportViewer
+              healthReport={runtime.workspace.healthReports?.[0]}
             />
           </>
         )}
