@@ -2,16 +2,12 @@ import { useMemo, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
-  type MunicipalDocumentRepository,
 } from "./domain/repository";
-import {
-  createEvidenceStore,
-  type EvidenceStore,
-} from "./domain/evidence";
+import { type MunicipalityWorkspace } from "./domain/workspace";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
- 
+
 import {
   DocumentIngestionPanel,
   EvidenceStorePanel,
@@ -48,12 +44,8 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
 ];
 
 export default function App() {
-  const [repository, setRepository] =
-    useState<MunicipalDocumentRepository>(INITIAL_WORKSPACE.repository);
-
-  const [evidenceStore, setEvidenceStore] = useState<EvidenceStore>(
-    createEvidenceStore(INITIAL_WORKSPACE.municipality.identity.id)
-  );
+  const [workspace, setWorkspace] =
+    useState<MunicipalityWorkspace>(INITIAL_WORKSPACE);
 
   const [title, setTitle] = useState("");
   const [plainText, setPlainText] = useState("");
@@ -62,19 +54,14 @@ export default function App() {
     useState<MunicipalDocument | null>(null);
 
   const runtime = useMemo(
-    () =>
-      createMunicipalityRuntime({
-        workspace: INITIAL_WORKSPACE,
-        repository,
-        evidenceStore,
-      }),
-    [repository, evidenceStore]
+    () => createMunicipalityRuntime({ workspace }),
+    [workspace]
   );
 
   function handleProcessDocument() {
     const result = ingestManualDocument({
-      repository,
-      evidenceStore,
+      repository: workspace.repository,
+      evidenceStore: workspace.evidenceStore,
       kind,
       title,
       plainText,
@@ -82,8 +69,12 @@ export default function App() {
 
     if (result === null) return;
 
-    setRepository(result.repository);
-    setEvidenceStore(result.evidenceStore);
+    setWorkspace((prev) => ({
+      ...prev,
+      repository: result.repository,
+      evidenceStore: result.evidenceStore,
+      updatedAt: new Date().toISOString(),
+    }));
     setLastProcessedDocument(result.document);
     setTitle("");
     setPlainText("");
@@ -111,13 +102,19 @@ export default function App() {
 
         <article className="card">
           <h2>Repositorio documental</h2>
-          <p><strong>{runtime.repository.documents.length}</strong> documentos registrados</p>
+          <p>
+            <strong>{runtime.workspace.repository.documents.length}</strong>{" "}
+            documentos registrados
+          </p>
           <p>Entrada única municipal de evidencias.</p>
         </article>
 
         <article className="card">
           <h2>EvidenceStore</h2>
-          <p><strong>{evidenceStore.atoms.length}</strong> EvidenceAtom</p>
+          <p>
+            <strong>{runtime.workspace.evidenceStore.atoms.length}</strong>{" "}
+            EvidenceAtom
+          </p>
           <p>Unidad canónica de conocimiento para motores.</p>
         </article>
 
@@ -135,7 +132,7 @@ export default function App() {
 
       <DocumentIngestionPanel
         documentKinds={DOCUMENT_KINDS}
-        repository={repository}
+        repository={runtime.workspace.repository}
         kind={kind}
         title={title}
         plainText={plainText}
@@ -146,7 +143,7 @@ export default function App() {
         onProcessDocument={handleProcessDocument}
       />
 
-      <EvidenceStorePanel evidenceStore={evidenceStore} />
+      <EvidenceStorePanel evidenceStore={runtime.workspace.evidenceStore} />
 
       <LT1Panel lt1={runtime.lt1} />
 

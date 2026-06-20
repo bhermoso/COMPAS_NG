@@ -1,5 +1,4 @@
 import type { MunicipalityWorkspace } from "../workspace";
-import type { EvidenceGraph } from "../evidence";
 
 export type PipelineStage =
   | "repository"
@@ -67,7 +66,6 @@ export interface ActionPlanDraft {
 
 export interface CompasPipelineResult {
   workspace: MunicipalityWorkspace;
-  evidence: EvidenceGraph;
   lt1: TerritorialReading | null;
   oit: TerritorialInterventionOpportunity[];
   prioritization: PrioritizationProposal | null;
@@ -83,7 +81,6 @@ export function createEmptyPipelineResult(
 
   return {
     workspace,
-    evidence: workspace.evidence,
     lt1: null,
     oit: [],
     prioritization: null,

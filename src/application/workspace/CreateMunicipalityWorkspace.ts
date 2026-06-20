@@ -8,7 +8,7 @@ import {
 } from "../../domain/repository";
 
 import {
-  createEvidenceGraph,
+  createEvidenceStore,
 } from "../../domain/evidence";
 
 import {
@@ -19,20 +19,17 @@ import {
 export function createCompleteMunicipalityWorkspace(
   input: CreateMunicipalityContextInput
 ): MunicipalityWorkspace {
-
   const municipality = createMunicipalityContext(input);
 
   const repository = createMunicipalDocumentRepository({
     municipalityId: municipality.identity.id,
   });
 
-  const evidence = createEvidenceGraph({
-    municipalityId: municipality.identity.id,
-  });
+  const evidenceStore = createEvidenceStore(municipality.identity.id);
 
   return createMunicipalityWorkspace(
     municipality,
     repository,
-    evidence
+    evidenceStore
   );
 }

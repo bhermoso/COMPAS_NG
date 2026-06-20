@@ -1,11 +1,11 @@
 import type { MunicipalityContext } from "../municipality";
 import type { MunicipalDocumentRepository } from "../repository";
-import type { EvidenceGraph } from "../evidence";
+import type { EvidenceStore } from "../evidence";
 
 export interface MunicipalityWorkspace {
   municipality: MunicipalityContext;
   repository: MunicipalDocumentRepository;
-  evidence: EvidenceGraph;
+  evidenceStore: EvidenceStore;
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;
@@ -14,14 +14,14 @@ export interface MunicipalityWorkspace {
 export function createMunicipalityWorkspace(
   municipality: MunicipalityContext,
   repository: MunicipalDocumentRepository,
-  evidence: EvidenceGraph
+  evidenceStore: EvidenceStore
 ): MunicipalityWorkspace {
   const now = new Date().toISOString();
 
   return {
     municipality,
     repository,
-    evidence,
+    evidenceStore,
     schemaVersion: "1.0.0",
     createdAt: now,
     updatedAt: now,
