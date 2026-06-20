@@ -29,16 +29,3 @@ export interface PipelineTraceItem {
 export interface CompasPipelineResult {
   trace: PipelineTraceItem[];
 }
-
-export function createEmptyPipelineResult(): CompasPipelineResult {
-  return {
-    trace: [
-      {
-        stage: "repository",
-        status: "ready",
-        message: "Workspace municipal creado como raíz del pipeline.",
-        createdAt: new Date().toISOString(),
-      },
-    ],
-  };
-}
