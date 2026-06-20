@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
@@ -10,6 +10,10 @@ import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
 import { createHealthReportDocumentFromDocx } from "./application/health-report";
+import {
+  saveWorkspaceToLocalStorage,
+  loadWorkspaceFromLocalStorage,
+} from "./infrastructure/persistence/local-storage";
 
 import {
   DocumentIngestionPanel,
@@ -66,9 +70,13 @@ export default function App() {
   const [view, setView] = useState<AppView>("inicio");
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
 
-  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(
-    () => createCompleteMunicipalityWorkspace(DEMO_MUNICIPALITIES[0])
-  );
+  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(() => {
+    const defaultMuni = DEMO_MUNICIPALITIES[0];
+    return (
+      loadWorkspaceFromLocalStorage(defaultMuni.id) ??
+      createCompleteMunicipalityWorkspace(defaultMuni)
+    );
+  });
 
   const [title, setTitle] = useState("");
   const [plainText, setPlainText] = useState("");
@@ -78,6 +86,10 @@ export default function App() {
   const [lastAtomCount, setLastAtomCount] = useState<number>(0);
   const [isLoadingHealthReport, setIsLoadingHealthReport] = useState(false);
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveWorkspaceToLocalStorage(workspace);
+  }, [workspace]);
 
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
@@ -159,7 +171,10 @@ export default function App() {
     const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
     if (demo === undefined) return;
 
-    setWorkspace(createCompleteMunicipalityWorkspace(demo));
+    setWorkspace(
+      loadWorkspaceFromLocalStorage(municipalityId) ??
+      createCompleteMunicipalityWorkspace(demo)
+    );
     setTitle("");
     setPlainText("");
     setKind("health-report");
