@@ -222,6 +222,106 @@ h3 {
   color: #334155;
 }
 
+/* ── Home institucional ─────────────────────────────────── */
+
+.compas-brand-row {
+  display: flex;
+  align-items: flex-start;
+  margin: 14px 0 0;
+}
+
+.compas-wordmark {
+  font-size: clamp(4.4rem, 11vw, 8.8rem);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.93;
+  margin: 0;
+  max-width: none;
+  background: linear-gradient(
+    90deg,
+    #0074c8 0%,
+    #00acd9 20%,
+    #94d40b 42%,
+    #ffb61b 60%,
+    #ff6600 80%,
+    #dc143c 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.compas-ng-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  background: #172033;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  border-radius: 7px;
+  margin-top: 12px;
+  margin-left: 14px;
+  align-self: flex-start;
+}
+
+.compas-hero-subtitle {
+  font-size: clamp(1.15rem, 2.6vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #172033;
+  margin: 18px 0 0;
+  line-height: 1.25;
+  max-width: 720px;
+}
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.hero-tag {
+  padding: 7px 16px;
+  border: 1px solid #d9e2ef;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #526070;
+  background: #f8fbff;
+  letter-spacing: 0.01em;
+}
+
+/* ── Divisor espacio de trabajo ─────────────────────────── */
+
+.workspace-divider {
+  max-width: 1120px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 4px;
+}
+
+.workspace-divider::before,
+.workspace-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #d9e2ef;
+}
+
+.workspace-divider-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     padding: 24px;

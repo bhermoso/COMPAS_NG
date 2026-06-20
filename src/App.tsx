@@ -85,15 +85,36 @@ export default function App() {
 
   return (
     <main className="app-shell">
+
       <section className="hero">
         <div className="gradient-bar" />
-        <p className="eyebrow">COMPÁS NG</p>
-        <h1>Infraestructura municipal para Planes Locales de Salud 2027–2030</h1>
-        <p className="lead">
-          Sistema modular para integrar evidencia, activos, participación,
-          planificación estratégica, seguimiento y evaluación.
+        <p className="eyebrow">Sistema de Información para la Acción Local en Salud</p>
+        <div className="compas-brand-row">
+          <h1 className="compas-wordmark">COMPÁS</h1>
+          <span className="compas-ng-badge">NG</span>
+        </div>
+        <p className="compas-hero-subtitle">
+          Infraestructura digital para la Acción Local en Salud
         </p>
+        <p className="lead">
+          Sistema modular para la elaboración de Planes Locales de Salud 2027–2030
+          con enfoque salutogénico, comunitario y basado en activos.
+          Alineado con RELAS, EPVSA y Localiza Salud.
+        </p>
+        <div className="hero-tags">
+          <span className="hero-tag">Planes Locales de Salud 2027–2030</span>
+          <span className="hero-tag">Junta de Andalucía</span>
+          <span className="hero-tag">RELAS · EPVSA</span>
+          <span className="hero-tag">Localiza Salud</span>
+          <span className="hero-tag">Salud comunitaria y activos</span>
+        </div>
       </section>
+
+      <div className="workspace-divider">
+        <span className="workspace-divider-label">
+          Espacio de trabajo — {runtime.workspace.municipality.identity.name}
+        </span>
+      </div>
 
       <section className="grid">
         <article className="card">
