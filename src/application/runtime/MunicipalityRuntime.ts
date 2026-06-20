@@ -2,7 +2,7 @@ import type { MunicipalityWorkspace } from "../../domain/workspace";
 import type { MunicipalDocumentRepository } from "../../domain/repository";
 import type { EvidenceStore } from "../../domain/evidence";
 import type { CompasPipelineResult } from "../../domain/pipeline";
-import { createEmptyCompasPipelineResult } from "../../domain/pipeline";
+import { createEmptyPipelineResult } from "../../domain/pipeline";
 import type { LT1Result } from "../lt1";
 import { generateLT1 } from "../lt1";
 
@@ -33,7 +33,7 @@ export function createMunicipalityRuntime(
     workspace,
     repository: input.repository,
     evidenceStore: input.evidenceStore,
-    pipeline: createEmptyCompasPipelineResult(workspace),
+    pipeline: createEmptyPipelineResult(workspace),
     lt1: generateLT1(input.evidenceStore),
   };
 }
