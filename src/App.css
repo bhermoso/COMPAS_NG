@@ -720,6 +720,26 @@ h3 {
   color: #94a3b8;
 }
 
+.document-row--primary {
+  border-color: #0074c8;
+  border-left-width: 3px;
+  background: #f4f9ff;
+}
+
+.doc-repo__primary-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #0074c8;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
 /* ── Carga DOCX Informe de Salud ───────────────────────── */
 
 .docx-upload {
