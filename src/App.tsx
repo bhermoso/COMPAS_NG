@@ -71,7 +71,7 @@ export default function App() {
 
   const [title, setTitle] = useState("");
   const [plainText, setPlainText] = useState("");
-  const [kind, setKind] = useState<DocumentKind>("health-report");
+  const [kind, setKind] = useState<DocumentKind>("territorial-documentation");
   const [lastProcessedDocument, setLastProcessedDocument] =
     useState<MunicipalDocument | null>(null);
   const [lastAtomCount, setLastAtomCount] = useState<number>(0);
@@ -115,18 +115,21 @@ export default function App() {
       const arrayBuffer = await file.arrayBuffer();
       const documentId = crypto.randomUUID();
       const docTitle = file.name.replace(/\.docx$/i, "").replace(/_/g, " ");
+      const municipalityId = workspace.municipality.identity.id;
 
-      const nextRepository = addMunicipalDocument(workspace.repository, {
+      // newDocInput se prepara antes del await largo, pero se aplica sobre
+      // prev.repository dentro del updater para no sobreescribir cambios concurrentes.
+      const newDocInput = {
         id: documentId,
-        kind: "health-report",
+        kind: "health-report" as const,
         title: docTitle,
         source: { system: "Carga directa DOCX", collectedAt: new Date().toISOString() },
         tags: ["health-report"],
-      });
+      };
 
       const healthReport = await createHealthReportDocumentFromDocx({
         arrayBuffer,
-        municipalityId: workspace.municipality.identity.id,
+        municipalityId,
         linkedDocumentId: documentId,
         sourceFileName: file.name,
         title: docTitle,
@@ -135,7 +138,7 @@ export default function App() {
 
       setWorkspace((prev) => ({
         ...prev,
-        repository: nextRepository,
+        repository: addMunicipalDocument(prev.repository, newDocInput),
         healthReports: [healthReport],
         updatedAt: new Date().toISOString(),
       }));
