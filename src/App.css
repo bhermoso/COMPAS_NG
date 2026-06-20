@@ -791,6 +791,78 @@ h3 {
   cursor: not-allowed;
 }
 
+/* ── IBSE Panel ─────────────────────────────────────────── */
+
+.ibse-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.ibse-aggregates {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ibse-aggregates__meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #526070;
+}
+
+.ibse-aggregates__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.ibse-factor-card {
+  background: #f8fbff;
+  border: 1px solid #e4eaf3;
+  border-radius: 10px;
+  padding: 18px 16px;
+  text-align: center;
+}
+
+.ibse-factor-card--total {
+  background: #eef6ff;
+  border-color: #0074c8;
+}
+
+.ibse-factor-card__label {
+  margin: 0 0 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.ibse-factor-card--total .ibse-factor-card__label {
+  color: #0074c8;
+}
+
+.ibse-factor-card__value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: #172033;
+  line-height: 1;
+}
+
+.ibse-factor-card--total .ibse-factor-card__value {
+  color: #0074c8;
+}
+
+@media (max-width: 900px) {
+  .ibse-aggregates__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* ── Informe de Salud Viewer ───────────────────────────── */
 
 .hr-viewer {

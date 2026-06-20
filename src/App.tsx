@@ -10,6 +10,8 @@ import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
 import { createHealthReportDocumentFromDocx } from "./application/health-report";
+import { parseIBSECSV } from "./application/ibse";
+import { createIBSEStudy } from "./domain/ibse";
 import {
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
@@ -20,6 +22,7 @@ import {
   DocumentRepositoryPanel,
   EvidenceStorePanel,
   HealthReportViewer,
+  IBSEPanel,
   PipelineTracePanel,
   LT1Panel,
   OITPanel,
@@ -86,6 +89,8 @@ export default function App() {
   const [lastAtomCount, setLastAtomCount] = useState<number>(0);
   const [isLoadingHealthReport, setIsLoadingHealthReport] = useState(false);
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
+  const [isLoadingIBSE, setIsLoadingIBSE] = useState(false);
+  const [ibseMessage, setIbseMessage] = useState<string | null>(null);
 
   useEffect(() => {
     saveWorkspaceToLocalStorage(workspace);
@@ -168,6 +173,34 @@ export default function App() {
     }
   }
 
+  async function handleLoadIBSECSV(file: File): Promise<void> {
+    setIsLoadingIBSE(true);
+    try {
+      const text = await file.text();
+      const { aggregates, warnings } = parseIBSECSV(text);
+      const study = createIBSEStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+      });
+      setWorkspace((prev) => ({
+        ...prev,
+        ibseStudy: study,
+        updatedAt: new Date().toISOString(),
+      }));
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setIbseMessage(
+        aggregates.nValid > 0
+          ? `IBSE cargado: ${aggregates.nValid} registros válidos · Media total: ${aggregates.meanTotal}.${warn}`
+          : `CSV procesado sin registros válidos.${warn}`
+      );
+    } catch {
+      setIbseMessage("Error al procesar el CSV. Verifica que sea una exportación REDCap válida.");
+    } finally {
+      setIsLoadingIBSE(false);
+    }
+  }
+
   function handleChangeMunicipality(municipalityId: string) {
     const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
     if (demo === undefined) return;
@@ -183,6 +216,8 @@ export default function App() {
     setLastAtomCount(0);
     setLastHealthReportMessage(null);
     setIsLoadingHealthReport(false);
+    setIbseMessage(null);
+    setIsLoadingIBSE(false);
     setShowMunicipalitySelector(false);
   }
 
@@ -470,6 +505,12 @@ export default function App() {
             />
             <HealthReportViewer
               healthReport={runtime.workspace.healthReports?.[0]}
+            />
+            <IBSEPanel
+              ibseStudy={runtime.workspace.ibseStudy}
+              isLoading={isLoadingIBSE}
+              message={ibseMessage}
+              onLoadCSV={handleLoadIBSECSV}
             />
           </>
         )}
