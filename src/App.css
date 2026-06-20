@@ -695,6 +695,53 @@ h3 {
   white-space: nowrap;
 }
 
+/* ── Carga DOCX Informe de Salud ───────────────────────── */
+
+.docx-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.docx-upload__kind {
+  border: 1px solid #c9d6e6;
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  align-self: flex-start;
+}
+
+.docx-upload__zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px dashed #c9d6e6;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.docx-upload__label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.docx-upload__input {
+  font: inherit;
+  font-size: 0.88rem;
+  color: #526070;
+  cursor: pointer;
+}
+
+.docx-upload__input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ── Informe de Salud Viewer ───────────────────────────── */
 
 .hr-viewer__header {

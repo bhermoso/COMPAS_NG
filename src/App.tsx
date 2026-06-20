@@ -2,12 +2,14 @@ import { useMemo, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
+  addMunicipalDocument,
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
+import { createHealthReportDocumentFromDocx } from "./application/health-report";
 
 import {
   DocumentIngestionPanel,
@@ -73,6 +75,8 @@ export default function App() {
   const [lastProcessedDocument, setLastProcessedDocument] =
     useState<MunicipalDocument | null>(null);
   const [lastAtomCount, setLastAtomCount] = useState<number>(0);
+  const [isLoadingHealthReport, setIsLoadingHealthReport] = useState(false);
+  const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
 
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
@@ -105,6 +109,48 @@ export default function App() {
     setPlainText("");
   }
 
+  async function handleLoadHealthReport(file: File): Promise<void> {
+    setIsLoadingHealthReport(true);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const documentId = crypto.randomUUID();
+      const docTitle = file.name.replace(/\.docx$/i, "").replace(/_/g, " ");
+
+      const nextRepository = addMunicipalDocument(workspace.repository, {
+        id: documentId,
+        kind: "health-report",
+        title: docTitle,
+        source: { system: "Carga directa DOCX", collectedAt: new Date().toISOString() },
+        tags: ["health-report"],
+      });
+
+      const healthReport = await createHealthReportDocumentFromDocx({
+        arrayBuffer,
+        municipalityId: workspace.municipality.identity.id,
+        linkedDocumentId: documentId,
+        sourceFileName: file.name,
+        title: docTitle,
+        authors: [],
+      });
+
+      setWorkspace((prev) => ({
+        ...prev,
+        repository: nextRepository,
+        healthReports: [healthReport],
+        updatedAt: new Date().toISOString(),
+      }));
+      setLastHealthReportMessage(
+        "Informe de Salud cargado y preservado como documento literal."
+      );
+    } catch {
+      setLastHealthReportMessage(
+        "Error al cargar el informe. Comprueba que el fichero sea un .docx válido."
+      );
+    } finally {
+      setIsLoadingHealthReport(false);
+    }
+  }
+
   function handleChangeMunicipality(municipalityId: string) {
     const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
     if (demo === undefined) return;
@@ -115,6 +161,8 @@ export default function App() {
     setKind("health-report");
     setLastProcessedDocument(null);
     setLastAtomCount(0);
+    setLastHealthReportMessage(null);
+    setIsLoadingHealthReport(false);
     setShowMunicipalitySelector(false);
   }
 
@@ -387,10 +435,13 @@ export default function App() {
               plainText={plainText}
               lastProcessedDocument={lastProcessedDocument}
               atomsCreated={lastAtomCount}
+              isLoadingHealthReport={isLoadingHealthReport}
+              healthReportMessage={lastHealthReportMessage}
               onKindChange={setKind}
               onTitleChange={setTitle}
               onPlainTextChange={setPlainText}
               onProcessDocument={handleProcessDocument}
+              onLoadHealthReport={handleLoadHealthReport}
             />
             <EvidenceStorePanel
               evidenceStore={runtime.workspace.evidenceStore}
