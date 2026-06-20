@@ -44,7 +44,7 @@ export function createMunicipalityRuntime(
 
   return {
     workspace: input.workspace,
-    pipeline: createEmptyPipelineResult(input.workspace),
+    pipeline: createEmptyPipelineResult(),
     lt1,
     oit,
     prioritization,
