@@ -71,6 +71,7 @@ export default function App() {
   const [kind, setKind] = useState<DocumentKind>("health-report");
   const [lastProcessedDocument, setLastProcessedDocument] =
     useState<MunicipalDocument | null>(null);
+  const [lastAtomCount, setLastAtomCount] = useState<number>(0);
 
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
@@ -98,6 +99,7 @@ export default function App() {
       updatedAt: new Date().toISOString(),
     }));
     setLastProcessedDocument(result.document);
+    setLastAtomCount(result.atomsCreated);
     setTitle("");
     setPlainText("");
   }
@@ -111,6 +113,7 @@ export default function App() {
     setPlainText("");
     setKind("health-report");
     setLastProcessedDocument(null);
+    setLastAtomCount(0);
     setShowMunicipalitySelector(false);
   }
 
@@ -382,6 +385,7 @@ export default function App() {
               title={title}
               plainText={plainText}
               lastProcessedDocument={lastProcessedDocument}
+              atomsCreated={lastAtomCount}
               onKindChange={setKind}
               onTitleChange={setTitle}
               onPlainTextChange={setPlainText}

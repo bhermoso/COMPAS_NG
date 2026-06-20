@@ -16,6 +16,7 @@ interface DocumentIngestionPanelProps {
   title: string;
   plainText: string;
   lastProcessedDocument: MunicipalDocument | null;
+  atomsCreated?: number;
   onKindChange: (kind: DocumentKind) => void;
   onTitleChange: (title: string) => void;
   onPlainTextChange: (plainText: string) => void;
@@ -29,6 +30,7 @@ export function DocumentIngestionPanel({
   title,
   plainText,
   lastProcessedDocument,
+  atomsCreated,
   onKindChange,
   onTitleChange,
   onPlainTextChange,
@@ -104,6 +106,9 @@ export function DocumentIngestionPanel({
         <p className="panel-note">
           Último documento registrado:{" "}
           <strong>{lastProcessedDocument.title}</strong>
+          {atomsCreated !== undefined && atomsCreated > 0 && (
+            <> · <strong>{atomsCreated}</strong> unidades de evidencia generadas — ver panel inferior</>
+          )}
         </p>
       )}
 
