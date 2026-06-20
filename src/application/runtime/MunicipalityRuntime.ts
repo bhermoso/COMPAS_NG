@@ -79,58 +79,64 @@ function buildPipelineTrace(
   const docCount = workspace.repository.documents.length;
   const atomCount = workspace.evidenceStore.atoms.length;
 
+  const hasAtoms = atomCount > 0;
+  const motorStatus = hasAtoms ? "ready" : "empty";
+
+  const evidenceStatus =
+    atomCount > 0 ? "ready" : docCount > 0 ? "partial" : "empty";
+
   const trace: PipelineTraceItem[] = [
     {
       stage: "repository",
-      status: "ready",
+      status: docCount > 0 ? "ready" : "partial",
       message: `${docCount} documento(s) en el repositorio municipal.`,
       createdAt: now,
     },
     {
       stage: "evidence",
-      status: atomCount > 0 ? "ready" : "partial",
+      status: evidenceStatus,
       message: `${atomCount} EvidenceAtom disponibles para los motores.`,
       createdAt: now,
     },
     {
       stage: "lt1",
-      status: "ready",
+      status: motorStatus,
       message: `Lectura territorial: ${stages.lt1.determinants.length} determinante(s), ${stages.lt1.assets.length} activo(s), ${stages.lt1.indicators.length} indicador(es), ${stages.lt1.methodologicalCautions.length} cautela(s).`,
       createdAt: now,
     },
     {
       stage: "oit",
-      status: "ready",
+      status: motorStatus,
       message: `${stages.oit.opportunities.length} oportunidad(es) inicial(es) de intervención identificadas.`,
       createdAt: now,
     },
     {
       stage: "prioritization",
-      status: "ready",
+      status: motorStatus,
       message: `${stages.prioritization.candidatePriorities.length} candidata(s) a priorización. Requieren validación humana.`,
       createdAt: now,
     },
     {
       stage: "epvsa",
-      status: "ready",
+      status: motorStatus,
       message: `${stages.epvsa.suggestions.length} sugerencia(s) de encaje estratégico. Requieren validación técnica.`,
       createdAt: now,
     },
     {
       stage: "action-plan",
-      status: "ready",
+      status: motorStatus,
       message: `${stages.actionPlan.objectives.length} objetivo(s) y ${stages.actionPlan.actions.length} actuación(es) en borrador inicial.`,
       createdAt: now,
     },
     {
       stage: "agenda",
-      status: "ready",
+      status: motorStatus,
       message: `${stages.agenda.annualItems.length} ítem(s) de agenda anual propuesto(s). Pendiente de validación.`,
       createdAt: now,
     },
     {
       stage: "monitoring",
-      status: "ready",
+      status: motorStatus,
       message: `${stages.monitoring.trackedItems.length} actuación(es) en seguimiento inicial. Estado: pendiente de validación.`,
       createdAt: now,
     },

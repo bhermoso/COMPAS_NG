@@ -14,6 +14,7 @@ export type PipelineStage =
 
 export type PipelineStatus =
   | "pending"
+  | "empty"
   | "ready"
   | "partial"
   | "blocked"

@@ -7,12 +7,19 @@ interface PipelineTracePanelProps {
 function statusLabel(status: PipelineStatus): string {
   const labels: Record<PipelineStatus, string> = {
     pending:   "pendiente",
+    empty:     "sin datos",
     ready:     "listo",
     partial:   "parcial",
     blocked:   "bloqueado",
     completed: "completado",
   };
   return labels[status];
+}
+
+function statusClass(status: PipelineStatus): string {
+  if (status === "partial") return "status-pill status-pill--partial";
+  if (status === "empty")   return "status-pill status-pill--empty";
+  return "status-pill";
 }
 
 export function PipelineTracePanel({ pipeline }: PipelineTracePanelProps) {
@@ -36,13 +43,7 @@ export function PipelineTracePanel({ pipeline }: PipelineTracePanelProps) {
               <p className="document-kind">{item.stage}</p>
               <p className="panel-note">{item.message}</p>
             </div>
-            <span
-              className={
-                item.status === "partial"
-                  ? "status-pill status-pill--partial"
-                  : "status-pill"
-              }
-            >
+            <span className={statusClass(item.status)}>
               {statusLabel(item.status)}
             </span>
           </article>
