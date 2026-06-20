@@ -30,19 +30,24 @@ select {
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
 }
 
+.hero {
+  overflow: hidden;
+}
+
 .gradient-bar {
-  height: 3px;
-  border-radius: 2px;
+  /* full-bleed: compensa el padding del hero (40px top, 44px laterales) */
+  margin: -40px -44px 32px;
+  height: 6px;
+  border-radius: 0;
   background: linear-gradient(
     90deg,
-    #0074c8,
-    #00acd9,
-    #94d40b,
-    #ffb61b,
-    #ff6600,
-    #dc143c
+    #0074c8 0%   16.66%,
+    #00acd9 16.66% 33.33%,
+    #94d40b 33.33% 50%,
+    #ffb61b 50%   66.66%,
+    #ff6600 66.66% 83.33%,
+    #dc143c 83.33% 100%
   );
-  margin-bottom: 32px;
 }
 
 .eyebrow {
@@ -275,12 +280,12 @@ h3 {
   height: 4px;
   background: linear-gradient(
     90deg,
-    #0074c8,
-    #00acd9,
-    #94d40b,
-    #ffb61b,
-    #ff6600,
-    #dc143c
+    #0074c8 0%   16.66%,
+    #00acd9 16.66% 33.33%,
+    #94d40b 33.33% 50%,
+    #ffb61b 50%   66.66%,
+    #ff6600 66.66% 83.33%,
+    #dc143c 83.33% 100%
   );
 }
 
@@ -359,14 +364,7 @@ h3 {
   line-height: 0.93;
   margin: 0;
   max-width: none;
-  background: linear-gradient(
-    135deg,
-    #0074c8 0%,
-    #0056a3 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0074c8;
 }
 
 .compas-ng-badge {
@@ -443,6 +441,10 @@ h3 {
 @media (max-width: 900px) {
   .app-shell {
     padding: 24px;
+  }
+
+  .gradient-bar {
+    margin: -24px -24px 28px;
   }
 
   .app-nav__inner {
