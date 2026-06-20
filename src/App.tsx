@@ -2,10 +2,17 @@ import { useMemo, useState } from "react";
 import {
   addMunicipalDocument,
   type DocumentKind,
+  type MunicipalDocument,
   type MunicipalDocumentRepository,
 } from "./domain/repository";
+import {
+  createEvidenceStore,
+  type EvidenceStore,
+} from "./domain/evidence";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createEmptyPipelineResult } from "./domain/pipeline";
+import { transformDocumentToEvidence } from "./application/evidence-pipeline";
+import { generateLT1 } from "./application/lt1";
 import "./App.css";
 
 const INITIAL_WORKSPACE = createCompleteMunicipalityWorkspace({
@@ -34,39 +41,65 @@ export default function App() {
   const [repository, setRepository] =
     useState<MunicipalDocumentRepository>(INITIAL_WORKSPACE.repository);
 
+  const [evidenceStore, setEvidenceStore] = useState<EvidenceStore>(
+    createEvidenceStore(INITIAL_WORKSPACE.municipality.identity.id)
+  );
+
   const [title, setTitle] = useState("");
+  const [plainText, setPlainText] = useState("");
   const [kind, setKind] = useState<DocumentKind>("health-report");
+  const [lastProcessedDocument, setLastProcessedDocument] =
+    useState<MunicipalDocument | null>(null);
 
   const workspace = useMemo(
     () => ({
       ...INITIAL_WORKSPACE,
       repository,
+      evidence: INITIAL_WORKSPACE.evidence,
       updatedAt: new Date().toISOString(),
     }),
     [repository]
   );
 
   const pipeline = createEmptyPipelineResult(workspace);
+  const lt1 = generateLT1(evidenceStore);
 
-  function handleAddDocument() {
+  function handleProcessDocument() {
     const cleanTitle = title.trim();
+    const cleanText = plainText.trim();
 
-    if (!cleanTitle) return;
+    if (!cleanTitle || !cleanText) return;
 
-    setRepository((currentRepository) =>
-      addMunicipalDocument(currentRepository, {
-        id: crypto.randomUUID(),
-        kind,
-        title: cleanTitle,
-        source: {
-          system: "Carga manual inicial",
-          collectedAt: new Date().toISOString(),
-        },
-        tags: [kind],
-      })
+    const documentId = crypto.randomUUID();
+
+    const nextRepository = addMunicipalDocument(repository, {
+      id: documentId,
+      kind,
+      title: cleanTitle,
+      source: {
+        system: "Entrada manual inicial",
+        collectedAt: new Date().toISOString(),
+      },
+      tags: [kind],
+    });
+
+    const registeredDocument = nextRepository.documents.find(
+      (document) => document.id === documentId
     );
 
+    if (!registeredDocument) return;
+
+    const result = transformDocumentToEvidence({
+      store: evidenceStore,
+      document: registeredDocument,
+      plainText: cleanText,
+    });
+
+    setRepository(nextRepository);
+    setEvidenceStore(result.store);
+    setLastProcessedDocument(registeredDocument);
     setTitle("");
+    setPlainText("");
   }
 
   return (
@@ -96,9 +129,9 @@ export default function App() {
         </article>
 
         <article className="card">
-          <h2>Grafo de evidencia</h2>
-          <p>{workspace.evidence.nodes.length} nodos</p>
-          <p>{workspace.evidence.relationships.length} relaciones</p>
+          <h2>EvidenceStore</h2>
+          <p><strong>{evidenceStore.atoms.length}</strong> EvidenceAtom</p>
+          <p>Unidad canónica de conocimiento para motores.</p>
         </article>
 
         <article className="card">
@@ -117,11 +150,11 @@ export default function App() {
         <div className="panel-header">
           <div>
             <p className="eyebrow">Repositorio Documental Municipal</p>
-            <h2>Fuentes municipales disponibles</h2>
+            <h2>Fuente manual → EvidenceAtom → LT1</h2>
           </div>
           <p className="panel-note">
-            Registra aquí las fuentes que alimentarán el Motor de Evidencia,
-            LT1, OIT, Priorización y Plan de Acción.
+            Esta primera tubería registra una fuente, transforma su texto en
+            EvidenceAtom y alimenta la lectura territorial LT1.
           </p>
         </div>
 
@@ -143,16 +176,29 @@ export default function App() {
             placeholder="Título del documento o fuente"
           />
 
-          <button type="button" onClick={handleAddDocument}>
-            Registrar fuente
+          <button type="button" onClick={handleProcessDocument}>
+            Procesar documento
           </button>
         </div>
+
+        <textarea
+          value={plainText}
+          onChange={(event) => setPlainText(event.target.value)}
+          placeholder="Pega aquí texto simulado o manual. Cada línea no vacía generará un EvidenceAtom."
+          rows={8}
+        />
+
+        {lastProcessedDocument && (
+          <p className="panel-note">
+            Última fuente procesada: <strong>{lastProcessedDocument.title}</strong>
+          </p>
+        )}
 
         <div className="document-list">
           {repository.documents.length === 0 ? (
             <p className="empty-state">
-              Aún no hay documentos registrados. Añade Informe de Salud,
-              activos, REDCap, Localiza Salud, CMI u otras fuentes municipales.
+              Aún no hay documentos registrados. Añade texto manual para crear
+              las primeras evidencias estructuradas.
             </p>
           ) : (
             repository.documents.map((document) => (
@@ -165,6 +211,87 @@ export default function App() {
               </article>
             ))
           )}
+        </div>
+      </section>
+
+      <section className="workspace-panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">EvidenceStore</p>
+            <h2>Evidencias estructuradas</h2>
+          </div>
+          <p className="panel-note">
+            Todas las fuentes deben convertirse en EvidenceAtom antes de
+            alimentar motores.
+          </p>
+        </div>
+
+        <div className="document-list">
+          {evidenceStore.atoms.length === 0 ? (
+            <p className="empty-state">Aún no hay EvidenceAtom generados.</p>
+          ) : (
+            evidenceStore.atoms.map((atom) => (
+              <article className="document-row" key={atom.id}>
+                <div>
+                  <p className="document-kind">{atom.kind}</p>
+                  <h3>{atom.title}</h3>
+                  <p>{atom.content}</p>
+                  <p className="panel-note">
+                    Origen: {atom.provenance.origin} · Validación humana requerida:{" "}
+                    {atom.methodology.requiresHumanValidation ? "sí" : "no"}
+                  </p>
+                </div>
+                <span className="status-pill">{atom.confidence}</span>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="workspace-panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">LT1</p>
+            <h2>Lectura territorial inicial</h2>
+          </div>
+          <p className="panel-note">
+            Lectura preliminar, no causal y no priorizadora. Requiere validación
+            técnica y comunitaria.
+          </p>
+        </div>
+
+        <article className="card">
+          <h3>Síntesis</h3>
+          <p>{lt1.summary}</p>
+        </article>
+
+        <section className="grid">
+          <article className="card">
+            <h3>Determinantes</h3>
+            <p>{lt1.determinants.length}</p>
+          </article>
+
+          <article className="card">
+            <h3>Activos</h3>
+            <p>{lt1.assets.length}</p>
+          </article>
+
+          <article className="card">
+            <h3>Indicadores</h3>
+            <p>{lt1.indicators.length}</p>
+          </article>
+
+          <article className="card">
+            <h3>Cautelas</h3>
+            <p>{lt1.methodologicalCautions.length}</p>
+          </article>
+        </section>
+
+        <div className="document-list">
+          <h3>Oportunidades preliminares</h3>
+          {lt1.preliminaryOpportunities.map((opportunity) => (
+            <p key={opportunity}>{opportunity}</p>
+          ))}
         </div>
       </section>
     </main>
