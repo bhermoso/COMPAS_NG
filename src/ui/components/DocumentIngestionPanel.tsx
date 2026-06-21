@@ -84,12 +84,12 @@ export function DocumentIngestionPanel({
 
           <div className="docx-upload__zone">
             <label htmlFor="hr-file-input" className="docx-upload__label">
-              Cargar Informe de Salud (.docx)
+              Cargar Informe de Salud (.docx / .doc)
             </label>
             <input
               id="hr-file-input"
               type="file"
-              accept=".docx"
+              accept=".docx,.doc"
               disabled={isLoadingHealthReport === true}
               onChange={(e) => {
                 const file = e.target.files?.[0];

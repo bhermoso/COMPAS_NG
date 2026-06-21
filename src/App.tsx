@@ -167,11 +167,22 @@ export default function App() {
   }
 
   async function handleLoadHealthReport(file: File): Promise<void> {
+    // Mammoth sólo procesa Open XML (.docx). El formato .doc binario no está soportado.
+    const isLegacyDoc = /\.doc$/i.test(file.name) && !/\.docx$/i.test(file.name);
+    if (isLegacyDoc) {
+      setLastHealthReportMessage(
+        "El formato .doc (binario) no puede procesarse. Convierte el fichero a .docx y vuelve a cargarlo."
+      );
+      return;
+    }
+
     setIsLoadingHealthReport(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
       const documentId = crypto.randomUUID();
-      const docTitle = file.name.replace(/\.docx$/i, "").replace(/_/g, " ");
+      // Normalizar: quitar extensión y convertir guiones/subrayados a espacios
+      const rawName = file.name.replace(/\.docx?$/i, "").replace(/[-_]/g, " ");
+      const docTitle = rawName.charAt(0).toUpperCase() + rawName.slice(1);
       const municipalityId = workspace.municipality.identity.id;
 
       // newDocInput se prepara antes del await largo, pero se aplica sobre
@@ -180,7 +191,7 @@ export default function App() {
         id: documentId,
         kind: "health-report" as const,
         title: docTitle,
-        source: { system: "Carga directa DOCX", collectedAt: new Date().toISOString() },
+        source: { system: "Carga directa documento", collectedAt: new Date().toISOString() },
         sourceFileName: file.name,
         tags: ["health-report"],
       };
