@@ -52,6 +52,7 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
   { id: "atarfe",    name: "Atarfe",              province: "Granada", ineCode: "18022", createdBy: "COMPÁS NG" },
   { id: "alfacar",   name: "Alfacar",              province: "Granada", ineCode: "18009", createdBy: "COMPÁS NG" },
   { id: "churriana", name: "Churriana de la Vega", province: "Granada", ineCode: "18052", createdBy: "COMPÁS NG" },
+  { id: "zagra",     name: "Zagra",               province: "Granada",                   createdBy: "COMPÁS NG" },
 ];
 
 // ── Tipos y constantes de módulo ─────────────────────────────
