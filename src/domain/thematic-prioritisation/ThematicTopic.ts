@@ -5,15 +5,18 @@ export interface ThematicTopic {
 
 export const MAX_SELECTED_TOPICS = 5;
 
+// Catálogo canónico del formulario REDCap "papeleta_pri_tematica"
+// temas___1 … temas___10 · @MAXCHECKED=5
+// Fuente: PriorizacinCiudadanaZagra_DataDictionary_2026-06-20.csv
 export const THEMATIC_TOPICS: readonly ThematicTopic[] = [
-  { id: "mental-health",       label: "Salud mental y bienestar emocional" },
-  { id: "physical-activity",   label: "Actividad física y sedentarismo" },
-  { id: "nutrition",           label: "Alimentación y nutrición" },
-  { id: "active-ageing",       label: "Envejecimiento activo y saludable" },
-  { id: "sexual-reproductive", label: "Salud sexual y reproductiva" },
-  { id: "substance-use",       label: "Uso de sustancias y conductas adictivas" },
-  { id: "cancer-screening",    label: "Cáncer y cribados preventivos" },
-  { id: "cardiovascular",      label: "Enfermedades cardiovasculares" },
-  { id: "social-determinants", label: "Determinantes sociales y desigualdad en salud" },
-  { id: "community-assets",    label: "Participación comunitaria y activos de salud" },
+  { id: "alimentacion",          label: "Alimentación" },
+  { id: "actividad-fisica",      label: "Actividad física" },
+  { id: "bienestar-emocional",   label: "Bienestar emocional y salud mental" },
+  { id: "pantallas-redes",       label: "Uso de pantallas y redes sociales" },
+  { id: "sueno-descanso",        label: "Sueño y descanso" },
+  { id: "tabaco-alcohol-drogas", label: "Tabaco, vapeadores, alcohol y otras drogas" },
+  { id: "sexualidad-salud",      label: "Sexualidad y salud" },
+  { id: "violencia-genero",      label: "Violencia de género" },
+  { id: "medioambiente",         label: "Medioambiente y municipio" },
+  { id: "accidentes",            label: "Accidentes en el hogar y la vía pública" },
 ];

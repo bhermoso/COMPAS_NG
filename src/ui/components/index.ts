@@ -14,3 +14,4 @@ export * from "./ActionPlanPanel";
 export * from "./AgendaPanel";
 export * from "./MonitoringPanel";
 export * from "./StrategicFrameworkPanel";
+export * from "./ThematicPrioritisationModal";

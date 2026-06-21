@@ -34,6 +34,7 @@ import {
   MunicipalInventoryPanel,
   StrategicFrameworkPanel,
   ThematicPrioritisationPanel,
+  ThematicPrioritisationModal,
   PipelineTracePanel,
   LT1Panel,
   OITPanel,
@@ -83,6 +84,7 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
 export default function App() {
   const [view, setView] = useState<AppView>("inicio");
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
+  const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
 
   const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(() => {
     const defaultMuni = DEMO_MUNICIPALITIES[0];
@@ -250,6 +252,17 @@ export default function App() {
       thematicPrioritisation: prioritisation,
       updatedAt: new Date().toISOString(),
     }));
+    setIsThematicModalOpen(false);
+  }
+
+  function handleOpenThematicModal() {
+    setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
+    setIsThematicModalOpen(true);
+  }
+
+  function handleCloseThematicModal() {
+    setPendingTopics([...(runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
+    setIsThematicModalOpen(false);
   }
 
   function handleChangeMunicipality(municipalityId: string) {
@@ -272,6 +285,7 @@ export default function App() {
     setIbseMessage(null);
     setIsLoadingIBSE(false);
     setShowMunicipalitySelector(false);
+    setIsThematicModalOpen(false);
   }
 
   // ── Render ──────────────────────────────────────────────────
@@ -568,13 +582,10 @@ export default function App() {
               onLoadCSV={handleLoadIBSECSV}
             />
             <ThematicPrioritisationPanel
-              topics={THEMATIC_TOPICS}
-              selectedIds={pendingTopics}
               savedIds={
                 runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
               }
-              onToggle={handleTopicToggle}
-              onSave={handleSaveThematicPrioritisation}
+              onOpen={handleOpenThematicModal}
             />
           </>
         )}
@@ -609,6 +620,16 @@ export default function App() {
         )}
 
       </main>
+
+      <ThematicPrioritisationModal
+        isOpen={isThematicModalOpen}
+        topics={THEMATIC_TOPICS}
+        selectedIds={pendingTopics}
+        savedIds={runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []}
+        onToggle={handleTopicToggle}
+        onSave={handleSaveThematicPrioritisation}
+        onClose={handleCloseThematicModal}
+      />
     </>
   );
 }
