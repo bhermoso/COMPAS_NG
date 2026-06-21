@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
-  addMunicipalDocument,
+  replaceMunicipalDocumentByKind,
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
@@ -144,8 +144,20 @@ export default function App() {
   );
 
   function handleProcessDocument() {
+    // community-asset es un tipo canónico: una sola versión activa por municipio.
+    // Se eliminan entradas previas del mismo tipo antes de registrar la nueva.
+    const repositoryForIngestion =
+      kind === "community-asset"
+        ? {
+            ...workspace.repository,
+            documents: workspace.repository.documents.filter(
+              (d) => d.kind !== "community-asset"
+            ),
+          }
+        : workspace.repository;
+
     const result = ingestManualDocument({
-      repository: workspace.repository,
+      repository: repositoryForIngestion,
       evidenceStore: workspace.evidenceStore,
       kind,
       title,
@@ -207,7 +219,7 @@ export default function App() {
 
       setWorkspace((prev) => ({
         ...prev,
-        repository: addMunicipalDocument(prev.repository, newDocInput),
+        repository: replaceMunicipalDocumentByKind(prev.repository, newDocInput),
         healthReports: [healthReport],
         updatedAt: new Date().toISOString(),
       }));

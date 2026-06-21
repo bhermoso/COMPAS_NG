@@ -108,6 +108,21 @@ export function addMunicipalDocument(
   };
 }
 
+// Para tipos documentales canónicos (una sola versión activa por municipio):
+// elimina todas las entradas previas del mismo tipo y registra la nueva.
+export function replaceMunicipalDocumentByKind(
+  repository: MunicipalDocumentRepository,
+  input: AddMunicipalDocumentInput
+): MunicipalDocumentRepository {
+  const now = new Date().toISOString();
+  const withoutPrior: MunicipalDocumentRepository = {
+    ...repository,
+    documents: repository.documents.filter((doc) => doc.kind !== input.kind),
+    updatedAt: now,
+  };
+  return addMunicipalDocument(withoutPrior, input);
+}
+
 export function validateMunicipalDocument(
   repository: MunicipalDocumentRepository,
   documentId: DocumentId
