@@ -35,55 +35,31 @@ export function MunicipalInventoryPanel({
           <h2>Inventario de información disponible</h2>
         </div>
         <p className="panel-note">
-          Información presente en este espacio de trabajo. Ningún dato implica
-          juicio de calidad ni suficiencia.
+          Fuentes de información presentes en este espacio de trabajo. Ningún
+          dato implica juicio de calidad ni suficiencia.
         </p>
       </div>
 
-      <div className="inv-grid">
-        {/* Columna izquierda: fuentes de datos */}
-        <div>
-          <p className="inv-section-label">Fuentes de datos</p>
-          <ul className="inv-list">
-            <InventoryItem
-              label="Informe de Salud"
-              present={inventory.hasHealthReport}
-            />
-            <InventoryItem
-              label="Activos comunitarios"
-              present={inventory.hasAssets}
-            />
-            <InventoryItem
-              label="IBSE"
-              present={inventory.hasIBSE}
-              detail={
-                inventory.hasIBSE
-                  ? `${inventory.ibseValidRecordCount} registros válidos`
-                  : undefined
-              }
-            />
-          </ul>
-        </div>
-
-        {/* Columna derecha: capas de análisis */}
-        <div>
-          <p className="inv-section-label">Capas de análisis</p>
-          <ul className="inv-list">
-            <InventoryItem
-              label="Priorización temática"
-              present={inventory.hasThematicPrioritisation}
-            />
-            <InventoryItem
-              label="Priorización estratégica"
-              present={inventory.hasStrategicPrioritisation}
-            />
-            <InventoryItem
-              label="Mejoramiento municipal"
-              present={inventory.hasMunicipalEnrichment}
-            />
-          </ul>
-        </div>
-      </div>
+      <p className="inv-section-label">Fuentes de datos</p>
+      <ul className="inv-list">
+        <InventoryItem
+          label="Informe de Salud"
+          present={inventory.hasHealthReport}
+        />
+        <InventoryItem
+          label="Activos comunitarios"
+          present={inventory.hasAssets}
+        />
+        <InventoryItem
+          label="IBSE"
+          present={inventory.hasIBSE}
+          detail={
+            inventory.hasIBSE
+              ? `${inventory.ibseValidRecordCount} registros válidos`
+              : undefined
+          }
+        />
+      </ul>
 
       {/* Recuentos */}
       <div className="inv-counts">

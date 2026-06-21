@@ -56,13 +56,14 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
 
 // ── Tipos y constantes de módulo ─────────────────────────────
 
-type AppView = "inicio" | "repositorio" | "analisis" | "plan";
+type AppView = "inicio" | "repositorio" | "analisis" | "priorizacion" | "plan";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
-  { id: "inicio",      label: "Inicio" },
-  { id: "repositorio", label: "Repositorio documental" },
-  { id: "analisis",    label: "Análisis territorial" },
-  { id: "plan",        label: "Plan Local de Salud" },
+  { id: "inicio",        label: "Inicio" },
+  { id: "repositorio",   label: "Repositorio documental" },
+  { id: "analisis",      label: "Análisis territorial" },
+  { id: "priorizacion",  label: "Priorizaciones" },
+  { id: "plan",          label: "Plan Local de Salud" },
 ];
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
@@ -261,7 +262,7 @@ export default function App() {
   }
 
   function handleCloseThematicModal() {
-    setPendingTopics([...(runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
+    setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
     setIsThematicModalOpen(false);
   }
 
@@ -451,9 +452,24 @@ export default function App() {
               <button
                 type="button"
                 className="workflow-step"
-                onClick={() => setView("plan")}
+                onClick={() => setView("priorizacion")}
               >
                 <span className="workflow-step__num">3</span>
+                <p className="workflow-step__title">
+                  Priorizar las temáticas de salud
+                </p>
+                <p className="workflow-step__desc">
+                  Recoge las preferencias ciudadanas y delibera sobre las
+                  temáticas prioritarias para el Plan Local de Salud.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className="workflow-step"
+                onClick={() => setView("plan")}
+              >
+                <span className="workflow-step__num">4</span>
                 <p className="workflow-step__title">
                   Elaborar el borrador del Plan Local
                 </p>
@@ -464,7 +480,7 @@ export default function App() {
               </button>
 
               <div className="workflow-step workflow-step--info">
-                <span className="workflow-step__num workflow-step__num--info">4</span>
+                <span className="workflow-step__num workflow-step__num--info">5</span>
                 <p className="workflow-step__title">
                   Revisar y continuar el trabajo
                 </p>
@@ -581,12 +597,6 @@ export default function App() {
               message={ibseMessage}
               onLoadCSV={handleLoadIBSECSV}
             />
-            <ThematicPrioritisationPanel
-              savedIds={
-                runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
-              }
-              onOpen={handleOpenThematicModal}
-            />
           </>
         )}
 
@@ -601,7 +611,28 @@ export default function App() {
           </>
         )}
 
-        {/* ── ④ Plan Local de Salud ───────────────────────── */}
+        {/* ── ④ Priorizaciones ────────────────────────────── */}
+        {view === "priorizacion" && (
+          <>
+            <section className="workspace-panel">
+              <p className="eyebrow">Capa deliberativa intermedia</p>
+              <h2>Priorizaciones</h2>
+              <p className="panel-note">
+                La priorización es la capa deliberativa que transforma el diagnóstico
+                en orientación para la acción. Se sitúa entre el Perfil de Salud Local
+                y el Plan de Acción: no pertenece al diagnóstico ni al plan.
+              </p>
+            </section>
+            <ThematicPrioritisationPanel
+              savedIds={
+                runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
+              }
+              onOpen={handleOpenThematicModal}
+            />
+          </>
+        )}
+
+        {/* ── ⑤ Plan Local de Salud ───────────────────────── */}
         {view === "plan" && (
           <>
             <ActionPlanPanel
