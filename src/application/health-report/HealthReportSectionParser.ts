@@ -3,78 +3,162 @@ import type {
   HealthReportSectionKey,
 } from "../../domain/health-report";
 
-interface AnchorDef {
-  readonly key: HealthReportSectionKey;
-  readonly anchor: string;
-  readonly title: string;
-}
+// ── Filtro de entradas de índice (TOC) ────────────────────────────────────
+// Las líneas del índice incluyen tabulación seguida de número de página.
+// Se excluyen para que no actúen como falsos encabezados de sección.
+const TOC_LINE_RE = /\t\d+\s*$/;
 
-// Anclas textuales exactas tal como aparecen en los informes del Distrito Granada-Metro.
-// Las secciones llevan numeración "N.-" seguida del nombre con tilde.
-const SECTION_ANCHORS: readonly AnchorDef[] = [
-  { key: "introduccion", anchor: "1.- Introducción", title: "1.- Introducción" },
-  { key: "objetivo",     anchor: "2.- Objetivo",     title: "2.- Objetivo"     },
-  { key: "metodologia",  anchor: "3.- Metodología",  title: "3.- Metodología"  },
-  { key: "resultados",   anchor: "4.- Resultados",   title: "4.- Resultados"   },
-  { key: "discusion",    anchor: "5.- Discusión",    title: "5.- Discusión"    },
-  { key: "conclusiones", anchor: "6.- Conclusiones", title: "6.- Conclusiones" },
+// ── Patrones de encabezado ────────────────────────────────────────────────
+// Formato A — "N.- Título"    (Atarfe, Informe de Situación de Salud)
+const NDASH_RE = /^(\d+)\.-\s+(.+)$/;
+
+// Formato B — "N. TÍTULO"     (Zagra RELAS — secciones arábigo all-caps)
+// Requiere que el título sea predominantemente mayúsculas para no confundir
+// con "1.4 ESTRUCTURA..." (subsección) ni con datos de tabla.
+const NDOT_CAPS_RE = /^(\d+)\.\s+(.{3,})$/;
+
+// Formato C — "X. TÍTULO"     (Zagra RELAS — secciones romano all-caps)
+// Mismo criterio: título all-caps distingue de etiquetas CIE-10 mixed-case.
+const ROMAN_CAPS_RE = /^([IVXLC]+)\.\s+(.{3,})$/;
+
+// ── Vocabulario semántico ──────────────────────────────────────────────────
+// Relaciona palabras clave del título con HealthReportSectionKey.
+// Orden de evaluación: del más específico al más general.
+const SEMANTIC_MAP: Array<{ test: RegExp; key: HealthReportSectionKey }> = [
+  { test: /diagn[oó]stico de salud/i,                              key: "resultados"  },
+  { test: /resultado/i,                                            key: "resultados"  },
+  { test: /mortalidad/i,                                           key: "mortalidad"  },
+  { test: /morbilidad/i,                                           key: "morbilidad"  },
+  { test: /c[aá]ncer/i,                                            key: "cancer"      },
+  { test: /edo|enfermedades de declaraci[oó]n|its|transmisi[oó]n/i, key: "edo-its"   },
+  { test: /vacuna|cribado|coberturas? prevent/i,                   key: "vacunacion-cribados" },
+  { test: /discusi[oó]n/i,                                         key: "discusion"   },
+  { test: /conclusi/i,                                             key: "conclusiones" },
+  { test: /objetivo/i,                                             key: "objetivo"    },
+  { test: /metodolog/i,                                            key: "metodologia" },
+  { test: /introduc|marco (legal|normativo|conceptual|actuac)/i,  key: "introduccion" },
+  { test: /justificac/i,                                           key: "introduccion" },
+  { test: /demograf/i,                                             key: "demografia"  },
+  { test: /autor[ií]a|autoría|firmante|epidemi[oó]log/i,          key: "autores"     },
 ];
 
-// Detecta líneas de firma de autoría: "Nombre. Epidemiólogo/a ..."
-// El patrón requiere un separador (. o ,) antes de la palabra para evitar
-// falsos positivos en texto epidemiológico del cuerpo.
-const AUTHOR_SIGNATURE_PATTERN = /[.,]\s*Epidemiólog/i;
-
-export interface ParseHealthReportSectionsInput {
-  text: string;
-  html?: string;
+function resolveKey(title: string): HealthReportSectionKey {
+  for (const { test, key } of SEMANTIC_MAP) {
+    if (test.test(title)) return key;
+  }
+  return "other";
 }
 
-export function parseHealthReportSections(
-  input: ParseHealthReportSectionsInput
-): HealthReportSection[] {
-  const lines = input.text.split("\n");
+// ── Detección de capitalización predominante ───────────────────────────────
+// Una línea es "all-caps" si más del 70% de sus letras son mayúsculas.
+// Permite distinguir "MARCO DE ACTUACIÓN" (sección real) de
+// "Enfermedades del sistema circulatorio" (etiqueta CIE-10 en tabla).
+function isPredominantlyUppercase(text: string): boolean {
+  const letters = text.replace(/[^a-záéíóúñA-ZÁÉÍÓÚÑ]/g, "");
+  if (letters.length < 3) return false;
+  const upper = letters.replace(/[^A-ZÁÉÍÓÚÑ]/g, "");
+  return upper.length / letters.length >= 0.70;
+}
 
-  // Localizar líneas ancla
-  const hits: Array<{ def: AnchorDef; lineIndex: number }> = [];
+// ── Formatos reconocidos ───────────────────────────────────────────────────
+type DocFormat = "nDash" | "relas" | "unknown";
+
+interface HeadingHit {
+  lineIndex: number;
+  title: string;
+  key: HealthReportSectionKey;
+}
+
+// ── Detección de formato ───────────────────────────────────────────────────
+// Lee las primeras 200 líneas no vacías y no-TOC para determinar el patrón dominante.
+function detectFormat(nonTocLines: string[]): DocFormat {
+  const sample = nonTocLines.slice(0, 200);
+  const nDash = sample.filter(l => NDASH_RE.test(l.trim())).length;
+  const nDotCaps = sample.filter(l => {
+    const m = NDOT_CAPS_RE.exec(l.trim());
+    return m !== null && isPredominantlyUppercase(m[2]);
+  }).length;
+  const romanCaps = sample.filter(l => {
+    const m = ROMAN_CAPS_RE.exec(l.trim());
+    return m !== null && isPredominantlyUppercase(m[2]);
+  }).length;
+
+  if (nDash >= 3) return "nDash";
+  if (nDotCaps >= 2 || romanCaps >= 1) return "relas";
+  return "unknown";
+}
+
+// ── Extracción de encabezados según formato ────────────────────────────────
+function extractHitsNDash(lines: string[]): HeadingHit[] {
+  const hits: HeadingHit[] = [];
   for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-    for (const def of SECTION_ANCHORS) {
-      if (trimmed === def.anchor) {
-        hits.push({ def, lineIndex: i });
-        break;
-      }
+    const m = NDASH_RE.exec(lines[i].trim());
+    if (m) {
+      hits.push({ lineIndex: i, title: m[2].trim(), key: resolveKey(m[2]) });
     }
   }
+  return hits;
+}
 
-  // Sin anclas → documento íntegro como sección única
-  if (hits.length === 0) {
-    return [fallbackSection(input.text, input.html)];
+function extractHitsRelas(lines: string[]): HeadingHit[] {
+  const hits: HeadingHit[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const t = lines[i].trim();
+    if (TOC_LINE_RE.test(lines[i])) continue;
+
+    // Encabezado romano all-caps
+    const mRoman = ROMAN_CAPS_RE.exec(t);
+    if (mRoman && isPredominantlyUppercase(mRoman[2])) {
+      hits.push({ lineIndex: i, title: mRoman[2].trim(), key: resolveKey(mRoman[2]) });
+      continue;
+    }
+
+    // Encabezado arábigo all-caps (solo nivel 1: "N. TÍTULO", no "N.N TÍTULO")
+    const mDot = NDOT_CAPS_RE.exec(t);
+    if (mDot && isPredominantlyUppercase(mDot[2]) && !/^\d+\.\d+/.test(t)) {
+      hits.push({ lineIndex: i, title: mDot[2].trim(), key: resolveKey(mDot[2]) });
+    }
   }
+  return hits;
+}
 
-  // Detectar inicio del bloque de autores tras la última sección
+// ── Sección de autoría ──────────────────────────────────────────────────────
+// Detecta el bloque de firmantes al final del documento.
+// Compatible con el formato "Nombre. Epidemiólogo/a..." (Atarfe).
+const AUTHOR_SIGNATURE_RE = /[.,]\s*Epidemiólog/i;
+
+function findAuthorLine(lines: string[], fromIndex: number): number {
+  for (let i = fromIndex; i < lines.length; i++) {
+    if (AUTHOR_SIGNATURE_RE.test(lines[i])) return i;
+  }
+  return -1;
+}
+
+// ── Segmentación de secciones ──────────────────────────────────────────────
+function buildSections(
+  allLines: string[],
+  hits: HeadingHit[],
+  html: string | undefined,
+  hasAuthorSignature: boolean
+): HealthReportSection[] {
+  if (hits.length === 0) return [];
+
   const lastHit = hits[hits.length - 1];
-  let authorLine = -1;
-  for (let i = lastHit.lineIndex + 1; i < lines.length; i++) {
-    if (AUTHOR_SIGNATURE_PATTERN.test(lines[i])) {
-      authorLine = i;
-      break;
-    }
-  }
+  const authorLine = hasAuthorSignature
+    ? findAuthorLine(allLines, lastHit.lineIndex + 1)
+    : -1;
 
   const sections: HealthReportSection[] = [];
   let order = 0;
 
-  // Portada: texto anterior a la primera ancla
-  const titleText = lines.slice(0, hits[0].lineIndex).join("\n").trim();
-  if (titleText) {
+  // Portada: texto previo al primer encabezado detectado
+  const titleText = allLines.slice(0, hits[0].lineIndex).join("\n").trim();
+  if (titleText.length > 0) {
     sections.push({
       key: "title-page",
       title: "Portada",
       bodyText: titleText,
-      bodyHtml: input.html !== undefined
-        ? htmlSlice(input.html, null, hits[0].def.anchor)
-        : undefined,
+      bodyHtml: html !== undefined ? htmlSlice(html, null, hits[0].title) : undefined,
       sortOrder: order++,
       isAuthoritative: true,
     });
@@ -83,24 +167,18 @@ export function parseHealthReportSections(
   // Secciones principales
   for (let i = 0; i < hits.length; i++) {
     const hit = hits[i];
+    const nextHit = hits[i + 1] ?? null;
     const endLine =
-      i < hits.length - 1
-        ? hits[i + 1].lineIndex
-        : authorLine !== -1
-          ? authorLine
-          : lines.length;
-
-    const nextAnchor = i < hits.length - 1 ? hits[i + 1].def.anchor : null;
+      nextHit !== null ? nextHit.lineIndex
+      : authorLine !== -1 ? authorLine
+      : allLines.length;
 
     sections.push({
-      key: hit.def.key,
-      title: hit.def.title,
-      bodyText: lines.slice(hit.lineIndex, endLine).join("\n").trim(),
-      // bodyHtml: segmento desde esta ancla hasta la siguiente en el HTML.
-      // Limitación: si la última sección (conclusiones) no tiene ancla de cierre,
-      // el slice incluirá el bloque de autores del HTML — bodyText sí está limpio.
-      bodyHtml: input.html !== undefined
-        ? htmlSlice(input.html, hit.def.anchor, nextAnchor)
+      key: hit.key,
+      title: hit.title,
+      bodyText: allLines.slice(hit.lineIndex, endLine).join("\n").trim(),
+      bodyHtml: html !== undefined
+        ? htmlSlice(html, hit.title, nextHit?.title ?? null)
         : undefined,
       sortOrder: order++,
       isAuthoritative: true,
@@ -109,14 +187,12 @@ export function parseHealthReportSections(
 
   // Sección de autoría
   if (authorLine !== -1) {
-    const authorText = lines.slice(authorLine).join("\n").trim();
-    if (authorText) {
+    const authorText = allLines.slice(authorLine).join("\n").trim();
+    if (authorText.length > 0) {
       sections.push({
         key: "autores",
         title: "Autoría",
         bodyText: authorText,
-        // bodyHtml: no se extrae porque la posición HTML de las firmas no es
-        // localizable de forma fiable sin conocer los nombres a priori.
         bodyHtml: undefined,
         sortOrder: order++,
         isAuthoritative: true,
@@ -124,9 +200,51 @@ export function parseHealthReportSections(
     }
   }
 
+  return sections;
+}
+
+// ── Interfaz pública ───────────────────────────────────────────────────────
+export interface ParseHealthReportSectionsInput {
+  text: string;
+  html?: string;
+}
+
+export function parseHealthReportSections(
+  input: ParseHealthReportSectionsInput
+): HealthReportSection[] {
+  const rawLines = input.text.split("\n");
+
+  // Separar líneas sin TOC para detección de formato y extracción de encabezados
+  const cleanLines = rawLines.map(l => (TOC_LINE_RE.test(l) ? "" : l));
+
+  const format = detectFormat(cleanLines.filter(l => l.trim()));
+  let hits: HeadingHit[] = [];
+
+  switch (format) {
+    case "nDash":
+      hits = extractHitsNDash(cleanLines);
+      break;
+    case "relas":
+      hits = extractHitsRelas(cleanLines);
+      break;
+    default:
+      // Formato desconocido: fallback a sección única
+      return [fallbackSection(input.text, input.html)];
+  }
+
+  if (hits.length < 2) {
+    // Demasiado pocas secciones: no merece segmentar
+    return [fallbackSection(input.text, input.html)];
+  }
+
+  // Detección de autoría solo en formato nDash (Atarfe); en RELAS no se usa
+  const hasAuthorSignature = format === "nDash";
+
+  const sections = buildSections(cleanLines, hits, input.html, hasAuthorSignature);
   return sections.length > 0 ? sections : [fallbackSection(input.text, input.html)];
 }
 
+// ── Fallback ───────────────────────────────────────────────────────────────
 function fallbackSection(text: string, html?: string): HealthReportSection {
   return {
     key: "other",
@@ -138,9 +256,9 @@ function fallbackSection(text: string, html?: string): HealthReportSection {
   };
 }
 
-// Extrae la porción de HTML comprendida entre dos anclas textuales.
-// Retrocede al <p> o <div> más cercano antes del ancla para no cortar en mitad de una etiqueta.
-// Si no puede localizar el ancla, devuelve undefined.
+// ── Segmentación HTML ──────────────────────────────────────────────────────
+// Extrae la porción de HTML entre dos anclas textuales (título de sección).
+// Si el ancla no está en el HTML, devuelve undefined (el viewer usa bodyText).
 function htmlSlice(
   html: string,
   startAnchor: string | null,
@@ -148,12 +266,10 @@ function htmlSlice(
 ): string | undefined {
   const start = startAnchor === null ? 0 : htmlTagStart(html, startAnchor);
   if (startAnchor !== null && start === -1) return undefined;
-
   if (endAnchor === null) {
     const slice = html.slice(start).trim();
     return slice || undefined;
   }
-
   const end = htmlTagStart(html, endAnchor);
   const slice = (end === -1 ? html.slice(start) : html.slice(start, end)).trim();
   return slice || undefined;
