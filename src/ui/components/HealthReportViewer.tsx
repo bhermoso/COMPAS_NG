@@ -78,8 +78,8 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
         <p className="hr-viewer__section-label">Índice</p>
         <ol className="hr-viewer__toc-list">
           {healthReport.sections.map((section) => (
-            <li key={section.key}>
-              <a href={`#hr-section-${section.key}`}>{section.title}</a>
+            <li key={`${section.key}-${section.sortOrder}`}>
+              <a href={`#hr-section-${section.key}-${section.sortOrder}`}>{section.title}</a>
             </li>
           ))}
         </ol>
@@ -88,7 +88,7 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
       {/* Secciones en orden */}
       <div className="hr-viewer__sections">
         {healthReport.sections.map((section) => (
-          <ReportSection key={section.key} section={section} />
+          <ReportSection key={`${section.key}-${section.sortOrder}`} section={section} />
         ))}
       </div>
     </section>
@@ -97,7 +97,7 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
 
 function ReportSection({ section }: { section: HealthReportSection }) {
   return (
-    <article id={`hr-section-${section.key}`} className="hr-viewer__section">
+    <article id={`hr-section-${section.key}-${section.sortOrder}`} className="hr-viewer__section">
       <h3 className="hr-viewer__section-title">{section.title}</h3>
       {section.bodyHtml ? (
         // bodyHtml proviene exclusivamente de Mammoth sobre el DOCX local del

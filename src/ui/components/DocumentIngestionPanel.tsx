@@ -84,12 +84,12 @@ export function DocumentIngestionPanel({
 
           <div className="docx-upload__zone">
             <label htmlFor="hr-file-input" className="docx-upload__label">
-              Cargar Informe de Salud (.docx / .doc)
+              Cargar Informe de Salud (.docx / .doc / .pdf)
             </label>
             <input
               id="hr-file-input"
               type="file"
-              accept=".docx,.doc"
+              accept=".docx,.doc,.pdf"
               disabled={isLoadingHealthReport === true}
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -103,7 +103,7 @@ export function DocumentIngestionPanel({
           </div>
 
           {isLoadingHealthReport === true && (
-            <p className="ingestion-hint">Procesando informe con Mammoth…</p>
+            <p className="ingestion-hint">Procesando informe…</p>
           )}
           {healthReportMessage !== undefined &&
             healthReportMessage !== null &&

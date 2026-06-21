@@ -9,7 +9,10 @@ import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
-import { createHealthReportDocumentFromDocx } from "./application/health-report";
+import {
+  createHealthReportDocumentFromDocx,
+  createHealthReportDocumentFromPdf,
+} from "./application/health-report";
 import { parseIBSECSV } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
 import {
@@ -198,7 +201,7 @@ export default function App() {
   }
 
   async function handleLoadHealthReport(file: File): Promise<void> {
-    // Mammoth sólo procesa Open XML (.docx). El formato .doc binario no está soportado.
+    // .doc binario (Word 97-2003) no soportado por mammoth.
     const isLegacyDoc = /\.doc$/i.test(file.name) && !/\.docx$/i.test(file.name);
     if (isLegacyDoc) {
       setLastHealthReportMessage(
@@ -207,17 +210,19 @@ export default function App() {
       return;
     }
 
+    const isPdf = /\.pdf$/i.test(file.name);
+
     setIsLoadingHealthReport(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
       const documentId = crypto.randomUUID();
-      // Normalizar: quitar extensión y convertir guiones/subrayados a espacios
-      const rawName = file.name.replace(/\.docx?$/i, "").replace(/[-_]/g, " ");
+      // Normalizar título: quitar extensión y convertir guiones/subrayados a espacios
+      const rawName = file.name
+        .replace(/\.(docx?|pdf)$/i, "")
+        .replace(/[-_]/g, " ");
       const docTitle = rawName.charAt(0).toUpperCase() + rawName.slice(1);
       const municipalityId = workspace.municipality.identity.id;
 
-      // newDocInput se prepara antes del await largo, pero se aplica sobre
-      // prev.repository dentro del updater para no sobreescribir cambios concurrentes.
       const newDocInput = {
         id: documentId,
         kind: "health-report" as const,
@@ -227,14 +232,23 @@ export default function App() {
         tags: ["health-report"],
       };
 
-      const healthReport = await createHealthReportDocumentFromDocx({
-        arrayBuffer,
-        municipalityId,
-        linkedDocumentId: documentId,
-        sourceFileName: file.name,
-        title: docTitle,
-        authors: [],
-      });
+      const healthReport = isPdf
+        ? await createHealthReportDocumentFromPdf({
+            arrayBuffer,
+            municipalityId,
+            linkedDocumentId: documentId,
+            sourceFileName: file.name,
+            title: docTitle,
+            authors: [],
+          })
+        : await createHealthReportDocumentFromDocx({
+            arrayBuffer,
+            municipalityId,
+            linkedDocumentId: documentId,
+            sourceFileName: file.name,
+            title: docTitle,
+            authors: [],
+          });
 
       setWorkspace((prev) => ({
         ...prev,
@@ -245,9 +259,12 @@ export default function App() {
       setLastHealthReportMessage(
         "Informe de Salud cargado y preservado como documento literal."
       );
-    } catch {
+    } catch (err) {
+      console.error("[PDF-load-error]", err);
       setLastHealthReportMessage(
-        "Error al cargar el informe. Comprueba que el fichero sea un .docx válido."
+        isPdf
+          ? "Error al procesar el PDF. Verifica que sea un PDF válido y no esté protegido."
+          : "Error al cargar el informe. Comprueba que el fichero sea un .docx válido."
       );
     } finally {
       setIsLoadingHealthReport(false);
