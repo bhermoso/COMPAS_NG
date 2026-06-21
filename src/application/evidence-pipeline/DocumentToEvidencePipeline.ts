@@ -20,11 +20,147 @@ export interface TransformDocumentToEvidenceResult {
   atomsCreated: EvidenceAtom[];
 }
 
+// Nombres de sección que NO deben convertirse en activos
+const NON_ASSET_SECTION_NAMES = new Set([
+  "introducción", "introduccion",
+  "presentación", "presentacion",
+  "notas", "fuentes",
+  "observaciones", "conclusiones",
+  "resumen", "índice", "indice",
+]);
+
+// Encabezado de activo: ## Nombre o ## 1. Nombre (markdown nivel 2 o más)
+const ASSET_HEADING_RE = /^#{2,}\s+(?:\d+\.\s*)?(.+)$/;
+
+// Etiqueta de campo aislada: **Descripción** o **Descripción:** sin contenido
+const FIELD_LABEL_ONLY_RE = /^\*\*[^*]+\*\*\s*:?\s*$/;
+
+// Separador de bloque
+const SEPARATOR_RE = /^-{3,}$/;
+
+interface AssetBlock {
+  name: string;
+  content: string;
+}
+
+// Agrupa el texto en bloques por activo comunitario.
+// Detecta encabezados ## y acumula las líneas siguientes como contenido de ese activo.
+// Fallback conservador cuando no hay encabezados reconocibles.
+function segmentCommunityAssets(text: string): AssetBlock[] {
+  const lines = text.split(/\r?\n/);
+  const assets: AssetBlock[] = [];
+  let currentName: string | null = null;
+  const currentLines: string[] = [];
+
+  function flush(): void {
+    if (currentName !== null) {
+      assets.push({ name: currentName, content: currentLines.join(" ").trim() });
+      currentName = null;
+      currentLines.length = 0;
+    }
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (SEPARATOR_RE.test(line)) continue;         // --- separador
+    if (/^#\s/.test(line)) continue;               // # título del documento
+
+    const headingMatch = ASSET_HEADING_RE.exec(line);
+    if (headingMatch !== null) {
+      const name = headingMatch[1].trim().replace(/\*\*/g, "");
+      if (NON_ASSET_SECTION_NAMES.has(name.toLowerCase())) {
+        flush();
+        continue;
+      }
+      flush();
+      currentName = name;
+      continue;
+    }
+
+    if (currentName !== null && !FIELD_LABEL_ONLY_RE.test(line)) {
+      currentLines.push(line);
+    }
+    // Sin activo activo → preamble, ignorar
+  }
+  flush();
+
+  if (assets.length > 0) return assets;
+
+  // Fallback: sin encabezados ## reconocibles — una línea limpia por activo,
+  // descartando separadores, encabezados y etiquetas de campo vacías
+  return text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(
+      (l) =>
+        l.length > 0 &&
+        !SEPARATOR_RE.test(l) &&
+        !/^#+\s/.test(l) &&
+        !FIELD_LABEL_ONLY_RE.test(l)
+    )
+    .map((l) => {
+      const name = l
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/^\d+\.\s*/, "")
+        .trim();
+      return { name: name || l, content: l };
+    });
+}
+
+// Ruta de ingesta específica para community-asset:
+// genera un EvidenceAtom por bloque de activo, no por línea.
+function transformCommunityAssets(
+  input: TransformDocumentToEvidenceInput
+): TransformDocumentToEvidenceResult {
+  const blocks = segmentCommunityAssets(input.plainText);
+  let store = input.store;
+  const atomsCreated: EvidenceAtom[] = [];
+
+  blocks.forEach((block, index) => {
+    const content = block.content.length > 0 ? block.content : block.name;
+    const atom = createEvidenceAtom({
+      id: `${input.document.id}-atom-${index + 1}`,
+      municipalityId: input.store.municipalityId,
+      kind: "asset",
+      title: block.name,
+      content,
+      provenance: {
+        origin: "community-assets",
+        documentId: input.document.id,
+        sourceLabel: input.document.title,
+        extractedAt: new Date().toISOString(),
+      },
+      methodology: {
+        description:
+          "Activo comunitario identificado en el documento de activos municipales.",
+        limitations: ["Requiere revisión técnica antes de alimentar decisiones."],
+        requiresHumanValidation: true,
+      },
+      tags: ["community-asset", "asset"],
+    });
+
+    const key = stableAssetKey(
+      atom.municipalityId,
+      atom.provenance.origin,
+      atom.title
+    );
+    store = upsertEvidenceAtom(store, atom, key);
+    atomsCreated.push(atom);
+  });
+
+  return { store, atomsCreated };
+}
+
 export function transformDocumentToEvidence(
   input: TransformDocumentToEvidenceInput
 ): TransformDocumentToEvidenceResult {
   if (input.document.canGenerateEvidence === false) {
     return { store: input.store, atomsCreated: [] };
+  }
+
+  if (input.document.kind === "community-asset") {
+    return transformCommunityAssets(input);
   }
 
   const lines = input.plainText
