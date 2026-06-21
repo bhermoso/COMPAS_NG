@@ -156,9 +156,22 @@ export default function App() {
           }
         : workspace.repository;
 
+    // Para community-asset, purgar también los átomos derivados de versiones
+    // anteriores del documento para evitar acumulación de fragmentos residuales.
+    const evidenceStoreForIngestion =
+      kind === "community-asset"
+        ? {
+            ...workspace.evidenceStore,
+            atoms: workspace.evidenceStore.atoms.filter(
+              (a) => a.provenance.origin !== "community-assets"
+            ),
+            updatedAt: new Date().toISOString(),
+          }
+        : workspace.evidenceStore;
+
     const result = ingestManualDocument({
       repository: repositoryForIngestion,
-      evidenceStore: workspace.evidenceStore,
+      evidenceStore: evidenceStoreForIngestion,
       kind,
       title,
       plainText,

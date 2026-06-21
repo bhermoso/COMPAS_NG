@@ -47,7 +47,15 @@ function normalizeCanonicalDocuments(
   const healthChanged =
     healthReports !== workspace.healthReports;
 
-  if (!changed && !healthChanged) return workspace;
+  // Purgar átomos huérfanos: su documentId no existe en el repositorio post-deduplicación.
+  // Esto elimina residuos de parsings anteriores a documentos ya sustituidos.
+  const docIds = new Set(deduped.map((d) => d.id));
+  const prunedAtoms = workspace.evidenceStore.atoms.filter(
+    (a) => a.provenance.documentId === undefined || docIds.has(a.provenance.documentId)
+  );
+  const atomsChanged = prunedAtoms.length !== workspace.evidenceStore.atoms.length;
+
+  if (!changed && !healthChanged && !atomsChanged) return workspace;
 
   return {
     ...workspace,
@@ -57,6 +65,13 @@ function normalizeCanonicalDocuments(
       documents: deduped,
       updatedAt: new Date().toISOString(),
     },
+    evidenceStore: atomsChanged
+      ? {
+          ...workspace.evidenceStore,
+          atoms: prunedAtoms,
+          updatedAt: new Date().toISOString(),
+        }
+      : workspace.evidenceStore,
   };
 }
 
