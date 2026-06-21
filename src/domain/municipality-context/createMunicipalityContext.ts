@@ -24,7 +24,8 @@ export function createMunicipalSnapshot(
     repository:              workspace.repository,
     healthReport:            workspace.healthReports?.[0],
     ibseStudy:               workspace.ibseStudy,
-    thematicPrioritisation:  workspace.thematicPrioritisation,
-    evidenceStore:           workspace.evidenceStore,
+    thematicPrioritisation:       workspace.thematicPrioritisation,
+    thematicPrioritisationStudy:  workspace.thematicPrioritisationStudy,
+    evidenceStore:                workspace.evidenceStore,
   };
 }

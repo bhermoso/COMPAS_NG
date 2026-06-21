@@ -20,6 +20,8 @@ import {
 import { createMunicipalSnapshot } from "./domain/municipality-context";
 import { createMunicipalInventory } from "./application/municipal-inventory";
 import { createStrategicFramework } from "./domain/strategic-framework";
+import { parseThematicPrioritisationCSV } from "./application/thematic-prioritisation";
+import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisation";
 import {
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
@@ -109,6 +111,8 @@ export default function App() {
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
+  const [isImportingTP, setIsImportingTP] = useState(false);
+  const [tpImportMessage, setTpImportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     saveWorkspaceToLocalStorage(workspace);
@@ -259,12 +263,45 @@ export default function App() {
 
   function handleOpenThematicModal() {
     setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
+    setTpImportMessage(null);
     setIsThematicModalOpen(true);
   }
 
   function handleCloseThematicModal() {
     setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
     setIsThematicModalOpen(false);
+  }
+
+  async function handleImportThematicCSV(file: File): Promise<void> {
+    setIsImportingTP(true);
+    try {
+      const text = await file.text();
+      const { partialStudy, warnings } = parseThematicPrioritisationCSV(text, file.name);
+      const study: ThematicPrioritisationStudy = {
+        ...partialStudy,
+        municipalityId: workspace.municipality.identity.id,
+        importedAt: new Date().toISOString(),
+      };
+      setWorkspace((prev) => ({
+        ...prev,
+        thematicPrioritisationStudy: study,
+        updatedAt: new Date().toISOString(),
+      }));
+      const warnText = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setTpImportMessage(
+        study.completeRecords > 0
+          ? `CSV importado: ${study.completeRecords} papeletas completas de ${study.totalRecords} registros.${warnText}`
+          : `CSV procesado sin papeletas completas.${warnText}`
+      );
+    } catch {
+      setTpImportMessage("Error al procesar el CSV. Verifica que sea una exportación REDCap válida.");
+    } finally {
+      setIsImportingTP(false);
+    }
+  }
+
+  function handleApplyTopFive(topicIds: string[]): void {
+    setPendingTopics([...topicIds]);
   }
 
   function handleChangeMunicipality(municipalityId: string) {
@@ -288,6 +325,8 @@ export default function App() {
     setIsLoadingIBSE(false);
     setShowMunicipalitySelector(false);
     setIsThematicModalOpen(false);
+    setIsImportingTP(false);
+    setTpImportMessage(null);
   }
 
   // ── Render ──────────────────────────────────────────────────
@@ -658,9 +697,14 @@ export default function App() {
         topics={THEMATIC_TOPICS}
         selectedIds={pendingTopics}
         savedIds={runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []}
+        study={runtime.workspace.thematicPrioritisationStudy}
+        isImporting={isImportingTP}
+        importMessage={tpImportMessage}
         onToggle={handleTopicToggle}
         onSave={handleSaveThematicPrioritisation}
         onClose={handleCloseThematicModal}
+        onImportCSV={handleImportThematicCSV}
+        onApplyTopFive={handleApplyTopFive}
       />
     </>
   );

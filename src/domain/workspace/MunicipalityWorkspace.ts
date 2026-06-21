@@ -3,7 +3,7 @@ import type { MunicipalDocumentRepository } from "../repository";
 import type { EvidenceStore } from "../evidence";
 import type { HealthReportDocument } from "../health-report";
 import type { IBSEStudy } from "../ibse";
-import type { ThematicPrioritisation } from "../thematic-prioritisation";
+import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 
 export interface MunicipalityWorkspace {
   municipality: MunicipalityContext;
@@ -12,6 +12,7 @@ export interface MunicipalityWorkspace {
   healthReports?: HealthReportDocument[];
   ibseStudy?: IBSEStudy;
   thematicPrioritisation?: ThematicPrioritisation;
+  thematicPrioritisationStudy?: ThematicPrioritisationStudy;
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

@@ -1,15 +1,23 @@
 import { useEffect } from "react";
 import type { ThematicTopic } from "../../domain/thematic-prioritisation";
-import { MAX_SELECTED_TOPICS } from "../../domain/thematic-prioritisation";
+import {
+  MAX_SELECTED_TOPICS,
+  type ThematicPrioritisationStudy,
+} from "../../domain/thematic-prioritisation";
 
 interface ThematicPrioritisationModalProps {
   isOpen: boolean;
   topics: readonly ThematicTopic[];
   selectedIds: string[];
   savedIds: string[];
+  study?: ThematicPrioritisationStudy;
+  isImporting: boolean;
+  importMessage: string | null;
   onToggle: (id: string) => void;
   onSave: () => void;
   onClose: () => void;
+  onImportCSV: (file: File) => void;
+  onApplyTopFive: (topicIds: string[]) => void;
 }
 
 export function ThematicPrioritisationModal({
@@ -17,9 +25,14 @@ export function ThematicPrioritisationModal({
   topics,
   selectedIds,
   savedIds,
+  study,
+  isImporting,
+  importMessage,
   onToggle,
   onSave,
   onClose,
+  onImportCSV,
+  onApplyTopFive,
 }: ThematicPrioritisationModalProps) {
   const count = selectedIds.length;
   const atMax = count >= MAX_SELECTED_TOPICS;
@@ -55,7 +68,7 @@ export function ThematicPrioritisationModal({
         aria-modal="true"
         aria-labelledby="tp-modal-title"
       >
-        {/* Cabecera */}
+        {/* ── Cabecera ─────────────────────────────────────── */}
         <div className="tp-modal__header">
           <div className="tp-modal__header-text">
             <p className="eyebrow">Participación ciudadana · Priorización Temática</p>
@@ -77,7 +90,7 @@ export function ThematicPrioritisationModal({
           </button>
         </div>
 
-        {/* Contador */}
+        {/* ── Contador ─────────────────────────────────────── */}
         <div className="tp-modal__counter-bar">
           <span
             className={`tp-modal__counter-pill${atMax ? " tp-modal__counter-pill--full" : ""}`}
@@ -93,7 +106,7 @@ export function ThematicPrioritisationModal({
           </span>
         </div>
 
-        {/* Cuadrícula de temas */}
+        {/* ── Cuadrícula de temas ───────────────────────────── */}
         <div className="tp-modal__grid">
           {topics.map((topic, index) => {
             const isSelected = selectedIds.includes(topic.id);
@@ -125,7 +138,100 @@ export function ThematicPrioritisationModal({
           })}
         </div>
 
-        {/* Pie de modal */}
+        {/* ── Importar REDCap ───────────────────────────────── */}
+        <div className="tp-modal__import">
+          <p className="tp-modal__import-title">
+            Importar resultados de participación ciudadana (REDCap)
+          </p>
+          <p className="tp-modal__import-desc">
+            Carga la exportación CSV del formulario{" "}
+            <code>papeleta_pri_tematica</code>. COMPÁS NG calculará el
+            ranking y podrás aplicar el Top&nbsp;5 como selección.
+          </p>
+
+          <div className="tp-import-zone">
+            <label className="tp-import-zone__label" htmlFor="tp-redcap-input">
+              Seleccionar fichero REDCap (.csv)
+            </label>
+            <input
+              id="tp-redcap-input"
+              type="file"
+              accept=".csv"
+              disabled={isImporting}
+              className="tp-import-zone__input"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file !== undefined) onImportCSV(file);
+                e.target.value = "";
+              }}
+            />
+          </div>
+
+          {isImporting && (
+            <p className="tp-import-zone__hint">Procesando CSV…</p>
+          )}
+          {importMessage !== null && !isImporting && (
+            <p className="tp-import-zone__hint">{importMessage}</p>
+          )}
+
+          {/* Resultado del estudio */}
+          {study !== undefined && (
+            <div className="tp-study">
+              <div className="tp-study__meta">
+                <span className="tp-study__file">{study.sourceFileName}</span>
+                <span className="tp-study__counts">
+                  {study.completeRecords} papeletas completas de{" "}
+                  {study.totalRecords} · Importado{" "}
+                  {new Date(study.importedAt).toLocaleDateString("es-ES", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+
+              <ol className="tp-ranking">
+                {study.ranking.map((r) => (
+                  <li
+                    key={r.topicId}
+                    className={`tp-ranking__row${r.rank <= 5 ? " tp-ranking__row--top5" : ""}`}
+                  >
+                    <span className="tp-ranking__pos">{r.rank}</span>
+                    <span className="tp-ranking__label">{r.label}</span>
+                    <span className="tp-ranking__bar-wrap">
+                      <span
+                        className="tp-ranking__bar"
+                        style={{ width: `${r.pct}%` }}
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span className="tp-ranking__votes">
+                      {r.votes} <span className="tp-ranking__pct">({r.pct}%)</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+
+              {study.methodologicalCautions.length > 0 && (
+                <ul className="tp-study__cautions">
+                  {study.methodologicalCautions.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              )}
+
+              <button
+                type="button"
+                className="tp-apply-btn"
+                onClick={() => onApplyTopFive(study.topFiveTopicIds)}
+              >
+                Aplicar Top 5 como selección temática
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Pie ──────────────────────────────────────────── */}
         <div className="tp-modal__footer">
           <button type="button" className="tp-modal__btn-cancel" onClick={onClose}>
             Cancelar
