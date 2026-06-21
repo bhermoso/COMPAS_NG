@@ -80,6 +80,21 @@ function inferStrategicLine(text: string): EPVSAStrategicLine {
   }
 
   if (
+    text.includes("alimenta") ||
+    text.includes("actividad física") ||
+    text.includes("actividad fisica") ||
+    text.includes("bienestar emocional") ||
+    text.includes("salud mental") ||
+    text.includes("consumo") ||
+    text.includes("entorno") ||
+    text.includes("estilo de vida") ||
+    text.includes("hábito") ||
+    text.includes("habito")
+  ) {
+    return "LE2";
+  }
+
+  if (
     text.includes("determinante") ||
     text.includes("desigualdad") ||
     text.includes("vulnerabilidad") ||

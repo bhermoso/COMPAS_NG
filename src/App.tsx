@@ -253,7 +253,7 @@ export default function App() {
       setWorkspace((prev) => ({
         ...prev,
         repository: replaceMunicipalDocumentByKind(prev.repository, newDocInput),
-        healthReports: [healthReport],
+        healthReport,
         updatedAt: new Date().toISOString(),
       }));
       setLastHealthReportMessage(
@@ -688,7 +688,7 @@ export default function App() {
               evidenceStore={runtime.workspace.evidenceStore}
             />
             <HealthReportViewer
-              healthReport={runtime.workspace.healthReports?.[0]}
+              healthReport={runtime.workspace.healthReport}
             />
             <IBSEPanel
               ibseStudy={runtime.workspace.ibseStudy}

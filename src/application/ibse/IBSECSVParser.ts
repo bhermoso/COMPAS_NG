@@ -1,4 +1,5 @@
 import type { IBSEAggregates } from "../../domain/ibse";
+import { splitRow } from "../csv-utils/splitRow";
 
 // Mapa de columnas REDCap para el instrumento monitor_ibse.
 // Actualiza esta constante si el proyecto REDCap cambia de nombres.
@@ -38,7 +39,7 @@ export function parseIBSECSV(csvText: string): IBSECSVParseResult {
   }
 
   const warnings: string[] = [];
-  const header = splitCSVRow(lines[0]);
+  const header = splitRow(lines[0]);
 
   const idx = {
     total:           header.indexOf(COLS.total),
@@ -66,7 +67,7 @@ export function parseIBSECSV(csvText: string): IBSECSVParseResult {
   let sumPersona = 0;
 
   for (let i = 1; i < lines.length; i++) {
-    const row = splitCSVRow(lines[i]);
+    const row = splitRow(lines[i]);
     n++;
 
     if (idx.completed !== -1 && row[idx.completed] !== COLS.completedValue) {
@@ -111,22 +112,3 @@ export function parseIBSECSV(csvText: string): IBSECSVParseResult {
   };
 }
 
-function splitCSVRow(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      inQuotes = !inQuotes;
-    } else if (ch === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  result.push(current);
-  return result;
-}

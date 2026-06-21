@@ -9,7 +9,7 @@ export interface MunicipalityWorkspace {
   municipality: MunicipalityContext;
   repository: MunicipalDocumentRepository;
   evidenceStore: EvidenceStore;
-  healthReports?: HealthReportDocument[];
+  healthReport?: HealthReportDocument;
   ibseStudy?: IBSEStudy;
   thematicPrioritisation?: ThematicPrioritisation;
   thematicPrioritisationStudy?: ThematicPrioritisationStudy;

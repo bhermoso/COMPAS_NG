@@ -1,5 +1,4 @@
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
-import type { HealthReportDocument } from "../../../domain/health-report";
 
 const KEY_PREFIX = "compas-ng:workspace";
 const SCHEMA_VERSION = "1.0.0";
@@ -34,32 +33,17 @@ function normalizeCanonicalDocuments(
     changed = true;
   }
 
-  // Normalizar también healthReports[] si tiene más de una entrada
-  const healthReports =
-    workspace.healthReports && workspace.healthReports.length > 1
-      ? [
-          workspace.healthReports.reduce((best, curr) =>
-            curr.createdAt >= best.createdAt ? curr : best
-          ),
-        ]
-      : workspace.healthReports;
-
-  const healthChanged =
-    healthReports !== workspace.healthReports;
-
   // Purgar átomos huérfanos: su documentId no existe en el repositorio post-deduplicación.
-  // Esto elimina residuos de parsings anteriores a documentos ya sustituidos.
   const docIds = new Set(deduped.map((d) => d.id));
   const prunedAtoms = workspace.evidenceStore.atoms.filter(
     (a) => a.provenance.documentId === undefined || docIds.has(a.provenance.documentId)
   );
   const atomsChanged = prunedAtoms.length !== workspace.evidenceStore.atoms.length;
 
-  if (!changed && !healthChanged && !atomsChanged) return workspace;
+  if (!changed && !atomsChanged) return workspace;
 
   return {
     ...workspace,
-    healthReports,
     repository: {
       ...workspace.repository,
       documents: deduped,
@@ -79,21 +63,18 @@ function normalizeCanonicalDocuments(
 // de localStorage (~5 MB). bodyText se preserva; HealthReportViewer lo usa como
 // fallback cuando bodyHtml es undefined.
 function stripHtmlFields(workspace: MunicipalityWorkspace): MunicipalityWorkspace {
-  if (!workspace.healthReports || workspace.healthReports.length === 0) {
-    return workspace;
-  }
+  if (!workspace.healthReport) return workspace;
+  const hr = workspace.healthReport;
   return {
     ...workspace,
-    healthReports: workspace.healthReports.map(
-      (hr): HealthReportDocument => ({
-        ...hr,
-        body: { ...hr.body, originalHtml: undefined },
-        sections: hr.sections.map((sec) => ({
-          ...sec,
-          bodyHtml: sec.bodyHtml?.includes("<table") ? sec.bodyHtml : undefined,
-        })),
-      })
-    ),
+    healthReport: {
+      ...hr,
+      body: { ...hr.body, originalHtml: undefined },
+      sections: hr.sections.map((sec) => ({
+        ...sec,
+        bodyHtml: sec.bodyHtml?.includes("<table") ? sec.bodyHtml : undefined,
+      })),
+    },
   };
 }
 
@@ -115,11 +96,20 @@ export function loadWorkspaceFromLocalStorage(
     const key = buildWorkspaceStorageKey(municipalityId);
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as MunicipalityWorkspace;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parsed = JSON.parse(raw) as any;
+
     // Descartar datos de versiones de esquema distintas
     if (parsed.schemaVersion !== SCHEMA_VERSION) return null;
-    // Sanear duplicados de tipos canónicos persistidos antes de 3ad377b
-    return normalizeCanonicalDocuments(parsed);
+
+    // Migrar formato anterior healthReports[] → healthReport singular
+    if (Array.isArray(parsed.healthReports)) {
+      parsed.healthReport = parsed.healthReports[0] ?? undefined;
+      delete parsed.healthReports;
+    }
+
+    return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);
   } catch {
     return null;
   }

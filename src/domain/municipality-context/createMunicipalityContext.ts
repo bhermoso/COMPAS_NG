@@ -22,7 +22,7 @@ export function createMunicipalSnapshot(
   return {
     municipality:            workspace.municipality,
     repository:              workspace.repository,
-    healthReport:            workspace.healthReports?.[0],
+    healthReport:            workspace.healthReport,
     ibseStudy:               workspace.ibseStudy,
     thematicPrioritisation:       workspace.thematicPrioritisation,
     thematicPrioritisationStudy:  workspace.thematicPrioritisationStudy,
