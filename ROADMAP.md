@@ -163,3 +163,26 @@ Las siguientes capacidades están **explícitamente fuera del alcance** hasta nu
 ---
 
 *Última revisión: 2026-06-21 — Tras cierre de incidencia de Activos Comunitarios*
+
+---
+
+## Línea futura — Memoria endocualitativa del proceso local
+
+COMPÁS NG incorporará progresivamente una capacidad endocualitativa orientada a conservar y analizar documentación narrativa del proceso local de salud.
+
+Ejemplos:
+
+- actas del Grupo Motor;
+- reuniones técnicas;
+- entrevistas;
+- grupos focales;
+- talleres participativos;
+- presentaciones de resultados;
+- actos de priorización ciudadana;
+- jornadas comunitarias;
+- documentos de seguimiento;
+- hitos, acuerdos, desacuerdos y cambios de orientación.
+
+Esta línea no se implementará como automatización decisoria, sino como infraestructura para construir memoria longitudinal, trazabilidad del proceso y contexto interpretativo para profesionales de salud pública.
+
+No se abordará antes de consolidar el Repositorio Documental Municipal, los contratos documentales y la arquitectura de Estudios Complementarios.

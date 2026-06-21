@@ -155,3 +155,15 @@ Cada cambio en COMPÁS NG debe ser:
 ---
 
 *Última revisión: 2026-06-21 — commit `7bd223b`*
+
+---
+
+## Principio endocualitativo
+
+COMPÁS NG debe ser capaz de integrar evidencia cuantitativa, documental y endocualitativa.
+
+Se entiende por evidencia endocualitativa la información narrativa generada dentro del propio proceso local de salud: actas, entrevistas, grupos focales, talleres, jornadas, reuniones del Grupo Motor, presentaciones de resultados, hitos, acuerdos, desacuerdos, rupturas, cambios de criterio y otros documentos del proceso.
+
+Esta información debe preservarse como fuente original dentro del Repositorio Documental Municipal y podrá alimentar, en el futuro, una memoria longitudinal trazable del proceso local.
+
+La información endocualitativa no debe utilizarse para generar automáticamente decisiones, recomendaciones ni conclusiones institucionales. Su función será contextualizar, explicar y documentar el proceso, siempre bajo validación profesional.
