@@ -132,7 +132,13 @@ export default function App() {
     return createMunicipalInventory(snapshot);
   }, [workspace]);
 
-  const pipelineIsEmpty = runtime.workspace.evidenceStore.atoms.length === 0;
+  // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
+  // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
+  // En ese caso, los motores generan contenido de plantilla sin valor real para el plan.
+  const pipelineIsEmpty =
+    runtime.workspace.evidenceStore.atoms.length === 0 ||
+    (runtime.oit.opportunities.length === 1 &&
+      runtime.oit.opportunities[0].id === "oit-expand-evidence-base");
   const municipality = runtime.workspace.municipality.identity;
 
   const strategicFramework = useMemo(
