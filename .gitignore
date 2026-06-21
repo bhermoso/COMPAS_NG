@@ -1,24 +1,32 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Dependencies / build
+node_modules/
+dist/
 
-node_modules
-dist
-dist-ssr
-*.local
+# Local environment
+.env
+.env.*
+!.env.example
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Local backups / evidence folders
+*_backup_*
+*backup*
+COMPAS_NG_BACKUPS_*/
+COMPAS_NG_EVIDENCIAS_*/
+
+# Local data and validation files
+*.doc
+*.docx
+*.pdf
+*.xlsx
+*.csv
+*.png
+
+# Local municipal data folders
+Alfacar/
+Atarfe/
+Churriana/
+Padul/
+R ZAGRA/
+
+# Local audit scripts
+audit.mjs
