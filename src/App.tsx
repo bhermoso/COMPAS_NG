@@ -275,11 +275,12 @@ export default function App() {
     setIsLoadingIBSE(true);
     try {
       const text = await file.text();
-      const { aggregates, warnings } = parseIBSECSV(text);
+      const { aggregates, methodologicalCautions, warnings } = parseIBSECSV(text);
       const study = createIBSEStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
         aggregates,
+        methodologicalCautions,
       });
       setWorkspace((prev) => ({
         ...prev,

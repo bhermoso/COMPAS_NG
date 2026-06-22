@@ -95,6 +95,13 @@ export function IBSEPanel({
               </p>
             </div>
           </div>
+          {ibseStudy.methodologicalCautions.length > 0 && (
+            <ul className="ibse-cautions">
+              {ibseStudy.methodologicalCautions.map((caution, i) => (
+                <li key={i} className="panel-note">{caution}</li>
+              ))}
+            </ul>
+          )}
         </div>
       ) : (
         <p className="empty-state">

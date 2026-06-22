@@ -109,6 +109,11 @@ export function loadWorkspaceFromLocalStorage(
       delete parsed.healthReports;
     }
 
+    // Normalizar IBSEStudy: campo añadido en b66193a — rellenar en workspaces anteriores
+    if (parsed.ibseStudy && !Array.isArray(parsed.ibseStudy.methodologicalCautions)) {
+      parsed.ibseStudy.methodologicalCautions = [];
+    }
+
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);
   } catch {
     return null;

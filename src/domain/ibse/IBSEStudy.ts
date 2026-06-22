@@ -6,6 +6,7 @@ export interface IBSEStudy {
   municipalityId: MunicipalityId;
   sourceFileName: string;
   aggregates: IBSEAggregates;
+  methodologicalCautions: string[];
   exportedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -15,6 +16,7 @@ export interface CreateIBSEStudyInput {
   municipalityId: MunicipalityId;
   sourceFileName: string;
   aggregates: IBSEAggregates;
+  methodologicalCautions: string[];
   exportedAt?: string;
 }
 
@@ -25,6 +27,7 @@ export function createIBSEStudy(input: CreateIBSEStudyInput): IBSEStudy {
     municipalityId: input.municipalityId,
     sourceFileName: input.sourceFileName,
     aggregates: input.aggregates,
+    methodologicalCautions: input.methodologicalCautions,
     exportedAt: input.exportedAt,
     createdAt: now,
     updatedAt: now,

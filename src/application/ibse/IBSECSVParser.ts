@@ -25,6 +25,7 @@ const EMPTY_AGGREGATES: IBSEAggregates = {
 
 export interface IBSECSVParseResult {
   aggregates: IBSEAggregates;
+  methodologicalCautions: string[];
   warnings: string[];
 }
 
@@ -34,6 +35,7 @@ export function parseIBSECSV(csvText: string): IBSECSVParseResult {
   if (lines.length < 2) {
     return {
       aggregates: EMPTY_AGGREGATES,
+      methodologicalCautions: ["CSV vacío o sin registros de datos. Verifica el formato y las columnas esperadas."],
       warnings: ["CSV vacío o sin registros de datos."],
     };
   }
@@ -98,6 +100,23 @@ export function parseIBSECSV(csvText: string): IBSECSVParseResult {
   const avg = (sum: number): number =>
     nValid > 0 ? Math.round((sum / nValid) * 10) / 10 : 0;
 
+  const cautions: string[] = [];
+
+  if (nValid === 0) {
+    cautions.push("CSV sin registros válidos. Verifica el formato y las columnas esperadas.");
+  } else {
+    if (nValid < 30) {
+      cautions.push(`Muestra pequeña (${nValid} registros válidos). Interpretar con precaución.`);
+    }
+    const incompleteRate = n > 0 ? ((n - nValid) / n) * 100 : 0;
+    if (incompleteRate > 10) {
+      cautions.push(
+        `${incompleteRate.toFixed(1)} % de registros excluidos por incompletos. Posible sesgo de no respuesta.`
+      );
+    }
+    cautions.push("Los resultados son medias de la muestra disponible, no estimaciones poblacionales.");
+  }
+
   return {
     aggregates: {
       n,
@@ -108,7 +127,7 @@ export function parseIBSECSV(csvText: string): IBSECSVParseResult {
       meanFactorControl:   avg(sumControl),
       meanFactorPersona:   avg(sumPersona),
     },
+    methodologicalCautions: cautions,
     warnings,
   };
 }
-
