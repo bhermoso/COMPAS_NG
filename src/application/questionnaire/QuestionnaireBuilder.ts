@@ -4,6 +4,7 @@ import type {
   ClassificationBlockId,
 } from "../../domain/questionnaire";
 
+import { getMethodologicalModule } from "../../domain/methodology";
 import type { ModuleId } from "../../domain/methodology";
 
 export interface CreateQuestionnaireParams {
@@ -19,6 +20,15 @@ export interface CreateQuestionnaireParams {
 export function createQuestionnaire(
   params: CreateQuestionnaireParams,
 ): QuestionnaireDefinition {
+
+  for (const moduleId of params.methodologicalModules) {
+    if (!getMethodologicalModule(moduleId)) {
+      throw new Error(
+        `Módulo metodológico no registrado: ${moduleId}`
+      );
+    }
+  }
+
   return {
     id: params.id,
     name: params.name,
