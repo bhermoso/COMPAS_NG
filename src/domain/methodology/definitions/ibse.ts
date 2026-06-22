@@ -45,6 +45,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_deprimido",
       text: "Deprimido/a",
+      redcapFormField: {
+        fieldName: "ibse_deprimido",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Deprimido/a",
+        choicesOrCalculations: "1, En ningún momento o en casi ningún momento | 2, En algún momento | 3, Buena parte del tiempo | 4, Todo o casi todo el tiempo",
+        required: true,
+        questionNumber: "1",
+      },
       dimensionId: "factor-vinculo",
       responseType: "likert",
       responseOptions: [
@@ -58,6 +67,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_feliz",
       text: "Feliz",
+      redcapFormField: {
+        fieldName: "ibse_feliz",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Feliz",
+        choicesOrCalculations: "1, En ningún momento o en casi ningún momento | 2, En algún momento | 3, Buena parte del tiempo | 4, Todo o casi todo el tiempo",
+        required: true,
+        questionNumber: "2",
+      },
       dimensionId: "factor-situacion",
       responseType: "likert",
       responseOptions: [
@@ -70,6 +88,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_solo",
       text: "Solo/a",
+      redcapFormField: {
+        fieldName: "ibse_solo",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Solo/a",
+        choicesOrCalculations: "1, En ningún momento o en casi ningún momento | 2, En algún momento | 3, Buena parte del tiempo | 4, Todo o casi todo el tiempo",
+        required: true,
+        questionNumber: "3",
+      },
       dimensionId: "factor-vinculo",
       responseType: "likert",
       responseOptions: [
@@ -83,6 +110,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_disfrutar",
       text: "Ha tenido la sensación de disfrutar de la vida",
+      redcapFormField: {
+        fieldName: "ibse_disfrutar",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Ha tenido la sensación de disfrutar de la vida",
+        choicesOrCalculations: "1, En ningún momento o en casi ningún momento | 2, En algún momento | 3, Buena parte del tiempo | 4, Todo o casi todo el tiempo",
+        required: true,
+        questionNumber: "4",
+      },
       dimensionId: "factor-situacion",
       responseType: "likert",
       responseOptions: [
@@ -95,6 +131,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_energia",
       text: "Rebosante de energía",
+      redcapFormField: {
+        fieldName: "ibse_energia",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Rebosante de energía",
+        choicesOrCalculations: "1, En ningún momento o en casi ningún momento | 2, En algún momento | 3, Buena parte del tiempo | 4, Todo o casi todo el tiempo",
+        required: true,
+        questionNumber: "5",
+      },
       dimensionId: "factor-control",
       responseType: "likert",
       responseOptions: [
@@ -107,6 +152,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_tranquilo",
       text: "Tranquilo/a y relajado/a",
+      redcapFormField: {
+        fieldName: "ibse_tranquilo",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Tranquilo/a y relajado/a",
+        choicesOrCalculations: "1, En ningún momento o en casi ningún momento | 2, En algún momento | 3, Buena parte del tiempo | 4, Todo o casi todo el tiempo",
+        required: true,
+        questionNumber: "6",
+      },
       dimensionId: "factor-control",
       responseType: "likert",
       responseOptions: [
@@ -119,6 +173,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_optimista",
       text: "Me he sido optimista respecto a mi futuro",
+      redcapFormField: {
+        fieldName: "ibse_optimista",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Me he sido optimista respecto a mi futuro",
+        choicesOrCalculations: "1, Muy de acuerdo | 2, De acuerdo | 3, Ni de acuerdo ni en desacuerdo | 4, En desacuerdo | 5, Muy en desacuerdo",
+        required: true,
+        questionNumber: "7",
+      },
       dimensionId: "factor-persona",
       responseType: "likert",
       responseOptions: [
@@ -133,6 +196,15 @@ export const IBSE_MODULE: MethodologicalModule = {
     {
       id: "ibse_bienmismo",
       text: "Por lo general me he sentido bien conmigo mismo",
+      redcapFormField: {
+        fieldName: "ibse_bienmismo",
+        formName: "monitor_ibse",
+        fieldType: "radio",
+        fieldLabel: "Por lo general me he sentido bien conmigo mismo",
+        choicesOrCalculations: "1, Muy de acuerdo | 2, De acuerdo | 3, Ni de acuerdo ni en desacuerdo | 4, En desacuerdo | 5, Muy en desacuerdo",
+        required: true,
+        questionNumber: "8",
+      },
       dimensionId: "factor-persona",
       responseType: "likert",
       responseOptions: [
