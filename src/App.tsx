@@ -121,10 +121,6 @@ export default function App() {
     saveWorkspaceToLocalStorage(workspace);
   }, [workspace]);
 
-  useEffect(() => {
-    setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
-  }, [workspace.municipality.identity.id]);
-
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
     [workspace]

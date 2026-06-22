@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ThematicPrioritisationStudy,
   ThematicTopicVoteResult,
 } from "../../domain/thematic-prioritisation";
@@ -32,7 +32,7 @@ export function parseThematicPrioritisationCSV(
   csvText: string,
   sourceFileName: string
 ): ThematicPrioritisationCSVParseResult {
-  const text = csvText.replace(/^﻿/, ""); // eliminar BOM
+  const text = csvText.replace(/^\uFEFF/, ""); // eliminar BOM
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
 
   if (lines.length < 2) {

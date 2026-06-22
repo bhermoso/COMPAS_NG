@@ -194,7 +194,7 @@ function buildSections(
         title: "Autoría",
         bodyText: authorText,
         bodyHtml: undefined,
-        sortOrder: order++,
+        sortOrder: order,
         isAuthoritative: true,
       });
     }
@@ -218,7 +218,7 @@ export function parseHealthReportSections(
   const cleanLines = rawLines.map(l => (TOC_LINE_RE.test(l) ? "" : l));
 
   const format = detectFormat(cleanLines.filter(l => l.trim()));
-  let hits: HeadingHit[] = [];
+  let hits: HeadingHit[];
 
   switch (format) {
     case "nDash":
