@@ -1,8 +1,15 @@
 import type { IBSEAggregates } from "../../domain/ibse";
-import { IBSE_MODULE } from "../../domain/methodology";
+import { getMethodologicalModule } from "../../domain/methodology";
 import { splitRow } from "../csv-utils/splitRow";
 
-const redcapAdapter = IBSE_MODULE.adapters!.redcap!;
+const IBSE_MODULE_ID = "ibse";
+
+const ibseModule = getMethodologicalModule(IBSE_MODULE_ID);
+if (!ibseModule?.adapters?.redcap) {
+  throw new Error("Módulo metodológico IBSE sin adaptador REDCap configurado.");
+}
+
+const redcapAdapter = ibseModule.adapters.redcap;
 const colByField = new Map(redcapAdapter.columns.map((c) => [c.outputField, c.redcapColumn]));
 
 const COLS = {
