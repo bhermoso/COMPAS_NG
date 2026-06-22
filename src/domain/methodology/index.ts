@@ -1,0 +1,31 @@
+export type {
+  MethodologicalModule,
+  ModuleId,
+  ModuleStatus,
+  ModuleCategory,
+  ModuleIdentity,
+  MethodologicalSource,
+  Item,
+  ResponseType,
+  ResponseOption,
+  Dimension,
+  Algorithm,
+  AlgorithmType,
+  AlgorithmStep,
+  InputLevel,
+  Interpretation,
+  ScaleDefinition,
+  InterpretationThreshold,
+  ReferenceValues,
+  BibliographicReference,
+  ModuleAdapters,
+  RedcapAdapter,
+  RedcapColumnMapping,
+  SavAdapter,
+  SavVariableMapping,
+  SavValueLabel,
+  WaveCompatibility,
+} from "./MethodologicalModule";
+
+export { getMethodologicalModule, getAllMethodologicalModules } from "./registry";
+export { IBSE_MODULE } from "./definitions/ibse";
