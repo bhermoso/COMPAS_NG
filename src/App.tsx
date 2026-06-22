@@ -61,6 +61,18 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
   { id: "zagra",     name: "Zagra",               province: "Granada",                   createdBy: "COMPÁS NG" },
 ];
 
+const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
+
+function slugifyMunicipalityId(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 // ── Tipos y constantes de módulo ─────────────────────────────
 
 type AppView = "inicio" | "repositorio" | "analisis" | "priorizacion" | "plan";
@@ -118,6 +130,18 @@ export default function App() {
   const [isImportingTP, setIsImportingTP] = useState(false);
   const [tpImportMessage, setTpImportMessage] = useState<string | null>(null);
 
+  const [customMunicipalities, setCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
+      return raw ? (JSON.parse(raw) as CreateMunicipalityContextInput[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newMuniName, setNewMuniName] = useState("");
+  const [newMuniProvince, setNewMuniProvince] = useState("");
+  const [newMuniError, setNewMuniError] = useState<string | null>(null);
+
   useEffect(() => {
     saveWorkspaceToLocalStorage(workspace);
   }, [workspace]);
@@ -147,6 +171,11 @@ export default function App() {
         municipalityName: municipality.name,
       }),
     [municipality.name]
+  );
+
+  const allMunicipalities = useMemo(
+    () => [...DEMO_MUNICIPALITIES, ...customMunicipalities],
+    [customMunicipalities]
   );
 
   function handleProcessDocument() {
@@ -380,13 +409,13 @@ export default function App() {
     });
   }
 
-  function handleChangeMunicipality(municipalityId: string) {
-    const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
-    if (demo === undefined) return;
-
+  function switchToMunicipality(
+    municipalityId: string,
+    input: CreateMunicipalityContextInput
+  ) {
     const nextWorkspace =
       loadWorkspaceFromLocalStorage(municipalityId) ??
-      createCompleteMunicipalityWorkspace(demo);
+      createCompleteMunicipalityWorkspace(input);
 
     setWorkspace(nextWorkspace);
     setPendingTopics([...(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
@@ -403,6 +432,38 @@ export default function App() {
     setIsThematicModalOpen(false);
     setIsImportingTP(false);
     setTpImportMessage(null);
+  }
+
+  function handleChangeMunicipality(municipalityId: string) {
+    const muni = allMunicipalities.find((m) => m.id === municipalityId);
+    if (muni === undefined) return;
+    switchToMunicipality(municipalityId, muni);
+  }
+
+  function handleAddMunicipality(name: string, province: string) {
+    const id = slugifyMunicipalityId(name);
+
+    const existing = allMunicipalities.find((m) => m.id === id);
+    if (existing) {
+      switchToMunicipality(id, existing);
+      return;
+    }
+
+    const newMuni: CreateMunicipalityContextInput = {
+      id,
+      name: name.trim(),
+      province: province.trim() || "Granada",
+      createdBy: "Usuario",
+    };
+
+    const updatedCustom = [...customMunicipalities, newMuni];
+    setCustomMunicipalities(updatedCustom);
+    try {
+      localStorage.setItem(CUSTOM_MUNICIPALITIES_KEY, JSON.stringify(updatedCustom));
+    } catch {
+      // localStorage lleno o deshabilitado
+    }
+    switchToMunicipality(id, newMuni);
   }
 
   // ── Render ──────────────────────────────────────────────────
@@ -451,7 +512,9 @@ export default function App() {
                 <span>INE {municipality.ineCode}</span>
               </>
             )}
-            <span className="app-nav__municipality-badge">Demostración</span>
+            {DEMO_MUNICIPALITIES.some((m) => m.id === municipality.id) && (
+              <span className="app-nav__municipality-badge">Demostración</span>
+            )}
             <button
               type="button"
               className="app-nav__municipality-btn"
@@ -473,7 +536,7 @@ export default function App() {
               actual. Los documentos y evidencias de esta sesión se eliminarán.
             </p>
             <div className="municipality-selector__options">
-              {DEMO_MUNICIPALITIES.map((m) => (
+              {allMunicipalities.map((m) => (
                 <button
                   key={m.id}
                   type="button"
@@ -486,7 +549,7 @@ export default function App() {
                 >
                   <span className="municipality-selector__option-name">{m.name}</span>
                   <span className="municipality-selector__option-meta">
-                    {m.province} · INE {m.ineCode}
+                    {m.province}{m.ineCode ? ` · INE ${m.ineCode}` : ""}
                   </span>
                 </button>
               ))}
@@ -497,6 +560,55 @@ export default function App() {
               >
                 Cancelar
               </button>
+            </div>
+
+            {/* Formulario de nuevo municipio */}
+            <div className="municipality-add">
+              <p className="municipality-add__label">Añadir municipio</p>
+              <div className="municipality-add__row">
+                <input
+                  type="text"
+                  className="municipality-add__input"
+                  placeholder="Nombre del municipio"
+                  value={newMuniName}
+                  onChange={(e) => {
+                    setNewMuniName(e.target.value);
+                    setNewMuniError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const name = newMuniName.trim();
+                      if (!name) { setNewMuniError("Introduce un nombre."); return; }
+                      handleAddMunicipality(name, newMuniProvince);
+                      setNewMuniName("");
+                      setNewMuniProvince("");
+                    }
+                  }}
+                />
+                <input
+                  type="text"
+                  className="municipality-add__input municipality-add__input--sm"
+                  placeholder="Provincia (Granada)"
+                  value={newMuniProvince}
+                  onChange={(e) => setNewMuniProvince(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="municipality-add__btn"
+                  onClick={() => {
+                    const name = newMuniName.trim();
+                    if (!name) { setNewMuniError("Introduce un nombre."); return; }
+                    handleAddMunicipality(name, newMuniProvince);
+                    setNewMuniName("");
+                    setNewMuniProvince("");
+                  }}
+                >
+                  Añadir
+                </button>
+              </div>
+              {newMuniError && (
+                <p className="municipality-add__error">{newMuniError}</p>
+              )}
             </div>
           </section>
         )}
