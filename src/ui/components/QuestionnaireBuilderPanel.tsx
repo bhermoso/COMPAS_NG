@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { createQuestionnaire, generateRedcapDictionaryArtifact } from "../../application/questionnaire";
+import { getAllMethodologicalModules } from "../../domain/methodology";
 import type { QuestionnaireProject } from "../../domain/questionnaire";
 
 export function QuestionnaireBuilderPanel() {
@@ -28,6 +29,8 @@ export function QuestionnaireBuilderPanel() {
     [project]
   );
 
+  const modules = useMemo(() => getAllMethodologicalModules(), []);
+
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -51,6 +54,23 @@ export function QuestionnaireBuilderPanel() {
       >
         Descargar CSV REDCap (IBSE)
       </button>
+
+      <section style={{ marginTop: "1rem" }}>
+        <h3>Catálogo metodológico disponible</h3>
+        <ul>
+          {modules.map((module) => (
+            <li key={module.identity.id}>
+              <strong>{module.identity.shortName}</strong>
+              {" · "}
+              {module.identity.version}
+              {" · "}
+              {module.identity.status}
+              {" · "}
+              {module.identity.category}
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <details>
         <summary>Previsualizar CSV</summary>
