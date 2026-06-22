@@ -30,3 +30,6 @@ R ZAGRA/
 
 # Local audit scripts
 audit.mjs
+
+# Local EAS / microdata files
+*.sav
