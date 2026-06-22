@@ -19,6 +19,18 @@ select {
   padding: 32px 48px 48px;
 }
 
+.app-persistence-warning {
+  margin: 16px auto 0;
+  max-width: 1120px;
+  border: 1px solid rgba(180, 83, 9, 0.35);
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #92400e;
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .hero,
 .workspace-panel {
   max-width: 1120px;
@@ -2058,6 +2070,13 @@ h3 {
   color: #64748b;
 }
 
+.tp-study__status {
+  margin: 0;
+  color: #176b54;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 /* ── Ranking ───────────────────────────────────────── */
 
 .tp-ranking {
@@ -2173,6 +2192,17 @@ h3 {
 
 .tp-apply-btn:hover {
   filter: brightness(1.12);
+}
+
+.tp-apply-btn:disabled,
+.tp-apply-btn--applied {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.tp-apply-btn:disabled:hover,
+.tp-apply-btn--applied:hover {
+  filter: none;
 }
 
 @media (max-width: 680px) {

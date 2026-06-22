@@ -20,6 +20,10 @@ interface ThematicPrioritisationModalProps {
   onApplyTopFive: (topicIds: string[]) => void;
 }
 
+function sameSelection(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((id) => right.includes(id));
+}
+
 export function ThematicPrioritisationModal({
   isOpen,
   topics,
@@ -37,9 +41,16 @@ export function ThematicPrioritisationModal({
   const count = selectedIds.length;
   const atMax = count >= MAX_SELECTED_TOPICS;
 
-  const hasChanges =
-    selectedIds.length !== savedIds.length ||
-    selectedIds.some((id) => !savedIds.includes(id));
+  const hasChanges = !sameSelection(selectedIds, savedIds);
+  const topFiveMatchesSelection =
+    study !== undefined &&
+    study.completeRecords > 0 &&
+    sameSelection(study.topFiveTopicIds, selectedIds);
+  const canApplyTopFive =
+    study !== undefined &&
+    study.completeRecords > 0 &&
+    study.topFiveTopicIds.length > 0 &&
+    !topFiveMatchesSelection;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -146,7 +157,7 @@ export function ThematicPrioritisationModal({
           <p className="tp-modal__import-desc">
             Carga la exportación CSV del formulario{" "}
             <code>papeleta_pri_tematica</code>. COMPÁS NG calculará el
-            ranking y podrás aplicar el Top&nbsp;5 como selección.
+            ranking y aplicará automáticamente el Top&nbsp;5 como selección temática.
           </p>
 
           <div className="tp-import-zone">
@@ -220,12 +231,25 @@ export function ThematicPrioritisationModal({
                 </ul>
               )}
 
+              {topFiveMatchesSelection && (
+                <p className="tp-study__status">
+                  Top 5 aplicado. No hay cambios pendientes que guardar.
+                </p>
+              )}
+
               <button
                 type="button"
-                className="tp-apply-btn"
+                className={`tp-apply-btn${
+                  topFiveMatchesSelection ? " tp-apply-btn--applied" : ""
+                }`}
                 onClick={() => onApplyTopFive(study.topFiveTopicIds)}
+                disabled={!canApplyTopFive}
               >
-                Aplicar Top 5 como selección temática
+                {topFiveMatchesSelection
+                  ? "Top 5 aplicado como selección temática"
+                  : selectedIds.length > 0
+                    ? "Restaurar Top 5 como selección temática"
+                    : "Aplicar Top 5 como selección temática"}
               </button>
             </div>
           )}
@@ -242,7 +266,7 @@ export function ThematicPrioritisationModal({
             onClick={onSave}
             disabled={!hasChanges}
           >
-            Guardar selección
+            {hasChanges ? "Guardar selección" : "Selección guardada"}
           </button>
         </div>
       </div>

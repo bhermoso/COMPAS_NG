@@ -62,6 +62,17 @@ export function parseThematicPrioritisationCSV(
     warnings.push(`Columnas no encontradas: ${missing.join(", ")}.`);
   }
 
+  if (colIndices.every((c) => c.index === -1)) {
+    return {
+      partialStudy: emptyPartialStudy(sourceFileName),
+      warnings: [
+        "El CSV no contiene ninguna de las columnas de votación esperadas " +
+          "(temas___1…temas___10). Verifica que sea la exportación del formulario " +
+          "papeleta_pri_tematica y no otro instrumento REDCap.",
+      ],
+    };
+  }
+
   let total = 0;
   let complete = 0;
   const voteCounts: Record<string, number> = {};

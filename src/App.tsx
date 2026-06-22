@@ -62,6 +62,8 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
 ];
 
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
+const WORKSPACE_PERSISTENCE_FAILURE_MESSAGE =
+  "No se pudo guardar el espacio de trabajo en este navegador. La selección puede perderse al recargar.";
 
 function slugifyMunicipalityId(name: string): string {
   return name
@@ -129,6 +131,7 @@ export default function App() {
   );
   const [isImportingTP, setIsImportingTP] = useState(false);
   const [tpImportMessage, setTpImportMessage] = useState<string | null>(null);
+  const [persistenceMessage, setPersistenceMessage] = useState<string | null>(null);
 
   const [customMunicipalities, setCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(() => {
     try {
@@ -143,7 +146,8 @@ export default function App() {
   const [newMuniError, setNewMuniError] = useState<string | null>(null);
 
   useEffect(() => {
-    saveWorkspaceToLocalStorage(workspace);
+    const saved = saveWorkspaceToLocalStorage(workspace);
+    setPersistenceMessage(saved ? null : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE);
   }, [workspace]);
 
   const runtime = useMemo(
@@ -339,11 +343,19 @@ export default function App() {
       workspace.municipality.identity.id,
       pendingTopics
     );
-    setWorkspace((prev) => ({
-      ...prev,
+    const nextWorkspace = {
+      ...workspace,
       thematicPrioritisation: prioritisation,
       updatedAt: new Date().toISOString(),
-    }));
+    };
+
+    setWorkspace(nextWorkspace);
+    setPendingTopics([...prioritisation.selectedTopicIds]);
+    setPersistenceMessage(
+      saveWorkspaceToLocalStorage(nextWorkspace)
+        ? null
+        : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE
+    );
     setIsThematicModalOpen(false);
   }
 
@@ -371,13 +383,22 @@ export default function App() {
       setWorkspace((prev) => ({
         ...prev,
         thematicPrioritisationStudy: study,
+        ...(study.completeRecords > 0 && {
+          thematicPrioritisation: createThematicPrioritisation(
+            prev.municipality.identity.id,
+            study.topFiveTopicIds
+          ),
+        }),
         updatedAt: new Date().toISOString(),
       }));
+      if (study.completeRecords > 0) {
+        setPendingTopics([...study.topFiveTopicIds]);
+      }
       const warnText = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setTpImportMessage(
         study.completeRecords > 0
-          ? `CSV importado: ${study.completeRecords} papeletas completas de ${study.totalRecords} registros.${warnText}`
-          : `CSV procesado sin papeletas completas.${warnText}`
+          ? `CSV importado: ${study.completeRecords} papeletas completas de ${study.totalRecords} registros. Top 5 aplicado automáticamente como selección temática.${warnText}`
+          : `CSV procesado sin papeletas completas. No se ha aplicado selección temática.${warnText}`
       );
     } catch {
       setTpImportMessage("Error al procesar el CSV. Verifica que sea una exportación REDCap válida.");
@@ -527,6 +548,11 @@ export default function App() {
       </nav>
 
       <main className="app-shell">
+        {persistenceMessage !== null && (
+          <div className="app-persistence-warning" role="alert">
+            {persistenceMessage}
+          </div>
+        )}
 
         {/* Selector de municipio (se muestra sobre cualquier vista) */}
         {showMunicipalitySelector && (

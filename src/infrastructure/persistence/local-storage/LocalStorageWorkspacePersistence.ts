@@ -80,12 +80,13 @@ function stripHtmlFields(workspace: MunicipalityWorkspace): MunicipalityWorkspac
 
 export function saveWorkspaceToLocalStorage(
   workspace: MunicipalityWorkspace
-): void {
+): boolean {
   try {
     const key = buildWorkspaceStorageKey(workspace.municipality.identity.id);
     localStorage.setItem(key, JSON.stringify(stripHtmlFields(workspace)));
+    return true;
   } catch {
-    // localStorage puede estar deshabilitado o lleno (modo incógnito, cuota)
+    return false;
   }
 }
 
