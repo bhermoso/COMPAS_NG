@@ -16,6 +16,7 @@ export function QuestionnaireBuilderPanel() {
         name: "Monitor IBSE",
         description: "Primer estudio complementario generado desde la Biblioteca Metodológica.",
         methodologicalModules: ["ibse"],
+        classificationBlocks: ["eas-sociodemographic"],
         outputs: ["redcap"],
       }),
       requestedOutputs: ["redcap"],
@@ -54,6 +55,19 @@ export function QuestionnaireBuilderPanel() {
       >
         Descargar CSV REDCap (IBSE)
       </button>
+
+      <section style={{ marginTop: "1rem" }}>
+        <h3>Bloques de clasificación previstos</h3>
+        <ul>
+          {project.questionnaire.classificationBlocks.map((block) => (
+            <li key={block}>{block}</li>
+          ))}
+        </ul>
+        <p>
+          Estos bloques forman parte de la definición del cuestionario, pero aún no
+          generan campos REDCap hasta que exista una definición metodológica completa.
+        </p>
+      </section>
 
       <section style={{ marginTop: "1rem" }}>
         <h3>Catálogo metodológico disponible</h3>
