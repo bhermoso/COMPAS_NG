@@ -187,6 +187,26 @@ actual del proyecto, no se implementa.
 
 ---
 
+## Artículo 14. La EAS como referencia metodológica primaria
+
+La **VI Encuesta Andaluza de Salud** es la fuente metodológica de referencia de COMPÁS NG
+para la clasificación sociodemográfica y la definición de variables de salud.
+
+Cuando exista una variable equivalente en la EAS, debe utilizarse su definición, codificación,
+categorías y lógica de salto. No deben crearse versiones alternativas sin justificación técnica
+expresa y documentada.
+
+Las demás fuentes oficiales (INE, IECA, CIS) son complementarias y se utilizan únicamente
+cuando la EAS no recoge la variable necesaria o cuando existe una necesidad de armonización
+externa debidamente documentada.
+
+Esta primacía rige tanto para los módulos de la Biblioteca Metodológica Canónica como para
+el futuro Constructor de Cuestionarios y cualquier Encuesta Municipal de Salud generada con
+COMPÁS NG.
+
+---
+
 *Primera versión aprobada: 2026-06-21*
 *Revisada: 2026-06-22 — Art. 13 añadido.*
+*Revisada: 2026-06-22 — Art. 14 añadido — primacía de la EAS como referencia metodológica.*
 *Basada en el Borrador V0 y en las auditorías arquitectónicas de junio 2026.*

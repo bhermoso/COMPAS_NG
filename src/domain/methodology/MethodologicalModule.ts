@@ -9,11 +9,12 @@ export type ModuleId = string;
 export type ModuleStatus = "draft" | "validated" | "deprecated";
 
 export type ModuleCategory =
-  | "validated-scale"       // escala psicométrica con validación publicada
-  | "official-survey-block" // bloque oficial (EAS, INE, IECA, CIS, etc.)
-  | "sociodemographic"      // módulo sociodemográfico
-  | "municipal-module"      // módulo propio de proyecto o municipio
-  | "custom";               // uso específico no encuadrable en las anteriores
+  | "eas-sociodemographic"       // variables de clasificación sociodemográfica de la EAS
+  | "eas-official-block"         // bloque oficial completo de la VI Encuesta Andaluza de Salud
+  | "validated-scale"            // escala psicométrica con validación publicada
+  | "municipal-module"           // módulo propio de proyecto o municipio
+  | "external-official-module"   // módulo externo excepcional (INE, IECA, CIS) con justificación
+  | "custom";                    // uso específico no encuadrable en las anteriores
 
 export interface ModuleIdentity {
   id: ModuleId;

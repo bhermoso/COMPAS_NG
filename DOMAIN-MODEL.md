@@ -540,7 +540,87 @@ explícita, con el motor y las garantías metodológicas correspondientes.
 
 ---
 
-## 8. La IA en COMPÁS NG
+## 8. La EAS como referencia metodológica primaria
+
+### 8.1 Posición de la Encuesta Andaluza de Salud
+
+La **VI Encuesta Andaluza de Salud** (EAS) es la fuente metodológica de referencia de COMPÁS NG
+para la clasificación sociodemográfica de la población y para la definición de variables de salud
+en el contexto de la planificación local.
+
+Esta posición de primacía se concreta en tres planos:
+
+- **Comparabilidad**: los resultados de estudios municipales son comparables con los microdatos
+  provinciales y autonómicos cuando se utilizan los mismos instrumentos, categorías y
+  codificaciones que la EAS.
+- **Coherencia institucional**: la EAS es el instrumento oficial de referencia en salud pública
+  en Andalucía. Utilizarla como base garantiza alineamiento con el sistema de información
+  de salud autonómico.
+- **Trazabilidad**: los módulos metodológicos derivados de la EAS mantienen correspondencia
+  explícita con variables `.sav`, etiquetas de valor, filtros y lógica de salto del instrumento
+  oficial.
+
+### 8.2 Principio de primacía
+
+Cuando exista una variable equivalente en la EAS, debe utilizarse su definición, codificación,
+categorías y lógica. No deben crearse versiones alternativas salvo justificación técnica expresa.
+
+El orden de preferencia es:
+
+1. **EAS** — primera opción siempre que exista variable equivalente.
+2. **Otras fuentes oficiales** (INE, IECA, CIS) — únicamente cuando la EAS no recoja la variable
+   necesaria, cuando exista necesidad de armonización externa documentada, o cuando se justifique
+   metodológicamente de forma explícita.
+3. **Módulos municipales propios** — para dimensiones no cubiertas por ninguna fuente oficial,
+   con documentación de la justificación de la desviación.
+
+### 8.3 Consecuencias para la Biblioteca Metodológica
+
+La Biblioteca Metodológica Canónica contempla módulos derivados de la EAS como categorías de
+primera clase:
+
+- **Módulo sociodemográfico EAS** (*eas-sociodemographic*): variables de clasificación de la
+  población según los criterios y codificaciones oficiales de la Encuesta Andaluza.
+- **Bloque oficial EAS** (*eas-official-block*): sección completa del instrumento EAS, con
+  preguntas, opciones de respuesta y lógica de salto fieles al cuestionario oficial.
+
+Los módulos de otras fuentes externas se clasifican como *external-official-module* y requieren
+justificación explícita para su inclusión.
+
+### 8.4 Trazabilidad hacia los microdatos
+
+Cada módulo derivado de la EAS debe mantener trazabilidad explícita hacia:
+
+- pregunta oficial (texto exacto del cuestionario);
+- variable `.sav` en los microdatos de la encuesta;
+- etiquetas de valor y codificación numérica;
+- filtros aplicados antes de su administración;
+- lógica de salto (*branching logic*);
+- algoritmo de cálculo de variables derivadas, cuando exista;
+- limitaciones metodológicas conocidas.
+
+Esta trazabilidad garantiza que un equipo técnico pueda auditar la correspondencia entre
+los datos municipales recogidos y los microdatos oficiales sin ambigüedad.
+
+### 8.5 La Encuesta Municipal de Salud
+
+La futura **Encuesta Municipal de Salud** se construirá preferentemente mediante:
+
+1. clasificación sociodemográfica basada en la EAS;
+2. bloques oficiales EAS seleccionados según necesidades del municipio;
+3. escalas complementarias validadas (IBSE, SF-12, DUKE, CAGE, PREDIMED, IPAQ y otras);
+4. módulos específicos municipales justificados metodológicamente.
+
+Este diseño maximiza la comparabilidad con los microdatos oficiales y minimiza la necesidad
+de adaptación posterior.
+
+El **Constructor de Cuestionarios**, cuando se implemente, propondrá el bloque sociodemográfico
+EAS como punto de partida por defecto para cualquier nuevo estudio o Encuesta Municipal de Salud.
+La adición de módulos externos o personalizados será siempre un paso posterior y explícito.
+
+---
+
+## 9. La IA en COMPÁS NG
 
 ### Posición conceptual
 
@@ -579,7 +659,7 @@ explícita antes de poder incorporarse al repositorio o al proceso.
 
 ---
 
-## 9. Glosario de términos canónicos
+## 10. Glosario de términos canónicos
 
 Los términos siguientes tienen un significado preciso en COMPÁS NG y no deben
 usarse con acepciones distintas en el código, la documentación ni la
@@ -610,10 +690,16 @@ comunicación del proyecto.
 | **Memoria longitudinal** | Capa interpretativa que relaciona documentos, eventos y decisiones en el tiempo. |
 | **Propuesta** | Output de un motor. Requiere validación profesional explícita antes de devenir decisión. |
 | **Decisión** | Acto institucional explícito adoptado por personas u órganos competentes. COMPÁS NG puede registrarla como hecho documentado y trazable, pero nunca la genera ni la valida. |
+| **Encuesta Andaluza de Salud (EAS)** | Fuente metodológica de referencia primaria de COMPÁS NG para clasificación sociodemográfica y variables de salud. La VI edición es la vigente. |
+| **Biblioteca Metodológica Canónica** | Colección de módulos metodológicos que sirve como fuente única de verdad para instrumentos de medición. Parsers, motores e IA derivan de ella; no la sustituyen. |
+| **Módulo Metodológico** | Unidad básica de la Biblioteca: descriptor declarativo de un instrumento (ítems, dimensiones, algoritmo, interpretación, adaptadores). Puede ser una escala validada, un bloque EAS, un módulo municipal u otro tipo canónico. |
+| **Constructor de Cuestionarios** | Componente futuro que permite construir Encuestas Municipales de Salud a partir de módulos de la Biblioteca. Propondrá el bloque sociodemográfico EAS como punto de partida por defecto. |
 
 ---
 
-*Última revisión: 2026-06-21*
+*Última revisión: 2026-06-22*
 *Documento creado tras las auditorías de repositorio documental, contrato de
 explotación y arquitectura de Estudios Complementarios, e incorporando las tres
 modificaciones aprobadas en la revisión final.*
+*Revisión 2026-06-22: sección 8 añadida — la EAS como referencia metodológica primaria;
+glosario ampliado con términos de la Biblioteca Metodológica.*
