@@ -1,17 +1,19 @@
 import type { IBSEAggregates } from "../../domain/ibse";
+import { IBSE_MODULE } from "../../domain/methodology";
 import { splitRow } from "../csv-utils/splitRow";
 
-// Mapa de columnas REDCap para el instrumento monitor_ibse.
-// Actualiza esta constante si el proyecto REDCap cambia de nombres.
+const redcapAdapter = IBSE_MODULE.adapters!.redcap!;
+const colByField = new Map(redcapAdapter.columns.map((c) => [c.outputField, c.redcapColumn]));
+
 const COLS = {
-  total:           "ibse_total",
-  factorVinculo:   "ibse_factor_vinculo",
-  factorSituacion: "ibse_factor_situacion",
-  factorControl:   "ibse_factor_control",
-  factorPersona:   "ibse_factor_persona",
-  completed:       "monitor_ibse_complete",
-  completedValue:  "2",
-} as const;
+  total:           colByField.get("meanTotal")!,
+  factorVinculo:   colByField.get("meanFactorVinculo")!,
+  factorSituacion: colByField.get("meanFactorSituacion")!,
+  factorControl:   colByField.get("meanFactorControl")!,
+  factorPersona:   colByField.get("meanFactorPersona")!,
+  completed:       redcapAdapter.completedColumn,
+  completedValue:  redcapAdapter.completedValue,
+};
 
 const EMPTY_AGGREGATES: IBSEAggregates = {
   n: 0,
