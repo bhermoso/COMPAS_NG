@@ -3,6 +3,7 @@ import {
   type DocumentKind,
   type MunicipalDocument,
   replaceMunicipalDocumentByKind,
+  removeMunicipalDocument,
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
@@ -360,6 +361,25 @@ export default function App() {
     setPendingTopics([...topicIds]);
   }
 
+  function handleDeleteDocument(documentId: string) {
+    setWorkspace((prev) => {
+      const doc = prev.repository.documents.find((d) => d.id === documentId);
+      return {
+        ...prev,
+        repository: removeMunicipalDocument(prev.repository, documentId),
+        evidenceStore: {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (a) => a.provenance.documentId !== documentId
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+        healthReport: doc?.kind === "health-report" ? undefined : prev.healthReport,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }
+
   function handleChangeMunicipality(municipalityId: string) {
     const demo = DEMO_MUNICIPALITIES.find((m) => m.id === municipalityId);
     if (demo === undefined) return;
@@ -680,6 +700,7 @@ export default function App() {
             />
             <DocumentRepositoryPanel
               repository={runtime.workspace.repository}
+              onDelete={handleDeleteDocument}
             />
             <EvidenceStorePanel
               evidenceStore={runtime.workspace.evidenceStore}

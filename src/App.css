@@ -928,6 +928,30 @@ h3 {
   color: #94a3b8;
 }
 
+.doc-repo__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.doc-repo__delete {
+  padding: 5px 11px;
+  border: 1px solid #fca5a5;
+  border-radius: 5px;
+  background: #fff;
+  color: #dc2626;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.doc-repo__delete:hover {
+  background: #fef2f2;
+  border-color: #dc143c;
+}
+
 .document-row--primary {
   border-color: #0074c8;
   border-left-width: 3px;

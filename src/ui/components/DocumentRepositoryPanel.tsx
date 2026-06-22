@@ -23,9 +23,10 @@ const STATUS_LABEL: Record<string, string> = {
 
 interface DocumentRepositoryPanelProps {
   repository: MunicipalDocumentRepository;
+  onDelete?: (documentId: string) => void;
 }
 
-export function DocumentRepositoryPanel({ repository }: DocumentRepositoryPanelProps) {
+export function DocumentRepositoryPanel({ repository, onDelete }: DocumentRepositoryPanelProps) {
   const { documents } = repository;
 
   return (
@@ -74,9 +75,26 @@ export function DocumentRepositoryPanel({ repository }: DocumentRepositoryPanelP
                   <p className="doc-repo__source">{document.source.system}</p>
                 )}
               </div>
-              <span className="status-pill">
-                {STATUS_LABEL[document.status] ?? document.status}
-              </span>
+              <div className="doc-repo__actions">
+                <span className="status-pill">
+                  {STATUS_LABEL[document.status] ?? document.status}
+                </span>
+                {onDelete && (
+                  <button
+                    type="button"
+                    className="doc-repo__delete"
+                    onClick={() => {
+                      if (window.confirm(
+                        `¿Eliminar «${document.title}»?\nSe borrarán también sus evidencias derivadas.`
+                      )) {
+                        onDelete(document.id);
+                      }
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                )}
+              </div>
             </article>
           ))}
         </div>

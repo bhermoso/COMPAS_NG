@@ -143,6 +143,18 @@ export function validateMunicipalDocument(
   };
 }
 
+export function removeMunicipalDocument(
+  repository: MunicipalDocumentRepository,
+  documentId: DocumentId
+): MunicipalDocumentRepository {
+  const now = new Date().toISOString();
+  return {
+    ...repository,
+    documents: repository.documents.filter((d) => d.id !== documentId),
+    updatedAt: now,
+  };
+}
+
 export function archiveMunicipalDocument(
   repository: MunicipalDocumentRepository,
   documentId: DocumentId
