@@ -39,6 +39,7 @@ import {
   IBSEPanel,
   QuestionnaireBuilderPanel,
   MunicipalInventoryPanel,
+  LocalHealthProfilePanel,
   StrategicFrameworkPanel,
   ThematicPrioritisationPanel,
   ThematicPrioritisationModal,
@@ -792,6 +793,12 @@ export default function App() {
                 <p>Ve a Análisis territorial para consultar el informe.</p>
               </article>
             </section>
+            <div className="workspace-divider">
+              <span className="workspace-divider-label">
+                Perfil de Salud Local
+              </span>
+            </div>
+            <LocalHealthProfilePanel />
             <StrategicFrameworkPanel framework={strategicFramework} />
             <MunicipalInventoryPanel inventory={municipalInventory} />
           </>

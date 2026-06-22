@@ -874,6 +874,47 @@ h3 {
   white-space: nowrap;
 }
 
+/* ── Perfil de Salud Local ──────────────────────────────── */
+
+.psl-status-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.psl-status-note {
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.psl-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.psl-feature {
+  background: #f8fafc;
+  border: 1px solid #e4eaf3;
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.psl-feature__title {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.psl-feature__desc {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #526070;
+  line-height: 1.55;
+}
+
 /* ── Inventario Diagnóstico Municipal ───────────────────── */
 
 .inv-grid {
