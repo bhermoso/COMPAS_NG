@@ -175,5 +175,18 @@ la alternativa más sencilla debe adoptarse por defecto.
 
 ---
 
+## Artículo 13. Regla de creación estructural
+
+Antes de crear una nueva capa, abstracción, infraestructura compartida,
+jerarquía, colección genérica o mecanismo transversal, debe responderse:
+
+> ¿Qué problema real del municipio resuelve hoy?
+
+Si no existe una respuesta concreta, observable y verificable en el estado
+actual del proyecto, no se implementa.
+
+---
+
 *Primera versión aprobada: 2026-06-21*
+*Revisada: 2026-06-22 — Art. 13 añadido.*
 *Basada en el Borrador V0 y en las auditorías arquitectónicas de junio 2026.*
