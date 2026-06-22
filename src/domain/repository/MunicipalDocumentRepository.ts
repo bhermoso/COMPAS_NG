@@ -36,6 +36,7 @@ export interface MunicipalDocument {
   status: DocumentStatus;
   source: DocumentSource;
   sourceFileName?: string;
+  sourceText?: string;
   canGenerateEvidence?: boolean;
   tags: string[];
   createdAt: string;
@@ -59,6 +60,7 @@ export interface AddMunicipalDocumentInput {
   title: string;
   source?: DocumentSource;
   sourceFileName?: string;
+  sourceText?: string;
   canGenerateEvidence?: boolean;
   tags?: string[];
 }
@@ -94,6 +96,7 @@ export function addMunicipalDocument(
     status: "uploaded",
     source: input.source ?? {},
     sourceFileName: input.sourceFileName,
+    sourceText: input.sourceText,
     canGenerateEvidence:
       input.canGenerateEvidence ?? defaultCanGenerateEvidence(input.kind),
     tags: input.tags ?? [],

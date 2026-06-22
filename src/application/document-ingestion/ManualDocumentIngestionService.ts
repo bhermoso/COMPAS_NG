@@ -42,6 +42,7 @@ export function ingestManualDocument(
       system: "Entrada manual inicial",
       collectedAt: new Date().toISOString(),
     },
+    sourceText: cleanText,
     tags: [input.kind],
   });
 
