@@ -38,9 +38,113 @@ export const IBSE_MODULE: MethodologicalModule = {
       "La referencia bibliográfica completa debe completarse con los datos de la publicación original.",
   },
 
-  // Los textos de los 8 ítems requieren contraste con la fuente primaria (Bericat, 2014).
-  // Se dejan vacíos hasta disponer de la documentación oficial verificada.
-  items: [],
+  // Ítems verificados contra el diccionario REDCap interno:
+  // MonitorIBSEATARFE2026_DataDictionary_2026-06-20.csv
+  // Pendiente aún el contraste bibliográfico completo con la fuente primaria Bericat (2014).
+  items: [
+    {
+      id: "ibse_deprimido",
+      text: "Deprimido/a",
+      dimensionId: "factor-vinculo",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "En ningún momento o en casi ningún momento" },
+        { value: 2, label: "En algún momento" },
+        { value: 3, label: "Buena parte del tiempo" },
+        { value: 4, label: "Todo o casi todo el tiempo" },
+      ],
+      reverseScored: true,
+    },
+    {
+      id: "ibse_feliz",
+      text: "Feliz",
+      dimensionId: "factor-situacion",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "En ningún momento o en casi ningún momento" },
+        { value: 2, label: "En algún momento" },
+        { value: 3, label: "Buena parte del tiempo" },
+        { value: 4, label: "Todo o casi todo el tiempo" },
+      ],
+    },
+    {
+      id: "ibse_solo",
+      text: "Solo/a",
+      dimensionId: "factor-vinculo",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "En ningún momento o en casi ningún momento" },
+        { value: 2, label: "En algún momento" },
+        { value: 3, label: "Buena parte del tiempo" },
+        { value: 4, label: "Todo o casi todo el tiempo" },
+      ],
+      reverseScored: true,
+    },
+    {
+      id: "ibse_disfrutar",
+      text: "Ha tenido la sensación de disfrutar de la vida",
+      dimensionId: "factor-situacion",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "En ningún momento o en casi ningún momento" },
+        { value: 2, label: "En algún momento" },
+        { value: 3, label: "Buena parte del tiempo" },
+        { value: 4, label: "Todo o casi todo el tiempo" },
+      ],
+    },
+    {
+      id: "ibse_energia",
+      text: "Rebosante de energía",
+      dimensionId: "factor-control",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "En ningún momento o en casi ningún momento" },
+        { value: 2, label: "En algún momento" },
+        { value: 3, label: "Buena parte del tiempo" },
+        { value: 4, label: "Todo o casi todo el tiempo" },
+      ],
+    },
+    {
+      id: "ibse_tranquilo",
+      text: "Tranquilo/a y relajado/a",
+      dimensionId: "factor-control",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "En ningún momento o en casi ningún momento" },
+        { value: 2, label: "En algún momento" },
+        { value: 3, label: "Buena parte del tiempo" },
+        { value: 4, label: "Todo o casi todo el tiempo" },
+      ],
+    },
+    {
+      id: "ibse_optimista",
+      text: "Me he sido optimista respecto a mi futuro",
+      dimensionId: "factor-persona",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "Muy de acuerdo" },
+        { value: 2, label: "De acuerdo" },
+        { value: 3, label: "Ni de acuerdo ni en desacuerdo" },
+        { value: 4, label: "En desacuerdo" },
+        { value: 5, label: "Muy en desacuerdo" },
+      ],
+      reverseScored: true,
+    },
+    {
+      id: "ibse_bienmismo",
+      text: "Por lo general me he sentido bien conmigo mismo",
+      dimensionId: "factor-persona",
+      responseType: "likert",
+      responseOptions: [
+        { value: 1, label: "Muy de acuerdo" },
+        { value: 2, label: "De acuerdo" },
+        { value: 3, label: "Ni de acuerdo ni en desacuerdo" },
+        { value: 4, label: "En desacuerdo" },
+        { value: 5, label: "Muy en desacuerdo" },
+      ],
+      reverseScored: true,
+    },
+  ],
 
   dimensions: [
     {
