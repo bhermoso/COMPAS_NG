@@ -57,6 +57,26 @@ export interface ResponseOption {
   label: string;
 }
 
+export interface RedcapFormField {
+  fieldName: string;
+  formName?: string;
+  fieldType?: string;
+  fieldLabel?: string;
+  fieldNote?: string;
+  choicesOrCalculations?: string;
+  validationType?: string;
+  validationMin?: string;
+  validationMax?: string;
+  identifier?: boolean;
+  branchingLogic?: string;
+  required?: boolean;
+  customAlignment?: string;
+  questionNumber?: string;
+  matrixGroupName?: string;
+  matrixRanking?: boolean;
+  fieldAnnotation?: string;
+}
+
 export interface Item {
   id: string;
   text: string;
@@ -64,6 +84,7 @@ export interface Item {
   responseType: ResponseType;
   responseOptions?: ResponseOption[];
   reverseScored?: boolean;
+  redcapFormField?: RedcapFormField;
   notes?: string;
 }
 

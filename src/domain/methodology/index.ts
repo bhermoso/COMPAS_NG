@@ -8,6 +8,7 @@ export type {
   Item,
   ResponseType,
   ResponseOption,
+  RedcapFormField,
   Dimension,
   Algorithm,
   AlgorithmType,
