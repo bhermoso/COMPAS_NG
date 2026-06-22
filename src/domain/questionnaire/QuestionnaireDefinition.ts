@@ -1,5 +1,13 @@
 import type { ModuleId } from "../methodology";
 
+export type ClassificationBlockId =
+  | "eas-sociodemographic"
+  | "eas-household"
+  | "ine-demography"
+  | "ieca-territorial"
+  | "cis-political"
+  | "custom";
+
 export type QuestionnaireOutput =
   | "redcap"
   | "json"
@@ -14,7 +22,7 @@ export interface QuestionnaireDefinition {
   methodologicalModules: ModuleId[];
 
   // Bloques de clasificación opcionales
-  classificationBlocks: string[];
+  classificationBlocks: ClassificationBlockId[];
 
   // Formatos objetivo de generación
   outputs: QuestionnaireOutput[];
