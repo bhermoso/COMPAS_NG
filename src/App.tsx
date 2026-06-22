@@ -37,6 +37,7 @@ import {
   EvidenceStorePanel,
   HealthReportViewer,
   IBSEPanel,
+  QuestionnaireBuilderPanel,
   MunicipalInventoryPanel,
   StrategicFrameworkPanel,
   ThematicPrioritisationPanel,
@@ -852,6 +853,7 @@ export default function App() {
               message={ibseMessage}
               onLoadCSV={handleLoadIBSECSV}
             />
+            <QuestionnaireBuilderPanel />
           </>
         )}
 

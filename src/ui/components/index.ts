@@ -15,3 +15,4 @@ export * from "./AgendaPanel";
 export * from "./MonitoringPanel";
 export * from "./StrategicFrameworkPanel";
 export * from "./ThematicPrioritisationModal";
+export * from "./QuestionnaireBuilderPanel";
