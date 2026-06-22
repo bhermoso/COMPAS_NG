@@ -1,16 +1,34 @@
 export interface RedcapFieldDefinition {
+  // Identificación
   fieldName: string;
   formName: string;
+
+  // Presentación
+  sectionHeader?: string;
   fieldType: string;
   fieldLabel: string;
+  fieldNote?: string;
 
-  choices?: string;
-  calculation?: string;
+  // Contenido REDCap
+  choicesOrCalculations?: string;
 
-  required?: boolean;
+  // Validación
+  validationType?: string;
+  validationMin?: string;
+  validationMax?: string;
+
+  // Configuración
   identifier?: boolean;
-
   branchingLogic?: string;
+  required?: boolean;
+  customAlignment?: string;
+  questionNumber?: string;
+
+  // Matrices
+  matrixGroupName?: string;
+  matrixRanking?: boolean;
+
+  // Anotaciones REDCap
   fieldAnnotation?: string;
 }
 
