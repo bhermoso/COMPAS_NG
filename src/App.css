@@ -2347,6 +2347,51 @@ h3 {
 
 /* ── Secciones del documento ─────────────────────────────────────── */
 
+/* ── COMPÁS gradient brand text ──────────────────────────────────── */
+
+.psl-doc-compas-brand {
+  background: linear-gradient(
+    90deg,
+    #0074c8 0%,
+    #00acd9 20%,
+    #94d40b 40%,
+    #ffb61b 60%,
+    #ff6600 80%,
+    #dc143c 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+/* ── Draft notice banner ─────────────────────────────────────────── */
+
+.psl-doc-draft-notice {
+  max-width: 1120px;
+  margin: 0 auto 16px;
+  padding: 12px 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #94a3b8;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.psl-doc-draft-notice__label {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-right: 8px;
+  padding: 2px 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
 .psl-doc-section {
   margin-bottom: 24px;
 }
@@ -2355,7 +2400,7 @@ h3 {
   display: flex;
   align-items: baseline;
   gap: 14px;
-  margin-bottom: 28px;
+  margin-bottom: 12px;
   padding-bottom: 16px;
   border-bottom: 2px solid #e4eaf3;
 }
@@ -2375,6 +2420,14 @@ h3 {
   letter-spacing: -0.03em;
   color: #1e293b;
   margin: 0;
+}
+
+.psl-doc-section-subtitle {
+  margin: 0 0 24px;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-style: italic;
+  line-height: 1.55;
 }
 
 /* ── Notices ─────────────────────────────────────────────────────── */
@@ -2423,6 +2476,25 @@ h3 {
   color: #64748b;
   line-height: 1.3;
 }
+
+/* KPI semantic colors — each maps to a COMPÁS palette tone */
+.psl-doc-kpi--total       { border-top: 3px solid #1e293b; }
+.psl-doc-kpi--total .psl-doc-kpi__value   { color: #1e293b; }
+
+.psl-doc-kpi--determinant { border-top: 3px solid #dc143c; }
+.psl-doc-kpi--determinant .psl-doc-kpi__value { color: #dc143c; }
+
+.psl-doc-kpi--asset       { border-top: 3px solid #94d40b; }
+.psl-doc-kpi--asset .psl-doc-kpi__value   { color: #5a8206; }
+
+.psl-doc-kpi--indicator   { border-top: 3px solid #0074c8; }
+.psl-doc-kpi--indicator .psl-doc-kpi__value { color: #0074c8; }
+
+.psl-doc-kpi--area        { border-top: 3px solid #ff6600; }
+.psl-doc-kpi--area .psl-doc-kpi__value    { color: #cc5200; }
+
+.psl-doc-kpi--priority    { border-top: 3px solid #ffb61b; }
+.psl-doc-kpi--priority .psl-doc-kpi__value { color: #b07900; }
 
 /* ── Primary source banner ───────────────────────────────────────── */
 
@@ -2882,6 +2954,21 @@ h3 {
 }
 
 /* ── Intervention areas ──────────────────────────────────────────── */
+
+.psl-doc-areas {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e4eaf3;
+}
+
+.psl-doc-areas__label {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ff6600;
+}
 
 .psl-doc-areas-intro {
   margin: 0 0 20px;

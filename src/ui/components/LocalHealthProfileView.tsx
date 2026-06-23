@@ -28,6 +28,23 @@ const CONFLICT_LABEL: Record<string, string> = {
   interpretativo: "Interpretativo",
 };
 
+// ── Origin label (IDs técnicos → lenguaje institucional) ─────────────────────
+
+const ORIGIN_LABEL: Record<string, string> = {
+  "health-report":         "Informe de Salud",
+  "ibse":                  "IBSE",
+  "citizen-participation": "Participación ciudadana",
+  "community-assets":      "Activos comunitarios",
+  "localiza-salud":        "Localiza Salud",
+  "complementary-study":   "Estudio complementario",
+  "eas":                   "EAS",
+  "cmi":                   "CMI",
+  "redcap":                "REDCap",
+  "longi":                 "Longitudinal",
+  "manual-entry":          "Entrada manual",
+  "other":                 "Otras fuentes",
+};
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function SectionHeader({ num, title }: { num: string; title: string }) {
@@ -70,7 +87,8 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         <div className="psl-doc-header__gradient" />
         <div className="psl-doc-header__body">
           <p className="psl-doc-header__meta">
-            COMPÁS NG · Planificación local de salud · Junta de Andalucía
+            <span className="psl-doc-compas-brand">COMPÁS NG</span>
+            {" · Planificación local de salud · Junta de Andalucía"}
           </p>
           <h1 className="psl-doc-header__municipality">{municipalityName}</h1>
           <p className="psl-doc-header__subtitle">Perfil de Salud Local 2027–2030</p>
@@ -88,6 +106,17 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         </div>
       </header>
 
+      {/* ── Aviso de estado borrador ──────────────────────────────────────── */}
+      {psl.status === "generated" && (
+        <div className="psl-doc-draft-notice">
+          <span className="psl-doc-draft-notice__label">Borrador</span>
+          Este Perfil de Salud Local ha sido generado automáticamente por{" "}
+          <span className="psl-doc-compas-brand">COMPÁS NG</span> a partir de
+          la evidencia disponible. Requiere revisión y validación técnica antes
+          de su uso oficial.
+        </div>
+      )}
+
       {/* ── Resumen ejecutivo ─────────────────────────────────────────────── */}
       <section className="psl-doc-section workspace-panel">
         <SectionHeader num="Resumen" title={`La salud en ${municipalityName}`} />
@@ -102,27 +131,27 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         ) : (
           <>
             <div className="psl-doc-kpi-grid">
-              <div className="psl-doc-kpi">
+              <div className="psl-doc-kpi psl-doc-kpi--total">
                 <span className="psl-doc-kpi__value">{psl.totalEvidenceAtoms}</span>
                 <span className="psl-doc-kpi__label">Evidencias estructuradas</span>
               </div>
-              <div className="psl-doc-kpi">
+              <div className="psl-doc-kpi psl-doc-kpi--determinant">
                 <span className="psl-doc-kpi__value">{psl.determinantCount}</span>
                 <span className="psl-doc-kpi__label">Determinantes identificados</span>
               </div>
-              <div className="psl-doc-kpi">
+              <div className="psl-doc-kpi psl-doc-kpi--asset">
                 <span className="psl-doc-kpi__value">{psl.assetCount}</span>
                 <span className="psl-doc-kpi__label">Activos comunitarios</span>
               </div>
-              <div className="psl-doc-kpi">
+              <div className="psl-doc-kpi psl-doc-kpi--indicator">
                 <span className="psl-doc-kpi__value">{psl.indicatorCount}</span>
                 <span className="psl-doc-kpi__label">Indicadores disponibles</span>
               </div>
-              <div className="psl-doc-kpi">
+              <div className="psl-doc-kpi psl-doc-kpi--area">
                 <span className="psl-doc-kpi__value">{psl.areasDeIntervencion.length}</span>
                 <span className="psl-doc-kpi__label">Áreas de intervención</span>
               </div>
-              <div className="psl-doc-kpi">
+              <div className="psl-doc-kpi psl-doc-kpi--priority">
                 <span className="psl-doc-kpi__value">
                   {psl.priorizacion.tematicasSeleccionadasIds.length}
                 </span>
@@ -303,7 +332,9 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
                 <p className="psl-doc-origins__label">Fuentes de evidencia presentes</p>
                 <div className="psl-doc-origins__chips">
                   {psl.originsSummary.map((o) => (
-                    <span key={o} className="psl-doc-origin-chip">{o}</span>
+                    <span key={o} className="psl-doc-origin-chip">
+                      {ORIGIN_LABEL[o] ?? o}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -341,96 +372,111 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       {/* ── IV: Interpretación territorial ───────────────────────────────── */}
       <section className="psl-doc-section workspace-panel">
         <SectionHeader num="IV" title="Interpretación territorial" />
+        <p className="psl-doc-section-subtitle">
+          ¿Qué ocurre en el municipio? ¿Por qué puede estar ocurriendo?
+          ¿Con qué activos y fortalezas cuenta? ¿Qué implica para la planificación local?
+        </p>
 
-        <div className="psl-doc-territorial-summary">
-          <p>{psl.territorialSummary}</p>
-        </div>
-
-        {psl.longitudinalActive && (
-          <div className="psl-doc-longitudinal-box">
-            <p className="psl-doc-longitudinal-box__label">Dimensión longitudinal activa</p>
-            <p className="psl-doc-longitudinal-box__note">{psl.longitudinalNote}</p>
+        {isEmpty ? (
+          <div className="psl-doc-notice psl-doc-notice--empty">
+            Sin evidencia disponible. Incorpora documentos al Repositorio documental
+            para construir la interpretación territorial del municipio.
           </div>
-        )}
-
-        {psl.tensionesEstructurales.length > 0 && (
-          <div className="psl-doc-tensions">
-            <p className="psl-doc-tensions__label">
-              Tensiones estructurales detectadas ({psl.tensionesEstructurales.length})
-            </p>
-            <ul className="psl-doc-tension-list">
-              {psl.tensionesEstructurales.map((t, i) => (
-                <li key={i} className="psl-doc-tension-item">{t}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {psl.conflictos.length > 0 && (
-          <div className="psl-doc-conflicts">
-            <p className="psl-doc-conflicts__label">
-              Conflictos interpretativos detectados ({psl.conflictos.length})
-            </p>
-            <p className="psl-doc-conflicts__note">
-              Ningún conflicto ha sido resuelto por el sistema. Requieren deliberación técnica.
-            </p>
-            <div className="psl-doc-conflict-list">
-              {psl.conflictos.map((c) => (
-                <div key={c.id} className={`psl-doc-conflict-card psl-doc-conflict-card--${c.tipo}`}>
-                  <span className="psl-doc-conflict-card__tipo">
-                    {CONFLICT_LABEL[c.tipo] ?? c.tipo}
-                  </span>
-                  <p className="psl-doc-conflict-card__desc">{c.descripcion}</p>
-                </div>
-              ))}
+        ) : (
+          <>
+            <div className="psl-doc-territorial-summary">
+              <p>{psl.territorialSummary}</p>
             </div>
-          </div>
-        )}
 
-        {psl.marcosAplicados.length > 0 && (
-          <div className="psl-doc-frameworks-row">
-            <p className="psl-doc-frameworks-row__label">Marcos interpretativos aplicados</p>
-            <div className="psl-doc-frameworks-row__chips">
-              {psl.marcosAplicados.map((m) => (
-                <span key={m.framework} className="psl-doc-framework-chip">
-                  {m.framework} <em>({m.elementCount})</em>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
+            {psl.longitudinalActive && (
+              <div className="psl-doc-longitudinal-box">
+                <p className="psl-doc-longitudinal-box__label">Dimensión longitudinal activa</p>
+                <p className="psl-doc-longitudinal-box__note">{psl.longitudinalNote}</p>
+              </div>
+            )}
 
-      {/* ── Áreas de intervención territorial ────────────────────────────── */}
-      {psl.areasDeIntervencion.length > 0 && (
-        <section className="psl-doc-section workspace-panel">
-          <SectionHeader num="→" title="Áreas de intervención territorial" />
-          <p className="psl-doc-areas-intro">
-            Áreas identificadas por el análisis territorial a partir de la evidencia disponible.
-            Son candidaturas técnicas del sistema, no decisiones de planificación. Requieren
-            validación técnica y deliberación con la ciudadanía antes de traducirse a objetivos.
-          </p>
-          <div className="psl-doc-area-list">
-            {psl.areasDeIntervencion.map((area, i) => (
-              <div key={area.id} className="psl-doc-area-card">
-                <div className="psl-doc-area-card__num">{i + 1}</div>
-                <div className="psl-doc-area-card__body">
-                  <h3 className="psl-doc-area-card__title">{area.title}</h3>
-                  <p className="psl-doc-area-card__rationale">{area.rationale}</p>
-                  <p className="psl-doc-area-card__meta">
-                    {area.relatedEvidenceIds.length} evidencia(s) relacionada(s)
-                  </p>
-                  {area.cautions.length > 0 && (
-                    <ul className="psl-doc-area-card__cautions">
-                      {area.cautions.map((c) => <li key={c}>{c}</li>)}
-                    </ul>
-                  )}
+            {psl.tensionesEstructurales.length > 0 && (
+              <div className="psl-doc-tensions">
+                <p className="psl-doc-tensions__label">
+                  Tensiones estructurales detectadas ({psl.tensionesEstructurales.length})
+                </p>
+                <ul className="psl-doc-tension-list">
+                  {psl.tensionesEstructurales.map((t, i) => (
+                    <li key={i} className="psl-doc-tension-item">{t}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {psl.conflictos.length > 0 && (
+              <div className="psl-doc-conflicts">
+                <p className="psl-doc-conflicts__label">
+                  Conflictos interpretativos detectados ({psl.conflictos.length})
+                </p>
+                <p className="psl-doc-conflicts__note">
+                  Ningún conflicto ha sido resuelto por el sistema. Requieren deliberación técnica.
+                </p>
+                <div className="psl-doc-conflict-list">
+                  {psl.conflictos.map((c) => (
+                    <div key={c.id} className={`psl-doc-conflict-card psl-doc-conflict-card--${c.tipo}`}>
+                      <span className="psl-doc-conflict-card__tipo">
+                        {CONFLICT_LABEL[c.tipo] ?? c.tipo}
+                      </span>
+                      <p className="psl-doc-conflict-card__desc">{c.descripcion}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+            )}
+
+            {psl.marcosAplicados.length > 0 && (
+              <div className="psl-doc-frameworks-row">
+                <p className="psl-doc-frameworks-row__label">Marcos interpretativos aplicados</p>
+                <div className="psl-doc-frameworks-row__chips">
+                  {psl.marcosAplicados.map((m) => (
+                    <span key={m.framework} className="psl-doc-framework-chip">
+                      {m.framework} <em>({m.elementCount})</em>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Áreas de intervención — resultado operativo de la interpretación */}
+            {psl.areasDeIntervencion.length > 0 && (
+              <div className="psl-doc-areas">
+                <p className="psl-doc-areas__label">
+                  Áreas de intervención territorial ({psl.areasDeIntervencion.length})
+                </p>
+                <p className="psl-doc-areas-intro">
+                  Áreas identificadas a partir de la evidencia disponible.
+                  Son candidaturas técnicas del sistema; requieren validación y deliberación
+                  antes de traducirse en objetivos del Plan de Acción.
+                </p>
+                <div className="psl-doc-area-list">
+                  {psl.areasDeIntervencion.map((area, i) => (
+                    <div key={area.id} className="psl-doc-area-card">
+                      <div className="psl-doc-area-card__num">{i + 1}</div>
+                      <div className="psl-doc-area-card__body">
+                        <h3 className="psl-doc-area-card__title">{area.title}</h3>
+                        <p className="psl-doc-area-card__rationale">{area.rationale}</p>
+                        <p className="psl-doc-area-card__meta">
+                          {area.relatedEvidenceIds.length} evidencia(s) relacionada(s)
+                        </p>
+                        {area.cautions.length > 0 && (
+                          <ul className="psl-doc-area-card__cautions">
+                            {area.cautions.map((c) => <li key={c}>{c}</li>)}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </section>
 
       {/* ── V: Conclusiones ──────────────────────────────────────────────── */}
       <section className="psl-doc-section workspace-panel">
