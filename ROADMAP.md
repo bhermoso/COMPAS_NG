@@ -1,13 +1,11 @@
 # COMPÁS NG — Hoja de ruta
 
-> Estado tras la estabilización de Zagra (2026-06-21, commit `7bd223b`).
+> Última revisión: 2026-06-23, commit `2301cfd`.
 > Cada hito se activa solo cuando el anterior está estabilizado y verificado en interfaz.
 
 ---
 
 ## Estado actual
-
-La incidencia de fragmentación de Activos Comunitarios ha sido cerrada.
 
 El sistema dispone de:
 
@@ -15,10 +13,24 @@ El sistema dispone de:
 - Parser de Activos Comunitarios que genera un átomo por activo (no por línea).
 - Purga de átomos derivados al sustituir un documento canónico.
 - Purga de átomos huérfanos al hidratar desde localStorage.
-- Informe de Salud cargable como DOCX, preservado como documento íntegro.
+- Informe de Salud cargable como DOCX y PDF, preservado como documento íntegro.
 - IBSE como primer Estudio Complementario (parser CSV REDCap).
 - Priorización Temática con importación REDCap y explotación estadística.
 - Persistencia por municipio en localStorage con saneamiento de duplicados.
+- **MIT (Motor de Interpretación Territorial)**: produce el Estado Territorial Evolutivo
+  a partir del EvidenceStore, con dimensión diagnóstica (LT1), áreas de intervención
+  territorial y dimensión longitudinal.
+- **Motor de Reconciliación Interpretativa**: detecta conflictos entre fuentes y estados;
+  escala las tensiones relevantes a Áreas de Intervención Territorial según criterios
+  de persistencia, convergencia y coherencia estructural.
+- **Perfil de Salud Local (PSL)**: objeto canónico del Nivel 2. Sintetiza el diagnóstico
+  territorial y actúa como único puente autorizado hacia el nivel de decisión.
+  Ciclo de vida implementado: `generated` → `validated` (con persistencia y advertencias
+  de desactualización cuando la evidencia cambia tras la validación).
+- **Plan de Acción** (borrador técnico): generado exclusivamente a partir del PSL, con
+  trazabilidad completa mediante `pslReference` (PSL origen, estado, validación, vigencia).
+  Contiene objetivos, actuaciones e indicadores preliminares.
+- **Agenda** y **Seguimiento** como borradores técnicos iniciales, encadenados al Plan de Acción.
 - Municipio piloto: Zagra. Verificado end-to-end.
 
 ---
@@ -154,15 +166,15 @@ Tareas pendientes:
 
 Las siguientes capacidades están **explícitamente fuera del alcance** hasta nueva decisión:
 
-- Generación automática de líneas EPVSA.
-- Generación automática de objetivos del Plan de Acción.
-- Interpretación automática del Perfil de Salud.
+- **Compilador del Plan Local de Salud**: producto documental compilado a partir del
+  Plan de Acción validado. El Plan de Acción actual es un borrador técnico, no el PLS definitivo.
+- Flujos de aprobación institucional, firmas o permisos.
 - Conexión con Variables EAS o CMI sin intervención técnica.
 - Despliegue en producción con datos reales sin revisión de seguridad.
 
 ---
 
-*Última revisión: 2026-06-21 — Tras cierre de incidencia de Activos Comunitarios*
+*Última revisión: 2026-06-23 — Estado actual actualizado (MIT, PSL, Plan de Acción); «Lo que no está» corregido.*
 
 ---
 

@@ -230,13 +230,17 @@ Los documentos se agrupan en **familias** según su naturaleza, su ciclo de vida
 y el tipo de pipeline que el sistema aplica sobre ellos. La familia determina
 las garantías que el repositorio ofrece para ese documento.
 
-### 5.1 Informe / Perfil de Salud
+### 5.1 Informe de Salud
 
-El **Informe de Salud** o **Perfil de Salud Local** es el documento epidemiológico
-principal del municipio. Está elaborado y firmado por el equipo epidemiológico
-competente. Describe el estado de salud de la población: demografía, mortalidad,
-morbilidad, factores de riesgo, determinantes y, en algunos formatos, recursos
-y activos.
+El **Informe de Salud** es el documento epidemiológico principal del municipio.
+Está elaborado y firmado por el equipo epidemiológico competente. Describe el
+estado de salud de la población: demografía, mortalidad, morbilidad, factores
+de riesgo, determinantes y, en algunos formatos, recursos y activos.
+
+En algunos municipios este documento se denomina «Perfil de Salud» o «Perfil de
+Salud Local». En COMPÁS NG esos términos se refieren siempre al **documento fuente**,
+no al objeto analítico generado internamente por el Motor de Interpretación
+Territorial. Véase la entrada **Perfil de Salud Local (PSL)** en el glosario.
 
 Características de dominio:
 
@@ -694,12 +698,18 @@ comunicación del proyecto.
 | **Biblioteca Metodológica Canónica** | Colección de módulos metodológicos que sirve como fuente única de verdad para instrumentos de medición. Parsers, motores e IA derivan de ella; no la sustituyen. |
 | **Módulo Metodológico** | Unidad básica de la Biblioteca: descriptor declarativo de un instrumento (ítems, dimensiones, algoritmo, interpretación, adaptadores). Puede ser una escala validada, un bloque EAS, un módulo municipal u otro tipo canónico. |
 | **Constructor de Cuestionarios** | Componente futuro que permite construir Encuestas Municipales de Salud a partir de módulos de la Biblioteca. Propondrá el bloque sociodemográfico EAS como punto de partida por defecto. |
+| **MIT (Motor de Interpretación Territorial)** | Motor analítico del Nivel 2. Transforma el EvidenceStore en un Estado Territorial Evolutivo: dimensión diagnóstica (determinantes, activos, indicadores, hallazgos), dimensión longitudinal y áreas de intervención territorial. Produce el Perfil de Salud Local. |
+| **Perfil de Salud Local (PSL)** | Objeto canónico del Nivel 2 de COMPÁS NG, generado por el MIT a partir del EvidenceStore. No es el Informe de Salud del municipio ni un documento del repositorio: es una síntesis analítica validable que actúa como único puente autorizado hacia el nivel de decisión. Ciclo de vida: `generated` → `validated`. |
+| **Plan de Acción** | Borrador técnico del Nivel 3, generado a partir del PSL validado (o en borrador). Contiene objetivos, actuaciones e indicadores preliminares con trazabilidad explícita al PSL origen (`pslReference`). Requiere validación humana antes de devenir decisión institucional. |
 
 ---
 
-*Última revisión: 2026-06-22*
+*Última revisión: 2026-06-23*
 *Documento creado tras las auditorías de repositorio documental, contrato de
 explotación y arquitectura de Estudios Complementarios, e incorporando las tres
 modificaciones aprobadas en la revisión final.*
 *Revisión 2026-06-22: sección 8 añadida — la EAS como referencia metodológica primaria;
 glosario ampliado con términos de la Biblioteca Metodológica.*
+*Revisión 2026-06-23: §5.1 corregido — separación de «Informe de Salud» (documento fuente)
+y «Perfil de Salud Local» (objeto analítico generado por el MIT). Glosario ampliado con
+MIT, PSL y Plan de Acción.*

@@ -30,7 +30,7 @@ Después de la extracción: unidad analítica que requiere validación humana.
 
 ### Documentos narrativos
 
-Ejemplos: Perfil/Informe de Salud, memorias, diagnósticos.
+Ejemplos: Informe de Salud, memorias, diagnósticos.
 
 Deben preservar texto íntegro y, cuando sea posible, secciones estructuradas.
 

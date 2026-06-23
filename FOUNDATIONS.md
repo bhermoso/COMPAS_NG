@@ -129,17 +129,24 @@ si el documento fuente es sustituido.
 
 ## 9. Restricciones de generación automática
 
-COMPÁS NG **no genera automáticamente**:
+COMPÁS NG **no genera automáticamente decisiones institucionales**. Los siguientes
+resultados son siempre producto de deliberación y validación humana explícita:
 
-- Recomendaciones de intervención.
-- Líneas EPVSA.
-- Objetivos o indicadores del Plan de Acción.
-- Prioridades de salud a partir de perfiles epidemiológicos.
-- Síntesis diagnósticas definitivas.
+- Prioridades definitivas de salud del municipio.
+- Aprobaciones del Plan de Acción o del Plan Local de Salud.
+- Síntesis diagnósticas definitivas con carácter institucional.
 
-Estas operaciones requieren **decisión técnica explícita** del equipo de salud pública.
-Los motores analíticos son módulos deliberativos auxiliares, nunca fuentes de decisión
-autónoma.
+COMPÁS NG **sí genera borradores técnicos orientativos**, marcados con
+`requiresHumanValidation: true`, a partir del Perfil de Salud Local (PSL):
+
+- Sugerencias de encaje con líneas estratégicas EPVSA.
+- Objetivos, actuaciones e indicadores preliminares del Plan de Acción.
+- Candidatos a priorización derivados de las áreas de intervención territorial.
+
+Un borrador técnico no es una decisión. Toda propuesta del sistema requiere
+revisión y validación explícita del equipo de salud pública antes de incorporarse
+al proceso. Los motores analíticos son módulos deliberativos auxiliares, nunca
+fuentes de decisión autónoma.
 
 ---
 
@@ -154,7 +161,7 @@ Cada cambio en COMPÁS NG debe ser:
 
 ---
 
-*Última revisión: 2026-06-21 — commit `7bd223b`*
+*Última revisión: 2026-06-23 — §9 actualizado para distinguir borradores técnicos de decisiones institucionales.*
 
 ---
 
