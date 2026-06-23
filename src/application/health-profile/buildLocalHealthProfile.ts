@@ -25,6 +25,7 @@ import type {
 } from "../../application/reconciliation";
 import type { OITResult, OITOpportunity } from "../../application/oit";
 import type { MunicipalityWorkspace } from "../../domain/workspace";
+import type { IBSEStudy } from "../../domain/ibse";
 import type {
   LocalHealthProfile,
   PSLConflicto,
@@ -162,7 +163,7 @@ export function buildLocalHealthProfile(
 
     // ── V: Conclusiones (scaffold) ─────────────────────────────────────────
     conclusiones: {
-      content: buildConclusionesScaffold(mit, reconciliacion, originsSummary),
+      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, originsSummary, hr?.title, workspace.ibseStudy),
       status: "scaffold",
       authorshipNote:
         "Requiere autoría humana. El equipo técnico debe redactar la síntesis " +
@@ -172,7 +173,7 @@ export function buildLocalHealthProfile(
 
     // ── VI: Recomendaciones (scaffold) ────────────────────────────────────
     recomendaciones: {
-      content: buildRecomendacionesScaffold(oitParaDecision),
+      content: buildRecomendacionesScaffold(oitParaDecision, reconciliacion, mit),
       status: "scaffold",
       authorshipNote:
         "Requiere autoría humana. El equipo técnico debe formular las " +
@@ -226,53 +227,93 @@ function mapAreaIntervencion(o: OITOpportunity): PSLAreaIntervencion {
 function buildConclusionesScaffold(
   mit: EstadoTerritorialEvolutivo,
   reconciliacion: ReconciliacionResult,
-  originsSummary: string[]
+  oitParaDecision: OITResult,
+  originsSummary: string[],
+  healthReportTitle: string | undefined,
+  ibseStudy: IBSEStudy | undefined,
 ): string {
   const lt1 = mit.dimensionDiagnostica;
-  const parts: string[] = [];
+  const hasReal =
+    oitParaDecision.opportunities.length > 0 &&
+    oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
 
   if (mit.totalEvidencias === 0) {
-    parts.push(
+    return (
       "Base documental insuficiente para construir una lectura territorial. " +
       "Incorpora documentos al repositorio antes de redactar las conclusiones."
     );
-  } else {
-    parts.push(
-      `Lectura territorial construida a partir de ${mit.totalEvidencias} evidencia(s) ` +
-      `procedente(s) de: ${originsSummary.join(", ")}.`
-    );
-    if (lt1.determinants.length > 0) {
-      parts.push(`${lt1.determinants.length} determinante(s) identificado(s).`);
-    }
-    if (lt1.assets.length > 0) {
-      parts.push(`${lt1.assets.length} activo(s) comunitario(s) registrado(s).`);
-    }
-    if (lt1.indicators.length > 0) {
-      parts.push(`${lt1.indicators.length} indicador(es) disponible(s).`);
-    }
-    if (lt1.qualitativeFindings.length > 0) {
-      parts.push(`${lt1.qualitativeFindings.length} hallazgo(s) participativo(s).`);
-    }
-    if (mit.tensionesEstructurales.length > 0) {
-      parts.push(`${mit.tensionesEstructurales.length} tensión(es) estructural(es) detectada(s).`);
-    }
-    if (reconciliacion.conflictos.length > 0) {
-      parts.push(
-        `${reconciliacion.conflictos.length} conflicto(s) interpretativo(s) detectado(s); ` +
-        `ninguno resuelto por el sistema.`
-      );
-    }
   }
 
+  const parts: string[] = [];
+
+  // ── Bloque 1: fuentes y base documental ──────────────────────────────────
+  const sourceLine =
+    `La lectura territorial se ha construido a partir de ${mit.totalEvidencias} ` +
+    `evidencias estructuradas procedentes de: ${originsSummary.join(", ")}.`;
+  const reportLine = healthReportTitle
+    ? ` «${healthReportTitle}» es la fuente diagnóstica primaria.`
+    : "";
+  parts.push(sourceLine + reportLine);
+
+  // ── Bloque 2: síntesis diagnóstica del MIT ────────────────────────────────
+  // lt1.summary es ya un párrafo narrativo correcto generado por LT1Engine.
+  parts.push(lt1.summary);
+
+  // ── Bloque 3: áreas de intervención detectadas ────────────────────────────
+  if (hasReal) {
+    const areaTitles = oitParaDecision.opportunities
+      .map((a, i) => `${i + 1}. ${a.title}`)
+      .join("; ");
+    parts.push(
+      `El análisis identifica ${oitParaDecision.opportunities.length} ` +
+      `área(s) de intervención territorial: ${areaTitles}.`
+    );
+  }
+
+  // ── Bloque 4: tensiones y conflictos ─────────────────────────────────────
+  if (reconciliacion.tensionesEscaladas.length > 0) {
+    parts.push(
+      `Se detectan ${reconciliacion.tensionesEscaladas.length} tensión(es) ` +
+      `estructural(es) con impacto en la planificación territorial.`
+    );
+  }
+  if (reconciliacion.conflictos.length > 0) {
+    parts.push(
+      `${reconciliacion.conflictos.length} conflicto(s) interpretativo(s) ` +
+      `permanecen sin resolver y condicionan la lectura.`
+    );
+  }
+
+  // ── Bloque 5: IBSE ────────────────────────────────────────────────────────
+  if (ibseStudy && Number.isFinite(ibseStudy.aggregates.meanTotal)) {
+    const agg = ibseStudy.aggregates;
+    parts.push(
+      `El estudio IBSE registra un índice total de bienestar socioemocional ` +
+      `escolar de ${agg.meanTotal.toFixed(1)} sobre 100 ` +
+      `(${agg.nValid} registros válidos).`
+    );
+  }
+
+  // ── Bloque 6: dimensión longitudinal ─────────────────────────────────────
+  if (mit.dimensionLongitudinal.activa) {
+    parts.push(mit.dimensionLongitudinal.nota);
+  }
+
+  // ── Bloque 7: cautela de autoría ─────────────────────────────────────────
   parts.push(
-    "[PENDIENTE DE AUTORÍA HUMANA: síntesis razonada del estado de salud " +
-    "y el funcionamiento del territorio.]"
+    "Esta síntesis es una propuesta asistida por COMPÁS NG. " +
+    "El equipo técnico debe revisar, contextualizar y completar las conclusiones " +
+    "con el criterio profesional del municipio."
   );
 
-  return parts.join(" ");
+  return parts.join("\n\n");
 }
 
-function buildRecomendacionesScaffold(oitParaDecision: OITResult): string {
+function buildRecomendacionesScaffold(
+  oitParaDecision: OITResult,
+  reconciliacion: ReconciliacionResult,
+  mit: EstadoTerritorialEvolutivo,
+): string {
   const hasReal =
     oitParaDecision.opportunities.length > 0 &&
     oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
@@ -280,21 +321,56 @@ function buildRecomendacionesScaffold(oitParaDecision: OITResult): string {
   if (!hasReal) {
     return (
       "Base documental insuficiente para formular orientaciones estratégicas. " +
-      "Las recomendaciones requieren una base de evidencia territorial consolidada. " +
-      "[PENDIENTE: incorporar evidencia y ejecutar el análisis territorial.]"
+      "Las recomendaciones requieren una base de evidencia territorial consolidada."
     );
   }
 
-  const areasList = oitParaDecision.opportunities
-    .map((o, i) => `${i + 1}. ${o.title}`)
-    .join(" ");
+  const parts: string[] = [];
 
-  return (
-    `${oitParaDecision.opportunities.length} área(s) de intervención territorial ` +
-    `identificada(s) por el sistema: ${areasList}. ` +
-    "Estas áreas son candidaturas técnicas, no recomendaciones formales. " +
-    "[PENDIENTE DE AUTORÍA HUMANA: el equipo técnico debe formular las orientaciones " +
-    "estratégicas, validarlas con la ciudadanía y las instituciones, y redactar " +
-    "las recomendaciones definitivas.]"
+  // ── Intro ─────────────────────────────────────────────────────────────────
+  parts.push(
+    "A partir del diagnóstico territorial, se proponen las siguientes " +
+    "orientaciones estratégicas para consideración del equipo técnico, " +
+    "la ciudadanía y las instituciones:"
   );
+
+  // ── Orientaciones por área (título + rationale + cautelas) ────────────────
+  const orientaciones = oitParaDecision.opportunities
+    .map((area, i) => {
+      const cautionNote =
+        area.cautions.length > 0
+          ? ` Aspectos a considerar: ${area.cautions.slice(0, 2).join("; ")}.`
+          : "";
+      return `${i + 1}. ${area.title}\n${area.rationale}${cautionNote}`;
+    })
+    .join("\n\n");
+  parts.push(orientaciones);
+
+  // ── Tensiones no escaladas a monitorizar ─────────────────────────────────
+  if (reconciliacion.tensionesNoEscaladas.length > 0) {
+    parts.push(
+      `${reconciliacion.tensionesNoEscaladas.length} tensión(es) identificada(s) ` +
+      `como relevante(s) no han derivado en área de intervención; ` +
+      `se recomienda mantenerlas bajo seguimiento técnico.`
+    );
+  }
+
+  // ── Marcos estratégicos aplicados ────────────────────────────────────────
+  if (mit.marcosAplicados.length > 0) {
+    const marcos = mit.marcosAplicados.map((m) => m.framework).join(", ");
+    parts.push(
+      `El encaje con los marcos estratégicos aplicados (${marcos}) debe ` +
+      `explorarse para cada orientación, verificando la correspondencia con ` +
+      `sus objetivos y programas específicos.`
+    );
+  }
+
+  // ── Cautela de autoría ────────────────────────────────────────────────────
+  parts.push(
+    "Estas orientaciones son propuestas técnicas preliminares, no recomendaciones " +
+    "formales. El equipo técnico, la ciudadanía y las instituciones son quienes " +
+    "deliberan y aprueban las recomendaciones definitivas del Plan Local de Salud."
+  );
+
+  return parts.join("\n\n");
 }
