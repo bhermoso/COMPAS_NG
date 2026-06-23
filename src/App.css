@@ -2563,47 +2563,48 @@ h3 {
   margin: 0 0 24px;
 }
 
-.psl-doc-framework-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+.psl-doc-framework-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.psl-doc-framework-card {
-  border-radius: 10px;
-  padding: 16px 18px;
-  border-left: 4px solid transparent;
+.psl-doc-framework-item {
+  padding: 12px 0 12px 20px;
+  border-left: 3px solid #0074c8;
+  margin-bottom: 14px;
 }
 
-.psl-doc-framework-card--blue   { background: #eef6ff; border-color: #0074c8; }
-.psl-doc-framework-card--green  { background: #f0fdf4; border-color: #16a34a; }
-.psl-doc-framework-card--lime   { background: #f7fee7; border-color: #94d40b; }
-.psl-doc-framework-card--amber  { background: #fffbeb; border-color: #ffb61b; }
-.psl-doc-framework-card--orange { background: #fff7ed; border-color: #ff6600; }
-.psl-doc-framework-card--red    { background: #fff1f2; border-color: #dc143c; }
-
-.psl-doc-framework-card__id {
+.psl-doc-framework-item dt {
   margin: 0 0 4px;
+}
+
+.psl-doc-framework-item__id {
+  display: block;
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #1e293b;
+  color: #0074c8;
+  margin-bottom: 2px;
 }
 
-.psl-doc-framework-card__title {
-  margin: 0 0 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
+.psl-doc-framework-item__title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: #1e293b;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
-.psl-doc-framework-card__desc {
+.psl-doc-framework-item__desc {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #526070;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* ── Health report reference ─────────────────────────────────────── */
@@ -3178,7 +3179,6 @@ h3 {
 
 @media (max-width: 768px) {
   .psl-doc-kpi-grid       { grid-template-columns: repeat(2, 1fr); }
-  .psl-doc-framework-grid { grid-template-columns: 1fr; }
   .psl-doc-evidence-grid  { flex-direction: column; }
   .psl-doc-evidence-cell  { flex-direction: row; align-items: center; text-align: left; gap: 14px; }
   .psl-doc-evidence-cell__count { font-size: 1.6rem; margin-bottom: 0; }

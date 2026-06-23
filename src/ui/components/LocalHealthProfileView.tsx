@@ -69,6 +69,12 @@ function InterpretationBox({ label, children }: { label: string; children: React
   );
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function stripBrackets(text: string): string {
+  return text.replace(/\s*\[[^\]]*\]\s*/g, " ").trim();
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthProfileViewProps) {
@@ -191,52 +197,48 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
           la metodología de la Red Local de Acción en Salud (RELAS) y el
           enfoque salutogénico orientado a activos comunitarios.
         </p>
-        <div className="psl-doc-framework-grid">
+        <dl className="psl-doc-framework-list">
           {[
             {
               id: "EPVSA",
-              color: "blue",
               title: "Estrategia de Promoción de la Vida Saludable 2024–2030",
               desc: "Marco estratégico autonómico. Define líneas de actuación en alimentación, actividad física, bienestar emocional, entornos y estilos de vida.",
             },
             {
               id: "RELAS",
-              color: "green",
               title: "Red Local de Acción en Salud",
               desc: "Marco metodológico de referencia. Articula diagnóstico participativo, priorización ciudadana, planificación e implementación en red municipal.",
             },
             {
               id: "Salutogénesis",
-              color: "lime",
               title: "Enfoque salutogénico y basado en activos",
               desc: "Orienta el análisis hacia los recursos, capacidades y fortalezas del territorio, complementando el análisis de necesidades.",
             },
             {
               id: "Determinantes sociales",
-              color: "amber",
               title: "Determinantes sociales de la salud",
               desc: "Integra condiciones de vida, trabajo, educación, vivienda y equidad como factores estructurales que determinan los resultados de salud.",
             },
             {
               id: "Salud en Todas las Políticas",
-              color: "orange",
               title: "Salud en Todas las Políticas",
               desc: "Promueve la acción intersectorial local, incorporando la salud en las decisiones de urbanismo, educación, servicios sociales y cultura.",
             },
             {
               id: "Participación ciudadana",
-              color: "red",
               title: "Acción comunitaria y participación",
               desc: "La comunidad es actora del diagnóstico, la priorización y la acción. La voz ciudadana informa y valida las decisiones de planificación.",
             },
           ].map((f) => (
-            <div key={f.id} className={`psl-doc-framework-card psl-doc-framework-card--${f.color}`}>
-              <p className="psl-doc-framework-card__id">{f.id}</p>
-              <p className="psl-doc-framework-card__title">{f.title}</p>
-              <p className="psl-doc-framework-card__desc">{f.desc}</p>
+            <div key={f.id} className="psl-doc-framework-item">
+              <dt>
+                <span className="psl-doc-framework-item__id">{f.id}</span>
+                <span className="psl-doc-framework-item__title">{f.title}</span>
+              </dt>
+              <dd className="psl-doc-framework-item__desc">{f.desc}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </section>
 
       {/* ── II: Informe de Salud ──────────────────────────────────────────── */}
@@ -483,7 +485,12 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         <SectionHeader num="V" title="Conclusiones" />
         <div className="psl-doc-scaffold-block">
           <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
-          <p className="psl-doc-scaffold-block__content">{psl.conclusiones.content}</p>
+          {(() => {
+            const clean = stripBrackets(psl.conclusiones.content);
+            return clean ? (
+              <p className="psl-doc-scaffold-block__content">{clean}</p>
+            ) : null;
+          })()}
           <p className="psl-doc-scaffold-block__note">{psl.conclusiones.authorshipNote}</p>
         </div>
       </section>
@@ -493,7 +500,12 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         <SectionHeader num="VI" title="Recomendaciones" />
         <div className="psl-doc-scaffold-block">
           <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
-          <p className="psl-doc-scaffold-block__content">{psl.recomendaciones.content}</p>
+          {(() => {
+            const clean = stripBrackets(psl.recomendaciones.content);
+            return clean ? (
+              <p className="psl-doc-scaffold-block__content">{clean}</p>
+            ) : null;
+          })()}
           <p className="psl-doc-scaffold-block__note">{psl.recomendaciones.authorshipNote}</p>
         </div>
       </section>
