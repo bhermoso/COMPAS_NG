@@ -69,6 +69,33 @@ function InterpretationBox({ label, children }: { label: string; children: React
   );
 }
 
+// ── Tarea 1: Índice de capítulos ──────────────────────────────────────────────
+
+const CHAPTERS = [
+  { href: "#psl-resumen",  label: "Resumen" },
+  { href: "#psl-cap-i",   label: "I · Marco estratégico" },
+  { href: "#psl-cap-ii",  label: "II · Informe de Salud" },
+  { href: "#psl-cap-iii", label: "III · Diagnóstico" },
+  { href: "#psl-cap-iv",  label: "IV · Interpretación" },
+  { href: "#psl-cap-v",   label: "V · Conclusiones" },
+  { href: "#psl-cap-vi",  label: "VI · Recomendaciones" },
+  { href: "#psl-cap-vii", label: "VII · Priorización" },
+] as const;
+
+function PslChapterNav() {
+  return (
+    <nav className="psl-doc-chapter-nav" aria-label="Capítulos del perfil">
+      <div className="psl-doc-chapter-nav__inner">
+        {CHAPTERS.map((ch) => (
+          <a key={ch.href} href={ch.href} className="psl-doc-chapter-nav__link">
+            {ch.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function stripBrackets(text: string): string {
@@ -123,16 +150,30 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         </div>
       )}
 
+      {/* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */}
+      <PslChapterNav />
+
       {/* ── Resumen ejecutivo ─────────────────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-resumen" className="psl-doc-section workspace-panel">
         <SectionHeader num="Resumen" title={`La salud en ${municipalityName}`} />
 
         {isEmpty ? (
-          <div className="psl-doc-notice">
-            <strong>Base documental no disponible.</strong> Incorpora documentos al
-            Repositorio documental para generar el Perfil de Salud Local basado en
-            evidencia territorial. Sin evidencia no es posible construir una lectura
-            diagnóstica del municipio.
+          /* Tarea 2: Estado vacío positivo y constructivo */
+          <div className="psl-doc-resumen-empty">
+            <p className="psl-doc-resumen-empty__lead">
+              Este Perfil de Salud Local inicia la caracterización territorial de{" "}
+              <strong>{municipalityName}</strong> para el período 2027–2030.
+            </p>
+            <p className="psl-doc-resumen-empty__body">
+              El diagnóstico se construirá de forma progresiva a medida que se incorporen
+              fuentes de evidencia al repositorio documental: el Informe de Salud, el
+              estudio IBSE, la priorización ciudadana y los estudios complementarios.
+              Cada fuente añadida enriquece la lectura territorial y acerca el perfil
+              a su estado completo.
+            </p>
+            <p className="psl-doc-resumen-empty__cta">
+              Comienza incorporando el Informe de Salud en el Repositorio documental.
+            </p>
           </div>
         ) : (
           <>
@@ -188,7 +229,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       </section>
 
       {/* ── I: Marco Estratégico ──────────────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-i" className="psl-doc-section workspace-panel">
         <SectionHeader num="I" title="Marco Estratégico" />
         <p className="psl-doc-framework-intro">
           Este Perfil de Salud Local se elabora dentro del marco de la planificación
@@ -242,7 +283,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       </section>
 
       {/* ── II: Informe de Salud ──────────────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-ii" className="psl-doc-section workspace-panel">
         <SectionHeader num="II" title="Informe de Salud" />
         {psl.healthReportTitle ? (
           <>
@@ -291,7 +332,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       </section>
 
       {/* ── III: Diagnóstico integrado ────────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-iii" className="psl-doc-section workspace-panel">
         <SectionHeader num="III" title="Diagnóstico integrado" />
 
         {isEmpty ? (
@@ -372,7 +413,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       </section>
 
       {/* ── IV: Interpretación territorial ───────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-iv" className="psl-doc-section workspace-panel">
         <SectionHeader num="IV" title="Interpretación territorial" />
         <p className="psl-doc-section-subtitle">
           ¿Qué ocurre en el municipio? ¿Por qué puede estar ocurriendo?
@@ -444,7 +485,6 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
               </div>
             )}
 
-            {/* Áreas de intervención — resultado operativo de la interpretación */}
             {psl.areasDeIntervencion.length > 0 && (
               <div className="psl-doc-areas">
                 <p className="psl-doc-areas__label">
@@ -480,8 +520,13 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         )}
       </section>
 
+      {/* ── Tarea 3: Transición entre análisis (I–IV) y elaboración (V–VII) ─ */}
+      <div className="psl-doc-level-break" role="separator" aria-label="Elaboración y validación humana">
+        <span>Elaboración y validación humana</span>
+      </div>
+
       {/* ── V: Conclusiones ──────────────────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-v" className="psl-doc-section workspace-panel">
         <SectionHeader num="V" title="Conclusiones" />
         <div className="psl-doc-scaffold-block">
           <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
@@ -496,7 +541,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       </section>
 
       {/* ── VI: Recomendaciones ──────────────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-vi" className="psl-doc-section workspace-panel">
         <SectionHeader num="VI" title="Recomendaciones" />
         <div className="psl-doc-scaffold-block">
           <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
@@ -511,7 +556,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
       </section>
 
       {/* ── VII: Síntesis y Priorización ─────────────────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-cap-vii" className="psl-doc-section workspace-panel">
         <SectionHeader num="VII" title="Síntesis y Priorización" />
 
         {psl.priorizacion.hasTechnicalCandidatures && (
