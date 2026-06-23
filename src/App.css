@@ -2599,6 +2599,154 @@ h3 {
   cursor: not-allowed;
 }
 
+/* ── Editor de capítulos V/VI (Conclusiones y Recomendaciones) ────────── */
+
+.psl-chapter-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.psl-chapter-editor__authored {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-left: 3px solid #94d40b;
+  border-radius: 4px;
+}
+
+.psl-chapter-editor__authored-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #1e293b;
+  white-space: pre-wrap;
+}
+
+.psl-chapter-editor__edit-btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: #475569;
+  cursor: pointer;
+}
+
+.psl-chapter-editor__edit-btn:hover {
+  border-color: #0074c8;
+  color: #0074c8;
+}
+
+.psl-chapter-editor--editing {
+  gap: 10px;
+}
+
+.psl-chapter-editor__scaffold-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.psl-chapter-editor__textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #1e293b;
+  background: #fff;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.psl-chapter-editor__textarea:focus {
+  outline: none;
+  border-color: #0074c8;
+}
+
+.psl-chapter-editor__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.psl-chapter-editor__save-btn {
+  padding: 7px 16px;
+  background: #0074c8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.psl-chapter-editor__save-btn:hover {
+  background: #005fa3;
+}
+
+.psl-chapter-editor__save-btn:disabled {
+  background: #c9d6e6;
+  cursor: not-allowed;
+}
+
+.psl-chapter-editor__cancel-btn {
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.psl-chapter-editor__cancel-btn:hover {
+  border-color: #94a3b8;
+  color: #475569;
+}
+
+/* ── Editor deliberación Cap VII ─────────────────────────────────────── */
+
+.psl-deliberacion-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.psl-deliberacion-editor__documented {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-left: 3px solid #94d40b;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.psl-deliberacion-editor__badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #3d7a00;
+  background: #e8f9c8;
+  padding: 2px 8px;
+  border-radius: 3px;
+  align-self: flex-start;
+}
+
+.psl-deliberacion-editor__text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #1e293b;
+  white-space: pre-wrap;
+}
+
 /* ── Advertencia priorización sobre PSL sin validar ─────────────────── */
 
 .prio-psl-warning {

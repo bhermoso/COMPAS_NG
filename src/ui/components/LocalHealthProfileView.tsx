@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { LocalHealthProfile } from "../../domain/health-profile";
+import type { LocalHealthProfile, PSLScaffoldChapter } from "../../domain/health-profile";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
@@ -9,6 +9,9 @@ interface LocalHealthProfileViewProps {
   municipalityName: string;
   onValidate: (validatedBy: string) => void;
   onInvalidate: () => void;
+  onEditConclusion?: (content: string) => void;
+  onEditRecomendaciones?: (content: string) => void;
+  onDocumentarDeliberacion?: (nota: string) => void;
 }
 
 // ── Status label ──────────────────────────────────────────────────────────────
@@ -112,6 +115,168 @@ function formatDate(iso: string): string {
   });
 }
 
+// ── Chapter editor sub-component ─────────────────────────────────────────────
+// Renders either the authored content or the scaffold preview, plus an
+// inline textarea that writes back through the supplied onSave callback.
+// Only the text content is edited; the status transitions are handled by the
+// parent handler in App.tsx (scaffold → authored when the user saves).
+
+interface PSLChapterEditorProps {
+  chapter: PSLScaffoldChapter;
+  label: string;
+  onSave: (content: string) => void;
+}
+
+function PSLChapterEditor({ chapter, label, onSave }: PSLChapterEditorProps) {
+  const isAuthored = chapter.status === "authored";
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(
+    isAuthored ? chapter.content : stripBrackets(chapter.content)
+  );
+
+  // Sync draft when an external save updates the chapter (e.g. after persist)
+  const [prevContent, setPrevContent] = useState(chapter.content);
+  if (chapter.content !== prevContent) {
+    setDraft(isAuthored ? chapter.content : stripBrackets(chapter.content));
+    setPrevContent(chapter.content);
+  }
+
+  if (!editing) {
+    return (
+      <div className="psl-chapter-editor">
+        {isAuthored ? (
+          <div className="psl-chapter-editor__authored">
+            <p className="psl-chapter-editor__authored-text">{chapter.content}</p>
+          </div>
+        ) : (
+          <div className="psl-doc-scaffold-block">
+            <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
+            {stripBrackets(chapter.content) && (
+              <p className="psl-doc-scaffold-block__content">
+                {stripBrackets(chapter.content)}
+              </p>
+            )}
+            <p className="psl-doc-scaffold-block__note">{chapter.authorshipNote}</p>
+          </div>
+        )}
+        <button
+          className="psl-chapter-editor__edit-btn"
+          onClick={() => setEditing(true)}
+        >
+          {isAuthored ? `Editar ${label}` : `Redactar ${label}`}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="psl-chapter-editor psl-chapter-editor--editing">
+      {!isAuthored && (
+        <p className="psl-chapter-editor__scaffold-hint">
+          {stripBrackets(chapter.content)}
+        </p>
+      )}
+      <textarea
+        className="psl-chapter-editor__textarea"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={8}
+        placeholder={`Redacta aquí las ${label.toLowerCase()} del equipo técnico…`}
+      />
+      <div className="psl-chapter-editor__actions">
+        <button
+          className="psl-chapter-editor__save-btn"
+          onClick={() => { onSave(draft.trim()); setEditing(false); }}
+          disabled={!draft.trim()}
+        >
+          Guardar {label}
+        </button>
+        <button
+          className="psl-chapter-editor__cancel-btn"
+          onClick={() => { setDraft(isAuthored ? chapter.content : stripBrackets(chapter.content)); setEditing(false); }}
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Deliberation editor sub-component ────────────────────────────────────────
+
+interface PSLDeliberacionEditorProps {
+  deliberacionNota: string;
+  consensoDocumentado: boolean;
+  onSave: (nota: string) => void;
+}
+
+function PSLDeliberacionEditor({ deliberacionNota, consensoDocumentado, onSave }: PSLDeliberacionEditorProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(consensoDocumentado ? deliberacionNota : "");
+
+  const [prevNota, setPrevNota] = useState(deliberacionNota);
+  if (deliberacionNota !== prevNota) {
+    setDraft(consensoDocumentado ? deliberacionNota : "");
+    setPrevNota(deliberacionNota);
+  }
+
+  if (!editing) {
+    return (
+      <div className="psl-deliberacion-editor">
+        {consensoDocumentado ? (
+          <div className="psl-deliberacion-editor__documented">
+            <span className="psl-deliberacion-editor__badge">Consenso documentado</span>
+            <p className="psl-deliberacion-editor__text">{deliberacionNota}</p>
+          </div>
+        ) : (
+          <div className="psl-doc-scaffold-block psl-doc-scaffold-block--deliberation">
+            <ScaffoldBadge text="Deliberación pendiente · Autoría humana requerida" />
+            <p className="psl-doc-scaffold-block__content">{deliberacionNota}</p>
+          </div>
+        )}
+        <button
+          className="psl-chapter-editor__edit-btn"
+          onClick={() => setEditing(true)}
+        >
+          {consensoDocumentado ? "Editar deliberación" : "Documentar deliberación y consenso"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="psl-deliberacion-editor psl-deliberacion-editor--editing">
+      <p className="psl-chapter-editor__scaffold-hint">
+        Documenta el resultado de la deliberación: prioridades acordadas, criterios
+        utilizados y forma en que se alcanzó el consenso entre el equipo técnico,
+        la ciudadanía y las instituciones.
+      </p>
+      <textarea
+        className="psl-chapter-editor__textarea"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={6}
+        placeholder="Describe el proceso deliberativo y las prioridades definitivas acordadas…"
+      />
+      <div className="psl-chapter-editor__actions">
+        <button
+          className="psl-chapter-editor__save-btn"
+          onClick={() => { onSave(draft.trim()); setEditing(false); }}
+          disabled={!draft.trim()}
+        >
+          Documentar consenso
+        </button>
+        <button
+          className="psl-chapter-editor__cancel-btn"
+          onClick={() => { setDraft(consensoDocumentado ? deliberacionNota : ""); setEditing(false); }}
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Validation action sub-component ──────────────────────────────────────────
 
 function PSLValidationAction({
@@ -161,6 +326,9 @@ export function LocalHealthProfileView({
   municipalityName,
   onValidate,
   onInvalidate,
+  onEditConclusion,
+  onEditRecomendaciones,
+  onDocumentarDeliberacion,
 }: LocalHealthProfileViewProps) {
   const isEmpty = psl.totalEvidenceAtoms === 0;
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
@@ -622,31 +790,45 @@ export function LocalHealthProfileView({
       {/* ── V: Conclusiones ──────────────────────────────────────────────── */}
       <section id="psl-cap-v" className="psl-doc-section workspace-panel">
         <SectionHeader num="V" title="Conclusiones" />
-        <div className="psl-doc-scaffold-block">
-          <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
-          {(() => {
-            const clean = stripBrackets(psl.conclusiones.content);
-            return clean ? (
-              <p className="psl-doc-scaffold-block__content">{clean}</p>
-            ) : null;
-          })()}
-          <p className="psl-doc-scaffold-block__note">{psl.conclusiones.authorshipNote}</p>
-        </div>
+        {psl.status === "validated" && onEditConclusion ? (
+          <PSLChapterEditor
+            chapter={psl.conclusiones}
+            label="Conclusiones"
+            onSave={onEditConclusion}
+          />
+        ) : (
+          <div className="psl-doc-scaffold-block">
+            <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
+            {stripBrackets(psl.conclusiones.content) && (
+              <p className="psl-doc-scaffold-block__content">
+                {stripBrackets(psl.conclusiones.content)}
+              </p>
+            )}
+            <p className="psl-doc-scaffold-block__note">{psl.conclusiones.authorshipNote}</p>
+          </div>
+        )}
       </section>
 
       {/* ── VI: Recomendaciones ──────────────────────────────────────────── */}
       <section id="psl-cap-vi" className="psl-doc-section workspace-panel">
         <SectionHeader num="VI" title="Recomendaciones" />
-        <div className="psl-doc-scaffold-block">
-          <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
-          {(() => {
-            const clean = stripBrackets(psl.recomendaciones.content);
-            return clean ? (
-              <p className="psl-doc-scaffold-block__content">{clean}</p>
-            ) : null;
-          })()}
-          <p className="psl-doc-scaffold-block__note">{psl.recomendaciones.authorshipNote}</p>
-        </div>
+        {psl.status === "validated" && onEditRecomendaciones ? (
+          <PSLChapterEditor
+            chapter={psl.recomendaciones}
+            label="Recomendaciones"
+            onSave={onEditRecomendaciones}
+          />
+        ) : (
+          <div className="psl-doc-scaffold-block">
+            <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
+            {stripBrackets(psl.recomendaciones.content) && (
+              <p className="psl-doc-scaffold-block__content">
+                {stripBrackets(psl.recomendaciones.content)}
+              </p>
+            )}
+            <p className="psl-doc-scaffold-block__note">{psl.recomendaciones.authorshipNote}</p>
+          </div>
+        )}
       </section>
 
       {/* ── VII: Síntesis y Priorización ─────────────────────────────────── */}
@@ -689,10 +871,18 @@ export function LocalHealthProfileView({
           </div>
         )}
 
-        <div className="psl-doc-scaffold-block psl-doc-scaffold-block--deliberation">
-          <ScaffoldBadge text="Deliberación pendiente · Autoría humana requerida" />
-          <p className="psl-doc-scaffold-block__content">{psl.priorizacion.deliberacionNota}</p>
-        </div>
+        {psl.status === "validated" && onDocumentarDeliberacion ? (
+          <PSLDeliberacionEditor
+            deliberacionNota={psl.priorizacion.deliberacionNota}
+            consensoDocumentado={psl.priorizacion.consensoDocumentado}
+            onSave={onDocumentarDeliberacion}
+          />
+        ) : (
+          <div className="psl-doc-scaffold-block psl-doc-scaffold-block--deliberation">
+            <ScaffoldBadge text="Deliberación pendiente · Autoría humana requerida" />
+            <p className="psl-doc-scaffold-block__content">{psl.priorizacion.deliberacionNota}</p>
+          </div>
+        )}
 
         {psl.priorizacionStatus === "scaffold" && (
           <div className="psl-doc-notice psl-doc-notice--info">

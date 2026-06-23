@@ -213,6 +213,54 @@ export default function App() {
     });
   }, []);
 
+  const handleEditPSLConclusion = useCallback((content: string) => {
+    setWorkspace((prev) => {
+      if (!prev.validatedPSL) return prev;
+      return {
+        ...prev,
+        validatedPSL: {
+          ...prev.validatedPSL,
+          conclusiones: { ...prev.validatedPSL.conclusiones, content, status: "authored" as const },
+        },
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
+  const handleEditPSLRecomendaciones = useCallback((content: string) => {
+    setWorkspace((prev) => {
+      if (!prev.validatedPSL) return prev;
+      return {
+        ...prev,
+        validatedPSL: {
+          ...prev.validatedPSL,
+          recomendaciones: { ...prev.validatedPSL.recomendaciones, content, status: "authored" as const },
+        },
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
+  const handleDocumentarDeliberacion = useCallback((nota: string) => {
+    setWorkspace((prev) => {
+      if (!prev.validatedPSL) return prev;
+      const consenso = nota.trim().length > 0;
+      return {
+        ...prev,
+        validatedPSL: {
+          ...prev.validatedPSL,
+          priorizacion: {
+            ...prev.validatedPSL.priorizacion,
+            deliberacionNota: nota,
+            consensoDocumentado: consenso,
+          },
+          priorizacionStatus: consenso ? "complete" as const : prev.validatedPSL.priorizacionStatus,
+        },
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
   // En ese caso, los motores generan contenido de plantilla sin valor real para el plan.
@@ -986,6 +1034,9 @@ export default function App() {
             municipalityName={municipality.name}
             onValidate={handleValidatePSL}
             onInvalidate={handleInvalidatePSL}
+            onEditConclusion={handleEditPSLConclusion}
+            onEditRecomendaciones={handleEditPSLRecomendaciones}
+            onDocumentarDeliberacion={handleDocumentarDeliberacion}
           />
         )}
 
