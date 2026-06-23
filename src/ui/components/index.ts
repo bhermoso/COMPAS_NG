@@ -5,6 +5,7 @@ export * from "./EvidenceStorePanel";
 export * from "./IBSEPanel";
 export * from "./MunicipalInventoryPanel";
 export * from "./LocalHealthProfilePanel";
+export * from "./LocalHealthProfileView";
 export * from "./ThematicPrioritisationPanel";
 export * from "./PipelineTracePanel";
 export * from "./LT1Panel";

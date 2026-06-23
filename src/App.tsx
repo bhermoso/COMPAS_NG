@@ -10,6 +10,7 @@ import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
+import { buildLocalHealthProfile } from "./application/health-profile";
 import {
   createHealthReportDocumentFromDocx,
   createHealthReportDocumentFromPdf,
@@ -40,6 +41,7 @@ import {
   QuestionnaireBuilderPanel,
   MunicipalInventoryPanel,
   LocalHealthProfilePanel,
+  LocalHealthProfileView,
   StrategicFrameworkPanel,
   ThematicPrioritisationPanel,
   ThematicPrioritisationModal,
@@ -79,12 +81,13 @@ function slugifyMunicipalityId(name: string): string {
 
 // ── Tipos y constantes de módulo ─────────────────────────────
 
-type AppView = "inicio" | "repositorio" | "analisis" | "priorizacion" | "plan";
+type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "priorizacion" | "plan";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Repositorio documental" },
   { id: "analisis",      label: "Análisis territorial" },
+  { id: "psl",           label: "Perfil de Salud Local" },
   { id: "priorizacion",  label: "Priorizaciones" },
   { id: "plan",          label: "Plan Local de Salud" },
 ];
@@ -161,6 +164,20 @@ export default function App() {
     const snapshot = createMunicipalSnapshot(workspace);
     return createMunicipalInventory(snapshot);
   }, [workspace]);
+
+  const currentPSL = useMemo(
+    () =>
+      buildLocalHealthProfile({
+        sanitizedStore: runtime.integrityGuard.sanitizedStore,
+        integrityResult: runtime.integrityGuard,
+        mit: runtime.mit,
+        reconciliacion: runtime.reconciliacion,
+        oitParaDecision: runtime.oit,
+        workspace: runtime.workspace,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [runtime.mit.version, runtime.workspace.thematicPrioritisation]
+  );
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -875,7 +892,15 @@ export default function App() {
           </>
         )}
 
-        {/* ── ④ Priorizaciones ────────────────────────────── */}
+        {/* ── ④ Perfil de Salud Local ──────────────────────── */}
+        {view === "psl" && (
+          <LocalHealthProfileView
+            psl={currentPSL}
+            municipalityName={municipality.name}
+          />
+        )}
+
+        {/* ── ⑤ Priorizaciones ────────────────────────────── */}
         {view === "priorizacion" && (
           <>
             <section className="workspace-panel">
