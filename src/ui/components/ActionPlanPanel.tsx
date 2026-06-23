@@ -5,7 +5,32 @@ interface ActionPlanPanelProps {
   isEmpty?: boolean;
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("es-ES", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+}
+
 export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanelProps) {
+  const { pslReference } = actionPlan;
+
+  const provenanceText = (() => {
+    if (pslReference.isStale) {
+      return "Basado en un Perfil de Salud Local validado que ha quedado desactualizado por cambios posteriores en la evidencia.";
+    }
+    if (pslReference.status === "validated" && pslReference.validatedAt) {
+      const who = pslReference.validatedBy ? ` por ${pslReference.validatedBy}` : "";
+      return `Basado en un Perfil de Salud Local validado técnicamente el ${formatDate(pslReference.validatedAt)}${who}.`;
+    }
+    return "Basado en un Perfil de Salud Local en estado de borrador. Se recomienda validar el perfil antes de formalizar el plan.";
+  })();
+
+  const provenanceMod = pslReference.isStale
+    ? "plan-psl-provenance--stale"
+    : pslReference.status === "validated"
+      ? "plan-psl-provenance--validated"
+      : "plan-psl-provenance--draft";
+
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -17,6 +42,11 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanel
           Borrador técnico inicial. No genera agenda ni compromisos ejecutivos
           hasta validación humana.
         </p>
+      </div>
+
+      {/* ── Procedencia: referencia al PSL origen ──────────────── */}
+      <div className={`plan-psl-provenance ${provenanceMod}`}>
+        {provenanceText}
       </div>
 
       {isEmpty ? (

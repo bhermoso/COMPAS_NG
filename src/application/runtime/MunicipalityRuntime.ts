@@ -143,7 +143,7 @@ export function createMunicipalityRuntime(
   // ── Nivel 3: Capa de Decisión (alimentada exclusivamente por el PSL)
   const prioritization = generatePrioritization(psl);
   const epvsa = translatePrioritizationToEPVSA(prioritization);
-  const actionPlan = generateActionPlanDraft(epvsa, frameworks);
+  const actionPlan = generateActionPlanDraft(epvsa, frameworks, psl, pslIsStale);
   const agenda = generateAgendaDraft(actionPlan);
   const monitoring = generateMonitoringDraft(agenda);
 

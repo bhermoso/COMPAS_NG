@@ -308,6 +308,35 @@ h3 {
   color: #334155;
 }
 
+/* ── Procedencia PSL en el Plan de Acción ────────────────────────── */
+
+.plan-psl-provenance {
+  margin-bottom: 20px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  border-left: 3px solid transparent;
+}
+
+.plan-psl-provenance--validated {
+  border-left-color: #94d40b;
+  background: #f8fafc;
+  color: #526070;
+}
+
+.plan-psl-provenance--draft {
+  border-left-color: #ffb61b;
+  background: #fff7e6;
+  color: #526070;
+}
+
+.plan-psl-provenance--stale {
+  border-left-color: #ff6600;
+  background: #fff7e6;
+  color: #526070;
+}
+
 /* ── Navegación principal ───────────────────────────────── */
 
 .app-nav {

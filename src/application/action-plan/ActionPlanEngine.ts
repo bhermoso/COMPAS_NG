@@ -4,6 +4,22 @@ import type {
   StrategicLineSuggestion,
 } from "../epvsa";
 import type { StrategicElement } from "../../domain/strategy";
+import type { LocalHealthProfile } from "../../domain/health-profile";
+
+// ── PSL Reference ─────────────────────────────────────────────────────────
+// Snapshot del estado del PSL en el momento en que se generó el plan.
+// No almacena el PSL completo — solo los metadatos necesarios para la
+// trazabilidad institucional: quién validó, cuándo, y si la evidencia
+// cambió desde entonces.
+
+export interface PSLReference {
+  pslId: string;
+  status: LocalHealthProfile["status"];
+  generatedAt: string;
+  validatedAt?: string;
+  validatedBy?: string;
+  isStale: boolean;
+}
 
 // ── New type: FrameworkAlignment ──────────────────────────────────────────
 // Describes how one objective / action aligns with a strategic framework
@@ -52,6 +68,9 @@ export interface ActionPlanIndicator {
 
 export interface ActionPlanDraft {
   title: string;
+  // Trazabilidad: estado del PSL en el momento de generación del plan.
+  // Responde: ¿con qué PSL se generó? ¿estaba validado? ¿quién lo validó?
+  pslReference: PSLReference;
   objectives: ActionPlanObjective[];
   actions: ActionPlanAction[];
   indicators: ActionPlanIndicator[];
@@ -79,14 +98,26 @@ const THEMATIC_MATCH_LEVELS: ReadonlySet<StrategicElement["level"]> = new Set([
 ]);
 
 // ── Public entry point ─────────────────────────────────────────────────────
-// strategicFrameworks defaults to [] to preserve backward compatibility.
-// Pass getAllStrategicElements() from StrategicFrameworkRegistry for full
-// multi-framework enrichment.
+// PSL-C1: el Plan de Acción recibe el PSL que lo origina y conserva una
+// referencia ligera a su estado en el momento de generación.
+// Esto garantiza que cualquier plan pueda responder: ¿con qué PSL fue
+// construido?, ¿estaba validado?, ¿quién lo validó?, ¿sigue vigente?
 
 export function generateActionPlanDraft(
   epvsa: EPVSATranslationResult,
-  strategicFrameworks: readonly StrategicElement[] = []
+  strategicFrameworks: readonly StrategicElement[],
+  psl: LocalHealthProfile,
+  pslIsStale: boolean,
 ): ActionPlanDraft {
+  const pslReference: PSLReference = {
+    pslId: psl.id,
+    status: psl.status,
+    generatedAt: psl.generatedAt,
+    validatedAt: psl.validatedAt,
+    validatedBy: psl.validatedBy,
+    isStale: pslIsStale,
+  };
+
   const enriched = epvsa.suggestions.map((suggestion, index) => {
     const alignments = findFrameworkAlignments(suggestion, strategicFrameworks);
     return {
@@ -118,6 +149,7 @@ export function generateActionPlanDraft(
 
   return {
     title: "Borrador inicial de Plan de Acción Local en Salud",
+    pslReference,
     objectives,
     actions,
     indicators,
