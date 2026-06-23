@@ -52,6 +52,8 @@ export interface MunicipalityRuntime {
   // Objeto canónico que sintetiza el Nivel 2 y es el único puente autorizado al Nivel 3.
   // PSL-C1: ningún componente del Nivel 3 consume Nivel 2 sin mediación del PSL.
   psl: LocalHealthProfile;
+  // true si psl.status === "validated" pero la evidencia ha cambiado desde la validación.
+  pslIsStale: boolean;
 
   // Nivel 3 — Capa de Decisión (alimentada exclusivamente por el PSL)
   prioritization: PrioritizationResult;
@@ -118,14 +120,25 @@ export function createMunicipalityRuntime(
   // PSL-C1: la priorización y todos los motores del Nivel 3 consumen exclusivamente
   // el PSL. El PSL sintetiza el análisis territorial (MIT + Reconciliación + OIT)
   // y lo expone como objeto canónico validable.
-  const psl = buildLocalHealthProfile({
-    sanitizedStore: integrityGuard.sanitizedStore,
-    integrityResult: integrityGuard,
-    mit,
-    reconciliacion,
-    oitParaDecision,
-    workspace: input.workspace,
-  });
+  //
+  // Prioridad de fuente:
+  //   1. workspace.validatedPSL — si existe, el equipo técnico lo ha validado;
+  //      se usa directamente sin recalcular (preserva status, validatedAt, validatedBy).
+  //   2. buildLocalHealthProfile() — genera un borrador fresco en estado "generated".
+  const psl: LocalHealthProfile = input.workspace.validatedPSL
+    ?? buildLocalHealthProfile({
+        sanitizedStore: integrityGuard.sanitizedStore,
+        integrityResult: integrityGuard,
+        mit,
+        reconciliacion,
+        oitParaDecision,
+        workspace: input.workspace,
+      });
+
+  // Detectar si la evidencia cambió desde la validación del PSL.
+  const pslIsStale =
+    psl.status === "validated" &&
+    psl.evidenceStoreVersion !== integrityGuard.sanitizedStore.updatedAt;
 
   // ── Nivel 3: Capa de Decisión (alimentada exclusivamente por el PSL)
   const prioritization = generatePrioritization(psl);
@@ -142,6 +155,7 @@ export function createMunicipalityRuntime(
     lt1,
     oit,
     psl,
+    pslIsStale,
     pipeline: buildPipelineTrace(input.workspace, integrityGuard, mit, reconciliacion, {
       prioritization,
       epvsa,

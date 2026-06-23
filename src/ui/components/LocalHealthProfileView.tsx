@@ -1,10 +1,14 @@
+import { useState } from "react";
 import type { LocalHealthProfile } from "../../domain/health-profile";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
 interface LocalHealthProfileViewProps {
   psl: LocalHealthProfile;
+  pslIsStale: boolean;
   municipalityName: string;
+  onValidate: (validatedBy: string) => void;
+  onInvalidate: () => void;
 }
 
 // ── Status label ──────────────────────────────────────────────────────────────
@@ -102,9 +106,62 @@ function stripBrackets(text: string): string {
   return text.replace(/\s*\[[^\]]*\]\s*/g, " ").trim();
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("es-ES", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+}
+
+// ── Validation action sub-component ──────────────────────────────────────────
+
+function PSLValidationAction({
+  onValidate,
+}: {
+  onValidate: (validatedBy: string) => void;
+}) {
+  const [author, setAuthor] = useState("Equipo técnico");
+
+  return (
+    <div className="psl-validate-action">
+      <div className="psl-validate-action__body">
+        <p className="psl-validate-action__text">
+          Al validar técnicamente, el equipo confirma que este borrador ha sido
+          revisado y es adecuado para fundamentar la priorización municipal.
+        </p>
+        <div className="psl-validate-action__form">
+          <label className="psl-validate-action__label" htmlFor="psl-validated-by">
+            Validado por
+          </label>
+          <input
+            id="psl-validated-by"
+            className="psl-validate-action__input"
+            type="text"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            maxLength={120}
+          />
+          <button
+            className="psl-validate-action__btn"
+            onClick={() => onValidate(author)}
+            disabled={!author.trim()}
+          >
+            Validar técnicamente
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthProfileViewProps) {
+export function LocalHealthProfileView({
+  psl,
+  pslIsStale,
+  municipalityName,
+  onValidate,
+  onInvalidate,
+}: LocalHealthProfileViewProps) {
   const isEmpty = psl.totalEvidenceAtoms === 0;
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
     year: "numeric",
@@ -139,7 +196,7 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
         </div>
       </header>
 
-      {/* ── Aviso de estado borrador ──────────────────────────────────────── */}
+      {/* ── Estado: borrador / validado / validado obsoleto ───────────────── */}
       {psl.status === "generated" && (
         <div className="psl-doc-draft-notice">
           <span className="psl-doc-draft-notice__label">Borrador</span>
@@ -148,6 +205,43 @@ export function LocalHealthProfileView({ psl, municipalityName }: LocalHealthPro
           la evidencia disponible. Requiere revisión y validación técnica antes
           de su uso oficial.
         </div>
+      )}
+
+      {psl.status === "validated" && !pslIsStale && (
+        <div className="psl-doc-validated-notice">
+          <span className="psl-doc-validated-notice__label">Validado</span>
+          <span className="psl-doc-validated-notice__meta">
+            {psl.validatedAt && `el ${formatDate(psl.validatedAt)}`}
+            {psl.validatedBy && ` · ${psl.validatedBy}`}
+          </span>
+          <button
+            className="psl-doc-validated-notice__invalidate"
+            onClick={onInvalidate}
+            title="Revertir a borrador para incorporar nueva evidencia"
+          >
+            Revertir a borrador
+          </button>
+        </div>
+      )}
+
+      {psl.status === "validated" && pslIsStale && (
+        <div className="psl-doc-stale-notice">
+          <span className="psl-doc-stale-notice__label">Perfil desactualizado</span>
+          La evidencia ha cambiado desde la validación del{" "}
+          {psl.validatedAt ? formatDate(psl.validatedAt) : "perfil"}.
+          Este perfil puede no reflejar la situación territorial actual.{" "}
+          <button
+            className="psl-doc-stale-notice__action"
+            onClick={onInvalidate}
+          >
+            Regenerar perfil
+          </button>
+        </div>
+      )}
+
+      {/* ── Acción de validación (solo cuando el PSL está en borrador) ───── */}
+      {psl.status === "generated" && (
+        <PSLValidationAction onValidate={onValidate} />
       )}
 
       {/* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */}

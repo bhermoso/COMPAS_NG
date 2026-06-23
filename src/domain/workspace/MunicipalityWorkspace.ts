@@ -4,6 +4,7 @@ import type { EvidenceStore } from "../evidence";
 import type { HealthReportDocument } from "../health-report";
 import type { IBSEStudy } from "../ibse";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
+import type { LocalHealthProfile } from "../health-profile";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -48,6 +49,13 @@ export interface MunicipalityWorkspace {
    * Máximo configurado en la capa de aplicación (App.tsx).
    */
   historialEstadosTerritorial?: TerritorialStateRecord[];
+  /**
+   * PSL validado técnicamente por el equipo.
+   * Cuando existe, el runtime lo usa como objeto canónico para el Nivel 3
+   * en lugar de regenerar uno nuevo en estado "generated".
+   * Se invalida explícitamente por el usuario cuando la evidencia cambia.
+   */
+  validatedPSL?: LocalHealthProfile;
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

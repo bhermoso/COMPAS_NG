@@ -1,12 +1,19 @@
 import type { PrioritizationResult } from "../../application/prioritization";
+import type { LocalHealthProfileStatus } from "../../domain/health-profile";
 
 interface PrioritizationPanelProps {
   prioritization: PrioritizationResult;
+  pslStatus: LocalHealthProfileStatus;
+  pslIsStale: boolean;
 }
 
 export function PrioritizationPanel({
   prioritization,
+  pslStatus,
+  pslIsStale,
 }: PrioritizationPanelProps) {
+  const needsValidationWarning = pslStatus === "generated" || pslIsStale;
+
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -15,10 +22,21 @@ export function PrioritizationPanel({
           <h2>Candidatas iniciales a priorización</h2>
         </div>
         <p className="panel-note">
-          Propuesta preliminar derivada de OIT. No decide prioridades ni ordena
-          estratégicamente sin validación humana.
+          Propuesta derivada del Perfil de Salud Local. No decide prioridades ni ordena
+          estratégicamente sin validación humana y deliberación institucional.
         </p>
       </div>
+
+      {needsValidationWarning && (
+        <div className="prio-psl-warning">
+          <span className="prio-psl-warning__icon" aria-hidden="true">⚠</span>
+          <p className="prio-psl-warning__text">
+            {pslIsStale
+              ? "La evidencia del municipio ha cambiado desde que se validó el Perfil de Salud Local. Estas candidaturas se basan en un perfil que puede no reflejar el estado actual del diagnóstico."
+              : "El Perfil de Salud Local que alimenta estas candidaturas está en borrador y no ha sido validado técnicamente. Los resultados deben considerarse orientativos. Valida el perfil en la pestaña «Perfil de Salud Local» antes de avanzar hacia la priorización formal."}
+          </p>
+        </div>
+      )}
 
       <div className="document-list">
         {prioritization.candidatePriorities.map((priority) => (
@@ -36,7 +54,7 @@ export function PrioritizationPanel({
                 ))}
               </ul>
             </div>
-            <span className="status-pill">validar</span>
+            <span className="status-pill">revisar</span>
           </article>
         ))}
       </div>

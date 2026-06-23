@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
@@ -188,6 +188,30 @@ export default function App() {
   }, [workspace]);
 
   // runtime.psl is built inside MunicipalityRuntime as the canonical Nivel 2 → Nivel 3 bridge.
+
+  // ── PSL lifecycle actions ────────────────────────────────────────────────────
+
+  const handleValidatePSL = useCallback((validatedBy: string) => {
+    const now = new Date().toISOString();
+    const validatedPSL = {
+      ...runtime.psl,
+      status: "validated" as const,
+      validatedAt: now,
+      validatedBy: validatedBy.trim() || "Equipo técnico",
+    };
+    setWorkspace((prev) => ({
+      ...prev,
+      validatedPSL,
+      updatedAt: now,
+    }));
+  }, [runtime.psl]);
+
+  const handleInvalidatePSL = useCallback(() => {
+    setWorkspace((prev) => {
+      const { validatedPSL: _removed, ...rest } = prev;
+      return { ...rest, updatedAt: new Date().toISOString() };
+    });
+  }, []);
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -945,7 +969,11 @@ export default function App() {
             <PipelineTracePanel pipeline={runtime.pipeline} />
             <LT1Panel lt1={runtime.lt1} />
             <OITPanel oit={runtime.oit} />
-            <PrioritizationPanel prioritization={runtime.prioritization} />
+            <PrioritizationPanel
+              prioritization={runtime.prioritization}
+              pslStatus={runtime.psl.status}
+              pslIsStale={runtime.pslIsStale}
+            />
             <EPVSAPanel epvsa={runtime.epvsa} />
           </>
         )}
@@ -954,7 +982,10 @@ export default function App() {
         {view === "psl" && (
           <LocalHealthProfileView
             psl={runtime.psl}
+            pslIsStale={runtime.pslIsStale}
             municipalityName={municipality.name}
+            onValidate={handleValidatePSL}
+            onInvalidate={handleInvalidatePSL}
           />
         )}
 

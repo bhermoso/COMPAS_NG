@@ -2398,6 +2398,205 @@ h3 {
   border-radius: 999px;
 }
 
+/* ── Validación técnica ──────────────────────────────────────────────── */
+
+.psl-doc-validated-notice {
+  max-width: 1120px;
+  margin: 0 auto 16px;
+  padding: 10px 20px;
+  background: #f8fafc;
+  border: 1px solid #e4eaf3;
+  border-left: 4px solid #94d40b;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.psl-doc-validated-notice__label {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #526070;
+  padding: 2px 8px;
+  background: #f8fafc;
+  border: 1px solid #94d40b;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.psl-doc-validated-notice__meta {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #526070;
+}
+
+.psl-doc-validated-notice__invalidate {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.psl-doc-validated-notice__invalidate:hover {
+  color: #64748b;
+}
+
+/* ── PSL desactualizado (stale) ──────────────────────────────────────── */
+
+.psl-doc-stale-notice {
+  max-width: 1120px;
+  margin: 0 auto 16px;
+  padding: 10px 20px;
+  background: #fff7e6;
+  border: 1px solid #ffb61b;
+  border-left: 4px solid #ff6600;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  color: #526070;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.psl-doc-stale-notice__label {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #ff6600;
+  padding: 2px 8px;
+  background: #fff7e6;
+  border: 1px solid #ffb61b;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.psl-doc-stale-notice__action {
+  background: none;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0074c8;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Acción de validación (inline, sin modal) ────────────────────────── */
+
+.psl-validate-action {
+  max-width: 1120px;
+  margin: 0 auto 4px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e4eaf3;
+  border-radius: 8px;
+}
+
+.psl-validate-action__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.psl-validate-action__text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #526070;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.psl-validate-action__form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.psl-validate-action__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.psl-validate-action__input {
+  border: 1px solid #e4eaf3;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  color: #1e293b;
+  background: #fff;
+  width: 240px;
+  outline: none;
+}
+
+.psl-validate-action__input:focus {
+  border-color: #0074c8;
+  box-shadow: 0 0 0 2px #eef6ff;
+}
+
+.psl-validate-action__btn {
+  padding: 7px 18px;
+  background: #0074c8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.psl-validate-action__btn:hover {
+  background: #005fa3;
+}
+
+.psl-validate-action__btn:disabled {
+  background: #c9d6e6;
+  cursor: not-allowed;
+}
+
+/* ── Advertencia priorización sobre PSL sin validar ─────────────────── */
+
+.prio-psl-warning {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #fff7e6;
+  border: 1px solid #ffb61b;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+}
+
+.prio-psl-warning__icon {
+  color: #ff6600;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.prio-psl-warning__text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #526070;
+  line-height: 1.6;
+}
+
 /* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */
 
 .psl-doc-chapter-nav {
