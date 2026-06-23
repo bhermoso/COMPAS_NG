@@ -10,7 +10,7 @@ import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import { createCompleteMunicipalityWorkspace } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
-import { buildLocalHealthProfile } from "./application/health-profile";
+// buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import {
   createHealthReportDocumentFromDocx,
   createHealthReportDocumentFromPdf,
@@ -187,20 +187,7 @@ export default function App() {
     return createMunicipalInventory(snapshot);
   }, [workspace]);
 
-  const currentPSL = useMemo(
-    () =>
-      buildLocalHealthProfile({
-        sanitizedStore: runtime.integrityGuard.sanitizedStore,
-        integrityResult: runtime.integrityGuard,
-        mit: runtime.mit,
-        reconciliacion: runtime.reconciliacion,
-        oitParaDecision: runtime.oit,
-        workspace: runtime.workspace,
-      }),
-    // Regenerate only when evidence version or workspace changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [runtime.mit.version, runtime.workspace.thematicPrioritisation]
-  );
+  // runtime.psl is built inside MunicipalityRuntime as the canonical Nivel 2 → Nivel 3 bridge.
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -966,7 +953,7 @@ export default function App() {
         {/* ── ④ Perfil de Salud Local ──────────────────────── */}
         {view === "psl" && (
           <LocalHealthProfileView
-            psl={currentPSL}
+            psl={runtime.psl}
             municipalityName={municipality.name}
           />
         )}

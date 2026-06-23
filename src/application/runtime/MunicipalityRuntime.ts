@@ -2,6 +2,8 @@ import type { MunicipalityWorkspace } from "../../domain/workspace";
 import type { CompasPipelineResult, PipelineTraceItem, PipelineStatus } from "../../domain/pipeline";
 import type { LT1Result } from "../lt1";
 import type { OITResult } from "../oit";
+import type { LocalHealthProfile } from "../../domain/health-profile";
+import { buildLocalHealthProfile } from "../health-profile";
 import type { PrioritizationResult } from "../prioritization";
 import { generatePrioritization } from "../prioritization";
 import type { EPVSATranslationResult } from "../epvsa";
@@ -37,17 +39,21 @@ export interface MunicipalityRuntime {
   mit: EstadoTerritorialEvolutivo;
 
   // Motor de Reconciliación Interpretativa
-  // Detecta conflictos y decide qué tensiones se escalan a Áreas de Intervención.
-  // Posicionado entre Nivel 2 (MIT) y Nivel 3 (Decisión) en el flujo obligatorio.
   reconciliacion: ReconciliacionResult;
 
   // Campos derivados del MIT / reconciliacion — para compatibilidad con paneles UI.
   // lt1 = mit.dimensionDiagnostica
   // oit = reconciliacion-gated OIT (or mit.areasDeIntervencion as fallback)
+  // Nota: oit permanece para el OITPanel diagnóstico — NO alimenta el Nivel 3.
   lt1: LT1Result;
   oit: OITResult;
 
-  // Nivel 3 — Capa de Decisión
+  // PSL — Perfil de Salud Local
+  // Objeto canónico que sintetiza el Nivel 2 y es el único puente autorizado al Nivel 3.
+  // PSL-C1: ningún componente del Nivel 3 consume Nivel 2 sin mediación del PSL.
+  psl: LocalHealthProfile;
+
+  // Nivel 3 — Capa de Decisión (alimentada exclusivamente por el PSL)
   prioritization: PrioritizationResult;
   epvsa: EPVSATranslationResult;
   actionPlan: ActionPlanDraft;
@@ -90,10 +96,9 @@ export function createMunicipalityRuntime(
     input.workspace.historialEstadosTerritorial ?? []
   );
 
-  // ── OIT para Nivel 3 (Capa de Decisión)
-  // Regla del Plan de Acción: el plan solo puede construirse a partir de OIT.
-  // Se usan las Áreas escaladas cuando el Motor de Reconciliación las produjo;
-  // si no, se usa el OIT simple del MIT como fallback (insuficiente historia).
+  // ── OIT (uso interno de visualización — NO alimenta el Nivel 3)
+  // Las áreas escaladas tienen prioridad; el OIT del MIT actúa como fallback.
+  // Este valor se expone en runtime.oit para el OITPanel diagnóstico únicamente.
   const oitParaDecision: OITResult =
     reconciliacion.areasIntervencionEscaladas.length > 0
       ? {
@@ -109,8 +114,21 @@ export function createMunicipalityRuntime(
   const lt1 = mit.dimensionDiagnostica;
   const oit = oitParaDecision;
 
-  // ── Nivel 3: Capa de Decisión
-  const prioritization = generatePrioritization(oit);
+  // ── PSL — Perfil de Salud Local (puente obligatorio Nivel 2 → Nivel 3)
+  // PSL-C1: la priorización y todos los motores del Nivel 3 consumen exclusivamente
+  // el PSL. El PSL sintetiza el análisis territorial (MIT + Reconciliación + OIT)
+  // y lo expone como objeto canónico validable.
+  const psl = buildLocalHealthProfile({
+    sanitizedStore: integrityGuard.sanitizedStore,
+    integrityResult: integrityGuard,
+    mit,
+    reconciliacion,
+    oitParaDecision,
+    workspace: input.workspace,
+  });
+
+  // ── Nivel 3: Capa de Decisión (alimentada exclusivamente por el PSL)
+  const prioritization = generatePrioritization(psl);
   const epvsa = translatePrioritizationToEPVSA(prioritization);
   const actionPlan = generateActionPlanDraft(epvsa, frameworks);
   const agenda = generateAgendaDraft(actionPlan);
@@ -123,6 +141,7 @@ export function createMunicipalityRuntime(
     reconciliacion,
     lt1,
     oit,
+    psl,
     pipeline: buildPipelineTrace(input.workspace, integrityGuard, mit, reconciliacion, {
       prioritization,
       epvsa,
