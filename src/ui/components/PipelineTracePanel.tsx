@@ -1,17 +1,20 @@
 import type { CompasPipelineResult, PipelineStage, PipelineStatus } from "../../domain/pipeline";
 
 const STAGE_LABEL: Record<PipelineStage, string> = {
+  "integrity":     "Integridad del EvidenceStore",
   "repository":    "Repositorio documental",
   "evidence":      "Evidencias estructuradas",
-  "lt1":           "Lectura territorial (LT-1)",
-  "oit":           "Oportunidades de intervención",
+  "mit":            "Motor de Interpretación Territorial",
+  "reconciliacion": "Motor de Reconciliación Interpretativa",
+  "lt1":            "Dimensión diagnóstica (interna)",
+  "oit":            "Áreas de Intervención Territorial (internas)",
   "prioritization":"Priorización",
   "epvsa":         "Encaje estratégico EPVSA",
   "action-plan":   "Plan de acción",
   "agenda":        "Agenda anual",
   "monitoring":    "Seguimiento inicial",
   "evaluation":    "Evaluación",
-  "longi":         "Seguimiento longitudinal",
+  "longi":         "Dimensión longitudinal (interna)",      // dimensión interna del MIT
   "compiler":      "Compilador",
 };
 

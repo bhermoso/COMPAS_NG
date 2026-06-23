@@ -14,9 +14,11 @@ import { buildLocalHealthProfile } from "./application/health-profile";
 import {
   createHealthReportDocumentFromDocx,
   createHealthReportDocumentFromPdf,
+  healthReportToEvidenceAtoms,
 } from "./application/health-report";
-import { parseIBSECSV } from "./application/ibse";
+import { parseIBSECSV, ibseStudyToEvidenceAtoms } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
+import { stableAssetKey, upsertEvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
   MAX_SELECTED_TOPICS,
@@ -25,7 +27,8 @@ import {
 import { createMunicipalSnapshot } from "./domain/municipality-context";
 import { createMunicipalInventory } from "./application/municipal-inventory";
 import { createStrategicFramework } from "./domain/strategic-framework";
-import { parseThematicPrioritisationCSV } from "./application/thematic-prioritisation";
+import { parseThematicPrioritisationCSV, thematicPrioritisationToEvidenceAtoms } from "./application/thematic-prioritisation";
+import { buildEstadoResumen } from "./application/territorial-interpretation";
 import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisation";
 import {
   saveWorkspaceToLocalStorage,
@@ -160,6 +163,25 @@ export default function App() {
     [workspace]
   );
 
+  // ── Estado Territorial Evolutivo — historial acumulativo ────────────────
+  // Appends a compact snapshot each time the evidence version changes.
+  // Loop-safe: version = evidenceStore.updatedAt, which is NOT modified here.
+  // Max 50 entries per municipality (oldest are dropped first).
+  useEffect(() => {
+    const version = runtime.mit.version;
+    const last = (workspace.historialEstadosTerritorial ?? []).at(-1);
+    if (runtime.mit.totalEvidencias > 0 && last?.version !== version) {
+      const resumen = buildEstadoResumen(runtime.mit);
+      setWorkspace((prev) => ({
+        ...prev,
+        historialEstadosTerritorial: [
+          ...(prev.historialEstadosTerritorial ?? []).slice(-49),
+          resumen,
+        ],
+      }));
+    }
+  }, [runtime.mit.version]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const municipalInventory = useMemo(() => {
     const snapshot = createMunicipalSnapshot(workspace);
     return createMunicipalInventory(snapshot);
@@ -175,6 +197,7 @@ export default function App() {
         oitParaDecision: runtime.oit,
         workspace: runtime.workspace,
       }),
+    // Regenerate only when evidence version or workspace changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [runtime.mit.version, runtime.workspace.thematicPrioritisation]
   );
@@ -299,14 +322,25 @@ export default function App() {
             authors: [],
           });
 
+      const hrAtoms = healthReportToEvidenceAtoms(healthReport);
       setWorkspace((prev) => ({
         ...prev,
         repository: replaceMunicipalDocumentByKind(prev.repository, newDocInput),
         healthReport,
+        evidenceStore: {
+          ...prev.evidenceStore,
+          atoms: [
+            ...prev.evidenceStore.atoms.filter(
+              (a) => a.provenance.origin !== "health-report"
+            ),
+            ...hrAtoms,
+          ],
+          updatedAt: new Date().toISOString(),
+        },
         updatedAt: new Date().toISOString(),
       }));
       setLastHealthReportMessage(
-        "Informe de Salud cargado y preservado como documento literal."
+        `Informe de Salud cargado: ${hrAtoms.length} sección(es) incorporada(s) al análisis territorial.`
       );
     } catch (err) {
       console.error("[PDF-load-error]", err);
@@ -331,15 +365,24 @@ export default function App() {
         aggregates,
         methodologicalCautions,
       });
-      setWorkspace((prev) => ({
-        ...prev,
-        ibseStudy: study,
-        updatedAt: new Date().toISOString(),
-      }));
+      const ibseAtoms = ibseStudyToEvidenceAtoms(study);
+      setWorkspace((prev) => {
+        let nextStore = prev.evidenceStore;
+        for (const atom of ibseAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          ibseStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: new Date().toISOString(),
+        };
+      });
       const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setIbseMessage(
         aggregates.nValid > 0
-          ? `IBSE cargado: ${aggregates.nValid} registros válidos · Media total: ${aggregates.meanTotal}.${warn}`
+          ? `IBSE cargado: ${aggregates.nValid} registros válidos · Media total: ${aggregates.meanTotal} · ${ibseAtoms.length} indicadores incorporados al análisis territorial.${warn}`
           : `CSV procesado sin registros válidos.${warn}`
       );
     } catch {
@@ -362,9 +405,20 @@ export default function App() {
       workspace.municipality.identity.id,
       pendingTopics
     );
+    const tpAtoms = thematicPrioritisationToEvidenceAtoms(prioritisation, THEMATIC_TOPICS);
     const nextWorkspace = {
       ...workspace,
       thematicPrioritisation: prioritisation,
+      evidenceStore: {
+        ...workspace.evidenceStore,
+        atoms: [
+          ...workspace.evidenceStore.atoms.filter(
+            (a) => a.provenance.origin !== "citizen-participation"
+          ),
+          ...tpAtoms,
+        ],
+        updatedAt: new Date().toISOString(),
+      },
       updatedAt: new Date().toISOString(),
     };
 
@@ -399,14 +453,31 @@ export default function App() {
         municipalityId: workspace.municipality.identity.id,
         importedAt: new Date().toISOString(),
       };
+      const importedPrioritisation =
+        study.completeRecords > 0
+          ? createThematicPrioritisation(workspace.municipality.identity.id, study.topFiveTopicIds)
+          : null;
+      const importedTpAtoms =
+        importedPrioritisation !== null
+          ? thematicPrioritisationToEvidenceAtoms(importedPrioritisation, THEMATIC_TOPICS)
+          : null;
       setWorkspace((prev) => ({
         ...prev,
         thematicPrioritisationStudy: study,
-        ...(study.completeRecords > 0 && {
-          thematicPrioritisation: createThematicPrioritisation(
-            prev.municipality.identity.id,
-            study.topFiveTopicIds
-          ),
+        ...(importedPrioritisation !== null && {
+          thematicPrioritisation: importedPrioritisation,
+        }),
+        ...(importedTpAtoms !== null && {
+          evidenceStore: {
+            ...prev.evidenceStore,
+            atoms: [
+              ...prev.evidenceStore.atoms.filter(
+                (a) => a.provenance.origin !== "citizen-participation"
+              ),
+              ...importedTpAtoms,
+            ],
+            updatedAt: new Date().toISOString(),
+          },
         }),
         updatedAt: new Date().toISOString(),
       }));
