@@ -2338,11 +2338,11 @@ h3 {
   font-weight: 700;
 }
 
-.psl-doc-status-chip--generated  { background: #f1f5f9; color: #475569; }
-.psl-doc-status-chip--review     { background: #fff8e1; color: #b45309; }
+.psl-doc-status-chip--generated  { background: #f1f5f9; color: #64748b; }
+.psl-doc-status-chip--review     { background: #fff7e6; color: #ff6600; }
 .psl-doc-status-chip--validated  { background: #eef6ff; color: #0074c8; }
-.psl-doc-status-chip--approved   { background: #f0fdf4; color: #16a34a; }
-.psl-doc-status-chip--superseded { background: #faf5ff; color: #7c3aed; }
+.psl-doc-status-chip--approved   { background: #f8fafc; color: #526070; border: 1px solid #94d40b; }
+.psl-doc-status-chip--superseded { background: #f1f5f9; color: #64748b; }
 .psl-doc-status-chip--archived   { background: #f1f5f9; color: #64748b; }
 
 .psl-doc-header__date,
@@ -2542,8 +2542,8 @@ h3 {
   margin-bottom: 0;
 }
 
-.psl-doc-notice--info    { background: #eef6ff; color: #1e40af; border: 1px solid #c3dcf5; }
-.psl-doc-notice--warning { background: #fff8e1; color: #92400e; border: 1px solid #fcd34d; }
+.psl-doc-notice--info    { background: #eef6ff; color: #0074c8; border: 1px solid #c3dcf5; }
+.psl-doc-notice--warning { background: #fff7e6; color: #ff6600; border: 1px solid #ffb61b; }
 .psl-doc-notice--empty   { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 
 /* ── KPI grid (resumen ejecutivo) ────────────────────────────────── */
@@ -2587,16 +2587,16 @@ h3 {
 .psl-doc-kpi--determinant .psl-doc-kpi__value { color: #dc143c; }
 
 .psl-doc-kpi--asset       { border-top: 3px solid #94d40b; }
-.psl-doc-kpi--asset .psl-doc-kpi__value   { color: #5a8206; }
+.psl-doc-kpi--asset .psl-doc-kpi__value   { color: #526070; }
 
 .psl-doc-kpi--indicator   { border-top: 3px solid #0074c8; }
 .psl-doc-kpi--indicator .psl-doc-kpi__value { color: #0074c8; }
 
 .psl-doc-kpi--area        { border-top: 3px solid #ff6600; }
-.psl-doc-kpi--area .psl-doc-kpi__value    { color: #cc5200; }
+.psl-doc-kpi--area .psl-doc-kpi__value    { color: #ff6600; }
 
 .psl-doc-kpi--priority    { border-top: 3px solid #ffb61b; }
-.psl-doc-kpi--priority .psl-doc-kpi__value { color: #b07900; }
+.psl-doc-kpi--priority .psl-doc-kpi__value { color: #ff6600; }
 
 /* ── Primary source banner ───────────────────────────────────────── */
 
@@ -2824,11 +2824,11 @@ h3 {
   line-height: 1.3;
 }
 
-.psl-doc-evidence-cell--determinant  { background: #fff0f0; color: #dc2626; }
-.psl-doc-evidence-cell--asset        { background: #f0fdf4; color: #16a34a; }
-.psl-doc-evidence-cell--indicator    { background: #eef6ff; color: #0074c8; }
-.psl-doc-evidence-cell--participation{ background: #fffbeb; color: #b45309; }
-.psl-doc-evidence-cell--caution      { background: #f1f5f9; color: #64748b; }
+.psl-doc-evidence-cell--determinant  { background: #f8fafc; color: #dc143c; }
+.psl-doc-evidence-cell--asset        { background: #f8fafc; color: #526070; }
+.psl-doc-evidence-cell--indicator    { background: #f8fafc; color: #0074c8; }
+.psl-doc-evidence-cell--participation{ background: #f8fafc; color: #526070; }
+.psl-doc-evidence-cell--caution      { background: #f8fafc; color: #64748b; }
 
 /* ── Origins ─────────────────────────────────────────────────────── */
 
@@ -2886,8 +2886,8 @@ h3 {
   font-size: 0.75rem;
 }
 
-.psl-doc-source-flag--yes { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
-.psl-doc-source-flag--no  { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+.psl-doc-source-flag--yes { background: #f8fafc; color: #526070; border-color: #e4eaf3; border-left: 3px solid #94d40b; }
+.psl-doc-source-flag--no  { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
 
 /* ── Territorial summary ─────────────────────────────────────────── */
 
@@ -2942,7 +2942,7 @@ h3 {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #b45309;
+  color: #ff6600;
 }
 
 .psl-doc-tension-list {
@@ -2962,7 +2962,7 @@ h3 {
   color: #526070;
   line-height: 1.55;
   padding: 10px 14px;
-  background: #fff8e1;
+  background: #f8fafc;
   border-radius: 6px;
   border-left: 3px solid #ffb61b;
 }
@@ -2979,7 +2979,7 @@ h3 {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #dc2626;
+  color: #dc143c;
 }
 
 .psl-doc-conflicts__note {
@@ -3148,35 +3148,35 @@ h3 {
 /* ── Scaffold blocks (V, VI, VII) ────────────────────────────────── */
 
 .psl-doc-scaffold-block {
-  background: #fffbf0;
-  border: 1px solid #fcd34d;
+  background: #f8fafc;
+  border: 1px solid #ffb61b;
   border-radius: 10px;
   padding: 20px 24px;
 }
 
 .psl-doc-scaffold-block--deliberation {
-  background: #fff5f5;
-  border-color: #fecaca;
+  background: #f8fafc;
+  border-color: #e4eaf3;
 }
 
 .psl-doc-scaffold-badge {
   display: inline-block;
-  background: #fff3cd;
-  color: #92400e;
+  background: #fff7e6;
+  color: #ff6600;
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 4px 12px;
   border-radius: 999px;
-  border: 1px solid #fcd34d;
+  border: 1px solid #ffb61b;
   margin-bottom: 14px;
 }
 
 .psl-doc-scaffold-block--deliberation .psl-doc-scaffold-badge {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #fecaca;
+  background: #f8fafc;
+  color: #dc143c;
+  border-color: #e4eaf3;
 }
 
 .psl-doc-scaffold-block__content {
@@ -3189,7 +3189,7 @@ h3 {
 .psl-doc-scaffold-block__note {
   margin: 0;
   font-size: 0.8rem;
-  color: #b45309;
+  color: #526070;
   font-style: italic;
   line-height: 1.5;
 }
