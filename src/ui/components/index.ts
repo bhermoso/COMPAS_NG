@@ -10,6 +10,7 @@ export * from "./ThematicPrioritisationPanel";
 export * from "./PipelineTracePanel";
 export * from "./LT1Panel";
 export * from "./OITPanel";
+export * from "./ReconciliacionPanel";
 export * from "./PrioritizationPanel";
 export * from "./EPVSAPanel";
 export * from "./ActionPlanPanel";

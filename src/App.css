@@ -2920,6 +2920,212 @@ h3 {
   white-space: pre-wrap;
 }
 
+/* ── Panel de Reconciliación Interpretativa ──────────────────────────── */
+
+.reco-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.reco-summary-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.reco-summary-chip--escalada   { background: #e8f9c8; color: #3d7a00; }
+.reco-summary-chip--no-escalada { background: #fff3cd; color: #7a5500; }
+.reco-summary-chip--conflicto  { background: #ffebd6; color: #7a3500; }
+.reco-summary-chip--ruido      { background: #f1f5f9; color: #475569; }
+.reco-summary-chip--empty      { background: #f1f5f9; color: #64748b; }
+
+.reco-empty-note {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0 0 12px;
+}
+
+/* ── Sección colapsable ─────────────────────────────── */
+
+.reco-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.reco-section--escalada   { border-left: 3px solid #94d40b; }
+.reco-section--no-escalada { border-left: 3px solid #ffb61b; }
+.reco-section--conflicto  { border-left: 3px solid #ff6600; }
+.reco-section--ruido      { border-left: 3px solid #cbd5e1; }
+
+.reco-section__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.reco-section__header:hover { background: #f1f5f9; }
+
+.reco-section__title { flex: 1; }
+
+.reco-section__count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.reco-section__arrow {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.reco-section__body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reco-section__desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+/* ── Tarjeta de tensión ─────────────────────────────── */
+
+.reco-tension-card {
+  padding: 9px 11px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.reco-tension-card--escalada   { border-left: 3px solid #94d40b; }
+.reco-tension-card--no-escalada { border-left: 3px solid #ffb61b; }
+.reco-tension-card--ruido-estructural { border-left: 3px solid #cbd5e1; }
+
+.reco-tension-card__text {
+  font-size: 0.84rem;
+  color: #1e293b;
+  margin: 0 0 6px;
+  line-height: 1.45;
+}
+
+.reco-tension-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reco-tension-card__meta-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.reco-tension-card__meta-sep {
+  color: #e2e8f0;
+}
+
+.reco-criteria {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.reco-criterion {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.reco-criterion--met   { background: #94d40b; }
+.reco-criterion--unmet { background: #e2e8f0; border: 1px solid #cbd5e1; }
+
+.reco-tension-card__criteria-count {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.reco-tension-card__outcome {
+  font-size: 0.72rem;
+  color: #3d7a00;
+  font-weight: 600;
+  background: #e8f9c8;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+/* ── Tarjeta de conflicto ───────────────────────────── */
+
+.reco-conflicto-card {
+  padding: 9px 11px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #ff6600;
+  border-radius: 4px;
+}
+
+.reco-conflicto-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.reco-conflicto-card__tipo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #7a3500;
+  background: #ffebd6;
+  padding: 1px 7px;
+  border-radius: 3px;
+}
+
+.reco-conflicto-card__no-resuelta {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.reco-conflicto-card__desc {
+  font-size: 0.84rem;
+  color: #1e293b;
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+.reco-conflicto-card__fuentes {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+}
+
 /* ── Advertencia priorización sobre PSL sin validar ─────────────────── */
 
 .prio-psl-warning {

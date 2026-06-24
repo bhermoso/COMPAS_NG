@@ -51,6 +51,7 @@ import {
   PipelineTracePanel,
   LT1Panel,
   OITPanel,
+  ReconciliacionPanel,
   PrioritizationPanel,
   EPVSAPanel,
   ActionPlanPanel,
@@ -1017,6 +1018,7 @@ export default function App() {
             <PipelineTracePanel pipeline={runtime.pipeline} />
             <LT1Panel lt1={runtime.lt1} />
             <OITPanel oit={runtime.oit} />
+            <ReconciliacionPanel reconciliacion={runtime.reconciliacion} />
             <PrioritizationPanel
               prioritization={runtime.prioritization}
               pslStatus={runtime.psl.status}
