@@ -140,29 +140,44 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanel
           </article>
 
           {/* ── Actuaciones con encaje estratégico ─────────────── */}
-          <div className="document-list">
-            {actionPlan.actions.map((action) => (
-              <article className="document-row" key={action.id}>
-                <div>
-                  <p className="document-kind">Actuación</p>
-                  <h3>{action.title}</h3>
-                  <p>{action.description}</p>
-                  <p className="panel-note">
-                    Evidencias relacionadas: {action.relatedEvidenceIds.length}
-                  </p>
-                  {action.cautions.length > 0 && (
-                    <ul>
-                      {action.cautions.map((caution) => (
-                        <li key={caution}>{caution}</li>
-                      ))}
-                    </ul>
-                  )}
-                  <FrameworkAlignmentsBlock alignments={action.frameworkAlignments} />
-                </div>
-                <span className="status-pill">borrador</span>
-              </article>
-            ))}
-          </div>
+          {(() => {
+            const objectiveTitleById = new Map(
+              actionPlan.objectives.map((o) => [o.id, o.title])
+            );
+            return (
+              <div className="document-list">
+                {actionPlan.actions.map((action) => {
+                  const objectiveTitle = objectiveTitleById.get(action.linkedObjectiveId);
+                  return (
+                    <article className="document-row" key={action.id}>
+                      <div>
+                        <p className="document-kind">Actuación</p>
+                        <h3>{action.title}</h3>
+                        {objectiveTitle && (
+                          <p className="plan-indicator-item__action-trace">
+                            Objetivo vinculado: {objectiveTitle}
+                          </p>
+                        )}
+                        <p>{action.description}</p>
+                        <p className="panel-note">
+                          Evidencias relacionadas: {action.relatedEvidenceIds.length}
+                        </p>
+                        {action.cautions.length > 0 && (
+                          <ul>
+                            {action.cautions.map((caution) => (
+                              <li key={caution}>{caution}</li>
+                            ))}
+                          </ul>
+                        )}
+                        <FrameworkAlignmentsBlock alignments={action.frameworkAlignments} />
+                      </div>
+                      <span className="status-pill">borrador</span>
+                    </article>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           <article className="card">
             <h3>Indicadores preliminares</h3>
