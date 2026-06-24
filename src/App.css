@@ -337,6 +337,179 @@ h3 {
   color: #526070;
 }
 
+/* ── Objetivos del Plan de Acción (lista enriquecida) ───────── */
+
+.plan-objectives-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plan-objective-item {
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.plan-objective-item__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plan-objective-item__line {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* ── Bloque de encaje estratégico (FrameworkAlignmentsBlock) ── */
+
+.fa-block {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.fa-block__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  color: #64748b;
+  font-size: 0.79rem;
+}
+
+.fa-block__toggle:hover {
+  color: #334155;
+}
+
+.fa-block__toggle-label {
+  font-weight: 600;
+  font-size: 0.79rem;
+}
+
+.fa-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  font-size: 0.71rem;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.03em;
+}
+
+.fa-block__toggle-count {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.fa-block__toggle-arrow {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.fa-block__detail {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fa-item {
+  padding: 8px 10px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left-width: 3px;
+}
+
+.fa-item--direct {
+  border-left-color: #94d40b;
+}
+
+.fa-item--thematic {
+  border-left-color: #ffb61b;
+}
+
+.fa-item__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.fa-item__framework {
+  font-size: 0.71rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #334155;
+  background: #e2e8f0;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.fa-item__label {
+  font-size: 0.82rem;
+  color: #1e293b;
+  flex: 1;
+  min-width: 0;
+}
+
+.fa-item__type {
+  font-size: 0.69rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fa-item__type--direct {
+  background: #e8f9c8;
+  color: #3d7a00;
+}
+
+.fa-item__type--thematic {
+  background: #fff3cd;
+  color: #7a5500;
+}
+
+.fa-item__note {
+  font-size: 0.79rem;
+  color: #475569;
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+.fa-item__indicators {
+  font-size: 0.75rem;
+  color: #64748b;
+  padding-left: 16px;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.fa-item__trace {
+  font-size: 0.71rem;
+  color: #94a3b8;
+  margin: 4px 0 0;
+  font-style: italic;
+  line-height: 1.4;
+}
+
 /* ── Navegación principal ───────────────────────────────── */
 
 .app-nav {

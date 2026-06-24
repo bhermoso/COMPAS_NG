@@ -1,4 +1,5 @@
-import type { ActionPlanDraft } from "../../application/action-plan";
+import { useState } from "react";
+import type { ActionPlanDraft, FrameworkAlignment } from "../../application/action-plan";
 
 interface ActionPlanPanelProps {
   actionPlan: ActionPlanDraft;
@@ -10,6 +11,68 @@ function formatDate(iso: string): string {
     year: "numeric", month: "long", day: "numeric",
   });
 }
+
+// ── Subcomponente: bloque de encaje estratégico ───────────────────────────────
+// Muestra los frameworkAlignments ya calculados por ActionPlanEngine.
+// Se pliega / despliega con un botón local. No genera ningún cálculo nuevo.
+
+function FrameworkAlignmentsBlock({ alignments }: { alignments: FrameworkAlignment[] }) {
+  const [open, setOpen] = useState(false);
+
+  if (alignments.length === 0) return null;
+
+  const uniqueFrameworks = [...new Set(alignments.map((a) => a.frameworkId))];
+
+  return (
+    <div className="fa-block">
+      <button
+        className="fa-block__toggle"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <span className="fa-block__toggle-label">Encaje estratégico</span>
+        <span className="fa-block__badges">
+          {uniqueFrameworks.map((fid) => (
+            <span key={fid} className="fa-badge">{fid}</span>
+          ))}
+        </span>
+        <span className="fa-block__toggle-count">({alignments.length})</span>
+        <span className="fa-block__toggle-arrow" aria-hidden="true">
+          {open ? "▲" : "▾"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="fa-block__detail">
+          {alignments.map((a) => (
+            <div key={a.elementId} className={`fa-item fa-item--${a.alignmentType}`}>
+              <div className="fa-item__head">
+                <span className="fa-item__framework">{a.frameworkId}</span>
+                <span className="fa-item__label">{a.elementLabel}</span>
+                <span className={`fa-item__type fa-item__type--${a.alignmentType}`}>
+                  {a.alignmentType === "direct" ? "directo" : "temático"}
+                </span>
+              </div>
+              <p className="fa-item__note">{a.relevanceNote}</p>
+              {a.indicators.length > 0 && (
+                <ul className="fa-item__indicators">
+                  {a.indicators.map((ind, i) => (
+                    <li key={i}>{ind}</li>
+                  ))}
+                </ul>
+              )}
+              {a.sourceTrace && (
+                <p className="fa-item__trace">{a.sourceTrace}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Panel principal ───────────────────────────────────────────────────────────
 
 export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanelProps) {
   const { pslReference } = actionPlan;
@@ -58,17 +121,25 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanel
         </div>
       ) : (
         <>
+          {/* ── Objetivos con encaje estratégico ───────────────── */}
           <article className="card">
             <h3>Objetivos</h3>
-            <ul>
+            <ul className="plan-objectives-list">
               {actionPlan.objectives.map((objective) => (
-                <li key={objective.id}>
-                  <strong>{objective.title}</strong> · {objective.linkedStrategicLine}
+                <li key={objective.id} className="plan-objective-item">
+                  <div className="plan-objective-item__head">
+                    <strong>{objective.title}</strong>
+                    <span className="plan-objective-item__line">
+                      {objective.linkedStrategicLine}
+                    </span>
+                  </div>
+                  <FrameworkAlignmentsBlock alignments={objective.frameworkAlignments} />
                 </li>
               ))}
             </ul>
           </article>
 
+          {/* ── Actuaciones con encaje estratégico ─────────────── */}
           <div className="document-list">
             {actionPlan.actions.map((action) => (
               <article className="document-row" key={action.id}>
@@ -79,11 +150,14 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanel
                   <p className="panel-note">
                     Evidencias relacionadas: {action.relatedEvidenceIds.length}
                   </p>
-                  <ul>
-                    {action.cautions.map((caution) => (
-                      <li key={caution}>{caution}</li>
-                    ))}
-                  </ul>
+                  {action.cautions.length > 0 && (
+                    <ul>
+                      {action.cautions.map((caution) => (
+                        <li key={caution}>{caution}</li>
+                      ))}
+                    </ul>
+                  )}
+                  <FrameworkAlignmentsBlock alignments={action.frameworkAlignments} />
                 </div>
                 <span className="status-pill">borrador</span>
               </article>
