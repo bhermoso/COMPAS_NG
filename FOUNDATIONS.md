@@ -93,6 +93,8 @@ Al ingestar un documento canónico:
 2. Se purgan del `evidenceStore` los átomos cuyo `provenance.origin` corresponde a ese tipo.
 3. Se registra el nuevo documento y se generan sus representaciones derivadas.
 
+Para documentos de tipo `redcap-export` cuya identidad se discrimina por tag —por ejemplo IBSE o Priorización Temática—, la canonicidad opera por `tag` mediante `removeDocumentsByTag`, no por `kind`. Véase `CONTRACT-REPOSITORY.md §4.2`.
+
 ---
 
 ## 7. Arquitectura en capas

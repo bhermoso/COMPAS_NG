@@ -475,8 +475,9 @@ propuestas asistidas del sistema, no posicionamientos del equipo técnico.
 
 El PSL es el objeto analítico del Nivel 2 de COMPÁS NG. El Plan Local de
 Salud compilado (cuando exista) será un producto de exportación documental
-generado a partir del Plan de Acción validado. Son objetos distintos,
-en distintos niveles del sistema y con distintas finalidades institucionales.
+generado a partir del PSL aprobado y del Plan de Acción validado. Son objetos
+distintos, en distintos niveles del sistema y con distintas finalidades
+institucionales.
 
 **I-PSL-3 — Los capítulos V y VI son scaffold hasta autoría humana explícita**
 

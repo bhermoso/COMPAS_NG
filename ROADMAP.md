@@ -167,7 +167,7 @@ Tareas pendientes:
 Las siguientes capacidades están **explícitamente fuera del alcance** hasta nueva decisión:
 
 - **Compilador del Plan Local de Salud**: producto documental compilado a partir del
-  Plan de Acción validado. El Plan de Acción actual es un borrador técnico, no el PLS definitivo.
+  Plan de Acción validado. El Plan de Acción actual es un borrador técnico, no el Plan Local de Salud definitivo.
 - Flujos de aprobación institucional, firmas o permisos.
 - Conexión con Variables EAS o CMI sin intervención técnica.
 - Despliegue en producción con datos reales sin revisión de seguridad.

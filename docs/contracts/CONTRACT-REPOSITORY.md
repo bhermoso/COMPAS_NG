@@ -66,8 +66,8 @@ nunca lo contiene ni lo reemplaza.
 ### Separación entre documento y Plan Local de Salud compilado
 
 El Plan Local de Salud compilado, cuando exista, es un producto de exportación
-generado a partir del Plan de Acción validado. No es un documento del
-repositorio. Un documento del repositorio —sea un Informe de Salud, un
+generado a partir del PSL aprobado y del Plan de Acción validado. No es un
+documento del repositorio. Un documento del repositorio —sea un Informe de Salud, un
 diagnóstico territorial o cualquier otro— nunca se transforma automáticamente
 en el Plan Local de Salud compilado.
 

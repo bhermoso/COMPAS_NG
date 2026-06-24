@@ -52,3 +52,7 @@ Deben preservar agregados metodológicamente válidos, sin almacenar registros i
 - No persistir inferencias como datos fuente.
 - No automatizar decisiones estratégicas.
 - No alimentar motores desde documentos sin contrato explícito.
+
+## Alcance de este documento
+
+Este documento describe el contrato de explotación documental —desde la preservación documental hasta la alimentación del pipeline analítico—. Los niveles analítico, de decisión, planificación, seguimiento y exportación documental están regulados por los contratos específicos en `docs/contracts/`.
