@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
+  type MunicipalDocumentRepository,
+  addMunicipalDocument,
   replaceMunicipalDocumentByKind,
   removeMunicipalDocument,
 } from "./domain/repository";
@@ -18,7 +20,7 @@ import {
 } from "./application/health-report";
 import { parseIBSECSV, ibseStudyToEvidenceAtoms } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
-import { stableAssetKey, upsertEvidenceAtom } from "./domain/evidence";
+import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
   MAX_SELECTED_TOPICS,
@@ -109,6 +111,48 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "longitudinal-evidence",     label: "Evidencia longitudinal" },
   { value: "other",                     label: "Otro" },
 ];
+
+const IBSE_DOCUMENT_TAG = "ibse";
+const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
+
+function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
+  return document?.tags.includes(tag) === true;
+}
+
+function isIBSEDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, IBSE_DOCUMENT_TAG);
+}
+
+function isThematicPrioritisationDocument(
+  document: MunicipalDocument | undefined
+): boolean {
+  return hasDocumentTag(document, THEMATIC_PRIORITISATION_DOCUMENT_TAG);
+}
+
+function removeDocumentsByTag(
+  repository: MunicipalDocumentRepository,
+  tag: string
+): MunicipalDocumentRepository {
+  const now = new Date().toISOString();
+  return {
+    ...repository,
+    documents: repository.documents.filter((document) => !document.tags.includes(tag)),
+    updatedAt: now,
+  };
+}
+
+function attachDocumentIdToAtoms(
+  atoms: EvidenceAtom[],
+  documentId: string
+): EvidenceAtom[] {
+  return atoms.map((atom) => ({
+    ...atom,
+    provenance: {
+      ...atom.provenance,
+      documentId,
+    },
+  }));
+}
 
 // ── Componente principal ─────────────────────────────────────
 
@@ -359,9 +403,12 @@ export default function App() {
         id: documentId,
         kind: "health-report" as const,
         title: docTitle,
-        source: { system: "Carga directa documento", collectedAt: new Date().toISOString() },
+        source: {
+          system: "Carga directa de fuente documental primaria",
+          collectedAt: new Date().toISOString(),
+        },
         sourceFileName: file.name,
-        tags: ["health-report"],
+        tags: ["health-report", "primary-source"],
       };
 
       const healthReport = isPdf
@@ -419,24 +466,53 @@ export default function App() {
     try {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseIBSECSV(text);
+      const documentId = crypto.randomUUID();
       const study = createIBSEStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
         aggregates,
         methodologicalCautions,
       });
-      const ibseAtoms = ibseStudyToEvidenceAtoms(study);
+      const ibseAtoms = attachDocumentIdToAtoms(
+        ibseStudyToEvidenceAtoms(study),
+        documentId
+      );
       setWorkspace((prev) => {
-        let nextStore = prev.evidenceStore;
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          IBSE_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "redcap-export",
+          title: `IBSE - ${file.name}`,
+          source: {
+            system: "Importación REDCap IBSE",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["redcap-export", IBSE_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              atom.provenance.origin !== "ibse"
+          ),
+          updatedAt: now,
+        };
         for (const atom of ibseAtoms) {
           const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
           nextStore = upsertEvidenceAtom(nextStore, atom, key);
         }
         return {
           ...prev,
+          repository: nextRepository,
           ibseStudy: study,
           evidenceStore: nextStore,
-          updatedAt: new Date().toISOString(),
+          updatedAt: now,
         };
       });
       const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
@@ -465,7 +541,14 @@ export default function App() {
       workspace.municipality.identity.id,
       pendingTopics
     );
-    const tpAtoms = thematicPrioritisationToEvidenceAtoms(prioritisation, THEMATIC_TOPICS);
+    const thematicDocument = workspace.repository.documents.find(
+      (document) => isThematicPrioritisationDocument(document)
+    );
+    const rawTpAtoms = thematicPrioritisationToEvidenceAtoms(prioritisation, THEMATIC_TOPICS);
+    const tpAtoms =
+      thematicDocument !== undefined
+        ? attachDocumentIdToAtoms(rawTpAtoms, thematicDocument.id)
+        : rawTpAtoms;
     const nextWorkspace = {
       ...workspace,
       thematicPrioritisation: prioritisation,
@@ -508,6 +591,7 @@ export default function App() {
     try {
       const text = await file.text();
       const { partialStudy, warnings } = parseThematicPrioritisationCSV(text, file.name);
+      const documentId = crypto.randomUUID();
       const study: ThematicPrioritisationStudy = {
         ...partialStudy,
         municipalityId: workspace.municipality.identity.id,
@@ -519,28 +603,59 @@ export default function App() {
           : null;
       const importedTpAtoms =
         importedPrioritisation !== null
-          ? thematicPrioritisationToEvidenceAtoms(importedPrioritisation, THEMATIC_TOPICS)
+          ? attachDocumentIdToAtoms(
+              thematicPrioritisationToEvidenceAtoms(importedPrioritisation, THEMATIC_TOPICS),
+              documentId
+            )
           : null;
-      setWorkspace((prev) => ({
-        ...prev,
-        thematicPrioritisationStudy: study,
-        ...(importedPrioritisation !== null && {
-          thematicPrioritisation: importedPrioritisation,
-        }),
-        ...(importedTpAtoms !== null && {
-          evidenceStore: {
-            ...prev.evidenceStore,
-            atoms: [
-              ...prev.evidenceStore.atoms.filter(
-                (a) => a.provenance.origin !== "citizen-participation"
-              ),
-              ...importedTpAtoms,
-            ],
-            updatedAt: new Date().toISOString(),
-          },
-        }),
-        updatedAt: new Date().toISOString(),
-      }));
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const shouldRegisterDocument = study.completeRecords > 0;
+        const nextRepository =
+          shouldRegisterDocument
+            ? addMunicipalDocument(
+                removeDocumentsByTag(
+                  prev.repository,
+                  THEMATIC_PRIORITISATION_DOCUMENT_TAG
+                ),
+                {
+                  id: documentId,
+                  kind: "redcap-export",
+                  title: `Priorización temática - ${file.name}`,
+                  source: {
+                    system: "Importación REDCap Priorización temática",
+                    collectedAt: study.importedAt,
+                  },
+                  sourceFileName: file.name,
+                  tags: ["redcap-export", THEMATIC_PRIORITISATION_DOCUMENT_TAG],
+                }
+              )
+            : prev.repository;
+
+        return {
+          ...prev,
+          repository: nextRepository,
+          thematicPrioritisationStudy: study,
+          ...(importedPrioritisation !== null && {
+            thematicPrioritisation: importedPrioritisation,
+          }),
+          ...(importedTpAtoms !== null && {
+            evidenceStore: {
+              ...prev.evidenceStore,
+              atoms: [
+                ...prev.evidenceStore.atoms.filter(
+                  (atom) =>
+                    atom.municipalityId !== prev.municipality.identity.id ||
+                    atom.provenance.origin !== "citizen-participation"
+                ),
+                ...importedTpAtoms,
+              ],
+              updatedAt: now,
+            },
+          }),
+          updatedAt: now,
+        };
+      });
       if (study.completeRecords > 0) {
         setPendingTopics([...study.topFiveTopicIds]);
       }
@@ -562,19 +677,64 @@ export default function App() {
   }
 
   function handleDeleteDocument(documentId: string) {
+    const deletedDocument = workspace.repository.documents.find((d) => d.id === documentId);
+
+    setLastProcessedDocument((prev) => (prev?.id === documentId ? null : prev));
+    if (lastProcessedDocument?.id === documentId) {
+      setLastAtomCount(0);
+    }
+    if (deletedDocument?.kind === "health-report") {
+      setLastHealthReportMessage(null);
+      setIsLoadingHealthReport(false);
+    }
+    if (isIBSEDocument(deletedDocument)) {
+      setIbseMessage(null);
+      setIsLoadingIBSE(false);
+    }
+    if (isThematicPrioritisationDocument(deletedDocument)) {
+      setTpImportMessage(null);
+      setPendingTopics([]);
+    }
+
     setWorkspace((prev) => {
       const doc = prev.repository.documents.find((d) => d.id === documentId);
+      const municipalityId = prev.municipality.identity.id;
+      const deletesHealthReport = doc?.kind === "health-report";
+      const deletesCommunityAssets = doc?.kind === "community-asset";
+      const deletesIBSE = isIBSEDocument(doc);
+      const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
+
       return {
         ...prev,
         repository: removeMunicipalDocument(prev.repository, documentId),
         evidenceStore: {
           ...prev.evidenceStore,
           atoms: prev.evidenceStore.atoms.filter(
-            (a) => a.provenance.documentId !== documentId
+            (atom) => {
+              if (atom.municipalityId !== municipalityId) return true;
+              if (atom.provenance.documentId === documentId) return false;
+              if (deletesHealthReport && atom.provenance.origin === "health-report") return false;
+              if (deletesCommunityAssets && atom.provenance.origin === "community-assets") return false;
+              if (deletesIBSE && atom.provenance.origin === "ibse") return false;
+              if (
+                deletesThematicPrioritisation &&
+                atom.provenance.origin === "citizen-participation"
+              ) {
+                return false;
+              }
+              return true;
+            }
           ),
           updatedAt: new Date().toISOString(),
         },
-        healthReport: doc?.kind === "health-report" ? undefined : prev.healthReport,
+        healthReport: deletesHealthReport ? undefined : prev.healthReport,
+        ibseStudy: deletesIBSE ? undefined : prev.ibseStudy,
+        thematicPrioritisation: deletesThematicPrioritisation
+          ? undefined
+          : prev.thematicPrioritisation,
+        thematicPrioritisationStudy: deletesThematicPrioritisation
+          ? undefined
+          : prev.thematicPrioritisationStudy,
         updatedAt: new Date().toISOString(),
       };
     });
