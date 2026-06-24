@@ -3126,6 +3126,127 @@ h3 {
   margin: 0;
 }
 
+/* ── LT1Panel: secciones por categoría de átomo ─────────────────────── */
+
+.lt1-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.lt1-section--determinant { border-left: 3px solid #0074c8; }
+.lt1-section--asset       { border-left: 3px solid #94d40b; }
+.lt1-section--indicator   { border-left: 3px solid #00acd9; }
+.lt1-section--qualitative { border-left: 3px solid #ffb61b; }
+.lt1-section--caution     { border-left: 3px solid #ff6600; }
+
+.lt1-section__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.lt1-section__header:hover { background: #f1f5f9; }
+
+.lt1-section__title { flex: 1; }
+
+.lt1-section__count {
+  font-size: 0.77rem;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.lt1-section__arrow {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.lt1-section__body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── LT1Panel: tarjeta de EvidenceAtom ──────────────────────────────── */
+
+.lt1-atom {
+  padding: 9px 11px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.lt1-atom__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.lt1-atom__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  flex: 1;
+  line-height: 1.35;
+}
+
+.lt1-atom__confidence {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lt1-atom__confidence--high   { background: #e8f9c8; color: #3d7a00; }
+.lt1-atom__confidence--medium { background: #fff3cd; color: #7a5500; }
+.lt1-atom__confidence--low    { background: #ffebd6; color: #7a3500; }
+
+.lt1-atom__content {
+  font-size: 0.82rem;
+  color: #334155;
+  margin: 0 0 5px;
+  line-height: 1.5;
+}
+
+.lt1-atom__expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.76rem;
+  color: #0074c8;
+  cursor: pointer;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.lt1-atom__expand-btn:hover { text-decoration: underline; }
+
+.lt1-atom__source {
+  font-size: 0.73rem;
+  color: #94a3b8;
+  margin: 0;
+  font-style: italic;
+}
+
 /* ── Advertencia priorización sobre PSL sin validar ─────────────────── */
 
 .prio-psl-warning {
