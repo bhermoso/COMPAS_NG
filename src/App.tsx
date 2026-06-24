@@ -1013,18 +1013,13 @@ export default function App() {
         )}
 
         {/* ── ③ Análisis territorial ──────────────────────── */}
+        {/* ── ③ Análisis territorial — solo interpretación (Nivel 2) ── */}
         {view === "analisis" && (
           <>
             <PipelineTracePanel pipeline={runtime.pipeline} />
             <LT1Panel lt1={runtime.lt1} />
             <OITPanel oit={runtime.oit} />
             <ReconciliacionPanel reconciliacion={runtime.reconciliacion} />
-            <PrioritizationPanel
-              prioritization={runtime.prioritization}
-              pslStatus={runtime.psl.status}
-              pslIsStale={runtime.pslIsStale}
-            />
-            <EPVSAPanel epvsa={runtime.epvsa} />
           </>
         )}
 
@@ -1042,18 +1037,25 @@ export default function App() {
           />
         )}
 
-        {/* ── ⑤ Priorizaciones ────────────────────────────── */}
+        {/* ── ⑤ Priorizaciones — técnica y participativa ──────── */}
         {view === "priorizacion" && (
           <>
             <section className="workspace-panel">
-              <p className="eyebrow">Capa deliberativa intermedia</p>
+              <p className="eyebrow">Capa deliberativa</p>
               <h2>Priorizaciones</h2>
               <p className="panel-note">
-                La priorización es la capa deliberativa que transforma el diagnóstico
-                en orientación para la acción. Se sitúa entre el Perfil de Salud Local
-                y el Plan de Acción: no pertenece al diagnóstico ni al plan.
+                La priorización articula el diagnóstico territorial con la orientación
+                para la acción. Integra dos fuentes complementarias: las candidaturas
+                técnicas derivadas del Perfil de Salud Local y las preferencias
+                expresadas por la ciudadanía. Ninguna prevalece automáticamente sobre
+                la otra; la deliberación del equipo técnico y la comunidad decide.
               </p>
             </section>
+            <PrioritizationPanel
+              prioritization={runtime.prioritization}
+              pslStatus={runtime.psl.status}
+              pslIsStale={runtime.pslIsStale}
+            />
             <ThematicPrioritisationPanel
               savedIds={
                 runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
@@ -1063,9 +1065,10 @@ export default function App() {
           </>
         )}
 
-        {/* ── ⑤ Plan Local de Salud ───────────────────────── */}
+        {/* ── ⑥ Plan Local de Salud — encaje EPVSA + plan + agenda + seguimiento */}
         {view === "plan" && (
           <>
+            <EPVSAPanel epvsa={runtime.epvsa} />
             <ActionPlanPanel
               actionPlan={runtime.actionPlan}
               isEmpty={pipelineIsEmpty}

@@ -1,4 +1,11 @@
-import type { AgendaDraft } from "../../application/agenda";
+import type { AgendaDraft, AgendaQuarter } from "../../application/agenda";
+
+const QUARTER_LABEL: Record<AgendaQuarter, string> = {
+  Q1: "1.er trimestre",
+  Q2: "2.º trimestre",
+  Q3: "3.er trimestre",
+  Q4: "4.º trimestre",
+};
 
 interface AgendaPanelProps {
   agenda: AgendaDraft;
@@ -31,7 +38,7 @@ export function AgendaPanel({ agenda, isEmpty = false }: AgendaPanelProps) {
           {agenda.annualItems.map((item) => (
             <article className="document-row" key={item.id}>
               <div>
-                <p className="document-kind">{item.suggestedQuarter}</p>
+                <p className="document-kind">{QUARTER_LABEL[item.suggestedQuarter]}</p>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 <p className="panel-note">

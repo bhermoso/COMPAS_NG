@@ -1,4 +1,11 @@
-import type { MonitoringDraft } from "../../application/monitoring";
+import type { MonitoringDraft, MonitoringStatus } from "../../application/monitoring";
+
+const STATUS_LABEL: Record<MonitoringStatus, string> = {
+  "pending-validation": "Pendiente de validación",
+  "planned":            "Planificado",
+  "in-progress":        "En ejecución",
+  "completed":          "Completado",
+};
 
 interface MonitoringPanelProps {
   monitoring: MonitoringDraft;
@@ -32,7 +39,7 @@ export function MonitoringPanel({ monitoring, isEmpty = false }: MonitoringPanel
             {monitoring.trackedItems.map((item) => (
               <article className="document-row" key={item.id}>
                 <div>
-                  <p className="document-kind">{item.status}</p>
+                  <p className="document-kind">{STATUS_LABEL[item.status] ?? item.status}</p>
                   <h3>{item.title}</h3>
                   <ul>
                     {item.requiredFields.map((field) => (
