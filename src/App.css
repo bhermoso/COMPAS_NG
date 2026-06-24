@@ -366,6 +366,75 @@ h3 {
   color: #64748b;
 }
 
+/* ── Indicadores con trazabilidad de actuación ──────────────── */
+
+.plan-indicators-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plan-indicator-item {
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.plan-indicator-item__main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.plan-indicator-item__type {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+  background: #e2e8f0;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.plan-indicator-item__note {
+  font-size: 0.82rem;
+  color: #475569;
+  margin: 0 0 3px;
+  line-height: 1.4;
+}
+
+.plan-indicator-item__action-trace {
+  font-size: 0.73rem;
+  color: #94a3b8;
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Notas de seguimiento (MonitoringItem.notes[]) ────────────── */
+
+.monitoring-notes {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.monitoring-note {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-style: italic;
+  padding: 2px 0;
+  line-height: 1.4;
+}
+
+.monitoring-note::before {
+  content: "→ ";
+  color: #94a3b8;
+}
+
 /* ── Bloque de encaje estratégico (FrameworkAlignmentsBlock) ── */
 
 .fa-block {

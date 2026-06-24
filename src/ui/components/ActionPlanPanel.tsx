@@ -166,14 +166,36 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanel
 
           <article className="card">
             <h3>Indicadores preliminares</h3>
-            <ul>
-              {actionPlan.indicators.map((indicator) => (
-                <li key={indicator.id}>
-                  <strong>{indicator.title}</strong> ({indicator.type}) ·{" "}
-                  {indicator.measurementNote}
-                </li>
-              ))}
-            </ul>
+            {(() => {
+              const actionTitleById = new Map(
+                actionPlan.actions.map((a) => [a.id, a.title])
+              );
+              return (
+                <ul className="plan-indicators-list">
+                  {actionPlan.indicators.map((indicator) => {
+                    const actionTitle = actionTitleById.get(indicator.linkedActionId);
+                    return (
+                      <li key={indicator.id} className="plan-indicator-item">
+                        <div className="plan-indicator-item__main">
+                          <strong>{indicator.title}</strong>
+                          <span className="plan-indicator-item__type">
+                            {indicator.type}
+                          </span>
+                        </div>
+                        <p className="plan-indicator-item__note">
+                          {indicator.measurementNote}
+                        </p>
+                        {actionTitle && (
+                          <p className="plan-indicator-item__action-trace">
+                            Actuación: {actionTitle}
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            })()}
           </article>
         </>
       )}
