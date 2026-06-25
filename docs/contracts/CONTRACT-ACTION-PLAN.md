@@ -3,7 +3,7 @@
 > Documento normativo permanente.
 > Define el comportamiento garantizado, los invariantes y los límites del
 > bloque de decisión del Nivel 3 en COMPÁS NG: Priorización técnica,
-> Traducción Estratégica EPVSA, Plan de Acción, Agenda tipo y Seguimiento.
+> Motor de Traducción Estratégica, Plan de Acción, Agenda tipo y Seguimiento.
 > No debe modificarse sin revisión explícita y deliberada.
 > Última revisión: 2026-06-24
 
@@ -29,8 +29,8 @@ Este contrato regula los siguientes objetos y motores:
 | Motor / Objeto | Entrada | Salida |
 |---|---|---|
 | `PrioritizationEngine` | `LocalHealthProfile` | `PrioritizationResult` |
-| `EPVSATranslator` | `PrioritizationResult` | `EPVSATranslationResult` |
-| `ActionPlanEngine` | `EPVSATranslationResult` + frameworks + `LocalHealthProfile` | `ActionPlanDraft` |
+| `StrategicTranslationEngine` (`EPVSATranslator` en código actual) | `PrioritizationResult` | `StrategicTranslationResult` (`EPVSATranslationResult` en código actual) |
+| `ActionPlanEngine` | `StrategicTranslationResult` + frameworks + `LocalHealthProfile` | `ActionPlanDraft` |
 | `AgendaEngine` | `ActionPlanDraft` | `AgendaDraft` |
 | `MonitoringEngine` | `AgendaDraft` | `MonitoringDraft` |
 
@@ -55,7 +55,7 @@ EvidenceStore (saneado por IntegrityGuard)
             PrioritizationEngine                                 │
                     │                                            │
                     ▼                                            │
-            EPVSATranslator                                      │
+            StrategicTranslationEngine                           │
                     │                                            │
                     ▼                                            │
             ActionPlanEngine ◄── PSL (PSLReference) ────────────┘
@@ -112,6 +112,13 @@ Los marcos interpretativos del registro (`StrategicFrameworkRegistry`) son
 consultados por el motor de Plan de Acción para construir `FrameworkAlignment`.
 Los marcos actuales registrados son: EPVSA, ESCA, MAYORES, BUENA_EDAD, RELAS.
 
+**Regla MTE-1 — EPVSA no es el único marco estratégico.** La EPVSA es un marco central, pero no exclusivo. El Motor de Traducción Estratégica debe considerar de forma explícita otros marcos oficiales pertinentes, incluyendo al menos ESCA y el Plan Estratégico Integral para Personas Mayores de Andalucía 2020–2023 y sus documentos asociados, cuando el PSL contenga hallazgos relacionados con salud comunitaria, activos, participación, intersectorialidad, envejecimiento, fragilidad, autonomía, soledad no deseada o participación social.
+
+**Regla MTE-2 — Registro de marcos estratégicos.** Los marcos estratégicos deben tratarse como un registro versionado y consultable (`StrategicFrameworkRegistry`), no como lógica rígida codificada en el motor. Cada marco debe poder declarar líneas, objetivos, indicadores, palabras clave, poblaciones diana, determinantes relacionados, vigencia, fuente documental y cautelas de uso.
+
+**Regla MTE-3 — Traducción sin decisión automática.** El Motor de Traducción Estratégica propone alineaciones entre áreas del PSL y marcos oficiales. No selecciona prioridades, no aprueba líneas, no impone objetivos ni activa indicadores sin deliberación humana.
+
+
 Estos marcos son **guías de lectura institucional**, no motores computacionales.
 Su inclusión en el plan es orientativa y requiere revisión técnica antes de
 cualquier formalización.
@@ -159,7 +166,7 @@ por importancia. Son orientaciones para la deliberación humana.
 
 ---
 
-## 7. Traducción estratégica EPVSA (`EPVSATranslator`)
+## 7. Motor de Traducción Estratégica (`StrategicTranslationEngine`; `EPVSATranslator` en código actual)
 
 ### 7.1 Propósito
 
@@ -465,7 +472,7 @@ Nivel 3 son:
 | Objeto | Acción humana requerida |
 |---|---|
 | `PrioritizationResult` | El equipo revisa, descarta y ordena candidatas |
-| `EPVSATranslationResult` | El equipo verifica el encaje con la EPVSA y ajusta líneas |
+| `StrategicTranslationResult` | El equipo verifica el encaje con los marcos estratégicos y ajusta líneas, objetivos e indicadores |
 | `ActionPlanDraft` | El equipo revisa objetivos, actuaciones e indicadores; asigna responsables y recursos |
 | `AgendaDraft` | El equipo asigna calendarios reales, responsables concretos y condiciones de ejecución |
 | `MonitoringDraft` | El equipo rellena los campos requeridos y avanza el estado de cada ítem |
