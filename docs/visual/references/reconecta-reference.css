@@ -1,0 +1,567 @@
+/*
+ * ============================================================
+ * CONTRATO VISUAL EXTRAÍDO — Encuesta REDCap "Desconecta para conectar"
+ * URL: https://redcap-fibao.granadasalud.es/DSGM/surveys/?s=3EERXJDCRPKDFFXR
+ * Contexto: Distrito Granada-Metropolitano · Plan Local de Salud de Huétor Tájar
+ * Instrumento: Reconecta — Cuestionario uso de pantallas en la adolescencia
+ * Extraído: 2026-06-25
+ * Fuentes: survey.css (REDCap v17.1.4), <style> inline del proyecto, estilos inline de campos descriptivos
+ * ============================================================
+ *
+ * ADVERTENCIA: Este archivo es solo lectura/documentación.
+ * Los selectores REDCap son propios de la plataforma y no deben
+ * modificarse en el proyecto remoto. Este contrato sirve para
+ * replicar la identidad visual en otro entorno.
+ * ============================================================
+ */
+
+
+/* ============================================================
+   1. PALETA DE COLORES — VARIABLES CSS
+   Extraída de: estilos inline de campos descriptivos (identidad del proyecto)
+   y del bloque <style> del tema REDCap configurado en la encuesta.
+   ============================================================ */
+
+:root {
+  /* --- Colores de identidad del proyecto (del campo "presentacion") --- */
+  --brand-blue-primary:   #1E7FC2;   /* Azul principal: títulos, bordes, labels de sección */
+  --brand-blue-secondary: #29ABE2;   /* Azul claro: segundo segmento del banner, bloque "Al finalizar" */
+  --brand-green:          #A8CC3A;   /* Verde lima: bloque "Finalidad", cuarto cuadro del logo */
+  --brand-amber:          #F5A623;   /* Ámbar/naranja: bloque "Qué no es", tercer cuadro del logo */
+  --brand-red:            #D32E3D;   /* Rojo: quinto segmento del banner (solo decorativo) */
+
+  /* --- Derivados oscuros (usados en labels de texto uppercase) --- */
+  --brand-blue-dark:      #0f7a9c;   /* Azul oscuro derivado de --brand-blue-secondary */
+  --brand-amber-dark:     #b9740a;   /* Naranja oscuro derivado de --brand-amber */
+  --brand-green-dark:     #5d7a1a;   /* Verde oscuro derivado de --brand-green */
+
+  /* --- Grises de texto del proyecto --- */
+  --text-primary:         #1a1a1a;   /* Casi negro: texto fuerte, wrapper del campo descriptivo */
+  --text-body:            #262626;   /* Cuerpo de texto del campo descriptivo */
+  --text-secondary:       #4A4A4A;   /* Texto secundario: supertítulo, subtítulo */
+  --text-muted:           #555;      /* Texto de la nota metodológica */
+
+  /* --- Fondos del proyecto --- */
+  --bg-note:              #f8f9fa;   /* Fondo de la nota metodológica */
+
+  /* --- Colores estructurales del tema REDCap configurado (bloque <style> inline) --- */
+  --redcap-theme-primary: #0b5394;   /* Color principal del tema: texto de preguntas, choices */
+  --redcap-theme-button:  #0C74A9;   /* Color de texto de botones */
+  --redcap-page-bg:       #cfe2f3;   /* Fondo de la página (exterior del contenedor) */
+  --redcap-submit-maroon: #800000;   /* Botón "ADELANTE" / "Finalizar": texto granate */
+  --redcap-link-navy:     #000066;   /* Links por defecto (survey.css estándar) */
+  --redcap-link-return:   #277ABE;   /* Link "Volver" en esquina superior */
+
+  /* --- Colores estructurales de survey.css (REDCap estándar) --- */
+  --redcap-body-outer:    #333;      /* Fondo exterior (body) */
+  --redcap-container-bg:  #ffffff;   /* Fondo del contenedor central */
+  --redcap-question-bg:   #F3F3F3;  /* Fondo de celdas de preguntas (por defecto) */
+  --redcap-border-light:  #DDDDDD;  /* Bordes de tabla entre preguntas */
+  --redcap-border-medium: #ccc;     /* Borde del contenedor */
+  --redcap-text-footer:   #888;     /* Texto del footer */
+  --redcap-choice-blue:   #337ab7;  /* Enhanced choices: color por defecto */
+}
+
+
+/* ============================================================
+   2. TIPOGRAFÍA
+   Fuente REDCap global: 'Open Sans' (forzada via body * !important)
+   Fuente del campo descriptivo (presentacion): mezcla proyecto
+   ============================================================ */
+
+/*
+ * Tipografía 1: Open Sans — REDCap global
+ * Aplicada a TODO el body mediante regla !important en encuesta.
+ * Tamaño base: 12px (survey.css)
+ */
+body * {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+}
+
+/*
+ * Tipografía 2: Georgia — envoltorio externo del campo descriptivo
+ * Solo en el wrapper principal de "presentacion"; actúa como fallback
+ * que queda sobreescrito por el !important global en los hijos.
+ * Mantenerla como referencia tipográfica aunque prácticamente invisible.
+ */
+.rc-field-presentacion-wrapper {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/*
+ * Tipografía 3: Segoe UI — elementos de identidad y navegación del proyecto
+ * Usada en: supertítulo, subtítulo, labels de sección, nota metodológica.
+ * Es la fuente de identidad visual real del proyecto.
+ */
+.rc-field-brand-text {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Tamaño del título de la encuesta (h1#surveytitle) */
+#surveytitle {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  margin: 20px 0;
+  text-align: left;
+  color: var(--redcap-theme-primary); /* #0b5394 por tema */
+}
+
+
+/* ============================================================
+   3. ESTRUCTURA DE PÁGINA (survey.css + tema inline)
+   ============================================================ */
+
+/*
+ * Fondo exterior (zona fuera del contenedor)
+ * survey.css: body { background-color: #333 }
+ * Tema inline: background-color: #cfe2f3 (override)
+ */
+body {
+  background-color: var(--redcap-page-bg); /* #cfe2f3 */
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * Contenedor central de la encuesta
+ * Ancho máximo: 800px, centrado
+ */
+#pagecontainer {
+  margin: 0 auto;
+  max-width: 800px;
+  padding: 0 0 10px;
+  text-align: left;
+}
+
+#container {
+  margin: 0;
+  padding: 7px 0 0 0;
+  background: var(--redcap-container-bg); /* #ffffff por tema override */
+  border: 1px solid var(--redcap-border-medium);
+  border-top: 0;
+  border-bottom: 0;
+}
+
+#pagecontent {
+  margin-top: -14px;
+  background-color: #ffffff; /* tema inline override */
+}
+
+
+/* ============================================================
+   4. BARRA DE TÍTULO / CABECERA DE ENCUESTA
+   Selector: div#surveytitlelogo.survey-titlebar [role=banner]
+   Contiene: logo (img) + título h1 + controles de fuente/retorno
+   ============================================================ */
+
+#surveytitlelogo.survey-titlebar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 3px;
+}
+
+/* Zona izquierda: logo + h1 */
+.survey-titlebar__left {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Logo de la encuesta */
+img#survey_logo {
+  max-width: 600px;
+  width: 600px;
+  height: 92px;
+  max-height: 92px;
+  display: block;
+}
+
+/* Zona derecha: controles de fuente y enlace "Volver" */
+.survey-titlebar__right {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  color: var(--redcap-theme-primary); /* #0b5394 */
+  padding-top: 7px;
+  padding-right: 15px;
+}
+
+/* Enlace "Volver" */
+#return_corner a {
+  text-decoration: none;
+  font-weight: bold;
+  color: var(--redcap-link-return); /* #277ABE */
+}
+
+
+/* ============================================================
+   5. BLOQUE DESCRIPTIVO DE PRESENTACIÓN (campo "presentacion")
+   Este es el bloque de diseño propio del proyecto.
+   Toda la identidad visual está aquí, via estilos inline.
+   Reproducidos como clases reutilizables.
+   ============================================================ */
+
+/*
+ * 5a. Envoltorio principal del campo descriptivo
+ * Original: style="font-family:Georgia,...;max-width:620px;margin:0 auto;color:#1a1a1a;"
+ */
+.rc-presentacion {
+  font-family: Georgia, 'Times New Roman', serif; /* sobreescrito por Open Sans !important */
+  max-width: 620px;
+  margin: 0 auto;
+  color: var(--text-primary); /* #1a1a1a */
+}
+
+/*
+ * 5b. Banner arcoíris horizontal
+ * Original: div style="height:4px;display:flex;margin:0 0 16px 0;opacity:.7;"
+ * 5 segmentos flexibles, uno por color de identidad.
+ * Versión superior: 4px, opacity 0.7 (más visible)
+ * Versión inferior: 2px, opacity 0.4 (decorativa)
+ */
+.rc-rainbow-banner {
+  display: flex;
+  margin: 0 0 16px 0;
+  opacity: 0.7;
+  height: 4px;
+}
+.rc-rainbow-banner--bottom {
+  height: 2px;
+  margin: 22px 0 0 0;
+  opacity: 0.4;
+}
+.rc-rainbow-banner__seg-1 { flex: 1; background: var(--brand-blue-primary); }    /* #1E7FC2 */
+.rc-rainbow-banner__seg-2 { flex: 1; background: var(--brand-blue-secondary); }  /* #29ABE2 */
+.rc-rainbow-banner__seg-3 { flex: 1; background: var(--brand-green); }           /* #A8CC3A */
+.rc-rainbow-banner__seg-4 { flex: 1; background: var(--brand-amber); }           /* #F5A623 */
+.rc-rainbow-banner__seg-5 { flex: 1; background: var(--brand-red); }             /* #D32E3D */
+
+/*
+ * 5c. Logo de identidad (grid 2×2)
+ * Original: div con display:grid, grid-template-columns:14px 14px, grid-template-rows:14px 14px, gap:2px
+ * Cuatro cuadrados de 14×14px con los 4 colores primarios (sin el rojo).
+ */
+.rc-logo-grid {
+  display: grid;
+  grid-template-columns: 14px 14px;
+  grid-template-rows: 14px 14px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.rc-logo-grid__cell-1 { background: var(--brand-blue-primary); }    /* #1E7FC2 — arriba izq */
+.rc-logo-grid__cell-2 { background: var(--brand-blue-secondary); }  /* #29ABE2 — arriba der */
+.rc-logo-grid__cell-3 { background: var(--brand-green); }           /* #A8CC3A — abajo izq */
+.rc-logo-grid__cell-4 { background: var(--brand-amber); }           /* #F5A623 — abajo der */
+
+/*
+ * 5d. Bloque cabecera del proyecto (logo + textos de identidad)
+ * Original: div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;"
+ */
+.rc-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+/*
+ * 5e. Supertítulo institucional
+ * Original: style="font-family:'Segoe UI',...;font-size:.72em;letter-spacing:1.5px;text-transform:uppercase;color:#4A4A4A;"
+ * Texto: "Distrito Granada-Metropolitano · Plan Local de Salud de Huétor Tájar"
+ */
+.rc-brand-supertitle {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.72em;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-secondary); /* #4A4A4A */
+}
+
+/*
+ * 5f. Nombre del instrumento / título principal
+ * Original: style="font-size:1.5em;font-weight:400;margin-top:2px;color:#1E7FC2;"
+ * Texto: "Reconecta"
+ */
+.rc-brand-title {
+  font-size: 1.5em;
+  font-weight: 400;
+  margin-top: 2px;
+  color: var(--brand-blue-primary); /* #1E7FC2 */
+}
+
+/*
+ * 5g. Subtítulo descriptivo
+ * Original: style="font-family:'Segoe UI',...;font-size:.85em;color:#4A4A4A;margin-top:2px;"
+ * Texto: "Cuestionario sobre el uso de pantallas en la adolescencia"
+ */
+.rc-brand-subtitle {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.85em;
+  color: var(--text-secondary); /* #4A4A4A */
+  margin-top: 2px;
+}
+
+/*
+ * 5h. Texto de cuerpo general del campo descriptivo
+ * Original: style="font-family:'Segoe UI',...;font-size:.92em;line-height:1.65;color:#262626;"
+ */
+.rc-body-text {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.92em;
+  line-height: 1.65;
+  color: var(--text-body); /* #262626 */
+}
+
+
+/* ============================================================
+   6. BLOQUES DE CONTENIDO CON BORDE LATERAL (sidebar indicators)
+   Patrón: div con border-left:3px solid {color} + padding-left:14px
+   Cuatro variantes según temática.
+   ============================================================ */
+
+/*
+ * Patrón base — reutilizable
+ * Original: style="border-left:3px solid {color};padding-left:14px;margin:18px 0;"
+ */
+.rc-content-block {
+  padding-left: 14px;
+  margin: 18px 0;
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
+/*
+ * 6a. Bloque "Contenido" — azul primario
+ * Label: "Contenido" en #1E7FC2
+ */
+.rc-content-block--blue {
+  border-left-color: var(--brand-blue-primary); /* #1E7FC2 */
+}
+.rc-content-block--blue .rc-block-label {
+  color: var(--brand-blue-primary); /* #1E7FC2 */
+}
+
+/*
+ * 6b. Bloque "Al finalizar" — azul secundario
+ * Label: "Al finalizar" en #0f7a9c (derivado oscuro de #29ABE2)
+ */
+.rc-content-block--teal {
+  border-left-color: var(--brand-blue-secondary); /* #29ABE2 */
+}
+.rc-content-block--teal .rc-block-label {
+  color: var(--brand-blue-dark); /* #0f7a9c */
+}
+
+/*
+ * 6c. Bloque "Qué no es" — ámbar/naranja
+ * Label: "Qué no es este cuestionario" en #b9740a (derivado oscuro de #F5A623)
+ */
+.rc-content-block--amber {
+  border-left-color: var(--brand-amber); /* #F5A623 */
+}
+.rc-content-block--amber .rc-block-label {
+  color: var(--brand-amber-dark); /* #b9740a */
+}
+
+/*
+ * 6d. Bloque "Finalidad" — verde
+ * Label: "Finalidad" en #5d7a1a (derivado oscuro de #A8CC3A)
+ */
+.rc-content-block--green {
+  border-left-color: var(--brand-green); /* #A8CC3A */
+}
+.rc-content-block--green .rc-block-label {
+  color: var(--brand-green-dark); /* #5d7a1a */
+}
+
+/*
+ * Label interior de cada bloque
+ * Original: style="font-size:.78em;letter-spacing:.5px;text-transform:uppercase;...;margin-bottom:4px;"
+ */
+.rc-block-label {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.78em;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+/* Párrafo de texto dentro de cada bloque */
+.rc-content-block p {
+  margin: 0;
+}
+
+
+/* ============================================================
+   7. NOTA METODOLÓGICA (campo "ficha_metodologica")
+   Caja de aviso técnico con fondo gris y borde discontinuo.
+   ============================================================ */
+
+/*
+ * Original: style="background:#f8f9fa;border:1px dashed #999;border-radius:10px;
+ *           padding:10px;margin:10px 0;font-size:.75em;color:#555;font-family:'Segoe UI',sans-serif;"
+ */
+.rc-nota-metodologica {
+  background: var(--bg-note); /* #f8f9fa */
+  border: 1px dashed #999;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 0.75em;
+  color: var(--text-muted); /* #555 */
+  font-family: 'Segoe UI', sans-serif;
+}
+
+
+/* ============================================================
+   8. TABLA DE PREGUNTAS (REDCap structural)
+   Selector: table#questiontable.form_border.container-fluid
+   Filas de preguntas y celdas de respuesta.
+   ============================================================ */
+
+/*
+ * Tabla principal de preguntas
+ */
+table.form_border {
+  border: 1px solid var(--redcap-border-light); /* #DDDDDD */
+}
+
+/*
+ * Celdas de pregunta y datos — por defecto survey.css
+ * Overrideadas por el tema inline a color:#0b5394 / background:#ffffff
+ */
+.data,
+.labelrc,
+.labelmatrix,
+.data_matrix {
+  padding: 15px 10px;
+  background: #F3F3F3;               /* default survey.css */
+  border: 0;
+  border-bottom: 1px solid #DDDDDD;
+  vertical-align: top;
+  font-weight: bold;
+  /* Override de tema inline: */
+  background-color: #ffffff;
+  color: var(--redcap-theme-primary); /* #0b5394 */
+}
+
+/*
+ * Columna de número de pregunta (oculta en esta encuesta via <style> inline)
+ * Original: display:none !important; (via bloque <style> en pagecontent)
+ */
+#questiontable td.questionnum,
+#questiontable td.questionnummatrix {
+  display: none !important;
+}
+
+/*
+ * Enhanced choices (opciones de respuesta como "pills")
+ */
+div.enhancedchoice label {
+  width: 94%;               /* override en esta encuesta; default 90% */
+  margin: 0 3% 0.5em 3%;   /* override en esta encuesta */
+  border-radius: 10px;
+  text-align: left;
+  border: 1px solid var(--redcap-theme-primary);  /* #0b5394 por tema */
+  color: var(--redcap-theme-primary);             /* #0b5394 por tema */
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+div.enhancedchoice label.selectedradio,
+div.enhancedchoice label.selectedchkbox,
+div.enhancedchoice label.hover:hover {
+  background-color: var(--redcap-theme-primary); /* #0b5394 */
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+
+/* ============================================================
+   9. BOTONES DE NAVEGACIÓN (REDCap survey)
+   ============================================================ */
+
+/*
+ * Botón principal "ADELANTE" / "Finalizar la encuesta"
+ * Color de texto: #800000 (granate)
+ * Clase: .jqbutton.wrap / button[name="submit-btn-saverecord"]
+ */
+button[name="submit-btn-saverecord"],
+button.jqbutton.wrap {
+  color: var(--redcap-submit-maroon); /* #800000 */
+  min-width: 120px;
+  max-width: 300px;
+}
+
+/*
+ * Botón secundario "guardar y volver más tarde"
+ */
+button[name="submit-btn-savereturnlater"] {
+  /* Sin color explícito en esta encuesta; hereda del tema */
+  color: var(--redcap-theme-button); /* #0C74A9 */
+}
+
+/*
+ * Todos los botones — color por tema inline
+ */
+button,
+.btn-fileupload {
+  color: var(--redcap-theme-button) !important; /* #0C74A9 */
+}
+
+
+/* ============================================================
+   10. SECCIÓN HEADER (REDCap — solo si se usan section headers)
+   ============================================================ */
+
+/*
+ * Cabecera de sección REDCap
+ * Tema inline override: fondo #0b5394, texto blanco
+ */
+.header {
+  background-color: var(--redcap-theme-primary) !important; /* #0b5394 */
+  color: #FFFFFF !important;
+  border: none;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 8px;
+}
+
+
+/* ============================================================
+   11. FOOTER
+   ============================================================ */
+
+#footer {
+  color: #000000;           /* tema inline override */
+  font-size: 11px;
+  text-align: center;
+  margin: 30px 0 0 0;
+  padding: 20px 0 5px;
+}
+#footer a {
+  color: #000000 !important; /* tema inline override */
+  text-decoration: none;
+  font-weight: normal;
+  font-size: 11px;
+}
+
+
+/* ============================================================
+   12. RESPONSIVE — survey.css estándar
+   ============================================================ */
+
+@media screen and (max-width: 767px) {
+  .data, .labelrc {
+    padding: 5px;
+  }
+  .labelmatrix, .data_matrix {
+    padding: 2px 0;
+  }
+}
