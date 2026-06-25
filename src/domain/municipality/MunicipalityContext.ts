@@ -10,6 +10,7 @@ export interface MunicipalityIdentity {
   province: string;
   autonomousCommunity: AutonomousCommunity;
   ineCode?: string;
+  territorialType?: string;
 }
 
 export interface MunicipalityMetadata {
@@ -30,6 +31,7 @@ export interface CreateMunicipalityContextInput {
   name: string;
   province: string;
   ineCode?: string;
+  territorialType?: string;
   createdBy?: string;
 }
 
@@ -45,6 +47,7 @@ export function createMunicipalityContext(
       province: input.province,
       autonomousCommunity: "Andalucía",
       ineCode: input.ineCode,
+      territorialType: input.territorialType,
     },
     status: "draft",
     metadata: {

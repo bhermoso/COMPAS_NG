@@ -69,6 +69,22 @@ import {
 } from "./ui/components";
 import "./App.css";
 
+// ── Tipos de ámbito territorial ──────────────────────────────
+
+const TERRITORIAL_TYPE_OPTIONS = [
+  { value: "municipio",    label: "Municipio" },
+  { value: "mancomunidad", label: "Mancomunidad" },
+  { value: "distrito",     label: "Distrito municipal" },
+  { value: "otro",         label: "Otro ámbito" },
+] as const;
+
+const TERRITORIAL_TYPE_LABEL: Record<string, string> = {
+  municipio:    "Municipio",
+  mancomunidad: "Mancomunidad",
+  distrito:     "Distrito municipal",
+  otro:         "Otro ámbito",
+};
+
 // ── Municipios de demostración ───────────────────────────────
 
 const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
@@ -259,6 +275,7 @@ export default function App() {
   });
   const [newMuniName, setNewMuniName] = useState("");
   const [newMuniProvince, setNewMuniProvince] = useState("");
+  const [newMuniType, setNewMuniType] = useState("municipio");
   const [newMuniError, setNewMuniError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -1017,7 +1034,7 @@ export default function App() {
     switchToMunicipality(municipalityId, muni);
   }
 
-  function handleAddMunicipality(name: string, province: string) {
+  function handleAddMunicipality(name: string, province: string, type: string) {
     const id = slugifyMunicipalityId(name);
 
     const existing = allMunicipalities.find((m) => m.id === id);
@@ -1030,6 +1047,7 @@ export default function App() {
       id,
       name: name.trim(),
       province: province.trim() || "Granada",
+      territorialType: type || "municipio",
       createdBy: "Usuario",
     };
 
@@ -1081,6 +1099,12 @@ export default function App() {
             </span>
             <span className="app-nav__municipality-sep">·</span>
             <span>{municipality.province}</span>
+            {municipality.territorialType && municipality.territorialType !== "municipio" && (
+              <>
+                <span className="app-nav__municipality-sep">·</span>
+                <span>{TERRITORIAL_TYPE_LABEL[municipality.territorialType] ?? municipality.territorialType}</span>
+              </>
+            )}
             <span className="app-nav__municipality-sep">·</span>
             <span>Plan Local de Salud 2027–2030</span>
             {municipality.ineCode && (
@@ -1097,7 +1121,7 @@ export default function App() {
               className="app-nav__municipality-btn"
               onClick={() => setShowMunicipalitySelector((v) => !v)}
             >
-              {showMunicipalitySelector ? "Cerrar ▲" : "Cambiar municipio ▾"}
+              {showMunicipalitySelector ? "Cerrar ▲" : "Cambiar ámbito ▾"}
             </button>
           </div>
         </div>
@@ -1114,8 +1138,9 @@ export default function App() {
         {showMunicipalitySelector && (
           <section className="municipality-selector">
             <p className="municipality-selector__warning">
-              Cambiar de municipio reiniciará el espacio de trabajo local
-              actual. Los documentos y evidencias de esta sesión se eliminarán.
+              Cambiar de ámbito territorial reiniciará el espacio de trabajo
+              local actual. Los documentos y evidencias de esta sesión se
+              eliminarán.
             </p>
             <div className="municipality-selector__options">
               {allMunicipalities.map((m) => (
@@ -1131,7 +1156,11 @@ export default function App() {
                 >
                   <span className="municipality-selector__option-name">{m.name}</span>
                   <span className="municipality-selector__option-meta">
-                    {m.province}{m.ineCode ? ` · INE ${m.ineCode}` : ""}
+                    {m.province}
+                    {m.territorialType && m.territorialType !== "municipio"
+                      ? ` · ${TERRITORIAL_TYPE_LABEL[m.territorialType] ?? m.territorialType}`
+                      : ""}
+                    {m.ineCode ? ` · INE ${m.ineCode}` : ""}
                   </span>
                 </button>
               ))}
@@ -1144,14 +1173,14 @@ export default function App() {
               </button>
             </div>
 
-            {/* Formulario de nuevo municipio */}
+            {/* Formulario de nuevo ámbito territorial */}
             <div className="municipality-add">
-              <p className="municipality-add__label">Añadir municipio</p>
+              <p className="municipality-add__label">Añadir ámbito territorial</p>
               <div className="municipality-add__row">
                 <input
                   type="text"
                   className="municipality-add__input"
-                  placeholder="Nombre del municipio"
+                  placeholder="Nombre del ámbito"
                   value={newMuniName}
                   onChange={(e) => {
                     setNewMuniName(e.target.value);
@@ -1161,9 +1190,10 @@ export default function App() {
                     if (e.key === "Enter") {
                       const name = newMuniName.trim();
                       if (!name) { setNewMuniError("Introduce un nombre."); return; }
-                      handleAddMunicipality(name, newMuniProvince);
+                      handleAddMunicipality(name, newMuniProvince, newMuniType);
                       setNewMuniName("");
                       setNewMuniProvince("");
+                      setNewMuniType("municipio");
                     }
                   }}
                 />
@@ -1174,15 +1204,25 @@ export default function App() {
                   value={newMuniProvince}
                   onChange={(e) => setNewMuniProvince(e.target.value)}
                 />
+                <select
+                  className="municipality-add__input municipality-add__input--sm"
+                  value={newMuniType}
+                  onChange={(e) => setNewMuniType(e.target.value)}
+                >
+                  {TERRITORIAL_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
                 <button
                   type="button"
                   className="municipality-add__btn"
                   onClick={() => {
                     const name = newMuniName.trim();
                     if (!name) { setNewMuniError("Introduce un nombre."); return; }
-                    handleAddMunicipality(name, newMuniProvince);
+                    handleAddMunicipality(name, newMuniProvince, newMuniType);
                     setNewMuniName("");
                     setNewMuniProvince("");
+                    setNewMuniType("municipio");
                   }}
                 >
                   Añadir
