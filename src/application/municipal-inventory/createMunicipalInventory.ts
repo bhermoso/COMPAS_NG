@@ -7,11 +7,13 @@ import type { MunicipalSnapshot } from "../../domain/municipality-context";
 export interface MunicipalInventory {
   hasHealthReport: boolean;
   hasIBSE: boolean;
+  hasDUKE: boolean;
   hasAssets: boolean;
 
   repositoryDocumentCount: number;
   evidenceAtomCount: number;
   ibseValidRecordCount: number;
+  dukeRecordCount: number;
 
   hasThematicPrioritisation: boolean;
   hasStrategicPrioritisation: boolean;
@@ -25,6 +27,7 @@ export function createMunicipalInventory(
 ): MunicipalInventory {
   const hasHealthReport = snapshot.healthReport !== undefined;
   const hasIBSE        = snapshot.ibseStudy !== undefined;
+  const hasDUKE        = snapshot.dukeStudy !== undefined;
   const hasAssets      = snapshot.evidenceStore.atoms.some(
     (atom) => atom.kind === "asset"
   );
@@ -32,6 +35,7 @@ export function createMunicipalInventory(
   const repositoryDocumentCount = snapshot.repository.documents.length;
   const evidenceAtomCount       = snapshot.evidenceStore.atoms.length;
   const ibseValidRecordCount    = snapshot.ibseStudy?.aggregates.nValid ?? 0;
+  const dukeRecordCount         = snapshot.dukeStudy?.aggregates.nValidGlobal ?? 0;
 
   const hasThematicPrioritisation  = snapshot.thematicPrioritisation !== undefined;
   const hasStrategicPrioritisation = snapshot.strategicPrioritisation !== undefined;
@@ -50,10 +54,12 @@ export function createMunicipalInventory(
   return {
     hasHealthReport,
     hasIBSE,
+    hasDUKE,
     hasAssets,
     repositoryDocumentCount,
     evidenceAtomCount,
     ibseValidRecordCount,
+    dukeRecordCount,
     hasThematicPrioritisation,
     hasStrategicPrioritisation,
     hasMunicipalEnrichment,

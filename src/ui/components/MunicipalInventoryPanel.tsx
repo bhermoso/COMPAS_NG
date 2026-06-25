@@ -59,6 +59,15 @@ export function MunicipalInventoryPanel({
               : undefined
           }
         />
+        <InventoryItem
+          label="Apoyo social funcional (DUKE-EAS)"
+          present={inventory.hasDUKE}
+          detail={
+            inventory.hasDUKE
+              ? `${inventory.dukeRecordCount} registros globales válidos`
+              : undefined
+          }
+        />
       </ul>
 
       {/* Recuentos */}

@@ -650,6 +650,10 @@ export function LocalHealthProfileView({
                 <span className="psl-doc-source-flag__name">IBSE</span>
                 <span className="psl-doc-source-flag__status">{psl.ibsePresent ? "Disponible" : "Sin datos"}</span>
               </div>
+              <div className={`psl-doc-source-flag ${(psl.dukePresent ?? false) ? "psl-doc-source-flag--yes" : "psl-doc-source-flag--no"}`}>
+                <span className="psl-doc-source-flag__name">DUKE-EAS</span>
+                <span className="psl-doc-source-flag__status">{(psl.dukePresent ?? false) ? "Disponible" : "Sin datos"}</span>
+              </div>
               <div className={`psl-doc-source-flag ${psl.thematicPrioritisationPresent ? "psl-doc-source-flag--yes" : "psl-doc-source-flag--no"}`}>
                 <span className="psl-doc-source-flag__name">Priorización ciudadana</span>
                 <span className="psl-doc-source-flag__status">{psl.thematicPrioritisationPresent ? "Realizada" : "Pendiente"}</span>

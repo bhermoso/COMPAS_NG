@@ -123,6 +123,7 @@ export interface LocalHealthProfile {
   evidenceAtomIds: string[];              // IDs de los átomos activos; sin duplicar contenido
   originsSummary: string[];               // orígenes presentes ordenados
   ibsePresent: boolean;
+  dukePresent: boolean;
   thematicPrioritisationPresent: boolean;
   complementaryStudyCount: number;
 

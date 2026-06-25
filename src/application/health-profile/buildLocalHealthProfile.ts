@@ -139,6 +139,7 @@ export function buildLocalHealthProfile(
     evidenceAtomIds: sanitizedStore.atoms.map((a) => a.id),
     originsSummary,
     ibsePresent: workspace.ibseStudy !== undefined,
+    dukePresent: workspace.dukeStudy !== undefined,
     thematicPrioritisationPresent: workspace.thematicPrioritisation !== undefined,
     complementaryStudyCount,
 
