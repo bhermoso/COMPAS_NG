@@ -68,6 +68,15 @@ export function MunicipalInventoryPanel({
               : undefined
           }
         />
+        <InventoryItem
+          label="Adherencia dieta mediterránea (PREDIMED-EAS)"
+          present={inventory.hasPREDIMED}
+          detail={
+            inventory.hasPREDIMED
+              ? `${inventory.predimedRecordCount} registros válidos`
+              : undefined
+          }
+        />
       </ul>
 
       {/* Recuentos */}

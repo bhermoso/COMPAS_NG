@@ -8,12 +8,14 @@ export interface MunicipalInventory {
   hasHealthReport: boolean;
   hasIBSE: boolean;
   hasDUKE: boolean;
+  hasPREDIMED: boolean;
   hasAssets: boolean;
 
   repositoryDocumentCount: number;
   evidenceAtomCount: number;
   ibseValidRecordCount: number;
   dukeRecordCount: number;
+  predimedRecordCount: number;
 
   hasThematicPrioritisation: boolean;
   hasStrategicPrioritisation: boolean;
@@ -28,6 +30,7 @@ export function createMunicipalInventory(
   const hasHealthReport = snapshot.healthReport !== undefined;
   const hasIBSE        = snapshot.ibseStudy !== undefined;
   const hasDUKE        = snapshot.dukeStudy !== undefined;
+  const hasPREDIMED    = snapshot.predimedStudy !== undefined;
   const hasAssets      = snapshot.evidenceStore.atoms.some(
     (atom) => atom.kind === "asset"
   );
@@ -36,6 +39,7 @@ export function createMunicipalInventory(
   const evidenceAtomCount       = snapshot.evidenceStore.atoms.length;
   const ibseValidRecordCount    = snapshot.ibseStudy?.aggregates.nValid ?? 0;
   const dukeRecordCount         = snapshot.dukeStudy?.aggregates.nValidGlobal ?? 0;
+  const predimedRecordCount     = snapshot.predimedStudy?.aggregates.nValid ?? 0;
 
   const hasThematicPrioritisation  = snapshot.thematicPrioritisation !== undefined;
   const hasStrategicPrioritisation = snapshot.strategicPrioritisation !== undefined;
@@ -55,11 +59,13 @@ export function createMunicipalInventory(
     hasHealthReport,
     hasIBSE,
     hasDUKE,
+    hasPREDIMED,
     hasAssets,
     repositoryDocumentCount,
     evidenceAtomCount,
     ibseValidRecordCount,
     dukeRecordCount,
+    predimedRecordCount,
     hasThematicPrioritisation,
     hasStrategicPrioritisation,
     hasMunicipalEnrichment,

@@ -22,6 +22,8 @@ import { parseIBSECSV, ibseStudyToEvidenceAtoms } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
 import { parseDUKECSV, dukeStudyToEvidenceAtoms } from "./application/duke";
 import { createDUKEStudy } from "./domain/duke";
+import { parsePREDIMEDCSV, predimedStudyToEvidenceAtoms } from "./application/predimed";
+import { createPREDIMEDStudy } from "./domain/predimed";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -47,6 +49,7 @@ import {
   HealthReportViewer,
   IBSEPanel,
   DUKEPanel,
+  PREDIMEDPanel,
   QuestionnaireBuilderPanel,
   MunicipalInventoryPanel,
   LocalHealthProfilePanel,
@@ -118,6 +121,7 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
 
 const IBSE_DOCUMENT_TAG = "ibse";
 const DUKE_DOCUMENT_TAG = "duke-eas";
+const PREDIMED_DOCUMENT_TAG = "predimed-eas";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -130,6 +134,10 @@ function isIBSEDocument(document: MunicipalDocument | undefined): boolean {
 
 function isDUKEDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, DUKE_DOCUMENT_TAG);
+}
+
+function isPREDIMEDDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, PREDIMED_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -192,6 +200,7 @@ function isEmptyWorkspaceForPersistenceGuard(
     workspace.healthReport === undefined &&
     workspace.ibseStudy === undefined &&
     workspace.dukeStudy === undefined &&
+    workspace.predimedStudy === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
@@ -231,6 +240,8 @@ export default function App() {
   const [ibseMessage, setIbseMessage] = useState<string | null>(null);
   const [isLoadingDUKE, setIsLoadingDUKE] = useState(false);
   const [dukeMessage, setDukeMessage] = useState<string | null>(null);
+  const [isLoadingPREDIMED, setIsLoadingPREDIMED] = useState(false);
+  const [predimedMessage, setPredimedMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -660,6 +671,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadPREDIMEDCSV(file: File): Promise<void> {
+    setIsLoadingPREDIMED(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parsePREDIMEDCSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createPREDIMEDStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const predimedAtoms = attachDocumentIdToAtoms(
+        predimedStudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          PREDIMED_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "redcap-export",
+          title: `PREDIMED-EAS - ${file.name}`,
+          source: {
+            system: "Importacion CSV PREDIMED-EAS",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["redcap-export", PREDIMED_DOCUMENT_TAG, "eas", "complementary-study"],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(PREDIMED_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of predimedAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          predimedStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setPredimedMessage(
+        aggregates.nValid > 0
+          ? `PREDIMED-EAS cargado: ${aggregates.nValid} registros validos de ${aggregates.n}. Alta adherencia: ${aggregates.highPercentage.toFixed(1)} %. ${predimedAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV PREDIMED-EAS procesado sin registros completos.${warn}`
+      );
+    } catch {
+      setPredimedMessage("Error al procesar el CSV. Verifica que incluya la columna Predimed o P36BPD01_2023..P36BPD14_2023.");
+    } finally {
+      setIsLoadingPREDIMED(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -827,6 +909,10 @@ export default function App() {
       setDukeMessage(null);
       setIsLoadingDUKE(false);
     }
+    if (isPREDIMEDDocument(deletedDocument)) {
+      setPredimedMessage(null);
+      setIsLoadingPREDIMED(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -839,6 +925,7 @@ export default function App() {
       const deletesCommunityAssets = doc?.kind === "community-asset";
       const deletesIBSE = isIBSEDocument(doc);
       const deletesDUKE = isDUKEDocument(doc);
+      const deletesPREDIMED = isPREDIMEDDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -861,6 +948,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesPREDIMED &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(PREDIMED_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -874,6 +968,7 @@ export default function App() {
         healthReport: deletesHealthReport ? undefined : prev.healthReport,
         ibseStudy: deletesIBSE ? undefined : prev.ibseStudy,
         dukeStudy: deletesDUKE ? undefined : prev.dukeStudy,
+        predimedStudy: deletesPREDIMED ? undefined : prev.predimedStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -908,6 +1003,8 @@ export default function App() {
     setIsLoadingIBSE(false);
     setDukeMessage(null);
     setIsLoadingDUKE(false);
+    setPredimedMessage(null);
+    setIsLoadingPREDIMED(false);
     setShowMunicipalitySelector(false);
     setIsThematicModalOpen(false);
     setIsImportingTP(false);
@@ -1322,6 +1419,12 @@ export default function App() {
               isLoading={isLoadingDUKE}
               message={dukeMessage}
               onLoadCSV={handleLoadDUKECSV}
+            />
+            <PREDIMEDPanel
+              predimedStudy={runtime.workspace.predimedStudy}
+              isLoading={isLoadingPREDIMED}
+              message={predimedMessage}
+              onLoadCSV={handleLoadPREDIMEDCSV}
             />
             <QuestionnaireBuilderPanel />
           </>

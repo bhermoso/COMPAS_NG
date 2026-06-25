@@ -79,9 +79,11 @@ export function buildLocalHealthProfile(
     sanitizedStore.atoms.map((a) => a.provenance.origin)
   )].sort();
 
-  const complementaryStudyCount = workspace.repository.documents.filter(
-    (d) => d.kind === "complementary-study"
-  ).length;
+  const complementaryStudyCount = [
+    workspace.ibseStudy,
+    workspace.dukeStudy,
+    workspace.predimedStudy,
+  ].filter(Boolean).length;
 
   // ── Capítulo VII: priorización scaffold ──────────────────────────────────
   const topicMap = new Map(THEMATIC_TOPICS.map((t) => [t.id, t.label]));
@@ -140,6 +142,7 @@ export function buildLocalHealthProfile(
     originsSummary,
     ibsePresent: workspace.ibseStudy !== undefined,
     dukePresent: workspace.dukeStudy !== undefined,
+    predimedPresent: workspace.predimedStudy !== undefined,
     thematicPrioritisationPresent: workspace.thematicPrioritisation !== undefined,
     complementaryStudyCount,
 

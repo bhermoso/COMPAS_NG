@@ -4,6 +4,7 @@ import type { EvidenceStore } from "../evidence";
 import type { HealthReportDocument } from "../health-report";
 import type { IBSEStudy } from "../ibse";
 import type { DUKEStudy } from "../duke";
+import type { PREDIMEDStudy } from "../predimed";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 import type { LocalHealthProfile } from "../health-profile";
 
@@ -42,6 +43,7 @@ export interface MunicipalityWorkspace {
   healthReport?: HealthReportDocument;
   ibseStudy?: IBSEStudy;
   dukeStudy?: DUKEStudy;
+  predimedStudy?: PREDIMEDStudy;
   thematicPrioritisation?: ThematicPrioritisation;
   thematicPrioritisationStudy?: ThematicPrioritisationStudy;
   /**

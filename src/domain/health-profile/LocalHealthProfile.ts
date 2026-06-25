@@ -124,6 +124,7 @@ export interface LocalHealthProfile {
   originsSummary: string[];               // orígenes presentes ordenados
   ibsePresent: boolean;
   dukePresent: boolean;
+  predimedPresent: boolean;
   thematicPrioritisationPresent: boolean;
   complementaryStudyCount: number;
 

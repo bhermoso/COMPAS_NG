@@ -17,6 +17,7 @@ import type { MunicipalDocumentRepository } from "../repository";
 import type { HealthReportDocument } from "../health-report";
 import type { IBSEStudy } from "../ibse";
 import type { DUKEStudy } from "../duke";
+import type { PREDIMEDStudy } from "../predimed";
 import type { EvidenceStore } from "../evidence";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 
@@ -30,6 +31,8 @@ export interface MunicipalSnapshot {
   ibseStudy?: IBSEStudy;
 
   dukeStudy?: DUKEStudy;
+
+  predimedStudy?: PREDIMEDStudy;
 
   evidenceStore: EvidenceStore;
 

@@ -25,6 +25,7 @@ export function createMunicipalSnapshot(
     healthReport:            workspace.healthReport,
     ibseStudy:               workspace.ibseStudy,
     dukeStudy:               workspace.dukeStudy,
+    predimedStudy:           workspace.predimedStudy,
     thematicPrioritisation:       workspace.thematicPrioritisation,
     thematicPrioritisationStudy:  workspace.thematicPrioritisationStudy,
     evidenceStore:                workspace.evidenceStore,
