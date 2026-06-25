@@ -119,6 +119,30 @@ Los marcos actuales registrados son: EPVSA, ESCA, MAYORES, BUENA_EDAD, RELAS.
 **Regla MTE-3 — Traducción sin decisión automática.** El Motor de Traducción Estratégica propone alineaciones entre áreas del PSL y marcos oficiales. No selecciona prioridades, no aprueba líneas, no impone objetivos ni activa indicadores sin deliberación humana.
 
 
+
+### StrategicFrameworkRegistry (contrato conceptual)
+
+El `StrategicFrameworkRegistry` constituye el catálogo versionado de marcos
+estratégicos utilizados por el Motor de Traducción Estratégica.
+
+Cada marco registrado deberá poder declarar, como mínimo:
+
+- identificador único;
+- nombre oficial;
+- versión y vigencia;
+- documento(s) fuente;
+- líneas estratégicas;
+- objetivos;
+- indicadores;
+- poblaciones diana;
+- determinantes relacionados;
+- palabras clave o conceptos asociados;
+- cautelas metodológicas.
+
+El registro es una infraestructura de conocimiento y no implica que todos sus
+elementos se apliquen automáticamente a cada Perfil de Salud Local.
+
+
 Estos marcos son **guías de lectura institucional**, no motores computacionales.
 Su inclusión en el plan es orientativa y requiere revisión técnica antes de
 cualquier formalización.
