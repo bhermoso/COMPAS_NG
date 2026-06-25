@@ -4325,3 +4325,77 @@ h3 {
   padding: 24px 28px;
   background: #ffffff;
 }
+
+/* ── Fuentes de evidencia — divisor visual y toggle de Informe ──── */
+
+/* Separador de sección (no es un panel, es una línea con etiqueta) */
+.fde-section-divider {
+  max-width: 1120px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.fde-section-divider::before,
+.fde-section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e4eaf3;
+}
+.fde-section-divider__text {
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* Toggle colapsable del Informe de Salud */
+.fde-source-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+.fde-source-toggle__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  transition: color 0.15s;
+}
+.fde-source-toggle:hover .fde-source-toggle__name {
+  color: #0074c8;
+}
+.fde-source-toggle__subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  flex: 1;
+}
+.fde-source-toggle__status {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fde-source-toggle__arrow {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* Separación entre el toggle y el contenido cuando está abierto */
+.fde-source-panel .hr-viewer__header,
+.fde-source-panel .fde-source-body {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e4eaf3;
+}

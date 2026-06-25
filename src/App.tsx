@@ -1443,6 +1443,10 @@ export default function App() {
             <EvidenceStorePanel
               evidenceStore={runtime.workspace.evidenceStore}
             />
+            {/* ── Fuentes de evidencia ─────────────────────── */}
+            <div className="fde-section-divider">
+              <span className="fde-section-divider__text">Fuentes de evidencia</span>
+            </div>
             <HealthReportViewer
               healthReport={runtime.workspace.healthReport}
             />
