@@ -1,5 +1,6 @@
 export {
   buildWorkspaceStorageKey,
+  hasWorkspaceInLocalStorage,
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
   clearWorkspaceFromLocalStorage,

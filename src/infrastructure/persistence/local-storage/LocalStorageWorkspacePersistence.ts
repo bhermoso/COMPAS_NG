@@ -7,10 +7,33 @@ export function buildWorkspaceStorageKey(municipalityId: string): string {
   return `${KEY_PREFIX}:${municipalityId}`;
 }
 
+export function hasWorkspaceInLocalStorage(municipalityId: string): boolean {
+  try {
+    return localStorage.getItem(buildWorkspaceStorageKey(municipalityId)) !== null;
+  } catch {
+    return false;
+  }
+}
+
 // Tipos documentales canónicos: una sola versión activa por municipio.
 // Se aplica al hidratar desde localStorage para sanear datos anteriores
 // al commit que introdujo replaceMunicipalDocumentByKind.
 const CANONICAL_SINGLE_KINDS = ["health-report", "community-asset"] as const;
+
+function hasCoreWorkspaceCollections(value: unknown): value is MunicipalityWorkspace {
+  if (value === null || typeof value !== "object") return false;
+  const workspace = value as {
+    municipality?: { identity?: { id?: unknown } };
+    repository?: { documents?: unknown };
+    evidenceStore?: { atoms?: unknown };
+  };
+
+  return (
+    typeof workspace.municipality?.identity?.id === "string" &&
+    Array.isArray(workspace.repository?.documents) &&
+    Array.isArray(workspace.evidenceStore?.atoms)
+  );
+}
 
 // Elimina duplicados de tipos canónicos conservando el documento con
 // createdAt más reciente (lexicográfico ISO 8601). En caso de empate,
@@ -18,6 +41,8 @@ const CANONICAL_SINGLE_KINDS = ["health-report", "community-asset"] as const;
 function normalizeCanonicalDocuments(
   workspace: MunicipalityWorkspace
 ): MunicipalityWorkspace {
+  if (!hasCoreWorkspaceCollections(workspace)) return workspace;
+
   const docs = workspace.repository.documents;
   let deduped = [...docs];
   let changed = false;
@@ -114,6 +139,8 @@ export function loadWorkspaceFromLocalStorage(
     if (parsed.ibseStudy && !Array.isArray(parsed.ibseStudy.methodologicalCautions)) {
       parsed.ibseStudy.methodologicalCautions = [];
     }
+
+    if (!hasCoreWorkspaceCollections(parsed)) return null;
 
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);
   } catch {

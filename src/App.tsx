@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type DocumentKind,
   type MunicipalDocument,
@@ -35,6 +35,7 @@ import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisati
 import {
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
+  hasWorkspaceInLocalStorage,
 } from "./infrastructure/persistence/local-storage";
 
 import {
@@ -154,6 +155,41 @@ function attachDocumentIdToAtoms(
   }));
 }
 
+interface WorkspaceLoadResult {
+  workspace: MunicipalityWorkspace;
+  protectExistingStorage: boolean;
+}
+
+function loadOrCreateMunicipalityWorkspace(
+  municipalityId: string,
+  input: CreateMunicipalityContextInput
+): WorkspaceLoadResult {
+  const loaded = loadWorkspaceFromLocalStorage(municipalityId);
+  if (loaded !== null) {
+    return { workspace: loaded, protectExistingStorage: false };
+  }
+
+  return {
+    workspace: createCompleteMunicipalityWorkspace(input),
+    protectExistingStorage: hasWorkspaceInLocalStorage(municipalityId),
+  };
+}
+
+function isEmptyWorkspaceForPersistenceGuard(
+  workspace: MunicipalityWorkspace
+): boolean {
+  return (
+    workspace.repository.documents.length === 0 &&
+    workspace.evidenceStore.atoms.length === 0 &&
+    workspace.healthReport === undefined &&
+    workspace.ibseStudy === undefined &&
+    workspace.thematicPrioritisation === undefined &&
+    workspace.thematicPrioritisationStudy === undefined &&
+    (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
+    workspace.validatedPSL === undefined
+  );
+}
+
 // ── Componente principal ─────────────────────────────────────
 
 export default function App() {
@@ -161,13 +197,18 @@ export default function App() {
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
   const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
 
-  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(() => {
+  const [initialWorkspaceLoad] = useState<WorkspaceLoadResult>(() => {
     const defaultMuni = DEMO_MUNICIPALITIES[0];
-    return (
-      loadWorkspaceFromLocalStorage(defaultMuni.id) ??
-      createCompleteMunicipalityWorkspace(defaultMuni)
-    );
+    return loadOrCreateMunicipalityWorkspace(defaultMuni.id, defaultMuni);
   });
+  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(
+    initialWorkspaceLoad.workspace
+  );
+  const protectedEmptyWorkspaceIdRef = useRef<string | null>(
+    initialWorkspaceLoad.protectExistingStorage
+      ? initialWorkspaceLoad.workspace.municipality.identity.id
+      : null
+  );
 
   const [title, setTitle] = useState("");
   const [plainText, setPlainText] = useState("");
@@ -199,6 +240,15 @@ export default function App() {
   const [newMuniError, setNewMuniError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (
+      protectedEmptyWorkspaceIdRef.current === workspace.municipality.identity.id &&
+      isEmptyWorkspaceForPersistenceGuard(workspace)
+    ) {
+      setPersistenceMessage(null);
+      return;
+    }
+
+    protectedEmptyWorkspaceIdRef.current = null;
     const saved = saveWorkspaceToLocalStorage(workspace);
     setPersistenceMessage(saved ? null : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE);
   }, [workspace]);
@@ -744,9 +794,11 @@ export default function App() {
     municipalityId: string,
     input: CreateMunicipalityContextInput
   ) {
-    const nextWorkspace =
-      loadWorkspaceFromLocalStorage(municipalityId) ??
-      createCompleteMunicipalityWorkspace(input);
+    const nextWorkspaceLoad = loadOrCreateMunicipalityWorkspace(municipalityId, input);
+    const nextWorkspace = nextWorkspaceLoad.workspace;
+    protectedEmptyWorkspaceIdRef.current = nextWorkspaceLoad.protectExistingStorage
+      ? municipalityId
+      : null;
 
     setWorkspace(nextWorkspace);
     setPendingTopics([...(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
