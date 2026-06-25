@@ -1,0 +1,120 @@
+/* RECONECTA — CSS conforme a COMPAS_NG/VISUAL-CONTRACT.md (oficial)
+   Pegar en el campo Custom CSS de REDCap, SIN etiquetas <style></style>. */
+
+:root {
+  --cp-azul: #0074c8;
+  --cp-azul-claro: #00acd9;
+  --cp-verde: #94d40b;
+  --cp-ambar: #ffb61b;
+  --cp-naranja: #ff6600;
+  --cp-rojo: #dc143c;
+  --cp-bg: #f8fafc;
+  --cp-bg-2: #f1f5f9;
+  --cp-borde: #e2e8f0;
+  --cp-texto: #1e293b;
+  --cp-texto-2: #64748b;
+  --cp-blanco: #ffffff;
+}
+
+.cn-question, .cn-banner, .cn-card, .cn-card-global, .cn-recursos, .cn-nota, .cn-presentacion {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  color: var(--cp-texto);
+}
+
+/* Franja de identidad COMPÁS — SOLO como acento lineal, nunca como fondo de card */
+.cn-gradiente-franja {
+  height: 6px;
+  background: linear-gradient(90deg, var(--cp-azul) 0%, var(--cp-azul-claro) 20%, var(--cp-verde) 40%, var(--cp-ambar) 60%, var(--cp-naranja) 80%, var(--cp-rojo) 100%);
+}
+.cn-gradiente-franja-fina { height: 3px; opacity: .6; }
+
+/* ===== Presentación ===== */
+.cn-presentacion { max-width: 640px; margin: 0 auto; }
+.cn-presentacion-header { padding: 18px 0 14px 0; border-bottom: 1px solid var(--cp-borde); margin-bottom: 18px; }
+.cn-presentacion-kicker { font-size: .72em; letter-spacing: 1.2px; text-transform: uppercase; color: var(--cp-texto-2); font-weight: 600; }
+.cn-presentacion-title { font-size: 1.4em; font-weight: 600; margin-top: 4px; color: var(--cp-texto); }
+.cn-presentacion-subtitle { font-size: .88em; color: var(--cp-texto-2); margin-top: 2px; }
+.cn-presentacion-body { font-size: .94em; line-height: 1.6; color: var(--cp-texto); }
+.cn-presentacion-body p { margin: 0 0 14px 0; }
+.cn-presentacion-footer { margin: 16px 0 0 0 !important; font-size: .85em; color: var(--cp-texto-2); }
+
+/* Bloques de la presentación: un único acento por bloque, sin relleno de color */
+.cn-accent { border-left: 3px solid var(--cp-azul); background: var(--cp-bg-2); padding: 12px 14px; margin: 14px 0; }
+.cn-accent-kicker { font-size: .74em; letter-spacing: .5px; text-transform: uppercase; font-weight: 600; color: var(--cp-azul); margin-bottom: 4px; }
+.cn-accent p { margin: 0 !important; font-size: .92em; }
+/* Variante "advertencia metodológica" (qué NO es la herramienta) */
+.cn-accent-cautela { border-left-color: var(--cp-ambar); }
+.cn-accent-cautela .cn-accent-kicker { color: #8a6300; }
+
+/* ===== Bloque de pregunta estándar ===== */
+.cn-question {
+  background: var(--cp-blanco);
+  border: 1px solid var(--cp-borde);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 10px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  font-size: .94em;
+  line-height: 1.5;
+}
+.cn-question .cn-q-title { color: var(--cp-texto); font-weight: 600; font-size: .96em; margin-bottom: 4px; }
+.cn-question .cn-q-sub   { color: var(--cp-texto-2); font-size: .82em; }
+
+/* ===== Banner de sección numerado ===== */
+.cn-banner {
+  background: var(--cp-blanco);
+  border-bottom: 1px solid var(--cp-borde);
+  padding: 12px 0 10px 0;
+  margin: 22px 0 10px 0;
+}
+.cn-banner-num   { font-size: .72em; letter-spacing: 1.2px; text-transform: uppercase; color: var(--cp-texto-2); font-weight: 600; }
+.cn-banner-title { font-size: 1.05em; font-weight: 600; margin-top: 2px; color: var(--cp-azul); }
+.cn-banner-sub   { font-size: .8em; color: var(--cp-texto-2); margin-top: 3px; }
+
+/* ===== Tarjeta de resultado por categoría =====
+   Un único acento (borde izquierdo) por nivel; sin relleno degradado, sin emoji. */
+.cn-card {
+  background: var(--cp-blanco);
+  border: 1px solid var(--cp-borde);
+  border-radius: 6px;
+  padding: 16px;
+  margin: 10px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.cn-card-brand { font-size: .78em; color: var(--cp-texto-2); margin-bottom: 10px; border-bottom: 1px solid var(--cp-borde); padding-bottom: 8px; }
+.cn-card-resultado { border-left: 4px solid var(--cp-azul); padding-left: 12px; margin-bottom: 12px; }
+.cn-card-titulo { font-size: 1.05em; font-weight: 600; color: var(--cp-texto); }
+.cn-card-desc { font-size: .9em; color: var(--cp-texto-2); margin-top: 4px; }
+.cn-card-evidencia { font-size: .88em; color: var(--cp-texto-2); border-top: 1px solid var(--cp-borde); padding-top: 10px; margin-top: 10px; }
+.cn-card-evidencia .cn-label { font-weight: 600; color: var(--cp-texto); text-transform: uppercase; font-size: .72em; letter-spacing: .5px; display: block; margin-bottom: 3px; }
+.cn-card-consejo { font-size: .88em; color: var(--cp-texto-2); margin-top: 10px; }
+.cn-card-consejo .cn-label { font-weight: 600; color: var(--cp-texto); text-transform: uppercase; font-size: .72em; letter-spacing: .5px; display: block; margin-bottom: 3px; }
+.cn-card-meta { font-size: .78em; color: var(--cp-texto-2); border-top: 1px solid var(--cp-borde); padding-top: 8px; margin-top: 12px; }
+
+/* Niveles semánticos: SOLO color de borde izquierdo, sin relleno saturado */
+.cn-nivel-excelente .cn-card-resultado { border-left-color: var(--cp-verde); }
+.cn-nivel-buena .cn-card-resultado      { border-left-color: var(--cp-azul-claro); }
+.cn-nivel-mejorable .cn-card-resultado  { border-left-color: var(--cp-ambar); }
+.cn-nivel-atencion .cn-card-resultado   { border-left-color: var(--cp-rojo); }
+
+/* ===== Tarjeta de resultado global ===== */
+.cn-card-global {
+  border-radius: 6px; padding: 20px; background: var(--cp-blanco);
+  border: 1px solid var(--cp-borde); box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  max-width: 600px; margin: auto;
+}
+.cn-card-global-barra { height: 4px; margin: -20px -20px 16px -20px; border-radius: 6px 6px 0 0; }
+.cn-card-global h3 { margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 600; color: var(--cp-texto); }
+.cn-card-global p.cn-texto { margin: 0 0 12px 0; font-size: .94rem; line-height: 1.55; color: var(--cp-texto); }
+.cn-card-global p.cn-frase { margin: 0; font-size: .9rem; color: var(--cp-texto-2); }
+
+/* ===== Tarjeta de recursos de ayuda ===== */
+.cn-recursos { background: var(--cp-blanco); border: 1px solid var(--cp-borde); border-radius: 6px; padding: 18px; margin: 14px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.cn-recursos-header { border-bottom: 1px solid var(--cp-borde); padding-bottom: 10px; margin-bottom: 12px; }
+.cn-recursos-header h2 { margin: 0; font-size: 1.05em; font-weight: 600; color: var(--cp-texto); }
+.cn-recursos-header p  { margin: 4px 0 0 0; font-size: .82em; color: var(--cp-texto-2); }
+.cn-recurso-item { border-left: 3px solid var(--cp-borde); padding: 6px 0 6px 12px; margin-bottom: 8px; font-size: .9em; color: var(--cp-texto); }
+
+/* ===== Nota metodológica oculta ===== */
+.cn-nota { background: var(--cp-bg-2); border-left: 3px solid var(--cp-texto-2); border-radius: 4px; padding: 10px; margin: 10px 0; font-size: .78em; color: var(--cp-texto-2); }

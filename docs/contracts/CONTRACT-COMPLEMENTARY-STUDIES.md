@@ -49,8 +49,8 @@ de IBSE en COMPÁS NG no le otorga una categoría distinta al resto.
 |---|---|---|
 | **IBSE** — Índice de Bienestar Socioemocional | `validated-scale` | Implementado (módulo en `draft`; ver §9) |
 | **SF-12** — Salud percibida (versión corta) | `validated-scale` | Conceptual |
-| **DUKE** — Perfil de Salud de Duke | `validated-scale` | Conceptual |
-| **PREDIMED** — Adherencia a Dieta Mediterránea | `validated-scale` | Conceptual |
+| **DUKE-EAS** — Apoyo social funcional (Duke-UNC-11 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9) |
+| **PREDIMED-EAS** — Adherencia a Dieta Mediterránea (PREDIMED-14 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9) |
 | **CAGE** — Consumo de alcohol | `validated-scale` | Conceptual |
 | **ESCA** — Escalas propias | `municipal-module` | Conceptual |
 | Otros instrumentos futuros | — | Sin definir |
@@ -465,11 +465,21 @@ los siguientes estados:
 | Instrumento | Estado |
 |---|---|
 | **IBSE** | **Implementado** (módulo en `draft`; pendiente de `validated`) |
+| **DUKE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario y PSL. Sin `MethodologicalModule` registrado en `domain/methodology/` (deuda técnica; véase nota §9a). |
+| **PREDIMED-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario y PSL. Sin `MethodologicalModule` registrado en `domain/methodology/` (deuda técnica; véase nota §9a). |
 | SF-12 | Conceptual |
-| DUKE | Conceptual |
-| PREDIMED | Conceptual |
 | CAGE | Conceptual |
 | ESCA y otros propios | Conceptual |
+
+### Nota §9a — Deuda técnica: DUKE-EAS y PREDIMED-EAS sin MethodologicalModule
+
+DUKE-EAS y PREDIMED-EAS están operativos en producción pero no siguen completamente el patrón §10. Específicamente:
+
+- **No existe `MethodologicalModule`** registrado en `domain/methodology/registry.ts` para ninguno de los dos instrumentos.
+- Sus parsers **hardcodean los nombres de columna** (`P5701`–`P5711` en DUKE; `Predimed` con fallback a `P36BPD01_2023`–`P36BPD14_2023` en PREDIMED), en lugar de derivarlos del módulo como hace el parser de IBSE.
+- Las limitaciones metodológicas están declaradas en las cautelas del parser, no en un módulo formal de la Biblioteca.
+
+Esta situación es conocida y aceptada en la implementación actual. No bloquea el uso en producción. La formalización de ambos módulos en la Biblioteca queda como tarea pendiente explícita antes de que los instrumentos puedan transitar al estado `Validado`.
 
 ---
 
@@ -534,3 +544,4 @@ documental. Los siguientes aspectos quedan fuera de su alcance:
 | Fecha | Motivo |
 |---|---|
 | 2026-06-24 | Primera redacción. Establece la taxonomía correcta (Estudios Complementarios como categoría; IBSE como implementación). Documenta el estado actual de IBSE en la Biblioteca Metodológica, el patrón de implementación para futuros instrumentos y los invariantes de privacidad y trazabilidad. |
+| 2026-06-25 | Actualización de estado: DUKE-EAS y PREDIMED-EAS pasan de «Conceptual» a «Implementado» en §2.2 y §9. Se añade nota §9a documentando la deuda técnica por ausencia de `MethodologicalModule` en la Biblioteca Metodológica y la desviación de parsers respecto al patrón §10. |
