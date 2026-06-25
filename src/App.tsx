@@ -47,9 +47,7 @@ import {
   DocumentRepositoryPanel,
   EvidenceStorePanel,
   HealthReportViewer,
-  IBSEPanel,
-  DUKEPanel,
-  PREDIMEDPanel,
+  EstudiosComplementariosPanel,
   QuestionnaireBuilderPanel,
   MunicipalInventoryPanel,
   LocalHealthProfilePanel,
@@ -1448,23 +1446,19 @@ export default function App() {
             <HealthReportViewer
               healthReport={runtime.workspace.healthReport}
             />
-            <IBSEPanel
+            <EstudiosComplementariosPanel
               ibseStudy={runtime.workspace.ibseStudy}
-              isLoading={isLoadingIBSE}
-              message={ibseMessage}
-              onLoadCSV={handleLoadIBSECSV}
-            />
-            <DUKEPanel
+              isLoadingIBSE={isLoadingIBSE}
+              ibseMessage={ibseMessage}
+              onLoadIBSECSV={handleLoadIBSECSV}
               dukeStudy={runtime.workspace.dukeStudy}
-              isLoading={isLoadingDUKE}
-              message={dukeMessage}
-              onLoadCSV={handleLoadDUKECSV}
-            />
-            <PREDIMEDPanel
+              isLoadingDUKE={isLoadingDUKE}
+              dukeMessage={dukeMessage}
+              onLoadDUKECSV={handleLoadDUKECSV}
               predimedStudy={runtime.workspace.predimedStudy}
-              isLoading={isLoadingPREDIMED}
-              message={predimedMessage}
-              onLoadCSV={handleLoadPREDIMEDCSV}
+              isLoadingPREDIMED={isLoadingPREDIMED}
+              predimedMessage={predimedMessage}
+              onLoadPREDIMEDCSV={handleLoadPREDIMEDCSV}
             />
             <QuestionnaireBuilderPanel />
           </>

@@ -4230,3 +4230,98 @@ h3 {
   .psl-doc-evidence-cell  { flex-direction: row; align-items: center; text-align: left; gap: 14px; }
   .psl-doc-evidence-cell__count { font-size: 1.6rem; margin-bottom: 0; }
 }
+
+/* ── Estudios Complementarios — acordeón jerárquico ─────────────── */
+
+.ec-panel {
+  padding: 28px 36px;
+}
+
+.ec-panel .panel-header {
+  margin-bottom: 16px;
+}
+
+/* Barra de instrumentos dentro del panel */
+.ec-instruments {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e4eaf3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Sub-acordeón por instrumento */
+.ec-instrument {
+  border-bottom: 1px solid #e4eaf3;
+}
+.ec-instrument:last-child {
+  border-bottom: none;
+}
+
+/* Cabecera del sub-acordeón */
+.ec-instrument__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 18px;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.ec-instrument__toggle:hover {
+  background: #f0f5fb;
+}
+.ec-instrument--open > .ec-instrument__toggle {
+  background: #eef6ff;
+  border-bottom: 1px solid #d4e6f7;
+}
+
+/* Indicador de estado (cargado / vacío) */
+.ec-instrument__dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+.ec-instrument__dot--loaded {
+  background: #22c55e;
+}
+
+/* Nombre e información del instrumento */
+.ec-instrument__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.ec-instrument__subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  flex: 1;
+}
+.ec-instrument__status {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.ec-instrument__arrow {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* Cuerpo del sub-acordeón: neutraliza el workspace-panel hijo */
+.ec-instrument__body {
+  padding: 0;
+}
+.ec-instrument__body > .workspace-panel {
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  padding: 24px 28px;
+  background: #ffffff;
+}
