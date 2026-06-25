@@ -20,6 +20,8 @@ import {
 } from "./application/health-report";
 import { parseIBSECSV, ibseStudyToEvidenceAtoms } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
+import { parseDUKECSV, dukeStudyToEvidenceAtoms } from "./application/duke";
+import { createDUKEStudy } from "./domain/duke";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -44,6 +46,7 @@ import {
   EvidenceStorePanel,
   HealthReportViewer,
   IBSEPanel,
+  DUKEPanel,
   QuestionnaireBuilderPanel,
   MunicipalInventoryPanel,
   LocalHealthProfilePanel,
@@ -114,6 +117,7 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
 ];
 
 const IBSE_DOCUMENT_TAG = "ibse";
+const DUKE_DOCUMENT_TAG = "duke-eas";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -122,6 +126,10 @@ function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): b
 
 function isIBSEDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, IBSE_DOCUMENT_TAG);
+}
+
+function isDUKEDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, DUKE_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -183,6 +191,7 @@ function isEmptyWorkspaceForPersistenceGuard(
     workspace.evidenceStore.atoms.length === 0 &&
     workspace.healthReport === undefined &&
     workspace.ibseStudy === undefined &&
+    workspace.dukeStudy === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
@@ -220,6 +229,8 @@ export default function App() {
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
   const [isLoadingIBSE, setIsLoadingIBSE] = useState(false);
   const [ibseMessage, setIbseMessage] = useState<string | null>(null);
+  const [isLoadingDUKE, setIsLoadingDUKE] = useState(false);
+  const [dukeMessage, setDukeMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -578,6 +589,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadDUKECSV(file: File): Promise<void> {
+    setIsLoadingDUKE(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseDUKECSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createDUKEStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const dukeAtoms = attachDocumentIdToAtoms(
+        dukeStudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          DUKE_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "redcap-export",
+          title: `DUKE-EAS - ${file.name}`,
+          source: {
+            system: "Importacion CSV DUKE-EAS",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["redcap-export", DUKE_DOCUMENT_TAG, "eas", "complementary-study"],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(DUKE_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of dukeAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          dukeStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setDukeMessage(
+        aggregates.nValidGlobal > 0
+          ? `DUKE-EAS cargado: ${aggregates.nValidGlobal} registros globales validos de ${aggregates.n}. Apoyo bajo global: ${aggregates.lowGlobalPercentage.toFixed(1)} %. ${dukeAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV DUKE-EAS procesado sin registros globales completos.${warn}`
+      );
+    } catch {
+      setDukeMessage("Error al procesar el CSV. Verifica que incluya las columnas EAS P5701..P5711 con valores 1..5.");
+    } finally {
+      setIsLoadingDUKE(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -741,6 +823,10 @@ export default function App() {
       setIbseMessage(null);
       setIsLoadingIBSE(false);
     }
+    if (isDUKEDocument(deletedDocument)) {
+      setDukeMessage(null);
+      setIsLoadingDUKE(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -752,6 +838,7 @@ export default function App() {
       const deletesHealthReport = doc?.kind === "health-report";
       const deletesCommunityAssets = doc?.kind === "community-asset";
       const deletesIBSE = isIBSEDocument(doc);
+      const deletesDUKE = isDUKEDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -767,6 +854,13 @@ export default function App() {
               if (deletesCommunityAssets && atom.provenance.origin === "community-assets") return false;
               if (deletesIBSE && atom.provenance.origin === "ibse") return false;
               if (
+                deletesDUKE &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(DUKE_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -779,6 +873,7 @@ export default function App() {
         },
         healthReport: deletesHealthReport ? undefined : prev.healthReport,
         ibseStudy: deletesIBSE ? undefined : prev.ibseStudy,
+        dukeStudy: deletesDUKE ? undefined : prev.dukeStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -811,6 +906,8 @@ export default function App() {
     setIsLoadingHealthReport(false);
     setIbseMessage(null);
     setIsLoadingIBSE(false);
+    setDukeMessage(null);
+    setIsLoadingDUKE(false);
     setShowMunicipalitySelector(false);
     setIsThematicModalOpen(false);
     setIsImportingTP(false);
@@ -1219,6 +1316,12 @@ export default function App() {
               isLoading={isLoadingIBSE}
               message={ibseMessage}
               onLoadCSV={handleLoadIBSECSV}
+            />
+            <DUKEPanel
+              dukeStudy={runtime.workspace.dukeStudy}
+              isLoading={isLoadingDUKE}
+              message={dukeMessage}
+              onLoadCSV={handleLoadDUKECSV}
             />
             <QuestionnaireBuilderPanel />
           </>

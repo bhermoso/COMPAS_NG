@@ -140,6 +140,14 @@ export function loadWorkspaceFromLocalStorage(
       parsed.ibseStudy.methodologicalCautions = [];
     }
 
+    if (parsed.dukeStudy && !Array.isArray(parsed.dukeStudy.methodologicalCautions)) {
+      parsed.dukeStudy.methodologicalCautions = [];
+    }
+
+    if (parsed.dukeStudy && !Array.isArray(parsed.dukeStudy.warnings)) {
+      parsed.dukeStudy.warnings = [];
+    }
+
     if (!hasCoreWorkspaceCollections(parsed)) return null;
 
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);
