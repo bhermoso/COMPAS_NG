@@ -293,6 +293,29 @@ Salud compilado. Es una síntesis analítica validable que:
 - Actúa como único puente autorizado hacia la capa de decisión (Nivel 3).
 - Tiene un ciclo de vida explícito con transiciones de estado auditables.
 
+### 6.1.1 Principios metodológicos del Perfil de Salud Local
+
+El Perfil de Salud Local (PSL) constituye una síntesis analítica del estado
+de salud del ámbito territorial. Su función es ofrecer una lectura estructurada,
+prudente y trazable de la situación de salud, inspirada en perfiles poblacionales
+de salud pública como los Health Profiles británicos, pero adaptada al contexto
+andaluz, RELAS y COMPÁS NG.
+
+El PSL integra, cuando exista evidencia disponible:
+
+- determinantes sociales de la salud;
+- desigualdades, inequidades y vulnerabilidades territoriales;
+- activos comunitarios y recursos salutogénicos;
+- indicadores poblacionales;
+- estudios complementarios;
+- participación ciudadana;
+- cautelas metodológicas;
+- evidencia longitudinal.
+
+El PSL describe, interpreta y sintetiza. No prescribe actuaciones, no selecciona
+prioridades institucionales, no asigna líneas estratégicas, no aprueba objetivos
+ni sustituye la deliberación técnica, ciudadana o institucional posterior.
+
 ### 6.2 Estructura: siete capítulos
 
 **Capítulo I — Marco Estratégico**
