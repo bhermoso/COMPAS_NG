@@ -1,10 +1,14 @@
 import type { PREDIMEDAggregates } from "../../domain/predimed";
 import { splitRow } from "../csv-utils/splitRow";
 
-// Columna canónica derivada EAS. Cuando está presente, es el valor oficial.
+// Columna canónica derivada EAS. Obligatoria para calcular la puntuación.
 const CANONICAL_FIELD = "Predimed";
 
-// Ítems brutos EAS 2023. Se usan como fallback cuando no existe el campo derivado.
+// Ítems brutos EAS 2023. Reconocidos para trazabilidad, no para cómputo.
+// Empíricamente verificado (fixture Granada, 712 registros): los ítems P36BPD
+// usan códigos de respuesta (1/2/3/4), no valores binarios (0/1). La suma
+// directa de ítems no reproduce el índice Predimed. El campo canónico
+// (Predimed) incorpora la recodificación per-ítem aplicada por el equipo EAS.
 const ITEM_FIELDS = [
   "P36BPD01_2023",
   "P36BPD02_2023",
@@ -52,24 +56,6 @@ function parseNumeric(raw: string | undefined): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-function sumFromItems(
-  row: string[],
-  indexes: Record<string, number>
-): number | null {
-  let sum = 0;
-  for (const field of ITEM_FIELDS) {
-    const idx = indexes[field];
-    if (idx === undefined || idx === -1) return null;
-    const raw = row[idx];
-    const v = parseNumeric(raw);
-    if (v === null) return null;
-    // Ítems PREDIMED son 0 o 1
-    if (v !== 0 && v !== 1) return null;
-    sum += v;
-  }
-  return sum;
-}
-
 function percentage(count: number, denominator: number): number {
   return denominator > 0 ? Math.round((count / denominator) * 1000) / 10 : 0;
 }
@@ -78,30 +64,23 @@ function mean(sum: number, denominator: number): number {
   return denominator > 0 ? Math.round((sum / denominator) * 10) / 10 : 0;
 }
 
-function buildCautions(
-  aggregates: PREDIMEDAggregates,
-  usedCanonical: boolean
-): string[] {
-  const source = usedCanonical
-    ? "Puntuacion canonica obtenida del campo derivado EAS (Predimed). No se recalcula el indice."
-    : "Puntuacion calculada sumando los 14 items P36BPD01..P36BPD14_2023. El item P36BPD07 (vino) no lleva correccion por sexo en este modo; usar el campo Predimed canonico cuando este disponible.";
-
+function buildCautions(aggregates: PREDIMEDAggregates): string[] {
   const cautions = [
-    source,
+    "Puntuacion canonica obtenida del campo derivado EAS (Predimed). No se recalcula el indice.",
     "PREDIMED-14: adherencia baja <= 6, media 7-8, alta >= 9. Corte segun Martinez-Gonzalez (2012), adaptacion EAS Andalucia.",
     "Los resultados son agregados de la muestra importada y requieren validacion tecnica antes de alimentar interpretacion territorial o planificacion.",
   ];
 
   if (aggregates.n === 0) {
     return [
-      "CSV vacio o sin registros de datos. Verifica el formato y la columna Predimed o P36BPD01..P36BPD14_2023.",
+      "CSV vacio o sin registros de datos. Verifica el formato y la columna Predimed.",
       ...cautions,
     ];
   }
 
   if (aggregates.nValid === 0) {
     cautions.unshift(
-      "CSV sin registros PREDIMED completos. Verifica el formato y los valores validos 0..14."
+      "CSV sin registros PREDIMED completos. Verifica el formato y los valores validos (0..14) de la columna Predimed."
     );
   } else if (aggregates.nValid < 30) {
     cautions.push(
@@ -113,7 +92,8 @@ function buildCautions(
     aggregates.n > 0 ? (aggregates.incompleteCount / aggregates.n) * 100 : 0;
   if (incompleteRate > 10) {
     cautions.push(
-      `${incompleteRate.toFixed(1)} % de registros sin puntuacion PREDIMED calculable. Posible sesgo de no respuesta.`
+      `${incompleteRate.toFixed(1)} % de registros sin puntuacion Predimed calculable. ` +
+      `En los microdatos EAS READY, Predimed solo se calcula para registros de oleadas que incluyen el modulo PREDIMED-14.`
     );
   }
 
@@ -126,7 +106,7 @@ export function parsePREDIMEDCSV(csvText: string): PREDIMEDCSVParseResult {
   if (lines.length < 2) {
     return {
       aggregates: EMPTY_AGGREGATES,
-      methodologicalCautions: buildCautions(EMPTY_AGGREGATES, false),
+      methodologicalCautions: buildCautions(EMPTY_AGGREGATES),
       warnings: ["CSV vacio o sin registros de datos."],
     };
   }
@@ -135,22 +115,27 @@ export function parsePREDIMEDCSV(csvText: string): PREDIMEDCSVParseResult {
   const canonicalIndex = header.indexOf(CANONICAL_FIELD);
   const usedCanonical = canonicalIndex !== -1;
 
-  // Índices de ítems brutos (solo necesarios si no hay columna canónica)
-  const itemIndexes: Record<string, number> = {};
-  for (const field of ITEM_FIELDS) {
-    itemIndexes[field] = header.indexOf(field);
-  }
-
-  const missingItems = usedCanonical
-    ? []
-    : ITEM_FIELDS.filter((f) => itemIndexes[f] === -1);
-
   const warnings: string[] = [];
-  if (!usedCanonical && missingItems.length > 0) {
-    warnings.push(
-      `Columna "${CANONICAL_FIELD}" no encontrada. ` +
-      `Columnas de items faltantes: ${missingItems.join(", ")}.`
+
+  if (!usedCanonical) {
+    const itemsPresent = ITEM_FIELDS.filter(
+      (f) => header.indexOf(f) !== -1
     );
+    if (itemsPresent.length > 0) {
+      warnings.push(
+        `Columna "${CANONICAL_FIELD}" no encontrada. ` +
+        `Se detectan ${itemsPresent.length} columnas de items P36BPD. ` +
+        `Los items P36BPD del fichero EAS READY usan codigos de respuesta (1/2/3/4), no valores binarios: ` +
+        `la suma directa de items no reproduce el indice Predimed. ` +
+        `Carga un CSV que incluya la columna "${CANONICAL_FIELD}" (campo canonico derivado EAS).`
+      );
+    } else {
+      warnings.push(
+        `Columna "${CANONICAL_FIELD}" no encontrada. ` +
+        `Tampoco se detectan columnas de items P36BPD01..P36BPD14_2023. ` +
+        `El CSV no contiene datos PREDIMED procesables.`
+      );
+    }
   }
 
   let n = 0;
@@ -165,20 +150,14 @@ export function parsePREDIMEDCSV(csvText: string): PREDIMEDCSVParseResult {
     const row = splitRow(lines[i]);
     n++;
 
-    let score: number | null = null;
-
-    if (usedCanonical) {
-      const raw = row[canonicalIndex];
-      const v = parseNumeric(raw);
-      if (v !== null && isValidScore(v)) {
-        score = Math.round(v);
-      }
-    } else {
-      const computed = sumFromItems(row, itemIndexes);
-      if (computed !== null) {
-        score = computed;
-      }
+    if (!usedCanonical) {
+      incompleteCount++;
+      continue;
     }
+
+    const raw = row[canonicalIndex];
+    const v = parseNumeric(raw);
+    const score = v !== null && isValidScore(v) ? Math.round(v) : null;
 
     if (score === null) {
       incompleteCount++;
@@ -206,7 +185,7 @@ export function parsePREDIMEDCSV(csvText: string): PREDIMEDCSVParseResult {
 
   return {
     aggregates,
-    methodologicalCautions: buildCautions(aggregates, usedCanonical),
+    methodologicalCautions: buildCautions(aggregates),
     warnings,
   };
 }
