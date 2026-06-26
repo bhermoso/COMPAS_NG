@@ -1,30 +1,49 @@
 import type { PREDIMEDAggregates } from "../../domain/predimed";
 import { splitRow } from "../csv-utils/splitRow";
+import { getMethodologicalModule } from "../../domain/methodology";
 
-// Columna canónica derivada EAS. Obligatoria para calcular la puntuación.
-const CANONICAL_FIELD = "Predimed";
+// ── Configuración derivada de PREDIMED_EAS_MODULE ─────────────────────────────
+// El campo canónico y los ítems de trazabilidad se obtienen del módulo
+// metodológico en lugar de estar duplicados aquí.
+
+const predimedModule = getMethodologicalModule("predimed-eas");
+if (!predimedModule) {
+  throw new Error(
+    "[PREDIMEDCSVParser] Módulo 'predimed-eas' no encontrado en el registro metodológico. " +
+    "Verifica que PREDIMED_EAS_MODULE esté registrado en domain/methodology/registry.ts."
+  );
+}
+const predimedSavAdapter = predimedModule.adapters?.sav;
+if (!predimedSavAdapter) {
+  throw new Error(
+    "[PREDIMEDCSVParser] PREDIMED_EAS_MODULE sin adaptador SAV configurado. " +
+    "El parser requiere adapters.sav.variables para obtener la columna canónica y los ítems."
+  );
+}
+
+// Captura en scope estrecho (tras los guards) para acceso seguro a las variables SAV
+const predimedSavVars = predimedSavAdapter.variables;
+
+// Campo canónico derivado EAS. Obligatorio para calcular la puntuación.
+const canonicalSavVar = predimedSavVars.find(v => v.outputField === "predimedScore");
+if (!canonicalSavVar) {
+  throw new Error(
+    "[PREDIMEDCSVParser] Variable canónica 'predimedScore' no encontrada en PREDIMED_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='predimedScore' y savVariable='Predimed'."
+  );
+}
+const CANONICAL_FIELD = canonicalSavVar.savVariable;
 
 // Ítems brutos EAS 2023. Reconocidos para trazabilidad, no para cómputo.
-// Empíricamente verificado (fixture Granada, 712 registros): los ítems P36BPD
-// usan códigos de respuesta (1/2/3/4), no valores binarios (0/1). La suma
-// directa de ítems no reproduce el índice Predimed. El campo canónico
+// Ver: PREDIMED_EAS_MODULE.algorithm.notes y fixtures/README.md.
+// Los ítems usan códigos de respuesta (1/2/3/4), no valores binarios (0/1):
+// la suma directa de ítems no reproduce el índice Predimed. El campo canónico
 // (Predimed) incorpora la recodificación per-ítem aplicada por el equipo EAS.
-const ITEM_FIELDS = [
-  "P36BPD01_2023",
-  "P36BPD02_2023",
-  "P36BPD03_2023",
-  "P36BPD04_2023",
-  "P36BPD05_2023",
-  "P36BPD06_2023",
-  "P36BPD07_2023",
-  "P36BPD08_2023",
-  "P36BPD09_2023",
-  "P36BPD10_2023",
-  "P36BPD11_2023",
-  "P36BPD12_2023",
-  "P36BPD13_2023",
-  "P36BPD14_2023",
-] as const;
+const ITEM_FIELDS = predimedSavVars
+  .filter(v => /^P36BPD\d{2}_2023$/.test(v.savVariable))
+  .map(v => v.savVariable);
+
+// ── Resto del parser (sin cambios lógicos) ────────────────────────────────────
 
 const EMPTY_AGGREGATES: PREDIMEDAggregates = {
   n: 0,

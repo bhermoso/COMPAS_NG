@@ -115,6 +115,18 @@ describe('parsePREDIMEDCSV — casos de borde', () => {
     expect(result.aggregates.nValid).toBe(0)
   })
 
+  it('el fallback detecta exactamente 14 ítems P36BPD, no variables auxiliares', () => {
+    // CSV con los 14 ítems brutos más columnas auxiliares EAS (Predimed_R, Predimed_R2)
+    // que no deben contarse como ítems P36BPD.
+    const p36cols = Array.from({ length: 14 }, (_, i) =>
+      `P36BPD${String(i + 1).padStart(2, '0')}_2023`
+    ).join(',')
+    const csv = `${p36cols},Predimed_R,Predimed_R2\n` + '1,'.repeat(14) + '1,1'
+    const result = parsePREDIMEDCSV(csv)
+    // El warning reporta exactamente 14 columnas detectadas, no 16
+    expect(result.warnings[0]).toContain('14 columnas de items P36BPD')
+  })
+
   it('sin campo canónico produce warning que menciona "Predimed"', () => {
     const csv = 'P36BPD01_2023,P36BPD02_2023\n1,1'
     const result = parsePREDIMEDCSV(csv)
