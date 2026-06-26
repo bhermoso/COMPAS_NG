@@ -5,6 +5,7 @@ import type { HealthReportDocument } from "../health-report";
 import type { IBSEStudy } from "../ibse";
 import type { DUKEStudy } from "../duke";
 import type { PREDIMEDStudy } from "../predimed";
+import type { SF12Study } from "../sf12";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 import type { LocalHealthProfile } from "../health-profile";
 
@@ -44,6 +45,7 @@ export interface MunicipalityWorkspace {
   ibseStudy?: IBSEStudy;
   dukeStudy?: DUKEStudy;
   predimedStudy?: PREDIMEDStudy;
+  sf12Study?: SF12Study;
   thematicPrioritisation?: ThematicPrioritisation;
   thematicPrioritisationStudy?: ThematicPrioritisationStudy;
   /**

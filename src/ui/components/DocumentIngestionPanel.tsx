@@ -51,6 +51,7 @@ export function DocumentIngestionPanel({
       : "Pega el texto del documento en el área de abajo.";
 
   const isHealthReport = kind === "health-report";
+  const isComplementaryStudy = kind === "complementary-study";
 
   return (
     <section className="workspace-panel">
@@ -110,6 +111,62 @@ export function DocumentIngestionPanel({
             isLoadingHealthReport !== true && (
               <p className="panel-note">{healthReportMessage}</p>
             )}
+        </div>
+      ) : isComplementaryStudy ? (
+        /* ── Orientación para Estudios Complementarios tipificados ── */
+        <div className="docx-upload">
+          <select
+            value={kind}
+            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+            className="docx-upload__kind"
+          >
+            {documentKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="ingestion-hint">
+            Los instrumentos tipificados (IBSE, DUKE-EAS, PREDIMED-EAS, SF-12) se cargan
+            mediante subida de CSV desde el panel <strong>«Estudios Complementarios»</strong>
+            más abajo en esta misma página.
+          </p>
+          <p className="ingestion-hint">
+            Usa esta opción sólo para registrar textuales complementarios genéricos (estudios
+            publicados, informes de referencia, documentación de contexto) que no sean
+            instrumentos EAS tipificados.
+          </p>
+          <textarea
+            value={plainText}
+            onChange={(event) => onPlainTextChange(event.target.value)}
+            placeholder="Pega el contenido del documento complementario genérico (no instrumentos EAS)."
+            rows={6}
+          />
+          <div className="document-form">
+            <input
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              placeholder="Título del documento o fuente (obligatorio)"
+            />
+            <button
+              type="button"
+              onClick={onProcessDocument}
+              disabled={!canSubmit}
+              title={canSubmit ? undefined : hint}
+            >
+              Registrar documento
+            </button>
+          </div>
+          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {lastProcessedDocument && lastProcessedDocument.kind === "complementary-study" && (
+            <p className="panel-note">
+              Último documento registrado:{" "}
+              <strong>{lastProcessedDocument.title}</strong>
+              {atomsCreated !== undefined && atomsCreated > 0 && (
+                <> · <strong>{atomsCreated}</strong> unidades de evidencia generadas</>
+              )}
+            </p>
+          )}
         </div>
       ) : (
         /* ── Ingesta de texto para otros tipos documentales ── */

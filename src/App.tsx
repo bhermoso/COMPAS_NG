@@ -24,6 +24,8 @@ import { parseDUKECSV, dukeStudyToEvidenceAtoms } from "./application/duke";
 import { createDUKEStudy } from "./domain/duke";
 import { parsePREDIMEDCSV, predimedStudyToEvidenceAtoms } from "./application/predimed";
 import { createPREDIMEDStudy } from "./domain/predimed";
+import { parseSF12CSV, sf12StudyToEvidenceAtoms } from "./application/sf12";
+import { createSF12Study } from "./domain/sf12";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -136,6 +138,7 @@ const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
 const IBSE_DOCUMENT_TAG = "ibse";
 const DUKE_DOCUMENT_TAG = "duke-eas";
 const PREDIMED_DOCUMENT_TAG = "predimed-eas";
+const SF12_DOCUMENT_TAG = "sf12-eas";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -152,6 +155,10 @@ function isDUKEDocument(document: MunicipalDocument | undefined): boolean {
 
 function isPREDIMEDDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, PREDIMED_DOCUMENT_TAG);
+}
+
+function isSF12Document(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, SF12_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -215,6 +222,7 @@ function isEmptyWorkspaceForPersistenceGuard(
     workspace.ibseStudy === undefined &&
     workspace.dukeStudy === undefined &&
     workspace.predimedStudy === undefined &&
+    workspace.sf12Study === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
@@ -256,6 +264,8 @@ export default function App() {
   const [dukeMessage, setDukeMessage] = useState<string | null>(null);
   const [isLoadingPREDIMED, setIsLoadingPREDIMED] = useState(false);
   const [predimedMessage, setPredimedMessage] = useState<string | null>(null);
+  const [isLoadingSF12, setIsLoadingSF12] = useState(false);
+  const [sf12Message, setSf12Message] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -757,6 +767,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadSF12CSV(file: File): Promise<void> {
+    setIsLoadingSF12(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseSF12CSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createSF12Study({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const sf12Atoms = attachDocumentIdToAtoms(
+        sf12StudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          SF12_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "redcap-export",
+          title: `SF-12 EAS - ${file.name}`,
+          source: {
+            system: "Importacion CSV SF-12 EAS",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["redcap-export", SF12_DOCUMENT_TAG, "eas", "complementary-study"],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(SF12_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of sf12Atoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          sf12Study: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setSf12Message(
+        aggregates.nValidPCS > 0
+          ? `SF-12 EAS cargado: ${aggregates.nValidPCS} registros válidos de ${aggregates.n}. PCS media: ${aggregates.meanPCS.toFixed(1)} / MCS media: ${aggregates.meanMCS.toFixed(1)}. ${sf12Atoms.length} evidencias incorporadas.${warn}`
+          : `CSV SF-12 EAS procesado sin registros válidos.${warn}`
+      );
+    } catch {
+      setSf12Message("Error al procesar el CSV. Verifica que incluya las columnas PCS12_SP y MCS12_SP.");
+    } finally {
+      setIsLoadingSF12(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -928,6 +1009,10 @@ export default function App() {
       setPredimedMessage(null);
       setIsLoadingPREDIMED(false);
     }
+    if (isSF12Document(deletedDocument)) {
+      setSf12Message(null);
+      setIsLoadingSF12(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -941,6 +1026,7 @@ export default function App() {
       const deletesIBSE = isIBSEDocument(doc);
       const deletesDUKE = isDUKEDocument(doc);
       const deletesPREDIMED = isPREDIMEDDocument(doc);
+      const deletesSF12 = isSF12Document(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -970,6 +1056,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesSF12 &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(SF12_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -984,6 +1077,7 @@ export default function App() {
         ibseStudy: deletesIBSE ? undefined : prev.ibseStudy,
         dukeStudy: deletesDUKE ? undefined : prev.dukeStudy,
         predimedStudy: deletesPREDIMED ? undefined : prev.predimedStudy,
+        sf12Study: deletesSF12 ? undefined : prev.sf12Study,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -1020,6 +1114,8 @@ export default function App() {
     setIsLoadingDUKE(false);
     setPredimedMessage(null);
     setIsLoadingPREDIMED(false);
+    setSf12Message(null);
+    setIsLoadingSF12(false);
     setShowMunicipalitySelector(false);
     setIsThematicModalOpen(false);
     setIsImportingTP(false);
@@ -1463,6 +1559,10 @@ export default function App() {
               isLoadingPREDIMED={isLoadingPREDIMED}
               predimedMessage={predimedMessage}
               onLoadPREDIMEDCSV={handleLoadPREDIMEDCSV}
+              sf12Study={runtime.workspace.sf12Study}
+              isLoadingSF12={isLoadingSF12}
+              sf12Message={sf12Message}
+              onLoadSF12CSV={handleLoadSF12CSV}
             />
             <QuestionnaireBuilderPanel />
           </>

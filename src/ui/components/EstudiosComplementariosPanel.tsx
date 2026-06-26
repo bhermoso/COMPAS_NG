@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import type { IBSEStudy } from "../../domain/ibse";
 import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
+import type { SF12Study } from "../../domain/sf12";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
 import { PREDIMEDPanel } from "./PREDIMEDPanel";
+import { SF12Panel } from "./SF12Panel";
 
 // ── Sub-acordeón por instrumento ──────────────────────────────────────────────
 // Se abre automáticamente cuando se carga datos; el usuario puede cerrarlo.
@@ -75,6 +77,11 @@ interface EstudiosComplementariosPanelProps {
   isLoadingPREDIMED?: boolean;
   predimedMessage?: string | null;
   onLoadPREDIMEDCSV?: (file: File) => void;
+
+  sf12Study?: SF12Study;
+  isLoadingSF12?: boolean;
+  sf12Message?: string | null;
+  onLoadSF12CSV?: (file: File) => void;
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -92,8 +99,12 @@ export function EstudiosComplementariosPanel({
   isLoadingPREDIMED,
   predimedMessage,
   onLoadPREDIMEDCSV,
+  sf12Study,
+  isLoadingSF12,
+  sf12Message,
+  onLoadSF12CSV,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study].filter(Boolean).length;
 
   return (
     <section className="workspace-panel ec-panel">
@@ -162,6 +173,24 @@ export function EstudiosComplementariosPanel({
             isLoading={isLoadingPREDIMED}
             message={predimedMessage}
             onLoadCSV={onLoadPREDIMEDCSV}
+          />
+        </InstrumentAccordion>
+
+        <InstrumentAccordion
+          name="SF-12 EAS"
+          subtitle="Salud percibida (PCS / MCS)"
+          loaded={sf12Study !== undefined}
+          recordSummary={
+            sf12Study
+              ? `${sf12Study.aggregates.nValidPCS} registros · PCS ${sf12Study.aggregates.meanPCS.toFixed(1)} / MCS ${sf12Study.aggregates.meanMCS.toFixed(1)}`
+              : undefined
+          }
+        >
+          <SF12Panel
+            sf12Study={sf12Study}
+            isLoading={isLoadingSF12}
+            message={sf12Message}
+            onLoadCSV={onLoadSF12CSV}
           />
         </InstrumentAccordion>
       </div>

@@ -77,6 +77,15 @@ export function MunicipalInventoryPanel({
               : undefined
           }
         />
+        <InventoryItem
+          label="Salud percibida — PCS/MCS (SF-12 EAS)"
+          present={inventory.hasSF12}
+          detail={
+            inventory.hasSF12
+              ? `${inventory.sf12RecordCount} registros válidos`
+              : undefined
+          }
+        />
       </ul>
 
       {/* Recuentos */}

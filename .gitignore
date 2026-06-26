@@ -21,6 +21,11 @@ COMPAS_NG_EVIDENCIAS_*/
 *.csv
 *.png
 
+# Fixtures de referencia versionados — reproducibles desde microdatos EAS
+!fixtures/duke-eas-granada.csv
+!fixtures/predimed-eas-granada.csv
+!fixtures/sf12-eas-granada.csv
+
 # Local municipal data folders
 Alfacar/
 Atarfe/

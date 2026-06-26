@@ -156,6 +156,14 @@ export function loadWorkspaceFromLocalStorage(
       parsed.predimedStudy.warnings = [];
     }
 
+    if (parsed.sf12Study && !Array.isArray(parsed.sf12Study.methodologicalCautions)) {
+      parsed.sf12Study.methodologicalCautions = [];
+    }
+
+    if (parsed.sf12Study && !Array.isArray(parsed.sf12Study.warnings)) {
+      parsed.sf12Study.warnings = [];
+    }
+
     if (!hasCoreWorkspaceCollections(parsed)) return null;
 
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);
