@@ -4,32 +4,58 @@ import type {
   DUKERowScores,
 } from "../../domain/duke";
 import { splitRow } from "../csv-utils/splitRow";
+import { getMethodologicalModule } from "../../domain/methodology";
 
-const ITEM_FIELDS = [
-  "P5701",
-  "P5702",
-  "P5703",
-  "P5704",
-  "P5705",
-  "P5706",
-  "P5707",
-  "P5708",
-  "P5709",
-  "P5710",
-  "P5711",
-] as const;
+// ── Configuración derivada de DUKE_EAS_MODULE ─────────────────────────────────
+// Los campos ITEM_FIELDS, CONF_FIELDS y AFFECT_FIELDS se obtienen del módulo
+// metodológico canónico en lugar de estar duplicados aquí.
 
-const CONF_FIELDS = [
-  "P5701",
-  "P5702",
-  "P5706",
-  "P5707",
-  "P5708",
-  "P5709",
-  "P5710",
-] as const;
+const _rawDukeModule = getMethodologicalModule("duke-eas");
+if (!_rawDukeModule) {
+  throw new Error(
+    "[DUKECSVParser] Módulo 'duke-eas' no encontrado en el registro metodológico. " +
+    "Verifica que DUKE_EAS_MODULE esté registrado en domain/methodology/registry.ts."
+  );
+}
+const _dukeSavAdapter = _rawDukeModule.adapters?.sav;
+if (!_dukeSavAdapter) {
+  throw new Error(
+    "[DUKECSVParser] DUKE_EAS_MODULE no tiene adaptador SAV configurado. " +
+    "El parser requiere adapters.sav.variables para mapear item IDs a columnas CSV."
+  );
+}
 
-const AFFECT_FIELDS = ["P5703", "P5704", "P5705", "P5711"] as const;
+// Capturas en scope estrecho (tras los guards) para que TypeScript las conozca como non-null
+const dukeDimensions = _rawDukeModule.dimensions;
+const savColByItemId = new Map(
+  _dukeSavAdapter.variables.map(v => [v.outputField, v.savVariable])
+);
+
+// Convierte los itemIds de una dimensión del módulo a los nombres de columna del CSV
+function dimToFields(dimensionId: string): readonly (keyof DUKERowInput)[] {
+  const dim = dukeDimensions.find(d => d.id === dimensionId);
+  if (!dim) {
+    throw new Error(
+      `[DUKECSVParser] Dimensión "${dimensionId}" no encontrada en DUKE_EAS_MODULE. ` +
+      `Dimensiones disponibles: ${dukeDimensions.map(d => d.id).join(", ")}.`
+    );
+  }
+  return dim.itemIds.map(id => {
+    const col = savColByItemId.get(id);
+    if (!col) {
+      throw new Error(
+        `[DUKECSVParser] Columna SAV para el ítem "${id}" no encontrada en DUKE_EAS_MODULE.adapters.sav.`
+      );
+    }
+    return col as keyof DUKERowInput;
+  });
+}
+
+const ITEM_FIELDS   = dimToFields("global");
+const CONF_FIELDS   = dimToFields("confidencial");
+const AFFECT_FIELDS = dimToFields("afectivo");
+
+// ── Resto del parser (sin cambios lógicos) ────────────────────────────────────
 
 const EMPTY_AGGREGATES: DUKEAggregates = {
   n: 0,
@@ -108,7 +134,7 @@ function parseDUKEValue(raw: string | undefined): number | null {
 
 function readDUKERow(
   row: string[],
-  indexes: Record<(typeof ITEM_FIELDS)[number], number>
+  indexes: Record<string, number>
 ): DUKERowInput {
   return ITEM_FIELDS.reduce<DUKERowInput>((acc, field) => {
     const index = indexes[field];
@@ -171,13 +197,12 @@ export function parseDUKECSV(csvText: string): DUKECSVParseResult {
   }
 
   const header = splitRow(lines[0]).map((value) => value.trim());
-  const indexes = ITEM_FIELDS.reduce<Record<(typeof ITEM_FIELDS)[number], number>>(
-    (acc, field) => {
-      acc[field] = header.indexOf(field);
-      return acc;
-    },
-    {} as Record<(typeof ITEM_FIELDS)[number], number>
-  );
+
+  const indexes: Record<string, number> = {};
+  for (const field of ITEM_FIELDS) {
+    indexes[field] = header.indexOf(field);
+  }
+
   const missing = ITEM_FIELDS.filter((field) => indexes[field] === -1);
   const warnings =
     missing.length > 0
