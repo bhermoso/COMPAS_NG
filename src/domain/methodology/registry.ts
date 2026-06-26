@@ -1,6 +1,7 @@
 import type { MethodologicalModule, ModuleId } from "./MethodologicalModule";
 import { IBSE_MODULE } from "./definitions/ibse";
 import { DUKE_EAS_MODULE } from "./definitions/duke-eas";
+import { PREDIMED_EAS_MODULE } from "./definitions/predimed-eas";
 
 // Catálogo declarativo de módulos metodológicos.
 // Para incorporar un módulo nuevo: añadir una entrada al array inicial del Map.
@@ -9,6 +10,7 @@ import { DUKE_EAS_MODULE } from "./definitions/duke-eas";
 const REGISTRY = new Map<ModuleId, MethodologicalModule>([
   [IBSE_MODULE.identity.id, IBSE_MODULE],
   [DUKE_EAS_MODULE.identity.id, DUKE_EAS_MODULE],
+  [PREDIMED_EAS_MODULE.identity.id, PREDIMED_EAS_MODULE],
 ]);
 
 export function getMethodologicalModule(id: ModuleId): MethodologicalModule | undefined {
