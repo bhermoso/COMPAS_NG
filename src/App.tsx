@@ -28,6 +28,8 @@ import { parseSF12CSV, sf12StudyToEvidenceAtoms } from "./application/sf12";
 import { createSF12Study } from "./domain/sf12";
 import { parseSuenoCSV, suenoStudyToEvidenceAtoms } from "./application/sueno";
 import { createSuenoStudy } from "./domain/sueno";
+import { parseCAGECSV, cageStudyToEvidenceAtoms } from "./application/cage";
+import { createCAGEStudy } from "./domain/cage";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -142,6 +144,7 @@ const DUKE_DOCUMENT_TAG = "duke-eas";
 const PREDIMED_DOCUMENT_TAG = "predimed-eas";
 const SF12_DOCUMENT_TAG = "sf12-eas";
 const SUENO_DOCUMENT_TAG = "sueno-eas";
+const CAGE_DOCUMENT_TAG = "cage-eas";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -166,6 +169,10 @@ function isSF12Document(document: MunicipalDocument | undefined): boolean {
 
 function isSuenoDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, SUENO_DOCUMENT_TAG);
+}
+
+function isCAGEDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, CAGE_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -231,6 +238,7 @@ function isEmptyWorkspaceForPersistenceGuard(
     workspace.predimedStudy === undefined &&
     workspace.sf12Study === undefined &&
     workspace.suenoStudy === undefined &&
+    workspace.cageStudy === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
@@ -276,6 +284,8 @@ export default function App() {
   const [sf12Message, setSf12Message] = useState<string | null>(null);
   const [isLoadingSueno, setIsLoadingSueno] = useState(false);
   const [suenoMessage, setSuenoMessage] = useState<string | null>(null);
+  const [isLoadingCAGE, setIsLoadingCAGE] = useState(false);
+  const [cageMessage, setCageMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -919,6 +929,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadCAGECSV(file: File): Promise<void> {
+    setIsLoadingCAGE(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseCAGECSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createCAGEStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const cageAtoms = attachDocumentIdToAtoms(
+        cageStudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          CAGE_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "complementary-study",
+          title: `CAGE-EAS - ${file.name}`,
+          source: {
+            system: "EAS microdatos — Consumo de alcohol (CAGE_R / CAGE)",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["complementary-study", CAGE_DOCUMENT_TAG, "eas"],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(CAGE_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of cageAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          cageStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setCageMessage(
+        aggregates.nValidCAGER > 0
+          ? `CAGE-EAS cargado: ${aggregates.nValidCAGER} registros CAGE_R válidos de ${aggregates.n}. Riesgo de alcoholismo: ${aggregates.pctRisk.toFixed(1)} % (n=${aggregates.nRisk}). ${cageAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV CAGE-EAS procesado sin registros CAGE_R válidos.${warn}`
+      );
+    } catch {
+      setCageMessage("Error al procesar el CSV. Verifica que incluya la columna CAGE_R.");
+    } finally {
+      setIsLoadingCAGE(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1098,6 +1179,10 @@ export default function App() {
       setSuenoMessage(null);
       setIsLoadingSueno(false);
     }
+    if (isCAGEDocument(deletedDocument)) {
+      setCageMessage(null);
+      setIsLoadingCAGE(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1113,6 +1198,7 @@ export default function App() {
       const deletesPREDIMED = isPREDIMEDDocument(doc);
       const deletesSF12 = isSF12Document(doc);
       const deletesSueno = isSuenoDocument(doc);
+      const deletesCAGE = isCAGEDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1156,6 +1242,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesCAGE &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(CAGE_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1172,6 +1265,7 @@ export default function App() {
         predimedStudy: deletesPREDIMED ? undefined : prev.predimedStudy,
         sf12Study: deletesSF12 ? undefined : prev.sf12Study,
         suenoStudy: deletesSueno ? undefined : prev.suenoStudy,
+        cageStudy: deletesCAGE ? undefined : prev.cageStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -1212,6 +1306,8 @@ export default function App() {
     setIsLoadingSF12(false);
     setSuenoMessage(null);
     setIsLoadingSueno(false);
+    setCageMessage(null);
+    setIsLoadingCAGE(false);
     setShowMunicipalitySelector(false);
     setIsThematicModalOpen(false);
     setIsImportingTP(false);
@@ -1663,6 +1759,10 @@ export default function App() {
               isLoadingSueno={isLoadingSueno}
               suenoMessage={suenoMessage}
               onLoadSuenoCSV={handleLoadSuenoCSV}
+              cageStudy={runtime.workspace.cageStudy}
+              isLoadingCAGE={isLoadingCAGE}
+              cageMessage={cageMessage}
+              onLoadCAGECSV={handleLoadCAGECSV}
             />
             <QuestionnaireBuilderPanel />
           </>

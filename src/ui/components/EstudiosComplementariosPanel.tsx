@@ -4,11 +4,13 @@ import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
 import type { SF12Study } from "../../domain/sf12";
 import type { SuenoStudy } from "../../domain/sueno";
+import type { CAGEStudy } from "../../domain/cage";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
 import { PREDIMEDPanel } from "./PREDIMEDPanel";
 import { SF12Panel } from "./SF12Panel";
 import { SuenoPanel } from "./SuenoPanel";
+import { CAGEPanel } from "./CAGEPanel";
 
 // ── Sub-acordeón por instrumento ──────────────────────────────────────────────
 // Se abre automáticamente cuando se carga datos; el usuario puede cerrarlo.
@@ -89,6 +91,11 @@ interface EstudiosComplementariosPanelProps {
   isLoadingSueno?: boolean;
   suenoMessage?: string | null;
   onLoadSuenoCSV?: (file: File) => void;
+
+  cageStudy?: CAGEStudy;
+  isLoadingCAGE?: boolean;
+  cageMessage?: string | null;
+  onLoadCAGECSV?: (file: File) => void;
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -114,8 +121,12 @@ export function EstudiosComplementariosPanel({
   isLoadingSueno,
   suenoMessage,
   onLoadSuenoCSV,
+  cageStudy,
+  isLoadingCAGE,
+  cageMessage,
+  onLoadCAGECSV,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy].filter(Boolean).length;
 
   return (
     <section className="workspace-panel ec-panel">
@@ -220,6 +231,24 @@ export function EstudiosComplementariosPanel({
             isLoading={isLoadingSueno}
             message={suenoMessage}
             onLoadCSV={onLoadSuenoCSV}
+          />
+        </InstrumentAccordion>
+
+        <InstrumentAccordion
+          name="CAGE-EAS"
+          subtitle="Riesgo de alcoholismo"
+          loaded={cageStudy !== undefined}
+          recordSummary={
+            cageStudy
+              ? `${cageStudy.aggregates.nValidCAGER} válidos · ${cageStudy.aggregates.pctRisk.toFixed(1)} % riesgo`
+              : undefined
+          }
+        >
+          <CAGEPanel
+            cageStudy={cageStudy}
+            isLoading={isLoadingCAGE}
+            message={cageMessage}
+            onLoadCSV={onLoadCAGECSV}
           />
         </InstrumentAccordion>
       </div>

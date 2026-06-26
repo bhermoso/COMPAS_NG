@@ -95,6 +95,15 @@ export function MunicipalInventoryPanel({
               : undefined
           }
         />
+        <InventoryItem
+          label="Consumo de alcohol — riesgo (CAGE-EAS)"
+          present={inventory.hasCAGE}
+          detail={
+            inventory.hasCAGE
+              ? `${inventory.cageRecordCount} registros válidos CAGE_R`
+              : undefined
+          }
+        />
       </ul>
 
       {/* Recuentos */}

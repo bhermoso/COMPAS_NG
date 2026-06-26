@@ -7,6 +7,7 @@ import type { DUKEStudy } from "../duke";
 import type { PREDIMEDStudy } from "../predimed";
 import type { SF12Study } from "../sf12";
 import type { SuenoStudy } from "../sueno";
+import type { CAGEStudy } from "../cage";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 import type { LocalHealthProfile } from "../health-profile";
 
@@ -48,6 +49,7 @@ export interface MunicipalityWorkspace {
   predimedStudy?: PREDIMEDStudy;
   sf12Study?: SF12Study;
   suenoStudy?: SuenoStudy;
+  cageStudy?: CAGEStudy;
   thematicPrioritisation?: ThematicPrioritisation;
   thematicPrioritisationStudy?: ThematicPrioritisationStudy;
   /**
