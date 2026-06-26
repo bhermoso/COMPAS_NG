@@ -26,6 +26,8 @@ import { parsePREDIMEDCSV, predimedStudyToEvidenceAtoms } from "./application/pr
 import { createPREDIMEDStudy } from "./domain/predimed";
 import { parseSF12CSV, sf12StudyToEvidenceAtoms } from "./application/sf12";
 import { createSF12Study } from "./domain/sf12";
+import { parseSuenoCSV, suenoStudyToEvidenceAtoms } from "./application/sueno";
+import { createSuenoStudy } from "./domain/sueno";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -139,6 +141,7 @@ const IBSE_DOCUMENT_TAG = "ibse";
 const DUKE_DOCUMENT_TAG = "duke-eas";
 const PREDIMED_DOCUMENT_TAG = "predimed-eas";
 const SF12_DOCUMENT_TAG = "sf12-eas";
+const SUENO_DOCUMENT_TAG = "sueno-eas";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -159,6 +162,10 @@ function isPREDIMEDDocument(document: MunicipalDocument | undefined): boolean {
 
 function isSF12Document(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, SF12_DOCUMENT_TAG);
+}
+
+function isSuenoDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, SUENO_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -223,6 +230,7 @@ function isEmptyWorkspaceForPersistenceGuard(
     workspace.dukeStudy === undefined &&
     workspace.predimedStudy === undefined &&
     workspace.sf12Study === undefined &&
+    workspace.suenoStudy === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
@@ -266,6 +274,8 @@ export default function App() {
   const [predimedMessage, setPredimedMessage] = useState<string | null>(null);
   const [isLoadingSF12, setIsLoadingSF12] = useState(false);
   const [sf12Message, setSf12Message] = useState<string | null>(null);
+  const [isLoadingSueno, setIsLoadingSueno] = useState(false);
+  const [suenoMessage, setSuenoMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -838,6 +848,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadSuenoCSV(file: File): Promise<void> {
+    setIsLoadingSueno(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseSuenoCSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createSuenoStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const suenoAtoms = attachDocumentIdToAtoms(
+        suenoStudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          SUENO_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "complementary-study",
+          title: `Sueño EAS - ${file.name}`,
+          source: {
+            system: "EAS microdatos — Sueño (P33_R / P33A)",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["complementary-study", SUENO_DOCUMENT_TAG, "eas"],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(SUENO_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of suenoAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          suenoStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setSuenoMessage(
+        aggregates.nValidP33R > 0
+          ? `Sueño EAS cargado: ${aggregates.nValidP33R} registros P33_R válidos de ${aggregates.n}. Sueño insuficiente: ${aggregates.pctInsufficientSleep.toFixed(1)} %. ${suenoAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV Sueño EAS procesado sin registros P33_R válidos.${warn}`
+      );
+    } catch {
+      setSuenoMessage("Error al procesar el CSV. Verifica que incluya la columna P33_R.");
+    } finally {
+      setIsLoadingSueno(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1013,6 +1094,10 @@ export default function App() {
       setSf12Message(null);
       setIsLoadingSF12(false);
     }
+    if (isSuenoDocument(deletedDocument)) {
+      setSuenoMessage(null);
+      setIsLoadingSueno(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1027,6 +1112,7 @@ export default function App() {
       const deletesDUKE = isDUKEDocument(doc);
       const deletesPREDIMED = isPREDIMEDDocument(doc);
       const deletesSF12 = isSF12Document(doc);
+      const deletesSueno = isSuenoDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1063,6 +1149,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesSueno &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(SUENO_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1078,6 +1171,7 @@ export default function App() {
         dukeStudy: deletesDUKE ? undefined : prev.dukeStudy,
         predimedStudy: deletesPREDIMED ? undefined : prev.predimedStudy,
         sf12Study: deletesSF12 ? undefined : prev.sf12Study,
+        suenoStudy: deletesSueno ? undefined : prev.suenoStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -1116,6 +1210,8 @@ export default function App() {
     setIsLoadingPREDIMED(false);
     setSf12Message(null);
     setIsLoadingSF12(false);
+    setSuenoMessage(null);
+    setIsLoadingSueno(false);
     setShowMunicipalitySelector(false);
     setIsThematicModalOpen(false);
     setIsImportingTP(false);
@@ -1563,6 +1659,10 @@ export default function App() {
               isLoadingSF12={isLoadingSF12}
               sf12Message={sf12Message}
               onLoadSF12CSV={handleLoadSF12CSV}
+              suenoStudy={runtime.workspace.suenoStudy}
+              isLoadingSueno={isLoadingSueno}
+              suenoMessage={suenoMessage}
+              onLoadSuenoCSV={handleLoadSuenoCSV}
             />
             <QuestionnaireBuilderPanel />
           </>

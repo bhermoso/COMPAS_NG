@@ -6,6 +6,7 @@ export * from "./IBSEPanel";
 export * from "./DUKEPanel";
 export * from "./PREDIMEDPanel";
 export * from "./SF12Panel";
+export * from "./SuenoPanel";
 export * from "./EstudiosComplementariosPanel";
 export * from "./MunicipalInventoryPanel";
 export * from "./LocalHealthProfilePanel";

@@ -10,6 +10,7 @@ export interface MunicipalInventory {
   hasDUKE: boolean;
   hasPREDIMED: boolean;
   hasSF12: boolean;
+  hasSueno: boolean;
   hasAssets: boolean;
 
   repositoryDocumentCount: number;
@@ -18,6 +19,7 @@ export interface MunicipalInventory {
   dukeRecordCount: number;
   predimedRecordCount: number;
   sf12RecordCount: number;
+  suenoRecordCount: number;
 
   hasThematicPrioritisation: boolean;
   hasStrategicPrioritisation: boolean;
@@ -34,6 +36,7 @@ export function createMunicipalInventory(
   const hasDUKE        = snapshot.dukeStudy !== undefined;
   const hasPREDIMED    = snapshot.predimedStudy !== undefined;
   const hasSF12        = snapshot.sf12Study !== undefined;
+  const hasSueno       = snapshot.suenoStudy !== undefined;
   const hasAssets      = snapshot.evidenceStore.atoms.some(
     (atom) => atom.kind === "asset"
   );
@@ -44,6 +47,7 @@ export function createMunicipalInventory(
   const dukeRecordCount         = snapshot.dukeStudy?.aggregates.nValidGlobal ?? 0;
   const predimedRecordCount     = snapshot.predimedStudy?.aggregates.nValid ?? 0;
   const sf12RecordCount         = snapshot.sf12Study?.aggregates.nValidPCS ?? 0;
+  const suenoRecordCount        = snapshot.suenoStudy?.aggregates.nValidP33R ?? 0;
 
   const hasThematicPrioritisation  = snapshot.thematicPrioritisation !== undefined;
   const hasStrategicPrioritisation = snapshot.strategicPrioritisation !== undefined;
@@ -65,6 +69,7 @@ export function createMunicipalInventory(
     hasDUKE,
     hasPREDIMED,
     hasSF12,
+    hasSueno,
     hasAssets,
     repositoryDocumentCount,
     evidenceAtomCount,
@@ -72,6 +77,7 @@ export function createMunicipalInventory(
     dukeRecordCount,
     predimedRecordCount,
     sf12RecordCount,
+    suenoRecordCount,
     hasThematicPrioritisation,
     hasStrategicPrioritisation,
     hasMunicipalEnrichment,

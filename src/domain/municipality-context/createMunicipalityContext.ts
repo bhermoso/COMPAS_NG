@@ -27,6 +27,7 @@ export function createMunicipalSnapshot(
     dukeStudy:               workspace.dukeStudy,
     predimedStudy:           workspace.predimedStudy,
     sf12Study:               workspace.sf12Study,
+    suenoStudy:              workspace.suenoStudy,
     thematicPrioritisation:       workspace.thematicPrioritisation,
     thematicPrioritisationStudy:  workspace.thematicPrioritisationStudy,
     evidenceStore:                workspace.evidenceStore,

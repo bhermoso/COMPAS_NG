@@ -86,6 +86,15 @@ export function MunicipalInventoryPanel({
               : undefined
           }
         />
+        <InventoryItem
+          label="Sueño — duración y calidad (Sueño EAS)"
+          present={inventory.hasSueno}
+          detail={
+            inventory.hasSueno
+              ? `${inventory.suenoRecordCount} registros válidos P33_R`
+              : undefined
+          }
+        />
       </ul>
 
       {/* Recuentos */}

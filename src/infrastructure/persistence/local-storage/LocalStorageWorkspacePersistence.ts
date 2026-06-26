@@ -164,6 +164,14 @@ export function loadWorkspaceFromLocalStorage(
       parsed.sf12Study.warnings = [];
     }
 
+    if (parsed.suenoStudy && !Array.isArray(parsed.suenoStudy.methodologicalCautions)) {
+      parsed.suenoStudy.methodologicalCautions = [];
+    }
+
+    if (parsed.suenoStudy && !Array.isArray(parsed.suenoStudy.warnings)) {
+      parsed.suenoStudy.warnings = [];
+    }
+
     // Migrar kind incorrecto en documentos EAS complementarios (registrados como
     // "redcap-export" antes de la corrección semántica). Los tags son la fuente
     // canónica de identificación; el kind solo afecta al display en el Repositorio.

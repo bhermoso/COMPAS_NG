@@ -3,10 +3,12 @@ import type { IBSEStudy } from "../../domain/ibse";
 import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
 import type { SF12Study } from "../../domain/sf12";
+import type { SuenoStudy } from "../../domain/sueno";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
 import { PREDIMEDPanel } from "./PREDIMEDPanel";
 import { SF12Panel } from "./SF12Panel";
+import { SuenoPanel } from "./SuenoPanel";
 
 // ── Sub-acordeón por instrumento ──────────────────────────────────────────────
 // Se abre automáticamente cuando se carga datos; el usuario puede cerrarlo.
@@ -82,6 +84,11 @@ interface EstudiosComplementariosPanelProps {
   isLoadingSF12?: boolean;
   sf12Message?: string | null;
   onLoadSF12CSV?: (file: File) => void;
+
+  suenoStudy?: SuenoStudy;
+  isLoadingSueno?: boolean;
+  suenoMessage?: string | null;
+  onLoadSuenoCSV?: (file: File) => void;
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -103,8 +110,12 @@ export function EstudiosComplementariosPanel({
   isLoadingSF12,
   sf12Message,
   onLoadSF12CSV,
+  suenoStudy,
+  isLoadingSueno,
+  suenoMessage,
+  onLoadSuenoCSV,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy].filter(Boolean).length;
 
   return (
     <section className="workspace-panel ec-panel">
@@ -191,6 +202,24 @@ export function EstudiosComplementariosPanel({
             isLoading={isLoadingSF12}
             message={sf12Message}
             onLoadCSV={onLoadSF12CSV}
+          />
+        </InstrumentAccordion>
+
+        <InstrumentAccordion
+          name="Sueño EAS"
+          subtitle="Duración y calidad subjetiva del sueño"
+          loaded={suenoStudy !== undefined}
+          recordSummary={
+            suenoStudy
+              ? `${suenoStudy.aggregates.nValidP33R} válidos · ${suenoStudy.aggregates.pctInsufficientSleep.toFixed(1)} % insuficiente`
+              : undefined
+          }
+        >
+          <SuenoPanel
+            suenoStudy={suenoStudy}
+            isLoading={isLoadingSueno}
+            message={suenoMessage}
+            onLoadCSV={onLoadSuenoCSV}
           />
         </InstrumentAccordion>
       </div>

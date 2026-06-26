@@ -102,13 +102,14 @@ try {
   await repositoryButton.click();
 
   const repositoryText = await page.locator("body").textContent();
-  for (const label of ["IBSE", "DUKE-EAS", "PREDIMED-EAS"]) {
+  for (const label of ["IBSE", "DUKE-EAS", "PREDIMED-EAS", "Sueño EAS"]) {
     assert(repositoryText?.includes(label), `Complementary Studies panel does not show ${label}.`);
   }
 
   await openInstrument(page, "IBSE", "#ibse-csv-input");
   await openInstrument(page, "DUKE-EAS", "#duke-csv-input");
   await openInstrument(page, "PREDIMED-EAS", "#predimed-csv-input");
+  await openInstrument(page, "Sueño EAS", "#sueno-csv-input");
 
   assert(
     consoleErrors.length === 0,
