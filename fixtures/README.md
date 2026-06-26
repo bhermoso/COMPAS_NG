@@ -190,6 +190,109 @@ tres puntuaciones (global, confidencial, afectivo) a partir de los ítems brutos
 
 ---
 
+---
+
+## `sueno-eas-granada.csv`
+
+### Origen
+
+Fixture **reproducible** generado a partir de los microdatos oficiales de la EAS,
+provincia de Granada (`PROV = 18.0`), usando `EAS_COMPLETO.csv` como fuente.
+
+**`EAS_microdatos_adulto_READY.csv` no puede usarse**: carece de `P33_R` y de
+`ProblemasDormirP33b`, que son derivados que solo existen en `EAS_COMPLETO`.
+
+Script de referencia para regenerarlo:
+
+```
+scripts/export-sueno-granada.mjs
+```
+
+### Qué mide este fixture y qué no mide
+
+Este fixture contiene indicadores propios de la EAS para la monitorización del
+sueño en la población andaluza. **No es el PSQI ni ninguna escala de sueño
+validada externamente.** Presentarlo con cualquier otra etiqueta de escala
+sería metodológicamente incorrecto.
+
+`P33_R` y `P33A` miden **dimensiones distintas y complementarias** del sueño:
+
+- `P33_R` = **cantidad** — si la persona duerme las horas recomendadas por la
+  Sociedad Española del Sueño (7–9 h en adultos). Campo derivado por la EAS.
+- `P33A` = **calidad subjetiva percibida** — si las horas dormidas permiten
+  descansar. Ítem directo de la encuesta.
+
+Se espera una discordancia del ~29 % entre ambas variables en Granada. No es un
+error: refleja que cantidad y calidad percibida del sueño son dimensiones
+independientes (personas que duermen suficiente pero no descansan, y personas
+que duermen menos de lo recomendado pero se sienten bien).
+
+### Estadísticos de referencia (Granada, n=3064)
+
+| Indicador | Valor |
+|---|---|
+| Registros exportados | 3.064 |
+| P33\_R válidos | 3.004 (98,0 %) |
+| P33\_R missing | 60 (2,0 %) — estructural (no recogido en alguna oleada) |
+| P33\_R=0 (sí duerme suficiente) | 2.019 (67,2 % de válidos) |
+| P33\_R=1 (no duerme suficiente) | 985 (32,8 % de válidos) |
+| P33A válidos | 2.306 (75,3 %) |
+| P33A=0 (no descansa) | 665 (28,8 % de válidos) |
+| P33A=1 (sí descansa) | 1.641 (71,2 % de válidos) |
+| P33\_1\_2023 válidos (oleada 2023) | 847 (27,6 %) — missing estructural |
+| P33\_1\_2023 media | 6,89 h/día |
+| ProblemasDormirP33b válidos (oleada 2023) | 891 (29,1 %) — missing estructural |
+| Problemas diarios (=1) | 203 (22,8 % de válidos) |
+| SHA256 | `11DCBECE47D5F4E407E26AED750E9CB77C9EEBA44B98F36F5C37F8B7021D5BE5` |
+
+### Estructura de columnas
+
+| Columna | Tipo | Cobertura | Descripción |
+|---|---|---|---|
+| `P33_R` | **Campo canónico primario** | ~98 % | Sueño insuficiente en horas (0=No / 1=Sí). Derivado EAS según criterios SES. |
+| `P33A` | **Campo canónico secundario** | ~75 % | Calidad subjetiva percibida (0=No descansa / 1=Sí descansa). Ítem directo. |
+| `P33_1_2023` | Trazabilidad (solo 2023) | ~28 % | Horas de sueño diarias entre semana (valor numérico). Missing estructural. |
+| `P33B1_2023` | Trazabilidad (solo 2023) | ~27 % | "¿Dificultades para dormirse?" (1=Nunca … 4=Diariamente) |
+| `P33B2_2023` | Trazabilidad (solo 2023) | ~27 % | "¿Se despierta durante la noche?" (ídem escala) |
+| `P33B3_2023` | Trazabilidad (solo 2023) | ~27 % | "¿Se despierta demasiado temprano?" (ídem) |
+| `P33B4_2023` | Trazabilidad (solo 2023) | ~27 % | "¿Se siente cansado/a al despertar?" (ídem) |
+| `P33B5_2023` | Trazabilidad (solo 2023) | ~27 % | "¿Toma algún remedio para dormir (no farmacológico)?" (ídem) |
+| `ProblemasDormirP33b` | Trazabilidad (solo 2023) | ~29 % | Problemas diarios: cualquier P33Bx=4. Binario derivado EAS. |
+
+### Missing estructural — por qué es alto en columnas 2023
+
+Los campos `P33B1_2023`–`P33B5_2023`, `P33_1_2023` y `ProblemasDormirP33b`
+se recogen únicamente en la oleada EAS 2023. Los registros de oleadas anteriores
+no tienen estas preguntas (missing legítimo, no ausencia de respuesta).
+
+Los campos canónicos `P33_R` y `P33A` tienen cobertura amplia porque existen en
+múltiples oleadas y la EAS los armoniza internamente.
+
+### Qué consume COMPÁS NG de este fixture
+
+**Campos que alimentarán EvidenceAtoms:**
+
+| Campo | Uso |
+|---|---|
+| `P33_R` | % de la muestra con sueño insuficiente en horas (indicador continuo provincial). |
+| `P33A` | % de la muestra que no descansa suficiente (calidad subjetiva percibida). |
+
+Los campos de trazabilidad (`P33_1_2023`, `P33B1–5_2023`, `ProblemasDormirP33b`)
+se incluyen por reproducibilidad metodológica y para facilitar auditorías futuras.
+**COMPÁS NG no genera EvidenceAtoms dicotómicos, por ítem ni por frecuencia**
+a partir de los campos P33B. Cualquier clasificación categórica futura requerirá
+referencia metodológica explícita y documentación en el módulo correspondiente
+antes de ser emitida como EvidenceAtom.
+
+### Comparabilidad con datos municipales propios
+
+`P33_R` y `P33A` reflejan la **muestra EAS provincial de Granada** (n=3.064),
+no la población de ningún municipio concreto. Su uso en Atarfe es como
+referencia contextual provincial, igual que los fixtures de DUKE, PREDIMED y SF-12.
+No representan el estado de Atarfe ni de ningún municipio específico.
+
+---
+
 ## Principio general
 
 Si se añade un fixture nuevo:
