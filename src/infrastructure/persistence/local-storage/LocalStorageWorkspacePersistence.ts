@@ -164,6 +164,26 @@ export function loadWorkspaceFromLocalStorage(
       parsed.sf12Study.warnings = [];
     }
 
+    // Migrar kind incorrecto en documentos EAS complementarios (registrados como
+    // "redcap-export" antes de la corrección semántica). Los tags son la fuente
+    // canónica de identificación; el kind solo afecta al display en el Repositorio.
+    if (Array.isArray(parsed.repository?.documents)) {
+      const EAS_COMPLEMENTARY_TAGS = new Set(["duke-eas", "predimed-eas", "sf12-eas"]);
+      parsed.repository.documents = parsed.repository.documents.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doc: any) => {
+          if (
+            doc.kind === "redcap-export" &&
+            Array.isArray(doc.tags) &&
+            doc.tags.some((t: string) => EAS_COMPLEMENTARY_TAGS.has(t))
+          ) {
+            return { ...doc, kind: "complementary-study" };
+          }
+          return doc;
+        }
+      );
+    }
+
     if (!hasCoreWorkspaceCollections(parsed)) return null;
 
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);

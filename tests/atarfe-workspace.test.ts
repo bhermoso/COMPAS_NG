@@ -87,11 +87,11 @@ const dukeAtoms = dukeStudyToEvidenceAtoms(dukeStudy).map(a => ({
     ...workspace,
     repository: addMunicipalDocument(workspace.repository, {
       id:           DUKE_DOC_ID,
-      kind:         'redcap-export',
+      kind:         'complementary-study',
       title:        'DUKE-EAS - duke-eas-granada.csv',
       sourceFileName: 'duke-eas-granada.csv',
-      source:       { system: 'Encuesta Andaluza de Salud 2023 — microdatos EAS (READY)' },
-      tags:         ['redcap-export', 'duke-eas', 'eas', 'complementary-study'],
+      source:       { system: 'EAS microdatos — Apoyo social funcional (DUKE-UNC-11)' },
+      tags:         ['complementary-study', 'duke-eas', 'eas'],
     }),
     dukeStudy,
     evidenceStore: { ...store, updatedAt: now },
@@ -123,11 +123,11 @@ const predimedAtoms = predimedStudyToEvidenceAtoms(predimedStudy).map(a => ({
     ...workspace,
     repository: addMunicipalDocument(workspace.repository, {
       id:           PREDIMED_DOC_ID,
-      kind:         'redcap-export',
+      kind:         'complementary-study',
       title:        'PREDIMED-EAS - predimed-eas-granada.csv',
       sourceFileName: 'predimed-eas-granada.csv',
-      source:       { system: 'Encuesta Andaluza de Salud 2023 — microdatos EAS (READY)' },
-      tags:         ['redcap-export', 'predimed-eas', 'eas', 'complementary-study'],
+      source:       { system: 'EAS microdatos — Adherencia dieta mediterránea (PREDIMED-14)' },
+      tags:         ['complementary-study', 'predimed-eas', 'eas'],
     }),
     predimedStudy,
     evidenceStore: { ...store, updatedAt: now },
@@ -159,11 +159,11 @@ const sf12Atoms = sf12StudyToEvidenceAtoms(sf12Study).map(a => ({
     ...workspace,
     repository: addMunicipalDocument(workspace.repository, {
       id:           SF12_DOC_ID,
-      kind:         'redcap-export',
+      kind:         'complementary-study',
       title:        'SF-12 EAS - sf12-eas-granada.csv',
       sourceFileName: 'sf12-eas-granada.csv',
-      source:       { system: 'Encuesta Andaluza de Salud 2023 — microdatos EAS (COMPLETO)' },
-      tags:         ['redcap-export', 'sf12-eas', 'eas', 'complementary-study'],
+      source:       { system: 'EAS microdatos — Salud percibida SF-12 (Vilagut et al. 2008)' },
+      tags:         ['complementary-study', 'sf12-eas', 'eas'],
     }),
     sf12Study,
     evidenceStore: { ...store, updatedAt: now },
@@ -257,11 +257,11 @@ describe('Atarfe — DUKE-EAS (fixtures/duke-eas-granada.csv)', () => {
     expect(dukeAtoms.filter(a => a.kind === 'methodological-caution')).toHaveLength(1)
   })
 
-  it('documento registrado con tags correctos', () => {
+  it('documento registrado con kind y tags correctos', () => {
     const doc = workspace.repository.documents.find(d => d.id === DUKE_DOC_ID)
     expect(doc).toBeDefined()
+    expect(doc?.kind).toBe('complementary-study')
     expect(doc?.tags).toContain('duke-eas')
-    expect(doc?.tags).toContain('complementary-study')
   })
 })
 
@@ -290,11 +290,11 @@ describe('Atarfe — PREDIMED-EAS (fixtures/predimed-eas-granada.csv)', () => {
     expect(predimedAtoms.filter(a => a.kind === 'methodological-caution')).toHaveLength(1)
   })
 
-  it('documento registrado con tags correctos', () => {
+  it('documento registrado con kind y tags correctos', () => {
     const doc = workspace.repository.documents.find(d => d.id === PREDIMED_DOC_ID)
     expect(doc).toBeDefined()
+    expect(doc?.kind).toBe('complementary-study')
     expect(doc?.tags).toContain('predimed-eas')
-    expect(doc?.tags).toContain('complementary-study')
   })
 })
 
@@ -327,11 +327,11 @@ describe('Atarfe — SF-12 EAS (fixtures/sf12-eas-granada.csv)', () => {
     expect(sf12Atoms.filter(a => a.kind === 'methodological-caution')).toHaveLength(1)
   })
 
-  it('documento registrado con tags correctos', () => {
+  it('documento registrado con kind y tags correctos', () => {
     const doc = workspace.repository.documents.find(d => d.id === SF12_DOC_ID)
     expect(doc).toBeDefined()
+    expect(doc?.kind).toBe('complementary-study')
     expect(doc?.tags).toContain('sf12-eas')
-    expect(doc?.tags).toContain('complementary-study')
   })
 })
 

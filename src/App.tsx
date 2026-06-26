@@ -650,14 +650,14 @@ export default function App() {
         );
         const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
           id: documentId,
-          kind: "redcap-export",
+          kind: "complementary-study",
           title: `DUKE-EAS - ${file.name}`,
           source: {
-            system: "Importacion CSV DUKE-EAS",
+            system: "EAS microdatos — Apoyo social funcional (DUKE-UNC-11)",
             collectedAt: study.createdAt,
           },
           sourceFileName: file.name,
-          tags: ["redcap-export", DUKE_DOCUMENT_TAG, "eas", "complementary-study"],
+          tags: ["complementary-study", DUKE_DOCUMENT_TAG, "eas"],
         });
         let nextStore = {
           ...prev.evidenceStore,
@@ -721,14 +721,14 @@ export default function App() {
         );
         const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
           id: documentId,
-          kind: "redcap-export",
+          kind: "complementary-study",
           title: `PREDIMED-EAS - ${file.name}`,
           source: {
-            system: "Importacion CSV PREDIMED-EAS",
+            system: "EAS microdatos — Adherencia dieta mediterránea (PREDIMED-14)",
             collectedAt: study.createdAt,
           },
           sourceFileName: file.name,
-          tags: ["redcap-export", PREDIMED_DOCUMENT_TAG, "eas", "complementary-study"],
+          tags: ["complementary-study", PREDIMED_DOCUMENT_TAG, "eas"],
         });
         let nextStore = {
           ...prev.evidenceStore,
@@ -792,14 +792,14 @@ export default function App() {
         );
         const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
           id: documentId,
-          kind: "redcap-export",
+          kind: "complementary-study",
           title: `SF-12 EAS - ${file.name}`,
           source: {
-            system: "Importacion CSV SF-12 EAS",
+            system: "EAS microdatos — Salud percibida SF-12 (Vilagut et al. 2008)",
             collectedAt: study.createdAt,
           },
           sourceFileName: file.name,
-          tags: ["redcap-export", SF12_DOCUMENT_TAG, "eas", "complementary-study"],
+          tags: ["complementary-study", SF12_DOCUMENT_TAG, "eas"],
         });
         let nextStore = {
           ...prev.evidenceStore,
