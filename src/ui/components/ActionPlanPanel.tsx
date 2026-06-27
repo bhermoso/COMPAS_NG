@@ -4,6 +4,7 @@ import type { ActionPlanDraft, FrameworkAlignment } from "../../application/acti
 interface ActionPlanPanelProps {
   actionPlan: ActionPlanDraft;
   isEmpty?: boolean;
+  isBlocked?: boolean;
 }
 
 function formatDate(iso: string): string {
@@ -74,7 +75,7 @@ function FrameworkAlignmentsBlock({ alignments }: { alignments: FrameworkAlignme
 
 // ── Panel principal ───────────────────────────────────────────────────────────
 
-export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanelProps) {
+export function ActionPlanPanel({ actionPlan, isEmpty = false, isBlocked = false }: ActionPlanPanelProps) {
   const { pslReference } = actionPlan;
 
   const provenanceText = (() => {
@@ -112,10 +113,24 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false }: ActionPlanPanel
         {provenanceText}
       </div>
 
-      {isEmpty ? (
+      {isBlocked ? (
+        <div className="phase-blocked-notice">
+          <strong>Plan de Acción no disponible</strong>
+          <p>Para activar esta fase se requiere:</p>
+          <ul>
+            <li>Perfil de Salud Local validado técnicamente.</li>
+            <li>Priorización territorial realizada.</li>
+            <li>Traducción estratégica revisada.</li>
+          </ul>
+          <p className="phase-blocked-notice__note">
+            El Plan de Acción es una propuesta técnica que requiere el Perfil de Salud Local
+            validado como base. Completa las fases anteriores antes de elaborar el Plan.
+          </p>
+        </div>
+      ) : isEmpty ? (
         <div className="pipeline-empty-notice">
           <strong>Sin evidencia documental</strong>
-          Este borrador de Plan de Acción ha sido generado sobre un pipeline sin evidencia.
+          Este borrador de Plan de Acción ha sido generado sobre un repositorio sin evidencia.
           Los objetivos y actuaciones mostrados no representan intervenciones reales.
           Incorpora documentos al repositorio para generar un plan basado en evidencia territorial.
         </div>

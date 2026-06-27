@@ -160,11 +160,17 @@ provincia de Granada (`PROV = 18`).
 Fuente: `EAS_microdatos_adulto_READY.csv` — los 11 ítems del Duke-UNC-11
 (`P5701`–`P5711`) están presentes en READY con escala 1–5.
 
-**Estado del script de exportación:** pendiente de crear
-`scripts/export-duke-granada.mjs`. El fixture actualmente disponible fue
-generado de forma ad hoc antes de que se estableciera el patrón de scripts
-de exportación. Debe crearse el script antes de considerar este fixture
-completamente consolidado.
+Script de referencia para regenerarlo:
+
+```
+scripts/export-duke-granada.mjs
+```
+
+**Nota sobre pre-filtrado:** a diferencia de otros fixtures EAS que exportan todos
+los registros de Granada, este fixture contiene únicamente los 3.028 registros con
+los 11 ítems DUKE respondidos en rango válido 1–5. Los 36 registros con algún ítem
+missing o fuera de rango no se incluyen porque un registro incompleto no puede
+contribuir a ninguna de las tres escalas (global, confidencial, afectivo).
 
 ### Estadísticos de referencia (Granada, n=3028)
 
@@ -290,6 +296,93 @@ antes de ser emitida como EvidenceAtom.
 no la población de ningún municipio concreto. Su uso en Atarfe es como
 referencia contextual provincial, igual que los fixtures de DUKE, PREDIMED y SF-12.
 No representan el estado de Atarfe ni de ningún municipio específico.
+
+---
+
+## `cage-eas-granada.csv`
+
+### Origen
+
+Fixture **reproducible** generado a partir de los microdatos oficiales de la EAS,
+provincia de Granada (`PROV = 18.0`), usando `EAS_COMPLETO.csv` como fuente.
+
+Script de referencia para regenerarlo:
+
+```
+scripts/export-cage-granada.mjs
+```
+
+### Estadísticos de referencia (Granada, n=3064)
+
+| Indicador | Valor |
+|---|---|
+| Registros exportados | 3.064 |
+| CAGE_R válidos | 2.513 (82,0 %) |
+| Missing / No procede (abstinentes) | 551 (18,0 %) — estructural |
+| CAGE_R=0 (sin riesgo) | 2.499 (99,4 % de válidos) |
+| CAGE_R=1 (con riesgo) | 14 (0,6 % de válidos) |
+| CAGE=1 Bebedor social | 2.499 |
+| CAGE=2 Consumo de riesgo | 7 |
+| CAGE=3 Consumo perjudicial | 3 |
+| CAGE=4 Dependencia alcohólica | 4 |
+
+### Estructura de columnas
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `CAGE_R` | **Campo canónico primario** | Riesgo de alcoholismo (0=No / 1=Sí). Derivado binario EAS. |
+| `CAGE` | Campo secundario | Clasificación ordinal de nivel de consumo (1=Bebedor social … 4=Dependencia). |
+
+### Notas metodológicas
+
+- El 18 % de missing en `CAGE_R` es **estructural**: personas abstemias a las que
+  el protocolo EAS no administra el test ("No procede", código 994). No es missing
+  aleatorio.
+- `CAGE_R` y `CAGE` son indicadores propios de la EAS. COMPÁS NG los consume
+  directamente sin recalcular el CAGE desde ítems individuales.
+- Los ítems de consumo episódico masivo de la EAS (oleada 2023) son instrumentos
+  distintos y **no forman parte de este módulo**.
+
+---
+
+## `ibse-atarfe.csv`
+
+### Origen
+
+Fixture **específico de Atarfe** generado a partir de la exportación REDCap del
+proyecto Monitor IBSE Atarfe 2026. **No es reproducible desde microdatos EAS**:
+es datos primarios de evaluación municipal.
+
+Fuente: `Atarfe/MonitorIBSEATARFE202_DATA_2026-06-22_1943.csv`
+
+Script de regeneración: no aplica (datos primarios REDCap municipales). Para
+actualizar, reexportar desde REDCap y ejecutar la extracción de columnas mínimas.
+
+### Estadísticos de referencia (Atarfe, n=909)
+
+| Indicador | Valor |
+|---|---|
+| Registros exportados | 909 |
+| Registros completos (`monitor_ibse_complete=2`) | 811 (89,2 %) |
+| Media IBSE total | 63,2 |
+
+### Estructura de columnas
+
+| Columna | Descripción |
+|---|---|
+| `ibse_factor_vinculo` | Media del factor Vínculo (calculada por REDCap) |
+| `ibse_factor_situacion` | Media del factor Situación vital |
+| `ibse_factor_control` | Media del factor Control percibido |
+| `ibse_factor_persona` | Media del factor Persona |
+| `ibse_total` | Media del índice IBSE total (0–100) |
+| `monitor_ibse_complete` | Estado del formulario REDCap (2 = completado) |
+
+### Diferencia respecto a fixtures EAS
+
+A diferencia de los fixtures EAS (datos provinciales de Granada), este fixture
+contiene datos **específicos de Atarfe** recogidos mediante REDCap. Se usa como
+referencia contextual municipal, no provincial. Para otros municipios, se
+reemplaza con la exportación REDCap correspondiente.
 
 ---
 

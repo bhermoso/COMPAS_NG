@@ -1,21 +1,35 @@
+import { useState } from "react";
 import type { CompasPipelineResult, PipelineStage, PipelineStatus } from "../../domain/pipeline";
 
+// ── Secciones del análisis territorial ───────────────────────────────────────
+const SECTION_A = new Set<PipelineStage>([
+  "integrity", "repository", "evidence",
+  "prioritization", "epvsa", "action-plan",
+  "agenda", "monitoring", "evaluation", "compiler",
+]);
+
+const SECTION_B = new Set<PipelineStage>([
+  "mit", "reconciliacion", "lt1", "oit",
+]);
+
+// ── Etiquetas institucionales ─────────────────────────────────────────────────
+
 const STAGE_LABEL: Record<PipelineStage, string> = {
-  "integrity":     "Integridad del EvidenceStore",
-  "repository":    "Repositorio documental",
-  "evidence":      "Evidencias estructuradas",
-  "mit":            "Motor de Interpretación Territorial",
-  "reconciliacion": "Motor de Reconciliación Interpretativa",
-  "lt1":            "Dimensión diagnóstica (interna)",
-  "oit":            "Áreas de Intervención Territorial (internas)",
-  "prioritization":"Priorización",
-  "epvsa":         "Encaje estratégico EPVSA",
-  "action-plan":   "Plan de acción",
-  "agenda":        "Agenda anual",
-  "monitoring":    "Seguimiento inicial",
-  "evaluation":    "Evaluación",
-  "longi":         "Dimensión longitudinal (interna)",      // dimensión interna del MIT
-  "compiler":      "Compilador",
+  "integrity":       "Validación de la evidencia",
+  "repository":      "Repositorio documental",
+  "evidence":        "Evidencias estructuradas",
+  "mit":             "Lectura territorial",
+  "reconciliacion":  "Interpretación territorial",
+  "lt1":             "Diagnóstico territorial",
+  "oit":             "Áreas de intervención",
+  "prioritization":  "Priorización",
+  "epvsa":           "Encaje estratégico",
+  "action-plan":     "Plan de Acción",
+  "agenda":          "Agenda anual",
+  "monitoring":      "Seguimiento",
+  "evaluation":      "Evaluación",
+  "longi":           "Dimensión longitudinal",
+  "compiler":        "Compilador",
 };
 
 const STATUS_LABEL: Record<PipelineStatus, string> = {
@@ -38,34 +52,86 @@ interface PipelineTracePanelProps {
 }
 
 export function PipelineTracePanel({ pipeline }: PipelineTracePanelProps) {
-  return (
-    <section className="workspace-panel">
-      <div className="panel-header">
-        <div>
-          <p className="eyebrow">Pipeline</p>
-          <h2>Traza de ejecución</h2>
-        </div>
-        <p className="panel-note">
-          Registro de las etapas ejecutadas en esta sesión. No refleja validación
-          humana ni aprobación institucional.
-        </p>
-      </div>
+  const [open, setOpen] = useState(false);
 
-      <div className="document-list">
-        {pipeline.trace.map((item) => (
-          <article className="document-row" key={item.stage}>
-            <div>
-              <p className="document-kind">
-                {STAGE_LABEL[item.stage] ?? item.stage}
-              </p>
-              <p className="panel-note">{item.message}</p>
-            </div>
-            <span className={statusClass(item.status)}>
-              {STATUS_LABEL[item.status]}
-            </span>
-          </article>
-        ))}
-      </div>
+  const sectionA = pipeline.trace.filter((item) => SECTION_A.has(item.stage));
+  const sectionB = pipeline.trace.filter((item) => SECTION_B.has(item.stage));
+  const sectionC = pipeline.trace.filter(
+    (item) => !SECTION_A.has(item.stage) && !SECTION_B.has(item.stage)
+  );
+
+  // Cuenta de etapas con estado no trivial para el resumen del header
+  const readyCount  = pipeline.trace.filter((i) => i.status === "ready" || i.status === "completed").length;
+  const totalCount  = pipeline.trace.length;
+
+  function renderItems(items: typeof pipeline.trace) {
+    return items.map((item) => (
+      <article className="document-row" key={item.stage}>
+        <div>
+          <p className="document-kind">
+            {STAGE_LABEL[item.stage] ?? item.stage}
+          </p>
+          <p className="panel-note">{item.message}</p>
+        </div>
+        <span className={statusClass(item.status)}>
+          {STATUS_LABEL[item.status]}
+        </span>
+      </article>
+    ));
+  }
+
+  return (
+    <section className="workspace-panel ev-store-panel">
+      <button
+        type="button"
+        className="ev-store-panel__toggle"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="ev-store-panel__toggle-label">
+          Trazabilidad técnica del análisis
+        </span>
+        <span className="ev-store-panel__toggle-sub">
+          {readyCount} de {totalCount} etapas completadas · Solo visible para auditoría técnica
+        </span>
+        <span className="ev-store-panel__toggle-arrow" aria-hidden="true">
+          {open ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="ev-store-panel__body">
+          {/* A — Proceso documental y de planificación */}
+          {sectionA.length > 0 && (
+            <>
+              <p className="pipeline-section-label">Proceso documental y de planificación</p>
+              <div className="document-list">
+                {renderItems(sectionA)}
+              </div>
+            </>
+          )}
+
+          {/* B — Lectura e interpretación territorial */}
+          {sectionB.length > 0 && (
+            <>
+              <p className="pipeline-section-label">Lectura e interpretación territorial</p>
+              <div className="document-list">
+                {renderItems(sectionB)}
+              </div>
+            </>
+          )}
+
+          {/* C — Dimensiones internas */}
+          {sectionC.length > 0 && (
+            <>
+              <p className="pipeline-section-label">Dimensiones de análisis interno</p>
+              <div className="document-list">
+                {renderItems(sectionC)}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </section>
   );
 }

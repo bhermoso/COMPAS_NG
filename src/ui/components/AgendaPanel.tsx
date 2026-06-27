@@ -10,9 +10,10 @@ const QUARTER_LABEL: Record<AgendaQuarter, string> = {
 interface AgendaPanelProps {
   agenda: AgendaDraft;
   isEmpty?: boolean;
+  isBlocked?: boolean;
 }
 
-export function AgendaPanel({ agenda, isEmpty = false }: AgendaPanelProps) {
+export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false }: AgendaPanelProps) {
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -26,10 +27,23 @@ export function AgendaPanel({ agenda, isEmpty = false }: AgendaPanelProps) {
         </p>
       </div>
 
-      {isEmpty ? (
+      {isBlocked ? (
+        <div className="phase-blocked-notice">
+          <strong>Agenda anual no disponible</strong>
+          <p>Para activar esta fase se requiere:</p>
+          <ul>
+            <li>Perfil de Salud Local validado técnicamente.</li>
+            <li>Plan de Acción elaborado y revisado.</li>
+          </ul>
+          <p className="phase-blocked-notice__note">
+            La agenda anual se deriva del Plan de Acción validado.
+            No es posible establecer calendarios operativos sin una planificación previa aprobada.
+          </p>
+        </div>
+      ) : isEmpty ? (
         <div className="pipeline-empty-notice">
           <strong>Sin evidencia documental</strong>
-          Esta agenda ha sido generada sobre un pipeline sin evidencia.
+          Esta agenda ha sido generada sobre un repositorio sin evidencia.
           Los ítems mostrados no representan compromisos ejecutivos ni calendarios reales.
           Incorpora documentos al repositorio para obtener una agenda basada en el Plan de Acción.
         </div>

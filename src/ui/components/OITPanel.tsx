@@ -9,11 +9,11 @@ export function OITPanel({ oit }: OITPanelProps) {
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">OIT</p>
+          <p className="eyebrow">Áreas de intervención</p>
           <h2>Oportunidades iniciales de intervención territorial</h2>
         </div>
         <p className="panel-note">
-          Traducción prudente de la lectura LT1 en oportunidades preliminares.
+          Traducción prudente de la lectura territorial en oportunidades preliminares.
           No prioriza, no asigna líneas EPVSA y requiere validación humana.
         </p>
       </div>
@@ -22,7 +22,7 @@ export function OITPanel({ oit }: OITPanelProps) {
         {oit.opportunities.map((opportunity) => (
           <article className="document-row" key={opportunity.id}>
             <div>
-              <p className="document-kind">OIT</p>
+              <p className="document-kind">Área de intervención</p>
               <h3>{opportunity.title}</h3>
               <p>{opportunity.rationale}</p>
               <p className="panel-note">
@@ -34,7 +34,7 @@ export function OITPanel({ oit }: OITPanelProps) {
                 ))}
               </ul>
             </div>
-            <span className="status-pill">validar</span>
+            <span className="status-pill">Propuesta asistida</span>
           </article>
         ))}
       </div>

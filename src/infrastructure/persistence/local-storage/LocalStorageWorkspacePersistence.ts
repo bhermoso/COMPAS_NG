@@ -200,6 +200,49 @@ export function loadWorkspaceFromLocalStorage(
       );
     }
 
+    // Repair trazabilidad: si existe un study pero no el documento correspondiente
+    // en el repositorio, el workspace está en estado inconsistente (atoms huérfanos).
+    // Se limpia el study y sus atoms para forzar recarga limpia por el usuario.
+    if (Array.isArray(parsed.repository?.documents) && Array.isArray(parsed.evidenceStore?.atoms)) {
+      const docs: { tags?: string[] }[] = parsed.repository.documents;
+      const hasDocWithTag = (tag: string) =>
+        docs.some((d) => Array.isArray(d.tags) && d.tags.includes(tag));
+
+      const studyRepairs: Array<{ studyKey: string; originTag: string; atomOrigin: string }> = [
+        { studyKey: "ibseStudy",     originTag: "ibse",        atomOrigin: "ibse" },
+        { studyKey: "dukeStudy",     originTag: "duke-eas",    atomOrigin: "complementary-study" },
+        { studyKey: "predimedStudy", originTag: "predimed-eas", atomOrigin: "complementary-study" },
+        { studyKey: "sf12Study",     originTag: "sf12-eas",    atomOrigin: "complementary-study" },
+        { studyKey: "suenoStudy",    originTag: "sueno-eas",   atomOrigin: "complementary-study" },
+        { studyKey: "cageStudy",     originTag: "cage-eas",    atomOrigin: "complementary-study" },
+      ];
+
+      for (const { studyKey, originTag, atomOrigin } of studyRepairs) {
+        if (parsed[studyKey] === undefined) continue;
+        if (!hasDocWithTag(originTag)) {
+          // Study sin documento: limpiar study y atoms derivados
+          delete parsed[studyKey];
+          parsed.evidenceStore.atoms = parsed.evidenceStore.atoms.filter(
+            (a: { provenance?: { origin?: string; documentId?: string }; tags?: string[] }) => {
+              if (atomOrigin === "ibse") return a.provenance?.origin !== "ibse";
+              return !(
+                a.provenance?.origin === "complementary-study" &&
+                Array.isArray(a.tags) &&
+                a.tags.includes(originTag)
+              );
+            }
+          );
+        }
+      }
+
+      // También limpiar atoms ibse huérfanos sin ibseStudy (pueden existir de versiones anteriores)
+      if (!parsed.ibseStudy) {
+        parsed.evidenceStore.atoms = parsed.evidenceStore.atoms.filter(
+          (a: { provenance?: { origin?: string } }) => a.provenance?.origin !== "ibse"
+        );
+      }
+    }
+
     if (!hasCoreWorkspaceCollections(parsed)) return null;
 
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);

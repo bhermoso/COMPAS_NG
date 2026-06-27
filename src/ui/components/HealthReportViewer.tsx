@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { HealthReportDocument, HealthReportSection } from "../../domain/health-report";
 
 interface HealthReportViewerProps {
@@ -6,16 +6,7 @@ interface HealthReportViewerProps {
 }
 
 export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
-  const [open, setOpen] = useState(true);
-  const prevRef = useRef(healthReport);
-
-  // Auto-abre cuando se carga un informe; no cierra al eliminar
-  useEffect(() => {
-    if (healthReport && !prevRef.current) {
-      setOpen(true);
-    }
-    prevRef.current = healthReport;
-  }, [healthReport]);
+  const [open, setOpen] = useState(false);
 
   const loaded = healthReport !== undefined;
 
@@ -126,12 +117,24 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
             </ol>
           </nav>
 
-          {/* Secciones en orden */}
-          <div className="hr-viewer__sections">
-            {healthReport.sections.map((section) => (
-              <ReportSection key={`${section.key}-${section.sortOrder}`} section={section} />
-            ))}
-          </div>
+          {/* Secciones en orden — solo cuando existe vista documental (DOCX) */}
+          {healthReport.body.format === "html" ? (
+            <div className="hr-viewer__sections">
+              {healthReport.sections.map((section) => (
+                <ReportSection key={`${section.key}-${section.sortOrder}`} section={section} />
+              ))}
+            </div>
+          ) : (
+            <div className="hr-viewer__section-ocr-notice">
+              <p className="hr-viewer__section-ocr-label">Vista documental no disponible</p>
+              <p className="hr-viewer__section-ocr-note">
+                El documento fue procesado como texto extraído (PDF).
+                El contenido está disponible para el análisis territorial interno.
+                Para consultar el informe completo, abre el fichero original:{" "}
+                <strong>{healthReport.sourceFileName}</strong>
+              </p>
+            </div>
+          )}
         </>
       )}
     </section>
@@ -151,7 +154,16 @@ function ReportSection({ section }: { section: HealthReportSection }) {
           dangerouslySetInnerHTML={{ __html: section.bodyHtml }}
         />
       ) : (
-        <pre className="hr-viewer__section-pre">{section.bodyText}</pre>
+        // Fuente PDF o texto plano: el OCR se reserva para procesamiento interno.
+        // No se muestra como lectura principal.
+        <div className="hr-viewer__section-ocr-notice">
+          <p className="hr-viewer__section-ocr-label">Vista documental no disponible</p>
+          <p className="hr-viewer__section-ocr-note">
+            El texto extraído de esta sección está disponible para el procesamiento
+            interno del análisis territorial, pero no se muestra como lectura principal.
+            Para consultar el contenido original, abre el documento fuente.
+          </p>
+        </div>
       )}
     </article>
   );

@@ -43,9 +43,9 @@ select {
   margin: 0 auto 40px;
   background: #ffffff;
   border: 1px solid #e4eaf3;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 40px 44px;
-  box-shadow: 0 2px 16px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
 .hero {
@@ -113,7 +113,7 @@ h3 {
 .card {
   background: #ffffff;
   border: 1px solid #e4eaf3;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
 }
 
@@ -161,7 +161,7 @@ h3 {
 .document-form input,
 .document-form select {
   border: 1px solid #c9d6e6;
-  border-radius: 14px;
+  border-radius: 6px;
   padding: 13px 14px;
   background: #ffffff;
   color: #172033;
@@ -169,7 +169,7 @@ h3 {
 
 .document-form button {
   border: 0;
-  border-radius: 14px;
+  border-radius: 6px;
   padding: 13px 18px;
   background: #0074c8;
   color: #ffffff;
@@ -241,7 +241,9 @@ h3 {
 
 .document-list {
   display: grid;
-  gap: 14px;
+  gap: 0;
+  border-top: 1px solid #d9e2ef;
+  border-bottom: 1px solid #d9e2ef;
 }
 
 .empty-state {
@@ -258,10 +260,15 @@ h3 {
   justify-content: space-between;
   gap: 18px;
   align-items: center;
-  padding: 20px 22px;
-  border: 1px solid #e4eaf3;
-  border-radius: 10px;
-  background: #fafcff;
+  padding: 17px 6px;
+  border: 0;
+  border-bottom: 1px solid #e4eaf3;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.document-row:last-child {
+  border-bottom: 0;
 }
 
 .document-kind {
@@ -274,10 +281,11 @@ h3 {
 }
 
 .status-pill {
-  border-radius: 999px;
-  padding: 7px 11px;
-  background: #eef6ff;
-  color: #0074c8;
+  border: 1px solid #c9d6e6;
+  border-radius: 4px;
+  padding: 6px 10px;
+  background: #ffffff;
+  color: #334155;
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
@@ -1312,9 +1320,10 @@ h3 {
   height: 26px;
   padding: 0 8px;
   margin-left: 10px;
-  border-radius: 999px;
-  background: #eef6ff;
-  color: #0074c8;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #c9d6e6;
+  color: #334155;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -1352,18 +1361,19 @@ h3 {
 }
 
 .document-row--primary {
-  border-color: #0074c8;
-  border-left-width: 3px;
-  background: #f4f9ff;
+  border-left: 3px solid #0074c8;
+  padding-left: 14px;
+  background: #ffffff;
 }
 
 .doc-repo__primary-badge {
   display: inline-block;
   margin-left: 10px;
   padding: 2px 9px;
-  border-radius: 999px;
-  background: #0074c8;
-  color: #ffffff;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #0074c8;
+  color: #005fa3;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -1382,7 +1392,7 @@ h3 {
 
 .docx-upload__kind {
   border: 1px solid #c9d6e6;
-  border-radius: 14px;
+  border-radius: 6px;
   padding: 13px 14px;
   background: #ffffff;
   color: #172033;
@@ -1396,8 +1406,8 @@ h3 {
   gap: 8px;
   padding: 20px;
   border: 1px dashed #c9d6e6;
-  border-radius: 12px;
-  background: #f8fbff;
+  border-radius: 6px;
+  background: #ffffff;
 }
 
 .docx-upload__label {
@@ -1602,8 +1612,8 @@ h3 {
   gap: 8px;
   padding: 18px 20px;
   border: 1px dashed #c9d6e6;
-  border-radius: 12px;
-  background: #f8fbff;
+  border-radius: 6px;
+  background: #ffffff;
 }
 
 .ibse-aggregates {
@@ -1627,7 +1637,7 @@ h3 {
 .ibse-factor-card {
   background: #f8fbff;
   border: 1px solid #e4eaf3;
-  border-radius: 10px;
+  border-radius: 6px;
   padding: 18px 16px;
   text-align: center;
 }
@@ -4235,95 +4245,186 @@ h3 {
 
 .ec-panel {
   padding: 28px 36px;
+  border-radius: 6px;
 }
 
 .ec-panel .panel-header {
   margin-bottom: 16px;
 }
 
-/* Barra de instrumentos dentro del panel */
-.ec-instruments {
+/* ── Lista fija de estudios complementarios ───────────────────────────────── */
+
+.ec-studies {
   display: flex;
   flex-direction: column;
-  border: 1px solid #e4eaf3;
-  border-radius: 10px;
+  border: 1px solid #d9e2ef;
+  border-radius: 4px;
   overflow: hidden;
 }
 
-/* Sub-acordeón por instrumento */
-.ec-instrument {
+/* Fila de estudio */
+.ec-study-row {
   border-bottom: 1px solid #e4eaf3;
 }
-.ec-instrument:last-child {
+.ec-study-row:last-child {
   border-bottom: none;
 }
+.ec-study-row--loaded {
+  background: #fafcff;
+}
 
-/* Cabecera del sub-acordeón */
-.ec-instrument__toggle {
-  width: 100%;
+/* Cabecera de fila: siempre visible */
+.ec-study-row__header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 18px;
-  background: #f8fafc;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s;
-}
-.ec-instrument__toggle:hover {
-  background: #f0f5fb;
-}
-.ec-instrument--open > .ec-instrument__toggle {
-  background: #eef6ff;
-  border-bottom: 1px solid #d4e6f7;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 52px;
 }
 
-/* Indicador de estado (cargado / vacío) */
-.ec-instrument__dot {
+/* Indicador de estado */
+.ec-study-row__dot {
   flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #cbd5e1;
 }
-.ec-instrument__dot--loaded {
-  background: #22c55e;
+.ec-study-row__dot--loaded {
+  background: #176b54;
 }
 
-/* Nombre e información del instrumento */
-.ec-instrument__name {
+/* Nombre e info del instrumento */
+.ec-study-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 130px;
+  flex-shrink: 0;
+}
+.ec-study-row__name {
   font-size: 0.88rem;
   font-weight: 700;
   color: #1e293b;
+  line-height: 1.2;
 }
-.ec-instrument__subtitle {
-  font-size: 0.8rem;
+.ec-study-row__subtitle {
+  font-size: 0.76rem;
   color: #64748b;
-  flex: 1;
+  line-height: 1.2;
 }
-.ec-instrument__status {
-  font-size: 0.78rem;
-  color: #94a3b8;
+
+/* Resumen de datos cargados */
+.ec-study-row__summary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ec-study-row__record {
+  font-size: 0.8rem;
+  color: #1e293b;
+}
+.ec-study-row__file {
+  font-size: 0.74rem;
+  color: #64748b;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ec-instrument__arrow {
-  font-size: 0.7rem;
+.ec-study-row__empty {
+  font-size: 0.8rem;
   color: #94a3b8;
+}
+
+/* Acciones: botón cargar + eliminar */
+.ec-study-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-/* Cuerpo del sub-acordeón: neutraliza el workspace-panel hijo */
-.ec-instrument__body {
-  padding: 0;
+/* Input siempre en el DOM, activado via label */
+.ec-study-row__input {
+  display: none;
 }
-.ec-instrument__body > .workspace-panel {
+
+.ec-study-row__upload {
+  padding: 7px 11px;
+  border: 1px solid #0074c8;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #005fa3;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.ec-study-row__upload:hover {
+  background: #eff6ff;
+}
+.ec-study-row__upload--loading {
+  border-color: #c9d6e6;
+  color: #94a3b8;
+  cursor: wait;
+}
+
+.ec-study-row__delete {
+  padding: 6px 10px;
+  border: 1px solid #e4eaf3;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+.ec-study-row__delete:hover {
+  border-color: #dc143c;
+  color: #dc143c;
+  background: #fff5f5;
+}
+
+/* Mensaje de confirmación / error */
+.ec-study-row__message {
+  padding: 6px 16px 8px 36px;
+  font-size: 0.78rem;
+  color: #526070;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Panel de detalles inline (cuando está cargado) */
+.ec-study-row__detail {
+  border-top: 1px solid #e4eaf3;
+}
+.ec-study-row__detail > .workspace-panel {
   margin: 0;
   border-radius: 0;
   border: none;
   box-shadow: none;
-  padding: 24px 28px;
+  padding: 20px 24px;
   background: #ffffff;
+}
+
+@media (max-width: 760px) {
+  .ec-instrument__header {
+    flex-wrap: wrap;
+  }
+
+  .ec-instrument__toggle {
+    flex-basis: 100%;
+  }
+
+  .ec-instrument__subtitle {
+    display: none;
+  }
+
+  .ec-instrument__upload {
+    margin: 0 14px 12px 36px;
+  }
 }
 
 /* ── Fuentes de evidencia — divisor visual y toggle de Informe ──── */
@@ -4398,4 +4499,597 @@ h3 {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid #e4eaf3;
+}
+
+
+/* ── Ciclo de Planificación Local ─────────────────────────────────────────── */
+
+.lhpc {
+  background: #ffffff;
+  border-bottom: 1px solid #e4eaf3;
+}
+
+.lhpc__inner {
+  max-width: 1216px;
+  margin: 0 auto;
+  padding: 8px 48px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.lhpc__heading {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lhpc__phases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.lhpc__phases::-webkit-scrollbar { display: none; }
+
+.lhpc__phase {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-right: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.lhpc__phase:last-child { border-right: none; }
+
+.lhpc__phase-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.lhpc__phase-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.lhpc__phase-status {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.lhpc__phase-note {
+  font-size: 0.65rem;
+  color: #b0bec9;
+  font-style: italic;
+  display: block;
+}
+
+/* ── Estados del ciclo ────────────────────────────────────── */
+
+.lhpc__phase--completed .lhpc__phase-num {
+  background: #d1fae5;
+  color: #047857;
+}
+.lhpc__phase--completed .lhpc__phase-label { color: #1e293b; }
+.lhpc__phase--completed .lhpc__phase-status { color: #059669; }
+
+.lhpc__phase--current .lhpc__phase-num {
+  background: #0074c8;
+  color: #ffffff;
+}
+.lhpc__phase--current .lhpc__phase-label {
+  color: #0074c8;
+  font-weight: 700;
+}
+.lhpc__phase--current .lhpc__phase-status { color: #0074c8; }
+
+.lhpc__phase--pending .lhpc__phase-num {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+.lhpc__phase--pending .lhpc__phase-label { color: #94a3b8; }
+.lhpc__phase--pending .lhpc__phase-status { color: #b0bec9; }
+
+.lhpc__phase--blocked .lhpc__phase-num {
+  background: #f8fafc;
+  color: #cbd5e1;
+}
+.lhpc__phase--blocked .lhpc__phase-label { color: #cbd5e1; }
+.lhpc__phase--blocked .lhpc__phase-status { color: #e2e8f0; }
+
+.lhpc__phase--requires-validation .lhpc__phase-num {
+  background: #fef3c7;
+  color: #92400e;
+}
+.lhpc__phase--requires-validation .lhpc__phase-label { color: #92400e; }
+.lhpc__phase--requires-validation .lhpc__phase-status { color: #b45309; }
+
+/* ── Estado bloqueado de fase institucional ──────────────────────────────── */
+
+.phase-blocked-notice {
+  margin: 0 0 24px;
+  padding: 20px 24px;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.phase-blocked-notice strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.phase-blocked-notice p {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.phase-blocked-notice ul {
+  margin: 6px 0 12px 20px;
+  padding: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.phase-blocked-notice li { color: #475569; }
+
+.phase-blocked-notice__note {
+  margin-top: 12px !important;
+  font-size: 0.82rem !important;
+  color: #64748b !important;
+}
+
+/* ── Pipeline section labels ─────────────────────────────────────────────── */
+
+.pipeline-section-label {
+  margin: 0 0 12px;
+  padding-top: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  border-top: 1px solid #f1f5f9;
+}
+
+.pipeline-section-label:first-of-type { border-top: none; padding-top: 0; }
+
+/* ── Repositorio documental — agrupamiento por categoría ────────────────── */
+
+.doc-repo__group {
+  margin-bottom: 28px;
+}
+
+.doc-repo__group:last-child { margin-bottom: 0; }
+
+.doc-repo__group-label {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 6px;
+}
+
+/* ── Visor del Informe de Salud — secciones sin vista documental ─────────── */
+
+.hr-viewer__section-ocr-notice {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e4eaf3;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.hr-viewer__section-ocr-label {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.hr-viewer__section-ocr-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+
+/* ── Ciclo navegable — fase como botón ──────────────────────────────────── */
+
+.lhpc__phase--nav { cursor: default; }
+
+.lhpc__phase-btn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.lhpc__phase-btn:focus-visible {
+  outline: 2px solid #0074c8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.lhpc__phase--nav:hover .lhpc__phase-label {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── EvidenceStore — resumen por origen ─────────────────────────────────── */
+
+.ev-store__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ev-store__origin-chip {
+  font-size: 0.78rem;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e4eaf3;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.ev-store__origin-chip strong {
+  color: #1e293b;
+  margin-left: 4px;
+}
+
+
+/* ── Dashboard del expediente municipal (vista Inicio) ──────────────────── */
+
+/* Cabecera institucional del municipio */
+.muni-header {
+  margin-bottom: 24px !important;
+}
+
+.muni-header__name {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #1e293b;
+  margin: 8px 0 6px;
+}
+
+.muni-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.muni-header__sep {
+  color: #c8d6e8;
+}
+
+/* Tarjeta Estado del expediente */
+.expediente-card {}
+
+.exp-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.exp-card__header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-top: 4px;
+}
+
+.exp-card__goto {
+  flex-shrink: 0;
+  border: 1px solid #0074c8;
+  background: transparent;
+  color: #0074c8;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.exp-card__goto:hover { background: #f0f7ff; }
+
+/* Chip estado PSL */
+.exp-card__psl-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.exp-psl-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.exp-psl-chip--validated {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.exp-psl-chip--draft {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.exp-psl-chip--empty {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.exp-card__atoms {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* Fuentes del expediente */
+.exp-card__sources {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.exp-card__sources-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 12px;
+}
+
+.exp-card__sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.exp-source {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.exp-source__name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.exp-source__status {
+  font-size: 0.75rem;
+}
+
+.exp-source--yes {
+  background: #f8fafc;
+  border-color: #e4eaf3;
+  border-left: 3px solid #94d40b;
+}
+
+.exp-source--yes .exp-source__status { color: #047857; }
+
+.exp-source--no {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.exp-source--no .exp-source__name { color: #94a3b8; }
+.exp-source--no .exp-source__status { color: #94a3b8; }
+
+/* Siguiente acción recomendada */
+.exp-card__next {}
+
+.exp-card__next-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 10px;
+}
+
+.exp-card__next-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #f8fafc;
+  border: 1px solid #e4eaf3;
+  border-left: 4px solid #0074c8;
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+
+.exp-card__next-text {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.exp-card__next-btn {
+  flex-shrink: 0;
+  border: none;
+  background: #0074c8;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.exp-card__next-btn:hover { filter: brightness(0.93); }
+
+/* ── EvidenceStorePanel colapsable ───────────────────────────────────────── */
+
+.ev-store-panel { padding: 0 !important; overflow: hidden; }
+
+.ev-store-panel__toggle {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 44px;
+  cursor: pointer;
+  background: #f8fafc;
+  border-bottom: 1px solid #e4eaf3;
+}
+
+.ev-store-panel__toggle:hover { background: #f1f5f9; }
+
+.ev-store-panel__toggle-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ev-store-panel__toggle-sub {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  flex: 1;
+}
+
+.ev-store-panel__toggle-arrow {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.ev-store-panel__body {
+  padding: 24px 44px;
+}
+
+/* ── Estudios Complementarios — toggle de detalle ───────────────────────── */
+
+.ec-study-row__detail-toggle {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0074c8;
+  padding: 4px 0;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.ec-study-row__detail-toggle:hover { text-decoration: underline; }
+
+/* ── Repositorio — separadores de sección ───────────────────────────────── */
+
+.repo-section-divider {
+  max-width: 1120px;
+  margin: 8px auto 0;
+  padding: 20px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.repo-section-divider__text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.repo-section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e4eaf3;
+}
+
+
+/* ── PSL stale state chip y aviso ───────────────────────────────────────── */
+
+.exp-psl-chip--stale {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.exp-card__stale-notice {
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #ffb61b;
+  background: #fffbeb;
+  font-size: 0.82rem;
+  color: #78350f;
+  line-height: 1.5;
 }

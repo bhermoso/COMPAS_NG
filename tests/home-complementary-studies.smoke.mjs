@@ -52,16 +52,26 @@ function startDevServer() {
   );
 }
 
-async function openInstrument(page, name, inputSelector) {
-  const toggle = page.locator("button.ec-instrument__toggle").filter({ hasText: name });
-  const count = await toggle.count();
-  assert(count === 1, `Expected one accordion toggle for ${name}, found ${count}.`);
-  await toggle.click();
+async function checkStudyRow(page, name, inputSelector) {
+  // Upload label siempre visible en la fila (sin acordeón)
+  const uploadLabel = page.locator(
+    `.ec-study-row__upload[for="${inputSelector.slice(1)}"]`
+  );
+  assert(
+    await uploadLabel.count() === 1,
+    `Expected one upload label for ${name}, found ${await uploadLabel.count()}.`
+  );
+  assert(
+    await uploadLabel.isVisible(),
+    `Upload label for ${name} is not visible.`
+  );
 
+  // Input siempre en el DOM (aunque display:none, accesible vía CDP)
   const input = page.locator(inputSelector);
-  const inputCount = await input.count();
-  assert(inputCount === 1, `Expected input ${inputSelector} for ${name}, found ${inputCount}.`);
-  assert(await input.isVisible(), `Expected input ${inputSelector} for ${name} to be visible.`);
+  assert(
+    await input.count() === 1,
+    `Expected input ${inputSelector} for ${name} in DOM, found ${await input.count()}.`
+  );
 }
 
 let serverProcess = null;
@@ -102,15 +112,16 @@ try {
   await repositoryButton.click();
 
   const repositoryText = await page.locator("body").textContent();
-  for (const label of ["IBSE", "DUKE-EAS", "PREDIMED-EAS", "Sueño EAS", "CAGE-EAS"]) {
+  for (const label of ["IBSE", "DUKE-EAS", "PREDIMED-EAS", "SF-12 EAS", "Sueño EAS", "CAGE-EAS"]) {
     assert(repositoryText?.includes(label), `Complementary Studies panel does not show ${label}.`);
   }
 
-  await openInstrument(page, "IBSE", "#ibse-csv-input");
-  await openInstrument(page, "DUKE-EAS", "#duke-csv-input");
-  await openInstrument(page, "PREDIMED-EAS", "#predimed-csv-input");
-  await openInstrument(page, "Sueño EAS", "#sueno-csv-input");
-  await openInstrument(page, "CAGE-EAS", "#cage-csv-input");
+  await checkStudyRow(page, "IBSE", "#ibse-csv-input");
+  await checkStudyRow(page, "DUKE-EAS", "#duke-csv-input");
+  await checkStudyRow(page, "PREDIMED-EAS", "#predimed-csv-input");
+  await checkStudyRow(page, "SF-12 EAS", "#sf12-csv-input");
+  await checkStudyRow(page, "Sueño EAS", "#sueno-csv-input");
+  await checkStudyRow(page, "CAGE-EAS", "#cage-csv-input");
 
   assert(
     consoleErrors.length === 0,

@@ -10,9 +10,10 @@ const STATUS_LABEL: Record<MonitoringStatus, string> = {
 interface MonitoringPanelProps {
   monitoring: MonitoringDraft;
   isEmpty?: boolean;
+  isBlocked?: boolean;
 }
 
-export function MonitoringPanel({ monitoring, isEmpty = false }: MonitoringPanelProps) {
+export function MonitoringPanel({ monitoring, isEmpty = false, isBlocked = false }: MonitoringPanelProps) {
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -26,10 +27,24 @@ export function MonitoringPanel({ monitoring, isEmpty = false }: MonitoringPanel
         </p>
       </div>
 
-      {isEmpty ? (
+      {isBlocked ? (
+        <div className="phase-blocked-notice">
+          <strong>Seguimiento no disponible</strong>
+          <p>Para activar esta fase se requiere:</p>
+          <ul>
+            <li>Plan de Acción elaborado y revisado.</li>
+            <li>Agenda anual acordada institucionalmente.</li>
+          </ul>
+          <p className="phase-blocked-notice__note">
+            El seguimiento solo tiene sentido cuando existen actuaciones planificadas y
+            compromisos institucionales establecidos. No se generan registros sin una
+            agenda validada previa.
+          </p>
+        </div>
+      ) : isEmpty ? (
         <div className="pipeline-empty-notice">
           <strong>Sin evidencia documental</strong>
-          Este seguimiento ha sido generado sobre un pipeline sin evidencia.
+          Este seguimiento ha sido generado sobre un repositorio sin evidencia.
           Los ítems mostrados no reflejan actuaciones en ejecución ni compromisos reales.
           Incorpora documentos al repositorio para activar el seguimiento basado en el Plan de Acción.
         </div>

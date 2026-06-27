@@ -83,6 +83,9 @@ export function buildLocalHealthProfile(
     workspace.ibseStudy,
     workspace.dukeStudy,
     workspace.predimedStudy,
+    workspace.sf12Study,
+    workspace.suenoStudy,
+    workspace.cageStudy,
   ].filter(Boolean).length;
 
   // ── Capítulo VII: priorización scaffold ──────────────────────────────────
@@ -194,6 +197,18 @@ export function buildLocalHealthProfile(
 
     requiresHumanValidation: true,
   };
+}
+
+// ── Detección de contenido humano ────────────────────────────────────────────
+// Devuelve true si el PSL validado contiene texto o consenso redactado por el
+// equipo técnico. Se usa para proteger contra invalidación accidental.
+
+export function hasPSLHumanContent(psl: LocalHealthProfile): boolean {
+  return (
+    psl.conclusiones.status === "authored" ||
+    psl.recomendaciones.status === "authored" ||
+    psl.priorizacion.consensoDocumentado
+  );
 }
 
 // ── Mappers de tipos de aplicación a tipos PSL de dominio ────────────────────

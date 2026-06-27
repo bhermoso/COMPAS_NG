@@ -4,7 +4,7 @@
 > Define el comportamiento garantizado, los invariantes y los límites de la
 > persistencia, rehidratación y migración del workspace municipal en COMPÁS NG.
 > No debe modificarse sin revisión explícita y deliberada.
-> Última revisión: 2026-06-24
+> Última revisión: 2026-06-27
 
 ---
 
@@ -36,6 +36,11 @@ El workspace contiene:
 | `evidenceStore` | Colección de `EvidenceAtom` del municipio |
 | `healthReport` | Informe de Salud estructurado, si existe |
 | `ibseStudy` | Estudio complementario IBSE procesado, si existe |
+| `dukeStudy` | Estudio DUKE-EAS procesado, si existe |
+| `predimedStudy` | Estudio PREDIMED-EAS procesado, si existe |
+| `sf12Study` | Estudio SF-12 EAS procesado, si existe |
+| `suenoStudy` | Estudio Sueño EAS procesado, si existe |
+| `cageStudy` | Estudio CAGE-EAS procesado, si existe |
 | `thematicPrioritisation` | Priorización temática activa, si existe |
 | `thematicPrioritisationStudy` | Estudio estadístico de priorización, si existe |
 | `historialEstadosTerritorial` | Snapshots compactos del Estado Territorial Evolutivo (max. 50) |
@@ -426,3 +431,4 @@ migración del workspace. Los siguientes aspectos quedan fuera de su alcance:
 | Fecha | Motivo |
 |---|---|
 | 2026-06-24 | Primera redacción. Documenta el estado del código a partir del commit `1e582f5`. Formaliza el esquema de claves, `schemaVersion`, las migraciones M-1 y M-2, la normalización de documentos canónicos, la purga de huérfanos, `stripHtmlFields` y el historial territorial con su límite de 50 entradas. |
+| 2026-06-27 | Sprint 0: §2 actualizado para incluir `dukeStudy`, `predimedStudy`, `sf12Study`, `suenoStudy` y `cageStudy`, añadidos al workspace en commits `0bf5026`, `9aad479`, `7f47034`, `20080cd` y `9c73fa0` respectivamente y omitidos en la primera redacción. |

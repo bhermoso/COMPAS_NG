@@ -163,7 +163,7 @@ export function ReconciliacionPanel({ reconciliacion }: ReconciliacionPanelProps
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Motor de Reconciliación Interpretativa</p>
+          <p className="eyebrow">Explicabilidad</p>
           <h2>Análisis de tensiones y conflictos</h2>
         </div>
         <p className="panel-note">

@@ -27,6 +27,7 @@ COMPAS_NG_EVIDENCIAS_*/
 !fixtures/sf12-eas-granada.csv
 !fixtures/sueno-eas-granada.csv
 !fixtures/cage-eas-granada.csv
+!fixtures/ibse-atarfe.csv
 
 # Local municipal data folders
 Alfacar/

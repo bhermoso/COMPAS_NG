@@ -163,7 +163,30 @@ Cada cambio en COMPÁS NG debe ser:
 
 ---
 
+---
+
+## Documentos relacionados
+
+| Documento | Cubre |
+|---|---|
+| `ARCHITECTURE-CONSTITUTION.md` | Principios de diseño permanentes (Arts. 1–14) |
+| `VISUAL-CONTRACT.md` | Identidad institucional, gramática visual de capas, ciclo institucional |
+| `docs/architecture/OPERATING-CONSTITUTION.md` | Gate 1, Sprint 0, proceso de aprobación de IA, criterios de aceptación |
+| `docs/contracts/CONTRACT-REPOSITORY.md` | Ciclo de vida documental, canonicidad, operaciones, invariantes |
+| `docs/contracts/CONTRACT-EVIDENCE.md` | EvidenceAtom, EvidenceStore, IntegrityGuard |
+| `docs/contracts/CONTRACT-PERSISTENCE.md` | localStorage, rehidratación, migraciones |
+| `docs/contracts/CONTRACT-COMPLEMENTARY-STUDIES.md` | Estudios Complementarios, taxonomía, patrón de implementación |
+| `docs/contracts/CONTRACT-INTERPRETATION.md` | Naturaleza y límites de la interpretación territorial, capas del conocimiento, papel de la IA |
+| `docs/contracts/CONTRACT-MIT-PSL.md` | Motor de Interpretación Territorial y Perfil de Salud Local |
+| `docs/contracts/CONTRACT-ACTION-PLAN.md` | Plan de Acción, Agenda y Seguimiento (Nivel 3) |
+| `docs/contracts/CONTRACT-COMPILER.md` | Compilador del Plan Local de Salud (reserva arquitectónica) |
+| `docs/contracts/CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE.md` | Inferencia Estructural Territorial (investigación futura) |
+
+---
+
 *Última revisión: 2026-06-23 — §9 actualizado para distinguir borradores técnicos de decisiones institucionales.*
+*Revisado: 2026-06-27 — Añadidos documentos relacionados.*
+*Revisado: 2026-06-27 — Cierre Sprint 0: tabla de documentos relacionados ampliada con todos los contratos vigentes.*
 
 ---
 

@@ -206,7 +206,27 @@ COMPÁS NG.
 
 ---
 
+---
+
+## Documento complementario
+
+Este documento establece los principios de diseño permanentes.
+
+Las reglas operativas —Gate 1, Sprint 0, proceso de aprobación de IA, criterios de
+aceptación, criterios de rechazo— están en:
+
+```
+docs/architecture/OPERATING-CONSTITUTION.md
+```
+
+La Constitución Arquitectónica y la Constitución Operativa son documentos distintos
+con propósitos complementarios. La primera fija el qué y el porqué del sistema;
+la segunda fija el cómo y el cuándo del trabajo sobre él.
+
+---
+
 *Primera versión aprobada: 2026-06-21*
 *Revisada: 2026-06-22 — Art. 13 añadido.*
 *Revisada: 2026-06-22 — Art. 14 añadido — primacía de la EAS como referencia metodológica.*
+*Revisada: 2026-06-27 — Añadida referencia a OPERATING-CONSTITUTION.md.*
 *Basada en el Borrador V0 y en las auditorías arquitectónicas de junio 2026.*

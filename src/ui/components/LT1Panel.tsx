@@ -125,7 +125,7 @@ export function LT1Panel({ lt1 }: LT1PanelProps) {
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">LT1</p>
+          <p className="eyebrow">Lectura territorial</p>
           <h2>Lectura territorial inicial</h2>
         </div>
         <p className="panel-note">

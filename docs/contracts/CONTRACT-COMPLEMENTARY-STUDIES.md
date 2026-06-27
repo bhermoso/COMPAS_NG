@@ -4,7 +4,7 @@
 > Define el comportamiento garantizado, los invariantes, la taxonomía y los
 > límites de los Estudios Complementarios en COMPÁS NG.
 > No debe modificarse sin revisión explícita y deliberada.
-> Última revisión: 2026-06-24
+> Última revisión: 2026-06-27
 
 ---
 
@@ -48,10 +48,11 @@ de IBSE en COMPÁS NG no le otorga una categoría distinta al resto.
 | Instrumento | Categoría | Estado actual |
 |---|---|---|
 | **IBSE** — Índice de Bienestar Socioemocional | `validated-scale` | Implementado (módulo en `draft`; ver §9) |
-| **SF-12** — Salud percibida (versión corta) | `validated-scale` | Conceptual |
-| **DUKE-EAS** — Apoyo social funcional (Duke-UNC-11 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9) |
-| **PREDIMED-EAS** — Adherencia a Dieta Mediterránea (PREDIMED-14 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9) |
-| **CAGE** — Consumo de alcohol | `validated-scale` | Conceptual |
+| **DUKE-EAS** — Apoyo social funcional (Duke-UNC-11 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
+| **PREDIMED-EAS** — Adherencia a Dieta Mediterránea (PREDIMED-14 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
+| **SF-12 EAS** — Salud percibida (PCS/MCS sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
+| **Sueño EAS** — Duración y calidad subjetiva del sueño (P33_R / P33A sobre EAS) | `eas-official-block` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
+| **CAGE-EAS** — Riesgo de alcoholismo (CAGE_R / CAGE sobre EAS) | `eas-official-block` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
 | **ESCA** — Escalas propias | `municipal-module` | Conceptual |
 | Otros instrumentos futuros | — | Sin definir |
 
@@ -89,32 +90,48 @@ módulo de origen.
 ### 3.1 Registro en el repositorio
 
 Toda importación de un Estudio Complementario produce un documento en el
-repositorio con los siguientes atributos:
+repositorio. El `kind` del documento depende del origen del instrumento:
 
-| Campo | Valor contractual |
+| Familia | `kind` canónico | Tag discriminante | Canonicidad |
+|---|---|---|---|
+| IBSE (exportación REDCap municipal) | `"redcap-export"` | `"ibse"` | Por tag (uno por municipio) |
+| Instrumentos EAS (DUKE, PREDIMED, SF-12, Sueño, CAGE) | `"complementary-study"` | Tag propio del instrumento | Por tag (uno por municipio) |
+| Futuros instrumentos REDCap | `"redcap-export"` | Tag propio del instrumento | Por tag (uno por municipio) |
+
+Atributos comunes a todos los documentos de Estudios Complementarios:
+
+| Campo | Valor |
 |---|---|
-| `kind` | `"redcap-export"` (para exportaciones REDCap) |
-| `tags` | Al menos el tag discriminante del instrumento (p. ej. `"ibse"`) |
 | `id` | UUID generado en el momento de la importación |
 | `sourceFileName` | Nombre del fichero CSV importado |
-| `canGenerateEvidence` | `true` (por defecto para `"redcap-export"`) |
+| `canGenerateEvidence` | `true` (por defecto) |
+| `tags` | Al menos el tag discriminante del instrumento |
 
-### 3.2 Discriminación entre instrumentos con el mismo `kind`
+**Razón de la distinción `redcap-export` vs `complementary-study`:** IBSE
+es una exportación REDCap de un cuestionario municipal administrado directamente
+por el equipo. Los instrumentos EAS (DUKE, PREDIMED, SF-12, Sueño, CAGE) son
+variables derivadas de los microdatos oficiales de la Encuesta Andaluza de Salud,
+no exportaciones de REDCap municipal. Esta distinción refleja el origen diferente
+de cada fuente, aunque ambas familias pertenecen a la misma categoría arquitectónica
+de Estudios Complementarios.
 
-Varios instrumentos pueden compartir `kind: "redcap-export"` y diferenciarse
-exclusivamente por su tag. La correspondencia actual es:
+### 3.2 Discriminación entre instrumentos
+
+Cada instrumento tiene un tag canónico único. La correspondencia actual es:
 
 | Instrumento | `kind` | Tag discriminante |
 |---|---|---|
 | IBSE | `redcap-export` | `"ibse"` |
 | Priorización Temática | `redcap-export` | `"thematic-prioritisation"` |
-| Futuros estudios | `redcap-export` | Tag propio del instrumento |
+| DUKE-EAS | `complementary-study` | `"duke-eas"` |
+| PREDIMED-EAS | `complementary-study` | `"predimed-eas"` |
+| SF-12 EAS | `complementary-study` | `"sf12-eas"` |
+| Sueño EAS | `complementary-study` | `"sueno-eas"` |
+| CAGE-EAS | `complementary-study` | `"cage-eas"` |
 
-**El `kind` compartido no implica sustitución mutua.** Ninguna operación que
-discrimine por `kind` puede distinguir IBSE de la Priorización Temática o de
-cualquier otro instrumento con `kind: "redcap-export"`. Toda lógica que opere
-sobre un instrumento específico debe usar el tag como criterio, nunca el `kind`
-aislado.
+**Nota:** La Priorización Temática comparte `kind: "redcap-export"` con IBSE
+pero no es un Estudio Complementario; es una familia documental distinta con
+contrato propio. Aparece aquí solo para completar la tabla de discriminación.
 
 ### 3.3 Canonicidad por tag
 
@@ -465,21 +482,24 @@ los siguientes estados:
 | Instrumento | Estado |
 |---|---|
 | **IBSE** | **Implementado** (módulo en `draft`; pendiente de `validated`) |
-| **DUKE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario y PSL. Sin `MethodologicalModule` registrado en `domain/methodology/` (deuda técnica; véase nota §9a). |
-| **PREDIMED-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario y PSL. Sin `MethodologicalModule` registrado en `domain/methodology/` (deuda técnica; véase nota §9a). |
-| SF-12 | Conceptual |
-| CAGE | Conceptual |
+| **DUKE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
+| **PREDIMED-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
+| **SF-12 EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
+| **Sueño EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
+| **CAGE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
 | ESCA y otros propios | Conceptual |
 
-### Nota §9a — Deuda técnica: DUKE-EAS y PREDIMED-EAS sin MethodologicalModule
+### Nota §9a — Deuda técnica: DUKE-EAS, PREDIMED-EAS, SF-12 EAS, Sueño EAS y CAGE-EAS sin MethodologicalModule
 
-DUKE-EAS y PREDIMED-EAS están operativos en producción pero no siguen completamente el patrón §10. Específicamente:
+Los cinco instrumentos EAS están operativos en producción pero no siguen completamente el patrón §10. Específicamente:
 
-- **No existe `MethodologicalModule`** registrado en `domain/methodology/registry.ts` para ninguno de los dos instrumentos.
-- Sus parsers **hardcodean los nombres de columna** (`P5701`–`P5711` en DUKE; `Predimed` con fallback a `P36BPD01_2023`–`P36BPD14_2023` en PREDIMED), en lugar de derivarlos del módulo como hace el parser de IBSE.
+- **No existe `MethodologicalModule`** registrado en `domain/methodology/registry.ts` para ninguno de los cinco.
+- Sus parsers **hardcodean los nombres de columna** (p. ej. `P5701`–`P5711` en DUKE; `Predimed` con fallback a ítems en PREDIMED; `PCS12_SP`/`MCS12_SP` en SF-12; `P33_R`/`P33A` en Sueño; `CAGE_R`/`CAGE` en CAGE), en lugar de derivarlos de un módulo metodológico como hace el parser de IBSE.
 - Las limitaciones metodológicas están declaradas en las cautelas del parser, no en un módulo formal de la Biblioteca.
 
-Esta situación es conocida y aceptada en la implementación actual. No bloquea el uso en producción. La formalización de ambos módulos en la Biblioteca queda como tarea pendiente explícita antes de que los instrumentos puedan transitar al estado `Validado`.
+Esta situación es conocida y aceptada en la implementación actual. No bloquea el uso en producción. La formalización de los módulos en la Biblioteca queda como tarea pendiente explícita antes de que los instrumentos puedan transitar al estado `Validado`.
+
+Adicionalmente, DUKE-EAS tiene un `MethodologicalModule` parcial en `domain/methodology/definitions/duke-eas.ts` que **sí está registrado** en el registry y del que el parser DUKE deriva su configuración de columnas. El resto de instrumentos EAS (PREDIMED, SF-12, Sueño, CAGE) no tienen módulo registrado.
 
 ---
 
@@ -545,3 +565,4 @@ documental. Los siguientes aspectos quedan fuera de su alcance:
 |---|---|
 | 2026-06-24 | Primera redacción. Establece la taxonomía correcta (Estudios Complementarios como categoría; IBSE como implementación). Documenta el estado actual de IBSE en la Biblioteca Metodológica, el patrón de implementación para futuros instrumentos y los invariantes de privacidad y trazabilidad. |
 | 2026-06-25 | Actualización de estado: DUKE-EAS y PREDIMED-EAS pasan de «Conceptual» a «Implementado» en §2.2 y §9. Se añade nota §9a documentando la deuda técnica por ausencia de `MethodologicalModule` en la Biblioteca Metodológica y la desviación de parsers respecto al patrón §10. |
+| 2026-06-27 | Sprint 0: SF-12 EAS, Sueño EAS y CAGE-EAS pasan de «Conceptual» a «Implementado» (implementados en commits `7f47034`, `20080cd` y `9c73fa0` respectivamente). §3.1 y §3.2 actualizados para reflejar la distinción real entre `kind: "redcap-export"` (IBSE) y `kind: "complementary-study"` (instrumentos EAS). Nota §9a ampliada para incluir los cinco instrumentos EAS sin `MethodologicalModule`. |

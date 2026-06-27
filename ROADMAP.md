@@ -1,11 +1,15 @@
 # COMPÁS NG — Hoja de ruta
 
-> Última revisión: 2026-06-23, commit `2301cfd`.
+> Última revisión: 2026-06-27.
 > Cada hito se activa solo cuando el anterior está estabilizado y verificado en interfaz.
 
 ---
 
-## Estado actual
+## Estado actual (2026-06-27 — Sprint 0 cierre)
+
+**Sprint 0 — en cierre.** La infraestructura del conocimiento está completada.
+Los cambios pendientes son de consolidación arquitectónica, contractual y de interfaz.
+Véase `docs/architecture/OPERATING-CONSTITUTION.md §4–5` para criterios del Gate 1.
 
 El sistema dispone de:
 
@@ -14,58 +18,71 @@ El sistema dispone de:
 - Purga de átomos derivados al sustituir un documento canónico.
 - Purga de átomos huérfanos al hidratar desde localStorage.
 - Informe de Salud cargable como DOCX y PDF, preservado como documento íntegro.
-- IBSE como primer Estudio Complementario (parser CSV REDCap).
+- **Seis Estudios Complementarios implementados**: IBSE (REDCap), DUKE-EAS, PREDIMED-EAS,
+  SF-12 EAS, Sueño EAS y CAGE-EAS (los cinco últimos sobre microdatos EAS Granada).
+  Cada uno dispone de dominio, parser, EvidenceAtoms, panel UI, workspace y persistencia.
 - Priorización Temática con importación REDCap y explotación estadística.
-- Persistencia por municipio en localStorage con saneamiento de duplicados.
+- Persistencia por municipio en localStorage con saneamiento de duplicados y reparación
+  de trazabilidad (estados inconsistentes study-sin-documento).
 - **MIT (Motor de Interpretación Territorial)**: produce el Estado Territorial Evolutivo
   a partir del EvidenceStore, con dimensión diagnóstica (LT1), áreas de intervención
   territorial y dimensión longitudinal.
 - **Motor de Reconciliación Interpretativa**: detecta conflictos entre fuentes y estados;
-  escala las tensiones relevantes a Áreas de Intervención Territorial según criterios
-  de persistencia, convergencia y coherencia estructural.
-- **Perfil de Salud Local (PSL)**: objeto canónico del Nivel 2. Sintetiza el diagnóstico
-  territorial y actúa como único puente autorizado hacia el nivel de decisión.
-  Ciclo de vida implementado: `generated` → `validated` (con persistencia y advertencias
-  de desactualización cuando la evidencia cambia tras la validación).
-- **Plan de Acción** (borrador técnico): generado exclusivamente a partir del PSL, con
-  trazabilidad completa mediante `pslReference` (PSL origen, estado, validación, vigencia).
-  Contiene objetivos, actuaciones e indicadores preliminares.
-- **Agenda** y **Seguimiento** como borradores técnicos iniciales, encadenados al Plan de Acción.
-- Municipio piloto: Zagra. Verificado end-to-end.
+  escala las tensiones relevantes a Áreas de Intervención Territorial.
+- **Perfil de Salud Local (PSL)**: objeto canónico del Nivel 2. Ciclo de vida:
+  `generated` → `validated` (con persistencia y detección de desactualización).
+- **Plan de Acción** (borrador técnico): generado exclusivamente a partir del PSL.
+- **Agenda** y **Seguimiento** como borradores técnicos iniciales.
+- **Ciclo de Planificación Local**: componente institucional permanente, siempre visible,
+  que representa el estado del expediente municipal en las 7 fases del ciclo RELAS.
+- **Bloqueo de Nivel 3**: EPVSA, Plan de Acción, Agenda y Seguimiento requieren PSL
+  validado. Sin PSL validado, estos paneles muestran estado bloqueado con requisitos.
+- Municipio piloto: Atarfe. Verificado end-to-end con seis estudios cargados.
+
+### Contratos arquitectónicos completados en Sprint 0
+
+| Contrato | Fecha |
+|---|---|
+| `CONTRACT-REPOSITORY.md` | 2026-06-22 |
+| `CONTRACT-EVIDENCE.md` | 2026-06-22 |
+| `CONTRACT-PERSISTENCE.md` | 2026-06-27 |
+| `CONTRACT-COMPLEMENTARY-STUDIES.md` | 2026-06-27 |
+| `CONTRACT-MIT-PSL.md` | 2026-06-24 |
+| `CONTRACT-ACTION-PLAN.md` | 2026-06-24 |
+| `CONTRACT-COMPILER.md` | 2026-06-24 (reserva arquitectónica) |
+| `CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE.md` | 2026-06-27 (investigación futura) |
+| `CONTRACT-INTERPRETATION.md` | 2026-06-27 (nuevo — cierre Sprint 0) |
 
 ---
 
-## Hito 1 — Consolidación del Repositorio Documental Municipal
+## Hito 1 — Consolidación del Repositorio Documental Municipal ✓ COMPLETADO
 
-**Objetivo:** Que el Repositorio sea la fuente de verdad completa y auditable del municipio.
+**Objetivo completado en Sprint 0.**
 
-Tareas pendientes de definir en sesión específica:
-
-- Revisión del modelo `MunicipalDocument`: ¿qué metadatos faltan?
-- Visualización del repositorio: ¿cómo se navega por los documentos registrados?
-- Eliminación manual de documentos individuales desde la interfaz.
-- Exportación del repositorio como inventario legible.
-
-**Restricción:** No añadir motores analíticos hasta que este hito esté cerrado.
+El Repositorio Documental Municipal está funcional con:
+- Modelo `MunicipalDocument` completo con metadatos de procedencia.
+- Visualización con agrupamiento por categoría (Fuente primaria / Estudios
+  complementarios / Activos comunitarios / Otras fuentes).
+- Eliminación manual de documentos individuales con purga automática de evidencias.
+- MunicipalInventoryPanel como inventario legible del estado documental.
+- Canonicidad por `kind` (health-report, community-asset) y por `tag`
+  (estudios complementarios y priorización temática).
 
 ---
 
-## Hito 2 — Soporte para Perfil/Informe de Salud en PDF
+## Hito 2 — Soporte para Informe de Salud en PDF ✓ COMPLETADO
 
-**Objetivo:** Permitir cargar el Informe de Salud Municipal en formato PDF, preservando
-el documento íntegro como fuente de verdad, sin transformación destructiva.
+**Objetivo completado en Sprint 0.**
 
-Consideraciones técnicas conocidas:
+El Informe de Salud es cargable como DOCX y PDF mediante la interfaz de carga.
+- DOCX: texto extraído vía Mammoth, renderizado como HTML en el visor.
+- PDF: texto extraído (OCR) disponible para el pipeline de evidencias.
+  El visor muestra ficha institucional; el texto extraído es capa técnica no visible.
+- Pendiente futuro: visor PDF nativo en interfaz para el Informe de Salud en PDF.
 
-- El formato PDF requiere un parser diferente al DOCX (mammoth no aplica).
-- La preservación íntegra implica almacenar el binario o una representación fiel,
-  no solo texto extraído.
-- El texto extraído del PDF puede usarse como entrada al pipeline de evidencias,
-  pero el PDF original es el documento de referencia.
-- La cuota de localStorage (~5 MB) impone restricciones sobre qué se persiste localmente.
-
-**Principio rector:** El PDF original es la fuente de verdad. El texto extraído es una
-representación derivada regenerable.
+**Deuda documentada:** El PDF original no se persiste en localStorage (limitación de
+cuota). El texto extraído se usa como representación de trabajo. El documento fuente
+debe conservarse fuera del sistema por el equipo técnico.
 
 ---
 
@@ -91,31 +108,29 @@ Tareas pendientes:
 
 ---
 
-## Hito 4 — Consolidación de Estudios Complementarios
+## Hito 4 — Consolidación de Estudios Complementarios ✓ COMPLETADO
 
-**Objetivo:** Incorporar SF-12, DUKE, PREDIMED y otros estudios al mismo modelo
-arquitectónico que IBSE, con parsers específicos y paneles de visualización propios.
+**Objetivo completado en commits `0bf5026`, `9aad479`, `7f47034`, `20080cd`, `9c73fa0`.**
 
-Estudios pendientes:
+Los seis Estudios Complementarios están implementados con dominio, parser, EvidenceAtoms,
+panel UI, workspace y persistencia. El Hito 4 se considera cerrado.
 
 | Estudio | Fuente | Parser | Estado |
 |---|---|---|---|
-| IBSE | REDCap CSV | `IBSECSVParser` | Completado |
-| SF-12 | REDCap CSV | Pendiente | — |
-| DUKE | REDCap CSV | Pendiente | — |
-| PREDIMED | REDCap CSV | Pendiente | — |
+| IBSE | REDCap CSV | `IBSECSVParser` | ✓ Implementado |
+| DUKE-EAS | EAS CSV | `DUKECSVParser` | ✓ Implementado |
+| PREDIMED-EAS | EAS CSV | `PREDIMEDCSVParser` | ✓ Implementado |
+| SF-12 EAS | EAS CSV | `SF12CSVParser` | ✓ Implementado |
+| Sueño EAS | EAS CSV | `SuenoCSVParser` | ✓ Implementado |
+| CAGE-EAS | EAS CSV | `CAGECSVParser` | ✓ Implementado |
 
-Patrón arquitectónico a seguir (basado en IBSE):
+**Deuda técnica residual** (documentada en `CONTRACT-COMPLEMENTARY-STUDIES.md §9a`):
+DUKE, PREDIMED, SF-12, Sueño y CAGE carecen de `MethodologicalModule` en la Biblioteca
+Metodológica. Sus parsers hardcodean los nombres de columna en lugar de derivarlos del
+módulo. No bloquea el uso en producción. Necesario antes de transitar al estado `Validado`.
 
-```
-application/[estudio]/[Estudio]CSVParser.ts   → parser
-domain/[estudio]/[Estudio]Study.ts            → entidad de dominio
-domain/[estudio]/[Estudio]Aggregates.ts       → agregados calculados
-ui/components/[Estudio]Panel.tsx              → visualización
-```
-
-**Restricción:** Cada estudio se incorpora de forma independiente. Ningún estudio activa
-automáticamente recomendaciones ni modifica el Plan de Acción.
+**Restricción vigente:** Ningún estudio activa automáticamente recomendaciones ni modifica
+el Plan de Acción.
 
 ---
 
@@ -174,7 +189,22 @@ Las siguientes capacidades están **explícitamente fuera del alcance** hasta nu
 
 ---
 
-*Última revisión: 2026-06-23 — Estado actual actualizado (MIT, PSL, Plan de Acción); «Lo que no está» corregido.*
+## Componentes UI pendientes de integración
+
+Los siguientes componentes existen en el código (`src/ui/components/`) pero no están
+en el flujo principal de usuario. Tienen propósito futuro documentado.
+
+| Componente | Estado | Propósito | Referencia |
+|---|---|---|---|
+| `QuestionnaireBuilderPanel` | Pendiente de integración | Constructor metodológico de cuestionarios municipales REDCap | VISUAL-CONTRACT §12.1 |
+| `LocalHealthProfilePanel` | Pendiente de integración | Generador PSL sintético (inspirado en NHS Health Profiles) | VISUAL-CONTRACT §12.2 |
+| `StrategicFrameworkPanel` | Pendiente de integración | Traductor estratégico PSL → EPVSA / ESCA / RELAS | VISUAL-CONTRACT §12.3 |
+
+Ninguno de estos componentes debe activarse en producción hasta Sprint 1.
+
+---
+
+*Última revisión: 2026-06-27 — Sprint 0 cierre definitivo: Gate 1 cerrado.*
 
 ---
 

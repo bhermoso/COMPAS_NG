@@ -1,3 +1,4 @@
+export * from "./LocalHealthPlanningCycle";
 export * from "./DocumentIngestionPanel";
 export * from "./DocumentRepositoryPanel";
 export * from "./HealthReportViewer";
