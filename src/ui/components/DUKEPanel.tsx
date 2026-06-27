@@ -7,8 +7,38 @@ interface DUKEPanelProps {
   onLoadCSV?: (file: File) => void;
 }
 
-function formatPercent(value: number): string {
-  return `${value.toFixed(1)} %`;
+// DUKE-UNC-11: escala 0–55, mayor = mayor apoyo social percibido.
+// Umbral bajo (regla EAS reconstruida empíricamente): código 993.
+const DUKE_MAX = 55;
+
+interface DUKEBarRowProps {
+  label: string;
+  value: number;
+  nValid: number;
+  lowPercent: number;
+  isTotal?: boolean;
+}
+
+function DUKEBarRow({ label, value, nValid, lowPercent, isTotal = false }: DUKEBarRowProps) {
+  const pct = (value / DUKE_MAX) * 100;
+  return (
+    <tr className={`study-bar-row${isTotal ? " study-bar-row--total" : ""}`}>
+      <td className="study-bar-row__label">{label}</td>
+      <td className="study-bar-row__track-cell">
+        <div className="study-bar-track">
+          <div
+            className="study-bar-fill"
+            style={{ width: `${pct}%` }}
+            aria-label={`${value} sobre ${DUKE_MAX}`}
+          />
+        </div>
+      </td>
+      <td className="study-bar-row__value">{value}/{DUKE_MAX}</td>
+      <td className="study-bar-row__level">
+        Bajo: {lowPercent.toFixed(1)} % (n={nValid})
+      </td>
+    </tr>
+  );
 }
 
 export function DUKEPanel({
@@ -19,21 +49,9 @@ export function DUKEPanel({
 }: DUKEPanelProps) {
   return (
     <section className="workspace-panel">
-      <div className="panel-header">
-        <div>
-          <p className="eyebrow">Estudios Complementarios</p>
-          <h2>DUKE-EAS - Apoyo social funcional</h2>
-        </div>
-        <p className="panel-note">
-          DUKE-UNC-11 segun Encuesta Andaluza de Salud. Importa un CSV con
-          columnas P5701..P5711. La recodificacion se conserva como regla EAS
-          reconstruida empiricamente, no como criterio clinico universal.
-        </p>
-      </div>
-
-      <div className="ibse-upload">
-        <div className="ibse-upload__zone">
-          <label htmlFor="duke-csv-input" className="docx-upload__label">
+      <div className="study-upload">
+        <div className="study-upload__zone">
+          <label htmlFor="duke-csv-input" className="study-upload__label">
             Cargar CSV DUKE-EAS (.csv)
           </label>
           <input
@@ -43,87 +61,84 @@ export function DUKEPanel({
             disabled={isLoading === true}
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file !== undefined && onLoadCSV !== undefined) {
-                onLoadCSV(file);
-              }
+              if (file !== undefined && onLoadCSV !== undefined) onLoadCSV(file);
               e.target.value = "";
             }}
-            className="docx-upload__input"
+            className="study-upload__input"
           />
         </div>
         {isLoading === true && (
-          <p className="ingestion-hint">Procesando CSV DUKE-EAS...</p>
+          <p className="study-hint">Procesando CSV DUKE-EAS…</p>
         )}
         {message !== undefined && message !== null && isLoading !== true && (
-          <p className="panel-note">{message}</p>
+          <p className="study-hint">{message}</p>
         )}
       </div>
 
       {dukeStudy !== undefined ? (
-        <div className="ibse-aggregates">
-          <p className="ibse-aggregates__meta">
+        <div className="study-results">
+
+          <p className="study-meta">
             Fuente: <strong>{dukeStudy.sourceFileName}</strong>
-            {" - "}
-            {dukeStudy.aggregates.n} registros procesados
+            {" · "}
+            n procesados = {dukeStudy.aggregates.n}
           </p>
-          <div className="ibse-aggregates__grid">
-            <div className="ibse-factor-card ibse-factor-card--total">
-              <p className="ibse-factor-card__label">Global</p>
-              <p className="ibse-factor-card__value">
-                {dukeStudy.aggregates.meanGlobal}
-              </p>
-              <p className="panel-note">
-                Bajo: {formatPercent(dukeStudy.aggregates.lowGlobalPercentage)}
-                {" - "}
-                n={dukeStudy.aggregates.nValidGlobal}
-              </p>
-            </div>
-            <div className="ibse-factor-card">
-              <p className="ibse-factor-card__label">Confidencial</p>
-              <p className="ibse-factor-card__value">
-                {dukeStudy.aggregates.meanConfidential}
-              </p>
-              <p className="panel-note">
-                Bajo: {formatPercent(dukeStudy.aggregates.lowConfidentialPercentage)}
-                {" - "}
-                n={dukeStudy.aggregates.nValidConfidential}
-              </p>
-            </div>
-            <div className="ibse-factor-card">
-              <p className="ibse-factor-card__label">Afectivo</p>
-              <p className="ibse-factor-card__value">
-                {dukeStudy.aggregates.meanAffective}
-              </p>
-              <p className="panel-note">
-                Bajo: {formatPercent(dukeStudy.aggregates.lowAffectivePercentage)}
-                {" - "}
-                n={dukeStudy.aggregates.nValidAffective}
-              </p>
-            </div>
-            <div className="ibse-factor-card">
-              <p className="ibse-factor-card__label">Incompleto global</p>
-              <p className="ibse-factor-card__value">
-                {dukeStudy.aggregates.incompleteGlobalCount}
-              </p>
-              <p className="panel-note">Codigo conceptual 993</p>
-            </div>
-            <div className="ibse-factor-card">
-              <p className="ibse-factor-card__label">Regla EAS</p>
-              <p className="ibse-factor-card__value">0/1</p>
-              <p className="panel-note">0 normal - 1 bajo</p>
-            </div>
+
+          <div className="study-bar-section">
+            <table className="study-bar-table">
+              <tbody>
+                <DUKEBarRow
+                  label="Apoyo global"
+                  value={dukeStudy.aggregates.meanGlobal}
+                  nValid={dukeStudy.aggregates.nValidGlobal}
+                  lowPercent={dukeStudy.aggregates.lowGlobalPercentage}
+                  isTotal
+                />
+                <DUKEBarRow
+                  label="Apoyo confidencial"
+                  value={dukeStudy.aggregates.meanConfidential}
+                  nValid={dukeStudy.aggregates.nValidConfidential}
+                  lowPercent={dukeStudy.aggregates.lowConfidentialPercentage}
+                />
+                <DUKEBarRow
+                  label="Apoyo afectivo"
+                  value={dukeStudy.aggregates.meanAffective}
+                  nValid={dukeStudy.aggregates.nValidAffective}
+                  lowPercent={dukeStudy.aggregates.lowAffectivePercentage}
+                />
+              </tbody>
+            </table>
           </div>
+
+          <p className="study-meta">
+            Registros incompletos (código 993): {dukeStudy.aggregates.incompleteGlobalCount}.
+            Regla EAS: 0 = apoyo normal · 1 = apoyo bajo.
+          </p>
+
+          <div className="study-refs">
+            <p className="study-refs__title">Referencias comparativas</p>
+            <p className="study-refs__item">Granada: sin referencia disponible.</p>
+            <p className="study-refs__item">Andalucía: sin referencia disponible.</p>
+          </div>
+
           {dukeStudy.methodologicalCautions.length > 0 && (
-            <ul className="ibse-cautions">
-              {dukeStudy.methodologicalCautions.map((caution, i) => (
-                <li key={i} className="panel-note">{caution}</li>
-              ))}
-            </ul>
+            <div className="study-cautions">
+              <p className="study-cautions__title">Cautelas metodológicas</p>
+              <ul className="study-cautions__list">
+                {dukeStudy.methodologicalCautions.map((caution, i) => (
+                  <li key={i}>{caution}</li>
+                ))}
+              </ul>
+            </div>
           )}
+
+          <p className="study-institutional-note">
+            La decisión territorial corresponde siempre al equipo técnico.
+          </p>
         </div>
       ) : (
         <p className="empty-state">
-          Ningun estudio DUKE-EAS cargado para este municipio. Importa un CSV
+          Ningún estudio DUKE-EAS cargado para este municipio. Importa un CSV
           con las variables EAS P5701..P5711.
         </p>
       )}

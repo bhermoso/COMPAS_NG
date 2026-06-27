@@ -7,6 +7,10 @@ interface CAGEPanelProps {
   onLoadCSV?: (file: File) => void;
 }
 
+// CAGE-EAS: cribado de riesgo de alcoholismo (variable dicotómica CAGE_R).
+// CAGE ordinal 1–4: 1 = bebedor social, 2 = consumo de riesgo, 3 = perjudicial, 4 = dependencia.
+// Cautela: el CAGE es un cribado, no un diagnóstico clínico.
+
 export function CAGEPanel({
   cageStudy,
   isLoading,
@@ -15,21 +19,9 @@ export function CAGEPanel({
 }: CAGEPanelProps) {
   return (
     <section className="workspace-panel">
-      <div className="panel-header">
-        <div>
-          <p className="eyebrow">Estudios Complementarios</p>
-          <h2>CAGE-EAS</h2>
-        </div>
-        <p className="panel-note">
-          Indicadores de consumo de alcohol de la Encuesta Andaluza de Salud. Importa un CSV con la
-          columna <code>CAGE_R</code> (riesgo de alcoholismo) y opcionalmente{" "}
-          <code>CAGE</code> (clasificación ordinal de nivel de consumo).
-        </p>
-      </div>
-
-      <div className="ibse-upload">
-        <div className="ibse-upload__zone">
-          <label htmlFor="cage-csv-input" className="docx-upload__label">
+      <div className="study-upload">
+        <div className="study-upload__zone">
+          <label htmlFor="cage-csv-input" className="study-upload__label">
             Cargar CSV CAGE-EAS (.csv)
           </label>
           <input
@@ -39,81 +31,153 @@ export function CAGEPanel({
             disabled={isLoading === true}
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file !== undefined && onLoadCSV !== undefined) {
-                onLoadCSV(file);
-              }
+              if (file !== undefined && onLoadCSV !== undefined) onLoadCSV(file);
               e.target.value = "";
             }}
-            className="docx-upload__input"
+            className="study-upload__input"
           />
         </div>
         {isLoading === true && (
-          <p className="ingestion-hint">Procesando CSV CAGE-EAS...</p>
+          <p className="study-hint">Procesando CSV CAGE-EAS…</p>
         )}
         {message !== undefined && message !== null && isLoading !== true && (
-          <p className="panel-note">{message}</p>
+          <p className="study-hint">{message}</p>
         )}
       </div>
 
       {cageStudy !== undefined ? (
-        <div className="ibse-aggregates">
-          <p className="ibse-aggregates__meta">
+        <div className="study-results">
+
+          <p className="study-meta">
             Fuente: <strong>{cageStudy.sourceFileName}</strong>
-            {" — "}
-            {cageStudy.aggregates.n} registros procesados
+            {" · "}
+            n procesados = {cageStudy.aggregates.n}
+            {" · "}
+            n válido CAGE_R = {cageStudy.aggregates.nValidCAGER}
+            {cageStudy.aggregates.missingCAGER > 0 && (
+              <> · Abstinentes / no administrado: {cageStudy.aggregates.missingCAGER}</>
+            )}
           </p>
-          <div className="ibse-aggregates__grid">
-            <div className="ibse-factor-card ibse-factor-card--total">
-              <p className="ibse-factor-card__label">Riesgo de alcoholismo</p>
-              <p className="ibse-factor-card__value">
-                {cageStudy.aggregates.pctRisk.toFixed(1)} %
-              </p>
-              <p className="panel-note">
-                n={cageStudy.aggregates.nValidCAGER} válidos CAGE_R
-              </p>
-            </div>
-            <div className="ibse-factor-card">
-              <p className="ibse-factor-card__label">Personas con riesgo</p>
-              <p className="ibse-factor-card__value">
-                {cageStudy.aggregates.nRisk}
-              </p>
-              <p className="panel-note">CAGE_R=1 en muestra EAS Granada</p>
-            </div>
-            <div className="ibse-factor-card">
-              <p className="ibse-factor-card__label">Missing / No procede</p>
-              <p className="ibse-factor-card__value">
-                {cageStudy.aggregates.missingCAGER}
-              </p>
-              <p className="panel-note">Abstinentes: CAGE no administrado</p>
-            </div>
+
+          <div className="study-bar-section">
+            <table className="study-bar-table">
+              <tbody>
+                <tr className="study-bar-row study-bar-row--total">
+                  <td className="study-bar-row__label">Riesgo de alcoholismo (CAGE_R)</td>
+                  <td className="study-bar-row__track-cell">
+                    <div className="study-bar-track">
+                      <div
+                        className="study-bar-fill"
+                        style={{ width: `${cageStudy.aggregates.pctRisk}%` }}
+                        aria-label={`${cageStudy.aggregates.pctRisk.toFixed(1)} %`}
+                      />
+                    </div>
+                  </td>
+                  <td className="study-bar-row__value">
+                    {cageStudy.aggregates.pctRisk.toFixed(1)} %
+                  </td>
+                  <td className="study-bar-row__level">
+                    n={cageStudy.aggregates.nRisk} de {cageStudy.aggregates.nValidCAGER}
+                  </td>
+                </tr>
+
+                {/* Distribución ordinal CAGE si disponible */}
+                {cageStudy.aggregates.nValidCAGE > 0 && (
+                  <>
+                    <tr className="study-bar-row">
+                      <td className="study-bar-row__label">Bebedor social (nivel 1)</td>
+                      <td className="study-bar-row__track-cell">
+                        <div className="study-bar-track">
+                          <div
+                            className="study-bar-fill"
+                            style={{
+                              width: `${(cageStudy.aggregates.nCAGE1 / cageStudy.aggregates.nValidCAGE) * 100}%`
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="study-bar-row__value">
+                        {((cageStudy.aggregates.nCAGE1 / cageStudy.aggregates.nValidCAGE) * 100).toFixed(1)} %
+                      </td>
+                      <td className="study-bar-row__level">n={cageStudy.aggregates.nCAGE1}</td>
+                    </tr>
+                    <tr className="study-bar-row">
+                      <td className="study-bar-row__label">Consumo de riesgo (nivel 2)</td>
+                      <td className="study-bar-row__track-cell">
+                        <div className="study-bar-track">
+                          <div
+                            className="study-bar-fill"
+                            style={{
+                              width: `${(cageStudy.aggregates.nCAGE2 / cageStudy.aggregates.nValidCAGE) * 100}%`
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="study-bar-row__value">
+                        {((cageStudy.aggregates.nCAGE2 / cageStudy.aggregates.nValidCAGE) * 100).toFixed(1)} %
+                      </td>
+                      <td className="study-bar-row__level">n={cageStudy.aggregates.nCAGE2}</td>
+                    </tr>
+                    <tr className="study-bar-row">
+                      <td className="study-bar-row__label">Consumo perjudicial (nivel 3)</td>
+                      <td className="study-bar-row__track-cell">
+                        <div className="study-bar-track">
+                          <div
+                            className="study-bar-fill"
+                            style={{
+                              width: `${(cageStudy.aggregates.nCAGE3 / cageStudy.aggregates.nValidCAGE) * 100}%`
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="study-bar-row__value">
+                        {((cageStudy.aggregates.nCAGE3 / cageStudy.aggregates.nValidCAGE) * 100).toFixed(1)} %
+                      </td>
+                      <td className="study-bar-row__level">n={cageStudy.aggregates.nCAGE3}</td>
+                    </tr>
+                    <tr className="study-bar-row">
+                      <td className="study-bar-row__label">Dependencia grave (nivel 4)</td>
+                      <td className="study-bar-row__track-cell">
+                        <div className="study-bar-track">
+                          <div
+                            className="study-bar-fill"
+                            style={{
+                              width: `${(cageStudy.aggregates.nCAGE4 / cageStudy.aggregates.nValidCAGE) * 100}%`
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="study-bar-row__value">
+                        {((cageStudy.aggregates.nCAGE4 / cageStudy.aggregates.nValidCAGE) * 100).toFixed(1)} %
+                      </td>
+                      <td className="study-bar-row__level">n={cageStudy.aggregates.nCAGE4}</td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
           </div>
-          {cageStudy.aggregates.nValidCAGE > 0 && (
-            <div className="ibse-aggregates__grid">
-              <div className="ibse-factor-card">
-                <p className="ibse-factor-card__label">Bebedor social</p>
-                <p className="ibse-factor-card__value">{cageStudy.aggregates.nCAGE1}</p>
-              </div>
-              <div className="ibse-factor-card">
-                <p className="ibse-factor-card__label">Consumo de riesgo</p>
-                <p className="ibse-factor-card__value">{cageStudy.aggregates.nCAGE2}</p>
-              </div>
-              <div className="ibse-factor-card">
-                <p className="ibse-factor-card__label">Consumo perjudicial</p>
-                <p className="ibse-factor-card__value">{cageStudy.aggregates.nCAGE3}</p>
-              </div>
-              <div className="ibse-factor-card">
-                <p className="ibse-factor-card__label">Dependencia</p>
-                <p className="ibse-factor-card__value">{cageStudy.aggregates.nCAGE4}</p>
-              </div>
+
+          <div className="study-refs">
+            <p className="study-refs__title">Referencias comparativas</p>
+            <p className="study-refs__item">Granada: sin referencia disponible.</p>
+            <p className="study-refs__item">Andalucía: sin referencia disponible.</p>
+          </div>
+
+          {cageStudy.methodologicalCautions.length > 0 && (
+            <div className="study-cautions">
+              <p className="study-cautions__title">Cautelas metodológicas</p>
+              <ul className="study-cautions__list">
+                {cageStudy.methodologicalCautions.map((caution, i) => (
+                  <li key={i}>{caution}</li>
+                ))}
+              </ul>
             </div>
           )}
-          {cageStudy.methodologicalCautions.length > 0 && (
-            <ul className="ibse-cautions">
-              {cageStudy.methodologicalCautions.map((caution, i) => (
-                <li key={i} className="panel-note">{caution}</li>
-              ))}
-            </ul>
-          )}
+
+          <p className="study-institutional-note">
+            La decisión territorial corresponde siempre al equipo técnico.
+          </p>
         </div>
       ) : (
         <p className="empty-state">

@@ -5093,3 +5093,352 @@ h3 {
   color: #78350f;
   line-height: 1.5;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   ESTUDIOS COMPLEMENTARIOS — Lenguaje institucional compartido
+   Prefijo study-* para todos los paneles de escala.
+   Reemplaza los antiguos ibse-* en paneles no-IBSE.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Zona de carga (upload) ──────────────────────────────────────── */
+
+.study-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.study-upload__zone {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px dashed #c9d6e6;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.study-upload__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.study-upload__input {
+  font: inherit;
+  font-size: 0.84rem;
+  color: #526070;
+  cursor: pointer;
+}
+
+.study-upload__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.study-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #526070;
+  line-height: 1.5;
+  padding: 6px 0;
+}
+
+/* ── Contenedor de resultados ────────────────────────────────────── */
+
+.study-results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Metadatos de muestra ────────────────────────────────────────── */
+
+.study-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #526070;
+  line-height: 1.55;
+  border-top: 1px solid #e4eaf3;
+  padding-top: 10px;
+}
+
+.study-results .study-meta:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* ── Sección de barras ───────────────────────────────────────────── */
+
+.study-bar-section {
+  position: relative;
+  padding-top: 20px;
+}
+
+/* Escala numérica sobre las barras */
+.study-bar-scale {
+  position: relative;
+  height: 14px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid #e4eaf3;
+}
+
+.study-bar-scale__mark {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: #94a3b8;
+  bottom: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.study-bar-scale__mark--end {
+  transform: translateX(-100%);
+}
+
+/* Tabla de resultados */
+.study-bar-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.study-bar-row td {
+  padding: 7px 8px 7px 0;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.84rem;
+  color: #334155;
+}
+
+.study-bar-row:last-child td {
+  border-bottom: none;
+}
+
+.study-bar-row--total td {
+  padding-top: 9px;
+  padding-bottom: 9px;
+  font-weight: 600;
+  color: #172033;
+  border-bottom: 1px solid #d9e2ef;
+}
+
+.study-bar-row__label {
+  width: 28%;
+  min-width: 120px;
+  color: inherit;
+}
+
+.study-bar-row--total .study-bar-row__label {
+  color: #172033;
+}
+
+.study-bar-row__track-cell {
+  width: 46%;
+  padding-right: 12px !important;
+}
+
+/* Barra proporcional */
+.study-bar-track {
+  position: relative;
+  height: 10px;
+  background: #e4eaf3;
+  border-radius: 2px;
+  overflow: visible;
+}
+
+.study-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #0074c8;
+  border-radius: 2px 0 0 2px;
+  transition: width 0.3s ease;
+}
+
+.study-bar-row--total .study-bar-fill {
+  background: #172033;
+}
+
+/* Marcas de umbral sobre la barra */
+.study-bar-mark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: #94a3b8;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Umbrales IBSE posicionados sobre 100 */
+.study-bar-mark--50 { left: 50%; }
+.study-bar-mark--60 { left: 60%; }
+.study-bar-mark--75 { left: 75%; }
+
+.study-bar-row__value {
+  width: 14%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.study-bar-row--total .study-bar-row__value {
+  font-weight: 700;
+  color: #172033;
+}
+
+.study-bar-row__level {
+  width: 12%;
+  text-align: right;
+  font-size: 0.76rem;
+  color: #526070;
+  white-space: nowrap;
+}
+
+/* Clasificación de nivel (solo IBSE) */
+.study-bar-row__level[data-level="alto"]        { color: #166534; }
+.study-bar-row__level[data-level="medio"]       { color: #1d4ed8; }
+.study-bar-row__level[data-level="medio-bajo"]  { color: #b45309; }
+.study-bar-row__level[data-level="bajo"]        { color: #dc2626; }
+
+/* ── Leyenda de umbrales ─────────────────────────────────────────── */
+
+.study-threshold-legend {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.study-threshold-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid currentColor;
+  margin: 0 2px;
+}
+
+.study-threshold-badge[data-level="alto"]       { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
+.study-threshold-badge[data-level="medio"]      { color: #1d4ed8; border-color: #bfdbfe; background: #eff6ff; }
+.study-threshold-badge[data-level="medio-bajo"] { color: #b45309; border-color: #fde68a; background: #fffbeb; }
+.study-threshold-badge[data-level="bajo"]       { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+
+/* ── Dispersión interfactorial ───────────────────────────────────── */
+
+.study-dispersion {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #526070;
+  line-height: 1.55;
+  padding: 8px 12px;
+  border-left: 3px solid #e4eaf3;
+}
+
+.study-dispersion--alta {
+  border-left-color: #ffb61b;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.study-dispersion--moderada {
+  border-left-color: #93c5fd;
+  background: #f0f7ff;
+  color: #334155;
+}
+
+.study-dispersion em {
+  font-style: normal;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+/* ── Referencias comparativas ────────────────────────────────────── */
+
+.study-refs {
+  border-top: 1px solid #e4eaf3;
+  padding-top: 10px;
+}
+
+.study-refs__title {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.study-refs__item {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* ── Cautelas metodológicas ──────────────────────────────────────── */
+
+.study-cautions {
+  border-top: 1px solid #e4eaf3;
+  padding-top: 10px;
+}
+
+.study-cautions__title {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.study-cautions__list {
+  margin: 0;
+  padding: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.study-cautions__list li {
+  font-size: 0.8rem;
+  color: #526070;
+  line-height: 1.5;
+}
+
+/* ── Recordatorio institucional ──────────────────────────────────── */
+
+.study-institutional-note {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #94a3b8;
+  font-style: italic;
+  border-top: 1px solid #e4eaf3;
+  padding-top: 8px;
+}
+
+/* ── ibse-cautions (compatibilidad hacia atrás) ──────────────────── */
+/* Sigue definido para no romper código que aún lo use. */
+.ibse-cautions {
+  margin: 8px 0 0;
+  padding: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: #526070;
+}
+
+@media (max-width: 760px) {
+  .study-bar-row__label  { width: 35%; }
+  .study-bar-row__track-cell { width: 35%; }
+  .study-bar-row__value  { width: 18%; }
+  .study-bar-row__level  { width: 12%; }
+}

@@ -37,27 +37,27 @@ const IBSE_FACTOR_DEFS: IBSEFactorDef[] = [
   {
     title: "IBSE – Índice total de bienestar socioemocional",
     field: "meanTotal",
-    description: "Índice total (media de los 8 ítems IBSE). Escala 0–10, mayor = mejor bienestar.",
+    description: "Índice total (media de los 8 ítems IBSE). Escala 0–100, mayor = mejor bienestar.",
   },
   {
     title: "IBSE – Factor Vínculo",
     field: "meanFactorVinculo",
-    description: "Sentido de pertenencia y relaciones afectivas (ítems: deprimido, solo). Escala 0–10.",
+    description: "Sentido de pertenencia y relaciones afectivas (ítems: deprimido, solo). Escala 0–100.",
   },
   {
     title: "IBSE – Factor Situación",
     field: "meanFactorSituacion",
-    description: "Valoración de la situación vital actual (ítems: feliz, disfrutar). Escala 0–10.",
+    description: "Valoración de la situación vital actual (ítems: feliz, disfrutar). Escala 0–100.",
   },
   {
     title: "IBSE – Factor Control",
     field: "meanFactorControl",
-    description: "Control percibido sobre la propia vida (ítems: energía, tranquilo). Escala 0–10.",
+    description: "Control percibido sobre la propia vida (ítems: energía, tranquilo). Escala 0–100.",
   },
   {
     title: "IBSE – Factor Persona",
     field: "meanFactorPersona",
-    description: "Autopercepción e identidad personal (ítems: optimista, bienmismo). Escala 0–10.",
+    description: "Autopercepción e identidad personal (ítems: optimista, bienmismo). Escala 0–100.",
   },
 ];
 
@@ -104,10 +104,10 @@ export function ibseStudyToEvidenceAtoms(study: IBSEStudy): EvidenceAtom[] {
 
 // [Regla del sistema] Umbrales de nivel — heurísticos, no normativos ni clínicos.
 function clasificarNivelIBSE(valor: number): string {
-  if (valor >= 7.5) return "alto (≥7.5/10)";
-  if (valor >= 6.0) return "medio (6.0–7.4)";
-  if (valor >= 5.0) return "medio-bajo (5.0–5.9)";
-  return "bajo (<5.0)";
+  if (valor >= 75) return "alto (≥75/100)";
+  if (valor >= 60) return "medio (60–74)";
+  if (valor >= 50) return "medio-bajo (50–59)";
+  return "bajo (<50)";
 }
 
 function buildIBSEResumen(study: IBSEStudy, confidence: "low" | "medium"): EvidenceAtom {
@@ -125,24 +125,24 @@ function buildIBSEResumen(study: IBSEStudy, confidence: "low" | "medium"): Evide
   const rango = Math.round((max.valor - min.valor) * 10) / 10;
 
   const asimetriaLabel =
-    rango > 2.0 ? `alta (${rango} puntos)` :
-    rango > 1.0 ? `moderada (${rango} puntos)` :
-                  `baja (${rango} puntos)`;
+    rango > 20 ? `alta (${rango} puntos)` :
+    rango > 10 ? `moderada (${rango} puntos)` :
+                 `baja (${rango} puntos)`;
 
   const partes: string[] = [
     // Header: mark as auto-generated derivative, not primary evidence
     "Síntesis automática derivada de IBSE_FACTORES. No es fuente primaria de evidencia cuantitativa.",
     // Factual description of quantitative results
-    `Índice IBSE total: ${agg.meanTotal}/10 — ${clasificarNivelIBSE(agg.meanTotal)}.`,
-    `Factor con menor puntuación: ${min.nombre} (${min.valor}/10) — dimensión con menor bienestar relativo en la muestra.`,
-    `Factor con mayor puntuación: ${max.nombre} (${max.valor}/10) — dimensión con mayor bienestar relativo.`,
+    `Índice IBSE total: ${agg.meanTotal}/100 — ${clasificarNivelIBSE(agg.meanTotal)}.`,
+    `Factor con menor puntuación: ${min.nombre} (${min.valor}/100) — dimensión con menor bienestar relativo en la muestra.`,
+    `Factor con mayor puntuación: ${max.nombre} (${max.valor}/100) — dimensión con mayor bienestar relativo.`,
     `Dispersión interfactorial: ${asimetriaLabel}.`,
   ];
 
   // [Regla del sistema] Heuristic alert — not a methodological conclusion of IBSE
-  if (rango > 2.0) {
+  if (rango > 20) {
     partes.push(
-      "[Regla del sistema] Dispersión interfactorial alta (>" + "2 puntos): los factores presentan perfiles diferenciados. " +
+      "[Regla del sistema] Dispersión interfactorial alta (>" + "20 puntos): los factores presentan perfiles diferenciados. " +
       "El índice total puede no representar adecuadamente la diversidad de dimensiones. " +
       "Se recomienda revisar cada factor de forma independiente."
     );
@@ -179,7 +179,7 @@ function buildIBSEResumen(study: IBSEStudy, confidence: "low" | "medium"): Evide
         "interpretación territorial o a la planificación.",
       limitations: [
         "[Regla del sistema] Los umbrales de clasificación (alto/medio/bajo) son heurísticos definidos por el sistema, no por el instrumento IBSE ni por criterios normativos o clínicos.",
-        "[Regla del sistema] La alerta por dispersión interfactorial alta (>2 puntos) es una regla automática del sistema, no una conclusión metodológica del instrumento IBSE (Bericat, 2014).",
+        "[Regla del sistema] La alerta por dispersión interfactorial alta (>20 puntos) es una regla automática del sistema, no una conclusión metodológica del instrumento IBSE (Bericat, 2014).",
         "La interpretación es comparativa dentro de la muestra municipal, sin referencias poblacionales externas.",
         "IBSE_RESUMEN debe emplearse solo como observación contextual de apoyo; IBSE_FACTORES constituye la fuente primaria de evidencia cuantitativa.",
         ...study.methodologicalCautions,
