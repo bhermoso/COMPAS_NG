@@ -1,15 +1,19 @@
 # COMPÁS NG — Hoja de ruta
 
-> Última revisión: 2026-06-27.
+> Última revisión: 2026-06-28.
 > Cada hito se activa solo cuando el anterior está estabilizado y verificado en interfaz.
 
 ---
 
-## Estado actual (2026-06-27 — Sprint 0 cierre)
+## Estado actual (2026-06-28 — Sprint 1 certificado)
 
-**Sprint 0 — en cierre.** La infraestructura del conocimiento está completada.
-Los cambios pendientes son de consolidación arquitectónica, contractual y de interfaz.
-Véase `docs/architecture/OPERATING-CONSTITUTION.md §4–5` para criterios del Gate 1.
+**Sprint 0 certificado. Sprint 1 certificado con condiciones.**
+Véase el expediente formal de certificación:
+`docs/certification/CERTIFICATION-SPRINT-0-1.md`
+
+El Sprint 2 queda autorizado sujeto a los cuatro prerequisitos del expediente (§12).
+El prerequisito de mayor impacto es la Biblioteca Metodológica (SF-12, Sueño, CAGE).
+Véase `docs/architecture/OPERATING-CONSTITUTION.md §4–5` para los criterios del Gate 1 (ya superados).
 
 El sistema dispone de:
 

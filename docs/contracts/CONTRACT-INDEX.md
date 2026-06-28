@@ -215,4 +215,18 @@ CONTRACT-STRATEGIC-TRANSLATION → CONTRACT-STRATEGIC-REPOSITORY
 
 ---
 
+---
+
+## Expediente de certificación
+
+El estado contractual de los Sprint 0 y Sprint 1 queda formalizado en:
+
+`docs/certification/CERTIFICATION-SPRINT-0-1.md` — 2026-06-28
+
+Este expediente incluye la clasificación de deuda, los componentes congelados y reservados,
+la nota sobre la familia de compiladores (LocalHealthProfileCompiler, NHSHealthProfileCompiler,
+LocalHealthPlanCompiler) y los prerequisitos del Sprint 2.
+
+---
+
 *Este índice es el punto de entrada obligatorio antes de crear o modificar cualquier contrato en COMPÁS NG.*
