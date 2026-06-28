@@ -15,6 +15,9 @@ El Sprint 2 queda autorizado sujeto a los cuatro prerequisitos del expediente (�
 El prerequisito de mayor impacto es la Biblioteca Metodológica (SF-12, Sueño, CAGE).
 Véase `docs/architecture/OPERATING-CONSTITUTION.md §4–5` para los criterios del Gate 1 (ya superados).
 
+El plano arquitectónico completo del sistema está en:
+`docs/architecture/BLUEPRINT-PRODUCTION.md`
+
 El sistema dispone de:
 
 - Repositorio Documental Municipal funcional con sustitución canónica.

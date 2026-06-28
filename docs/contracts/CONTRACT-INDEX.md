@@ -227,6 +227,11 @@ Este expediente incluye la clasificación de deuda, los componentes congelados y
 la nota sobre la familia de compiladores (LocalHealthProfileCompiler, NHSHealthProfileCompiler,
 LocalHealthPlanCompiler) y los prerequisitos del Sprint 2.
 
+El plano arquitectónico completo que responde a la pregunta
+"¿qué debe existir para producir un Perfil de Salud Local, un Plan Local de Salud y una
+Encuesta Municipal?" está en `docs/architecture/BLUEPRINT-PRODUCTION.md`.
+Los contratos pendientes de crear quedan listados en §VIII.3 de ese documento.
+
 ---
 
 *Este índice es el punto de entrada obligatorio antes de crear o modificar cualquier contrato en COMPÁS NG.*
