@@ -1,7 +1,7 @@
 # CONTRACT-INDEX — Índice maestro de contratos arquitectónicos
 
 > COMPÁS NG — Referencia de arquitectura contractual
-> Última actualización: Sprint 2.3 — 2026-06-28
+> Última actualización: Sprint 1 — 2026-06-27
 
 Este documento es la puerta de entrada a la arquitectura contractual de COMPÁS NG.
 No duplica contenido de los contratos. Cada entrada contiene: propósito, alcance, estado y relaciones.
@@ -113,47 +113,6 @@ Contrato del Motor de Interpretación Territorial (MIT) y del Perfil de Salud Lo
 
 ---
 
-## Nivel 2 tardío — Compiladores de diagnóstico
-
-### CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER
-**Estado:** VIGENTE
-
-Contrato del compilador del Perfil de Salud Local COMPÁS (PSL-C). Define la distinción entre `LocalHealthProfile` (objeto vivo) y `LocalHealthProfileArtifact` (documento institucional exportable e inmutable). Establece los 7 gates de compilación (G-LHC-1 a G-LHC-7), la estructura de secciones del PSL-C, los invariantes de trazabilidad (`sourcePSLId`, `sourceHash`, `evidenceAtomIds`), las reglas de congelación y el modelo de persistencia acumulativa en `workspace.compiledProfiles`.
-
-**Productores:** `LocalHealthProfileCompiler` (`src/application/health-profile-compiler/`).
-**Consumidores:** Equipo técnico (exportación del diagnóstico), `LocalHealthPlanCompiler` (futuro: el PSL-C es el capítulo diagnóstico del PLS).
-**Tipos:** `src/domain/health-profile-artifact/LocalHealthProfileArtifact.ts`.
-**Tests:** `tests/local-health-profile-compiler.test.ts` (43 tests).
-**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT (pendiente).
-
----
-
-## Nivel de compilación — Documentos institucionales exportables
-
-### CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT
-**Estado:** VIGENTE
-
-Contrato del Plan Local de Salud (PLS) como documento institucional definitivo. Define naturaleza, estructura, entradas, gates, contenido humano obligatorio, congelación y versionado. Complementado por CONTRACT-LOCAL-HEALTH-PLAN-COMPILER, que define cómo se produce el PLS. Define la naturaleza del PLS (compromiso explícito y verificable), la distinción entre PLS, PSL-C, ActionPlanDraft, AgendaDraft y MonitoringDraft, la estructura canónica de 15 secciones (RE + I a XII + AN), los 10 gates de compilación (G-PLS-1 a G-PLS-10), el contenido humano obligatorio (validación política, responsables, plazos, recursos, necesidades no priorizadas), las reglas de congelación y versionado, y los 9 invariantes (I-PLS-1 a I-PLS-9).
-
-**Productores:** `LocalHealthPlanCompiler` (tipos de dominio en Sprint 2.3; implementación pendiente).
-**Consumidores:** Equipo técnico, corporación municipal, Distrito Sanitario, Junta de Andalucía.
-**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica), CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.
-
----
-
-### CONTRACT-LOCAL-HEALTH-PLAN-COMPILER
-**Estado:** VIGENTE
-
-Contrato del `LocalHealthPlanCompiler`. Define cómo se produce el `LocalHealthPlanDocument`: 10 gates de compilación (G-PLS-1 a G-PLS-10), la integración del PSL-C por referencia (Opción A), la distinción entre ActionPlanDraft y el capítulo VII del PLS compilado, el `CompilationManifest` embarcado, las reglas de articulación institucional provisional vs canónica, el versionado y la persistencia. También define la arquitectura de exportación Compilador → Renderer → Exporter (separación de responsabilidades).
-
-**Productores:** `LocalHealthPlanCompiler` (pendiente de implementar; tipos de dominio en Sprint 2.3).
-**Consumidores:** Equipo técnico, UI (exportación futura DOCX/PDF/HTML).
-**Tipos:** `src/domain/health-plan/LocalHealthPlanDocument.ts`, `src/domain/compilation/CompilationManifest.ts`.
-**Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica).
-**Prerequisitos antes de implementar:** ampliación CONTRACT-MIT-PSL (actor model `approved`), ampliación CONTRACT-ACTION-PLAN (validación formal Nivel 3).
-
----
-
 ## Nivel 3 — Planificación y acción
 
 ### CONTRACT-ACTION-PLAN
@@ -238,18 +197,10 @@ CONTRACT-COMPLEMENTARY-STUDIES → CONTRACT-SCALE-PANELS
 CONTRACT-INTERPRETATION
 CONTRACT-MIT-PSL
     ↓
-CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER → LocalHealthProfileArtifact (PSL-C)
-    ↓
-CONTRACT-ACTION-PLAN → CONTRACT-COMPILER (reserva histórica)
+CONTRACT-ACTION-PLAN → CONTRACT-COMPILER
     ↓
 CONTRACT-STRATEGIC-TRANSLATION → CONTRACT-STRATEGIC-REPOSITORY
                                  CONTRACT-DYNAMIC-TRIPYRAMID
-    ↓
-CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT
-    ↓
-CONTRACT-LOCAL-HEALTH-PLAN-COMPILER
-    ↓
-LocalHealthPlanDocument (PLS)
 ```
 
 ---
@@ -261,25 +212,6 @@ LocalHealthPlanDocument (PLS)
 3. Los contratos `VIGENTE` no se modifican sin revisión deliberada y registro de la versión.
 4. Las referencias cruzadas entre contratos deben ser simétricas: si A referencia B, B debe mencionar A en "Relacionado con".
 5. Los productores y consumidores deben actualizarse cuando cambie la implementación.
-
----
-
----
-
-## Expediente de certificación
-
-El estado contractual de los Sprint 0 y Sprint 1 queda formalizado en:
-
-`docs/certification/CERTIFICATION-SPRINT-0-1.md` — 2026-06-28
-
-Este expediente incluye la clasificación de deuda, los componentes congelados y reservados,
-la nota sobre la familia de compiladores (LocalHealthProfileCompiler, NHSHealthProfileCompiler,
-LocalHealthPlanCompiler) y los prerequisitos del Sprint 2.
-
-El plano arquitectónico completo que responde a la pregunta
-"¿qué debe existir para producir un Perfil de Salud Local, un Plan Local de Salud y una
-Encuesta Municipal?" está en `docs/architecture/BLUEPRINT-PRODUCTION.md`.
-Los contratos pendientes de crear quedan listados en §VIII.3 de ese documento.
 
 ---
 

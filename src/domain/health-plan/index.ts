@@ -1,0 +1,18 @@
+export type {
+  PlanningPeriod,
+  InstitutionalApproval,
+  UnaddressedNeed,
+  PLSSectionResumenEjecutivo,
+  PLSSectionPortada,
+  PLSSectionMarcoInstitucional,
+  PLSSectionContextoTerritorial,
+  PLSSectionDiagnosticoTerritorial,
+  PLSSectionPriorizacion,
+  PLSSectionArticulacionInstitucional,
+  PLSSectionPlanAccion,
+  PLSSectionAgenda,
+  PLSSectionSeguimiento,
+  PLSSectionGobernanza,
+  PLSSectionAnexosMetodologicos,
+  LocalHealthPlanDocument,
+} from "./LocalHealthPlanDocument";

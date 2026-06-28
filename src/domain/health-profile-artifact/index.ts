@@ -1,0 +1,16 @@
+export type {
+  PSLCArtifactPortada,
+  PSLCArtifactIdentificacion,
+  PSLCArtifactMarcoEstrategico,
+  PSLCArtifactInformeSalud,
+  PSLCArtifactBaseDocumental,
+  PSLCArtifactAreaIntervencion,
+  PSLCArtifactLecturaTerritorial,
+  PSLCArtifactConclusiones,
+  PSLCArtifactRecomendaciones,
+  PSLCArtifactCandidatura,
+  PSLCArtifactPriorizacion,
+  PSLCArtifactNotaValidacion,
+  PSLCArtifactCautelas,
+  LocalHealthProfileArtifact,
+} from "./LocalHealthProfileArtifact";

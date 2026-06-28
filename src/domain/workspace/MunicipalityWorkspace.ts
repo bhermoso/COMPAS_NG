@@ -10,6 +10,8 @@ import type { SuenoStudy } from "../sueno";
 import type { CAGEStudy } from "../cage";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 import type { LocalHealthProfile } from "../health-profile";
+import type { LocalHealthProfileArtifact } from "../health-profile-artifact";
+import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -66,6 +68,26 @@ export interface MunicipalityWorkspace {
    * Se invalida explícitamente por el usuario cuando la evidencia cambia.
    */
   validatedPSL?: LocalHealthProfile;
+  /**
+   * PSL-C compilados (LocalHealthProfileArtifact).
+   * Acumulativos: cada compilación añade un nuevo artefacto.
+   * Inmutables: nunca se sobreescriben. Historial completo por municipio.
+   * Ordenados cronológicamente por compiledAt (el más reciente es el último).
+   */
+  compiledProfiles?: LocalHealthProfileArtifact[];
+  /**
+   * Registro de la aprobación institucional del PSL (transición validated → approved).
+   * Complementa los campos psl.approvedAt / psl.approvedBy con los datos
+   * institucionales del acto de aprobación (órgano, referencia externa, notas).
+   * Solo existe cuando el PSL activo está en estado "approved".
+   */
+  pslApproval?: PSLApprovalRecord;
+  /**
+   * Registros de validación formal de borradores del Nivel 3.
+   * Un registro por target (action-plan, agenda, monitoring-framework).
+   * Se invalidan automáticamente si el PSL cambia de versión.
+   */
+  formalValidations?: FormalValidationRecord[];
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;
