@@ -12,6 +12,8 @@ interface LocalHealthProfileViewProps {
   onEditConclusion?: (content: string) => void;
   onEditRecomendaciones?: (content: string) => void;
   onDocumentarDeliberacion?: (nota: string) => void;
+  onCompile?: () => void;
+  onApprove?: (approvedBy: string, role: "coordination" | "group-motor", approvingBody: string) => void;
 }
 
 // ── Status label ──────────────────────────────────────────────────────────────
@@ -318,6 +320,73 @@ function PSLValidationAction({
   );
 }
 
+// ── Approve action sub-component ─────────────────────────────────────────────
+
+function PSLApproveAction({
+  onApprove,
+}: {
+  onApprove: (approvedBy: string, role: "coordination" | "group-motor", approvingBody: string) => void;
+}) {
+  const [approvedBy, setApprovedBy] = useState("");
+  const [role, setRole] = useState<"coordination" | "group-motor">("group-motor");
+  const [approvingBody, setApprovingBody] = useState("Grupo Motor del proceso RELAS");
+
+  const canApprove = approvedBy.trim().length > 0 && approvingBody.trim().length > 0;
+
+  return (
+    <div className="psl-approve-action">
+      <p className="psl-approve-action__text">
+        La aprobación institucional formaliza el compromiso del Grupo Motor o la Coordinación
+        con el diagnóstico territorial. Requiere evidencia externa documentada (acta o acuerdo).
+      </p>
+      <div className="psl-approve-action__form">
+        <label className="psl-approve-action__label" htmlFor="psl-approved-by">
+          Aprobado por (nombre y cargo)
+        </label>
+        <input
+          id="psl-approved-by"
+          className="psl-approve-action__input"
+          type="text"
+          value={approvedBy}
+          onChange={(e) => setApprovedBy(e.target.value)}
+          maxLength={120}
+          placeholder="Nombre y cargo del responsable"
+        />
+        <label className="psl-approve-action__label" htmlFor="psl-approving-role">
+          Rol institucional
+        </label>
+        <select
+          id="psl-approving-role"
+          className="psl-approve-action__select"
+          value={role}
+          onChange={(e) => setRole(e.target.value as "coordination" | "group-motor")}
+        >
+          <option value="group-motor">Grupo Motor</option>
+          <option value="coordination">Coordinación del proceso</option>
+        </select>
+        <label className="psl-approve-action__label" htmlFor="psl-approving-body">
+          Órgano aprobador
+        </label>
+        <input
+          id="psl-approving-body"
+          className="psl-approve-action__input"
+          type="text"
+          value={approvingBody}
+          onChange={(e) => setApprovingBody(e.target.value)}
+          maxLength={200}
+        />
+        <button
+          className="psl-approve-action__btn"
+          onClick={() => onApprove(approvedBy.trim(), role, approvingBody.trim())}
+          disabled={!canApprove}
+        >
+          Aprobar institucionalmente
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function LocalHealthProfileView({
@@ -329,6 +398,8 @@ export function LocalHealthProfileView({
   onEditConclusion,
   onEditRecomendaciones,
   onDocumentarDeliberacion,
+  onCompile,
+  onApprove,
 }: LocalHealthProfileViewProps) {
   const isEmpty = psl.totalEvidenceAtoms === 0;
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
@@ -899,6 +970,52 @@ export function LocalHealthProfileView({
           </div>
         )}
       </section>
+
+      {/* ── Aprobación institucional del PSL ───────────────────── */}
+      {psl.status === "validated" && !pslIsStale && onApprove != null && (
+        <section className="workspace-panel psl-doc-approve-action">
+          <p className="eyebrow">Aprobación institucional</p>
+          <h2>Aprobar Perfil de Salud Local</h2>
+          {psl.priorizacionStatus === "complete" ? (
+            <PSLApproveAction onApprove={onApprove} />
+          ) : (
+            <p className="panel-note">
+              La aprobación institucional requiere que el capítulo VII (deliberación del
+              Grupo Motor y consenso documentado) esté completo.
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* ── Compilación del PSL-C ──────────────────────────────── */}
+      {psl.status === "validated" && !pslIsStale && onCompile != null && (
+        <section className="workspace-panel psl-doc-compile-action">
+          <p className="eyebrow">Exportación institucional</p>
+          <h2>Compilar Perfil de Salud Local</h2>
+          {psl.conclusiones.status === "authored" &&
+           psl.recomendaciones.status === "authored" &&
+           psl.priorizacionStatus === "complete" ? (
+            <>
+              <p className="panel-note">
+                El Perfil de Salud Local está validado y sus capítulos de autoría humana
+                están completos. Puede compilarse como documento institucional exportable (PSL-C).
+              </p>
+              <button
+                type="button"
+                className="psl-doc-compile-action__btn"
+                onClick={onCompile}
+              >
+                Compilar Perfil de Salud Local
+              </button>
+            </>
+          ) : (
+            <p className="panel-note">
+              Para compilar el PSL-C, complete los capítulos V (Conclusiones) y VI (Recomendaciones)
+              con autoría humana, y documente el consenso del Grupo Motor en el capítulo VII.
+            </p>
+          )}
+        </section>
+      )}
 
     </div>
   );

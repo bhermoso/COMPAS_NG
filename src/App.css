@@ -5436,6 +5436,199 @@ h3 {
   color: #526070;
 }
 
+/* ── Validación formal del Nivel 3 ─────────────────────────────── */
+
+.fval-card {
+  margin-top: 4px;
+}
+
+.fval-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fval-status__chip {
+  padding: 3px 10px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.fval-status__meta {
+  font-size: 0.82rem;
+  color: #526070;
+}
+
+.fval-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fval-form__stale {
+  padding: 8px 12px;
+  background: #fff7e6;
+  border-left: 3px solid #ff6600;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.84rem;
+  color: #526070;
+  margin: 0;
+}
+
+.fval-form__text {
+  font-size: 0.84rem;
+  color: #526070;
+  margin: 0;
+}
+
+.fval-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 480px;
+}
+
+.fval-form__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  margin-top: 4px;
+}
+
+.fval-form__input,
+.fval-form__select {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background: #fff;
+}
+
+.fval-form__input:focus,
+.fval-form__select:focus {
+  outline: 2px solid #0074c8;
+  outline-offset: 1px;
+}
+
+.fval-form__btn {
+  margin-top: 8px;
+  padding: 7px 18px;
+  background: #0074c8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.fval-form__btn:hover {
+  background: #005fa3;
+}
+
+.fval-form__btn:disabled {
+  background: #c9d6e6;
+  cursor: not-allowed;
+}
+
+/* ── Aprobación institucional del PSL ───────────────────────────── */
+
+.psl-doc-approve-action {
+  margin-top: 4px;
+}
+
+.psl-approve-action {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.psl-approve-action__text {
+  font-size: 0.88rem;
+  color: #526070;
+  margin: 0;
+}
+
+.psl-approve-action__form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 480px;
+}
+
+.psl-approve-action__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  margin-top: 6px;
+}
+
+.psl-approve-action__input,
+.psl-approve-action__select {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background: #fff;
+}
+
+.psl-approve-action__input:focus,
+.psl-approve-action__select:focus {
+  outline: 2px solid #0074c8;
+  outline-offset: 1px;
+}
+
+.psl-approve-action__btn {
+  margin-top: 8px;
+  padding: 7px 18px;
+  background: #0074c8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.psl-approve-action__btn:hover {
+  background: #005fa3;
+}
+
+.psl-approve-action__btn:disabled {
+  background: #c9d6e6;
+  cursor: not-allowed;
+}
+
+/* ── Compilación del PSL-C ──────────────────────────────────────── */
+
+.psl-doc-compile-action {
+  margin-top: 4px;
+}
+
+.psl-doc-compile-action__btn {
+  margin-top: 12px;
+  padding: 7px 18px;
+  background: #0074c8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.psl-doc-compile-action__btn:hover {
+  background: #005fa3;
+}
+
 @media (max-width: 760px) {
   .study-bar-row__label  { width: 35%; }
   .study-bar-row__track-cell { width: 35%; }

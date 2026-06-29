@@ -49,6 +49,10 @@ import {
   hasWorkspaceInLocalStorage,
 } from "./infrastructure/persistence/local-storage";
 
+import { compileLocalHealthProfile } from "./application/health-profile-compiler";
+import { approvePSL, createFormalValidation } from "./application/institutional-lifecycle";
+import { isFormalValidationStale } from "./domain/institutional-lifecycle";
+
 import {
   LocalHealthPlanningCycle,
   DocumentIngestionPanel,
@@ -435,6 +439,64 @@ export default function App() {
     });
   }, []);
 
+  const handleCompilePSL = useCallback(() => {
+    setWorkspace((prev) => {
+      const psl = prev.validatedPSL;
+      if (!psl) return prev;
+      const result = compileLocalHealthProfile({
+        psl,
+        municipalityName: prev.municipality.identity.name,
+        municipalityProvince: prev.municipality.identity.province,
+        existingArtifactCount: prev.compiledProfiles?.length ?? 0,
+      });
+      if (!result.ok) return prev;
+      return {
+        ...prev,
+        compiledProfiles: [...(prev.compiledProfiles ?? []), result.artifact],
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
+  const handleApprovePSL = useCallback((
+    approvedBy: string,
+    approvedByRole: "coordination" | "group-motor",
+    approvingBody: string,
+  ) => {
+    setWorkspace((prev) => {
+      const psl = prev.validatedPSL;
+      if (!psl) return prev;
+      const result = approvePSL({ psl, approvedBy, approvedByRole, approvingBody });
+      if (!result.ok) return prev;
+      return {
+        ...prev,
+        validatedPSL: result.approvedPSL,
+        pslApproval: result.approvalRecord,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
+  const handleFormalValidation = useCallback((
+    target: "action-plan" | "agenda",
+    validatedBy: string,
+    validatedByRole: "coordination" | "group-motor",
+    externalReference?: string,
+  ) => {
+    setWorkspace((prev) => {
+      const psl = prev.validatedPSL;
+      if (!psl) return prev;
+      const result = createFormalValidation({ target, psl, validatedBy, validatedByRole, externalReference });
+      if (!result.ok) return prev;
+      const others = (prev.formalValidations ?? []).filter((r) => r.target !== target);
+      return {
+        ...prev,
+        formalValidations: [...others, result.record],
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
   // En ese caso, los motores generan contenido de plantilla sin valor real para el plan.
@@ -443,10 +505,24 @@ export default function App() {
     (runtime.oit.opportunities.length === 1 &&
       runtime.oit.opportunities[0].id === "oit-expand-evidence-base");
 
-  // PSL validado: requisito para que el Nivel 3 (Plan, Agenda, Seguimiento) sea accesible.
+  // PSL validado o aprobado: requisito para que el Nivel 3 (Plan, Agenda, Seguimiento) sea accesible.
+  // El estado "approved" es institucionalmente superior a "validated" y también habilita el Nivel 3.
   const pslValidated =
-    runtime.psl.status === "validated" && !runtime.pslIsStale;
+    (runtime.psl.status === "validated" || runtime.psl.status === "approved") &&
+    !runtime.pslIsStale;
   const municipality = runtime.workspace.municipality.identity;
+
+  // Estado derivado de validaciones formales del Nivel 3.
+  // Independiente de compilación y aprobación del PSL.
+  const fvRecordActionPlan = workspace.formalValidations?.find((r) => r.target === "action-plan");
+  const actionPlanFormalValidation = fvRecordActionPlan
+    ? { validatedAt: fvRecordActionPlan.validatedAt, validatedBy: fvRecordActionPlan.validatedBy, isStale: isFormalValidationStale(fvRecordActionPlan, runtime.psl) }
+    : undefined;
+
+  const fvRecordAgenda = workspace.formalValidations?.find((r) => r.target === "agenda");
+  const agendaFormalValidation = fvRecordAgenda
+    ? { validatedAt: fvRecordAgenda.validatedAt, validatedBy: fvRecordAgenda.validatedBy, isStale: isFormalValidationStale(fvRecordAgenda, runtime.psl) }
+    : undefined;
 
 
   const allMunicipalities = useMemo(
@@ -1832,6 +1908,8 @@ export default function App() {
             onEditConclusion={handleEditPSLConclusion}
             onEditRecomendaciones={handleEditPSLRecomendaciones}
             onDocumentarDeliberacion={handleDocumentarDeliberacion}
+            onCompile={handleCompilePSL}
+            onApprove={handleApprovePSL}
           />
         )}
 
@@ -1880,11 +1958,15 @@ export default function App() {
               actionPlan={runtime.actionPlan}
               isEmpty={pipelineIsEmpty}
               isBlocked={!pslValidated}
+              formalValidation={actionPlanFormalValidation}
+              onFormalValidate={(vb, role, ref) => handleFormalValidation("action-plan", vb, role, ref)}
             />
             <AgendaPanel
               agenda={runtime.agenda}
               isEmpty={pipelineIsEmpty}
               isBlocked={!pslValidated}
+              formalValidation={agendaFormalValidation}
+              onFormalValidate={(vb, role, ref) => handleFormalValidation("agenda", vb, role, ref)}
             />
             <MonitoringPanel
               monitoring={runtime.monitoring}

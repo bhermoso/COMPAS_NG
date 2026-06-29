@@ -1,4 +1,5 @@
 import type { AgendaDraft, AgendaQuarter } from "../../application/agenda";
+import { FormalValidationForm } from "./FormalValidationForm";
 
 const QUARTER_LABEL: Record<AgendaQuarter, string> = {
   Q1: "1.er trimestre",
@@ -11,9 +12,11 @@ interface AgendaPanelProps {
   agenda: AgendaDraft;
   isEmpty?: boolean;
   isBlocked?: boolean;
+  formalValidation?: { validatedAt: string; validatedBy: string; isStale: boolean };
+  onFormalValidate?: (validatedBy: string, role: "coordination" | "group-motor", externalReference?: string) => void;
 }
 
-export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false }: AgendaPanelProps) {
+export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false, formalValidation, onFormalValidate }: AgendaPanelProps) {
   return (
     <section className="workspace-panel">
       <div className="panel-header">
@@ -78,6 +81,16 @@ export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false }: Agen
           ))}
         </ul>
       </article>
+
+      {!isBlocked && !isEmpty && onFormalValidate != null && (
+        <article className="card fval-card">
+          <h3>Validación formal de la Agenda</h3>
+          <FormalValidationForm
+            formalValidation={formalValidation}
+            onFormalValidate={onFormalValidate}
+          />
+        </article>
+      )}
     </section>
   );
 }

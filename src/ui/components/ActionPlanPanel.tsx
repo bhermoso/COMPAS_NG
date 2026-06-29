@@ -1,10 +1,13 @@
 import { useState } from "react";
 import type { ActionPlanDraft, FrameworkAlignment } from "../../application/action-plan";
+import { FormalValidationForm } from "./FormalValidationForm";
 
 interface ActionPlanPanelProps {
   actionPlan: ActionPlanDraft;
   isEmpty?: boolean;
   isBlocked?: boolean;
+  formalValidation?: { validatedAt: string; validatedBy: string; isStale: boolean };
+  onFormalValidate?: (validatedBy: string, role: "coordination" | "group-motor", externalReference?: string) => void;
 }
 
 function formatDate(iso: string): string {
@@ -75,7 +78,7 @@ function FrameworkAlignmentsBlock({ alignments }: { alignments: FrameworkAlignme
 
 // ── Panel principal ───────────────────────────────────────────────────────────
 
-export function ActionPlanPanel({ actionPlan, isEmpty = false, isBlocked = false }: ActionPlanPanelProps) {
+export function ActionPlanPanel({ actionPlan, isEmpty = false, isBlocked = false, formalValidation, onFormalValidate }: ActionPlanPanelProps) {
   const { pslReference } = actionPlan;
 
   const provenanceText = (() => {
@@ -238,6 +241,16 @@ export function ActionPlanPanel({ actionPlan, isEmpty = false, isBlocked = false
           ))}
         </ul>
       </article>
+
+      {!isBlocked && !isEmpty && onFormalValidate != null && (
+        <article className="card fval-card">
+          <h3>Validación formal del Plan de Acción</h3>
+          <FormalValidationForm
+            formalValidation={formalValidation}
+            onFormalValidate={onFormalValidate}
+          />
+        </article>
+      )}
     </section>
   );
 }
