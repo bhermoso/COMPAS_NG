@@ -35,24 +35,22 @@ El objetivo es evitar que todo lo no implementado aparezca mezclado bajo la pala
 
 ## 3. Huecos arquitectónicos registrados
 
-| ID | Hueco | Categoría | Estado | Bloquea | Prioridad |
-|---|---|---|---|---|---|
-| H-01 | Biblioteca Metodológica incompleta para DUKE, PREDIMED, SF-12, Sueño y CAGE | Deuda técnica | Reconocida | Constructor REDCap completo / validación metodológica | Alta |
-| H-02 | Motor de Traducción Estratégica canónico (MTE) | Implementación pendiente | Diseñado contractualmente | Sustitución de EPVSATranslator / Plan Local de Salud robusto | Alta |
-| H-03 | Strategic Repository gestionable | Implementación pendiente | Diseñado contractualmente | MTE | Alta |
-| H-04 | Transición institucional PSL `validated` → `approved` | Implementación pendiente | Tipos definidos, UI pendiente | LocalHealthPlanCompiler / PLS | Alta |
-| H-05 | Validación formal de ActionPlanDraft, AgendaDraft y MonitoringDraft | Implementación pendiente | Tipos parciales definidos | LocalHealthPlanCompiler / PLS | Alta |
-| H-06 | LocalHealthPlanCompiler | Implementación pendiente | Contrato existente, implementación pendiente | Producto PLS | Alta |
-| H-07 | Necesidades no priorizadas (`UnaddressedNeed[]`) integradas en Plan de Acción | Implementación pendiente | Tipo definido en PLS, no integrado en ActionPlanDraft | Gates del PLS | Media |
-| H-08 | Resumen Ejecutivo como sección/export independiente del PLS | Decisión metodológica abierta | Decisión parcialmente resuelta en contrato PLS | Producto comunicativo político | Media |
-| H-09 | SAM / calidad muestral | Investigación metodológica + implementación pendiente | Diseñado como futuro | Evaluación de calidad muestral | Media |
-| H-10 | Parser de resultados del Constructor REDCap → EvidenceStore | Implementación pendiente | No implementado | Ciclo Encuesta Municipal completo | Media |
-| H-11 | Visor PDF nativo para Informe de Salud | Implementación pendiente | Deuda documentada, no bloqueante | UX documental | Baja |
-| H-12 | Anexo Técnico Metodológico | Decisión metodológica abierta | Sin definición estructural | Producto documental metodológico | Media |
-| H-13 | Memoria endocualitativa del proceso local | Reserva arquitectónica | Principio definido, mecanismo no diseñado | Memoria longitudinal del proceso | Media |
-| H-14 | ExecutiveSummaryArtifact como tipo independiente | Decisión metodológica abierta | Evitar duplicidad con sección inicial del PLS | Arquitectura de compiladores | Baja |
-
----
+| ID | Hueco | Categoría | Evidencia | Estado | Bloquea | Prioridad |
+|---|---|---|---|---|---|---|
+| H-01 | Biblioteca Metodológica incompleta para DUKE, PREDIMED, SF-12, Sueño y CAGE | Deuda técnica | `CONTRACT-COMPLEMENTARY-STUDIES.md §9a`; `domain/methodology/registry.ts`; parsers EAS implementados | Reconocida | Constructor REDCap completo / validación metodológica | Alta |
+| H-02 | Motor de Traducción Estratégica canónico (MTE) | Implementación pendiente | `CONTRACT-STRATEGIC-TRANSLATION.md`; `BLUEPRINT-PRODUCTION.md`; `EPVSATranslator` provisional | Diseñado contractualmente | Sustitución de EPVSATranslator / Plan Local de Salud robusto | Alta |
+| H-03 | Strategic Repository gestionable | Implementación pendiente | `CONTRACT-STRATEGIC-REPOSITORY.md`; menciones en MTE y Blueprint | Diseñado contractualmente | MTE | Alta |
+| H-04 | Flujo institucional de aprobación del PSL (`validated` → `approved`) | Implementación pendiente | `approvePSL.ts`; `PSLApprovalRecord`; `CONTRACT-INSTITUTIONAL-LIFECYCLE.md`; gates G-PLS | Tipos y función base definidos; integración UI/compilador pendiente | LocalHealthPlanCompiler / PLS | Alta |
+| H-05 | Validación formal de ActionPlanDraft, AgendaDraft y MonitoringDraft | Implementación pendiente | `FormalValidationRecord`; `createFormalValidation.ts`; `CONTRACT-INSTITUTIONAL-LIFECYCLE.md`; `CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.md` | Registro formal diseñado; flujo completo y consumo por compilador pendientes | LocalHealthPlanCompiler / PLS | Alta |
+| H-06 | LocalHealthPlanCompiler | Implementación pendiente | `CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.md`; `CompilationManifest`; `LocalHealthPlanDocument` | Contrato existente, implementación pendiente | Producto PLS | Alta |
+| H-07 | Necesidades no priorizadas (`UnaddressedNeed[]`) integradas en Plan de Acción | Implementación pendiente | `LocalHealthPlanDocument.ts`; `CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.md`; ausencia en `ActionPlanDraft` | Tipo definido en PLS, no integrado en ActionPlanDraft | Gates del PLS | Media |
+| H-08 | Resumen Ejecutivo como sección inicial del PLS | Implementación pendiente | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.md`; `BENCHMARK-INSTITUTIONAL-PRODUCTS.md`; Gap Register H-14 absorbido | Decisión metodológica resuelta; pendiente de implementación en LocalHealthPlanCompiler | LocalHealthPlanCompiler / exportación PLS | Media |
+| H-09 | SAM / calidad muestral | Investigación metodológica + implementación pendiente | `CONTRACT-DYNAMIC-TRIPYRAMID.md`; `EvidenceOrigin: "sam"` reservado; Blueprint | Diseñado como futuro | Evaluación de calidad muestral | Media |
+| H-10 | Integración Constructor Metodológico → REDCap → EvidenceStore | Implementación pendiente | `QuestionnaireBuilder`; `RedcapDictionaryBuilder`; `RedcapDictionaryCsvExporter`; ausencia de ciclo end-to-end | Builder y exportador básicos existen; integración completa no implementada | Ciclo Encuesta Municipal completo | Media |
+| H-11 | Visor PDF nativo para Informe de Salud | Implementación pendiente | `PdfToHealthReport.ts`; ROADMAP deuda documentada; visor actual no nativo | Deuda documentada, no bloqueante | UX documental | Baja |
+| H-12 | Anexo Técnico Metodológico | Implementación pendiente + decisión estructural menor | `INSTITUTIONAL-PRODUCTS-ARCHITECTURE.md`; `METHODOLOGICAL-FOUNDATIONS`; relación con SAM | Producto identificado; estructura y compilador pendientes | Producto documental metodológico | Media |
+| H-13 | Memoria endocualitativa del proceso local | Reserva arquitectónica | `FOUNDATIONS.md`; `ROADMAP.md`; principio endocualitativo | Principio definido, mecanismo no diseñado | Memoria longitudinal del proceso | Media |
+| H-14 | ExecutiveSummaryArtifact como tipo independiente | Retirado / absorbido | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.md`; H-08 | Absorbido por H-08; no debe implementarse como artefacto autónomo salvo nueva decisión metodológica | Nada | Baja |
 
 ## 4. No son deuda
 
