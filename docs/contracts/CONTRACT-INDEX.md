@@ -224,6 +224,24 @@ Investiga la posibilidad de construir hipótesis estructurales sobre determinant
 
 ---
 
+## Gobernanza de sesiones de trabajo
+
+### CONTRACT-PMO
+**Estado:** VIGENTE
+
+Contrato del Prompt Maestro Operativo (PMO). Define la naturaleza, finalidad, contenido
+mínimo obligatorio, política de modelos (5 niveles de capacidad: BAJO, MEDIO, ALTO, MAX,
+PENSAMIENTO), protocolo de invocación mediante la palabra `PMO`, invariantes, riesgos que
+evita y antipatrones. Convierte la inicialización de cualquier sesión de trabajo con un
+asistente de IA en un acto trazable, reproducible y coherente con el sistema de gobierno
+del proyecto. Instrumento agnóstico de proveedor y de modelo.
+
+**Productores:** El responsable del proyecto (redacta los PMOs concretos que siguen este contrato).
+**Consumidores:** Cualquier asistente de IA que trabaje sobre COMPÁS NG; el responsable del proyecto.
+**Relacionado con:** `OPERATING-CONSTITUTION.md §7`, `CONTRACT-INTERPRETATION.md §5`, `ARCHITECTURAL-GAP-REGISTER.md`.
+
+---
+
 ## Mapa de dependencias
 
 ```

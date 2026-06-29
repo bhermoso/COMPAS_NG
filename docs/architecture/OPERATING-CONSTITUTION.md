@@ -386,6 +386,7 @@ complementarios son:
 | Contrato del Compiler | `docs/contracts/CONTRACT-COMPILER.md` | Compilador del Plan Local de Salud |
 | **Contrato de Interpretación** | `docs/contracts/CONTRACT-INTERPRETATION.md` | Naturaleza y límites de la interpretación territorial, capas del conocimiento, papel de la IA |
 | Contrato de Inferencia Estructural | `docs/contracts/CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE.md` | Marco para investigación futura; bloquea implementación durante Sprint 0 |
+| Contrato del Prompt Maestro Operativo | `docs/contracts/CONTRACT-PMO.md` | Inicialización de sesiones de trabajo con asistentes de IA; política de modelos; protocolo de invocación |
 | Hoja de Ruta | `ROADMAP.md` | Hitos pasados y próximos |
 
 ---

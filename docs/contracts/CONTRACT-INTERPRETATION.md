@@ -444,6 +444,7 @@ interpretativa.
 | `CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE.md` | Reserva arquitectónica para la futura Inferencia Estructural Territorial |
 | `ARCHITECTURE-CONSTITUTION.md` | Arts. 5, 6 y 9 establecen los principios de separación y transparencia que fundamentan este contrato |
 | `FOUNDATIONS.md` | §9 define las restricciones de generación automática |
+| `CONTRACT-PMO.md` | Extiende a nivel operativo de sesión el papel asistencial de la IA definido en §5 de este contrato |
 
 ---
 
