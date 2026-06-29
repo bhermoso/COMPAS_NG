@@ -1,10 +1,45 @@
 import type { SF12Aggregates } from "../../domain/sf12";
 import { splitRow } from "../csv-utils/splitRow";
+import { getMethodologicalModule } from "../../domain/methodology";
 
-// Campos canónicos pre-calculados por la EAS (Vilagut et al. 2008).
+// ── Configuración derivada de SF12_EAS_MODULE ─────────────────────────────────
+// Los campos canónicos se obtienen del módulo metodológico en lugar de estar
+// duplicados aquí. El módulo mapea outputField → savVariable (columna CSV).
+
+const _rawSf12Module = getMethodologicalModule("sf12-eas");
+if (!_rawSf12Module) {
+  throw new Error(
+    "[SF12CSVParser] Módulo 'sf12-eas' no encontrado en el registro metodológico. " +
+    "Verifica que SF12_EAS_MODULE esté registrado en domain/methodology/registry.ts."
+  );
+}
+const _sf12SavAdapter = _rawSf12Module.adapters?.sav;
+if (!_sf12SavAdapter) {
+  throw new Error(
+    "[SF12CSVParser] SF12_EAS_MODULE no tiene adaptador SAV configurado. " +
+    "El parser requiere adapters.sav.variables con outputField 'pcs' y 'mcs'."
+  );
+}
+
+const _pcsVar = _sf12SavAdapter.variables.find(v => v.outputField === "pcs");
+if (!_pcsVar) {
+  throw new Error(
+    "[SF12CSVParser] Variable 'pcs' no encontrada en SF12_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='pcs' y savVariable='PCS12_SP'."
+  );
+}
+const _mcsVar = _sf12SavAdapter.variables.find(v => v.outputField === "mcs");
+if (!_mcsVar) {
+  throw new Error(
+    "[SF12CSVParser] Variable 'mcs' no encontrada en SF12_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='mcs' y savVariable='MCS12_SP'."
+  );
+}
+
+// Campos canónicos derivados del módulo (Vilagut et al. 2008, norma española).
 // COMPÁS NG los consume directamente — no recalcula PCS/MCS desde los 12 ítems.
-const PCS_FIELD = "PCS12_SP";
-const MCS_FIELD = "MCS12_SP";
+const PCS_FIELD = _pcsVar.savVariable;   // "PCS12_SP"
+const MCS_FIELD = _mcsVar.savVariable;   // "MCS12_SP"
 
 const EMPTY_AGGREGATES: SF12Aggregates = {
   n: 0,

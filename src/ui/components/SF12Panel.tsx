@@ -20,11 +20,11 @@ export function SF12Panel({
     <section className="workspace-panel">
       <div className="study-upload">
         <div className="study-upload__zone">
-          <label htmlFor="sf12-csv-input" className="study-upload__label">
+          <label htmlFor="sf12-panel-csv-input" className="study-upload__label">
             Cargar CSV SF-12 EAS (.csv)
           </label>
           <input
-            id="sf12-csv-input"
+            id="sf12-panel-csv-input"
             type="file"
             accept=".csv"
             disabled={isLoading === true}

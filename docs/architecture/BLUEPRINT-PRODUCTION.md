@@ -229,7 +229,7 @@ El MIT produce el `EstadoTerritorialEvolutivo` que los encapsula.
 | **AgendaEngine** | ✅ Implementado (borrador) | `ActionPlanDraft` | `AgendaDraft` | Trimestrización orientativa |
 | **MonitoringEngine** | ✅ Implementado (borrador) | `AgendaDraft` | `MonitoringDraft` | Estado `pending-validation` para todos los items |
 | **Motor de Traducción Estratégica (MTE)** | 🔵 No implementado | PSL `validated` + Priorizaciones + StrategicRepository | `StrategicTranslationResult` | Reemplazará EPVSATranslator. Requiere Repository. |
-| **SAM Engine** | 🔵 No implementado | Padrón + muestra teórica + EvidenceStore | `SampleQualityResult` | Requiere datos de padrón por municipio. |
+| **SAM Engine** | ✅ Motor implementado (Producto 2) | `PopulationReference` + `nObserved` | `SampleQualityAssessment` | Motor puro + integración 6 instrumentos. Tripirámide visual y EvidenceAtoms pendientes. |
 
 ### III.3 Limitación actual del EPVSATranslator
 
@@ -645,7 +645,7 @@ EvidenceStore  [retroalimenta Flujo 1]
 
 | Contrato | Estado | Activa en |
 |---|---|---|
-| CONTRACT-DYNAMIC-TRIPYRAMID | CONCEPTUAL | Sprint 2 (si datos de padrón disponibles) |
+| CONTRACT-DYNAMIC-TRIPYRAMID | VIGENTE | Producto 2 — Motor implementado 2026-06-29 |
 | CONTRACT-STRATEGIC-REPOSITORY | CONCEPTUAL | Sprint 2 |
 | CONTRACT-STRATEGIC-TRANSLATION | CONCEPTUAL | Sprint 2 |
 | CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE | FUTURO | Sprint 3+ |
@@ -825,7 +825,7 @@ Corrección IBSE. 6 contratos nuevos. Consolidación visual. Deuda §9a document
 - Seguimiento inteligente (depende de Agenda inteligente)
 - Ciclo de evidencia longitudinal (Hueco H-8)
 - Resumen Ejecutivo (depende de CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT)
-- Tripirámide Dinámica / SAM (depende de datos de padrón por municipio)
+- Tripirámide visual / visualización SAM (motor SAM implementado en Producto 2; Tripirámide UI pendiente)
 - Cuadros de mando (sin definición; no diseñar antes de conocer los productos documentales)
 
 ### Investigación futura (no antes de Sprint 3)

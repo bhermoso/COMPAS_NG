@@ -512,11 +512,11 @@ en artefactos institucionales exportables. No analizan, no interpretan, no propo
 |---|---|
 | **Entrada** | Metadata de la Biblioteca Metodológica + EvidenceStore statistics + `IntegrityGuardResult` |
 | **Producto** | AT: Nota técnica metodológica |
-| **Restricciones** | Para generar contenido útil sobre calidad muestral, requiere la Tripirámide Dinámica/SAM (Sprint 3). Puede generar una versión básica sin SAM. |
+| **Restricciones** | El motor SAM está disponible desde Producto 2 (2026-06-29). Para integrar la calidad muestral en el Anexo Técnico, consume `computeSampleQualityAssessment()` directamente. La Tripirámide visual (visualización de resultados SAM) queda pendiente. |
 | **Gates** | `psl.status === "validated"` |
 | **Dependencias** | Ninguna del resto de compiladores. |
 | **Contrato** | Pendiente de crear |
-| **Sprint** | Sprint 2 (versión básica) / Sprint 3 (versión con SAM) |
+| **Sprint** | Sprint 2 (versión básica); integración SAM en calidad muestral disponible ahora (motor Producto 2) |
 
 ### 6.6 REDCapCompiler
 

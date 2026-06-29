@@ -55,11 +55,11 @@ export function IBSEPanel({
       {/* Upload zone — solo si no hay datos ya cargados en StudyRow */}
       <div className="study-upload">
         <div className="study-upload__zone">
-          <label htmlFor="ibse-csv-input" className="study-upload__label">
+          <label htmlFor="ibse-panel-csv-input" className="study-upload__label">
             Cargar exportación REDCap (.csv)
           </label>
           <input
-            id="ibse-csv-input"
+            id="ibse-panel-csv-input"
             type="file"
             accept=".csv"
             disabled={isLoading === true}

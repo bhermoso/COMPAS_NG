@@ -1,13 +1,47 @@
 import type { CAGEAggregates } from "../../domain/cage";
 import { splitRow } from "../csv-utils/splitRow";
+import { getMethodologicalModule } from "../../domain/methodology";
 
-// Campos canónicos derivados por la EAS para monitorización del consumo de alcohol.
-// COMPÁS NG los consume directamente — no recalcula el CAGE desde ítems individuales.
+// ── Configuración derivada de CAGE_EAS_MODULE ─────────────────────────────────
+// Los campos canónicos se obtienen del módulo metodológico en lugar de estar
+// duplicados aquí. El módulo mapea outputField → savVariable (columna CSV).
+
+const _rawCageModule = getMethodologicalModule("cage-eas");
+if (!_rawCageModule) {
+  throw new Error(
+    "[CAGECSVParser] Módulo 'cage-eas' no encontrado en el registro metodológico. " +
+    "Verifica que CAGE_EAS_MODULE esté registrado en domain/methodology/registry.ts."
+  );
+}
+const _cageSavAdapter = _rawCageModule.adapters?.sav;
+if (!_cageSavAdapter) {
+  throw new Error(
+    "[CAGECSVParser] CAGE_EAS_MODULE no tiene adaptador SAV configurado. " +
+    "El parser requiere adapters.sav.variables con outputField 'riesgo' y 'nivel'."
+  );
+}
+
+const _riesgoVar = _cageSavAdapter.variables.find(v => v.outputField === "riesgo");
+if (!_riesgoVar) {
+  throw new Error(
+    "[CAGECSVParser] Variable 'riesgo' no encontrada en CAGE_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='riesgo' y savVariable='CAGE_R'."
+  );
+}
+const _nivelVar = _cageSavAdapter.variables.find(v => v.outputField === "nivel");
+if (!_nivelVar) {
+  throw new Error(
+    "[CAGECSVParser] Variable 'nivel' no encontrada en CAGE_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='nivel' y savVariable='CAGE'."
+  );
+}
+
+// Campos canónicos derivados del módulo.
 // CAGE_R es el indicador de riesgo binario (0=No / 1=Sí).
 // CAGE clasifica el nivel de consumo en cuatro categorías ordinales (1–4).
 // P32D_2023 (ítem AUDIT-C) NO forma parte de este módulo: es un instrumento distinto.
-const CAGE_R_FIELD = "CAGE_R";
-const CAGE_FIELD = "CAGE";
+const CAGE_R_FIELD = _riesgoVar.savVariable;   // "CAGE_R"
+const CAGE_FIELD = _nivelVar.savVariable;      // "CAGE"
 
 // Códigos de missing / no procede en EAS
 const MISSING_CODES = new Set(["", "991.0", "994.0", "995.0", "996.0", "999.0"]);

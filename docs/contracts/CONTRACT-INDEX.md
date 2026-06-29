@@ -192,16 +192,16 @@ Contrato del Compilador del Plan Local de Salud. Define los gates obligatorios (
 
 ---
 
-## Infraestructura metodológica futura (Sprint 2+)
+## Infraestructura metodológica
 
 ### CONTRACT-DYNAMIC-TRIPYRAMID
-**Estado:** CONCEPTUAL
+**Estado:** VIGENTE
 
-Define el modelo conceptual de la Tripirámide Dinámica de calidad muestral: Población → Muestra teórica → Muestra observada → Calidad → Interpretación. Establece SAM (Sistema de Auditoría Muestral) como metodología separada. Sin implementación en Sprint 1.
+Define el Sistema de Ajuste Muestral (SAM) como capacidad metodológica transversal: `PopulationReference`, `SampleQualityAssessment`, Cochran+FPC como algoritmo por defecto, clasificación high/medium/low. Motor puro implementado y certificado (Producto 2, 2026-06-29). Integración con los 6 instrumentos complementarios implementada. Tripirámide visual, EvidenceAtoms desde SAM y estratificación pendientes.
 
-**Productores futuros:** SAM engine.
-**Consumidores futuros:** EvidenceStore (átomos `kind: "sample-quality"`), paneles de estudios.
-**Relacionado con:** CONTRACT-EVIDENCE-QUALITY, CONTRACT-EVIDENCE.
+**Productores:** `computeSampleQualityAssessment()` (motor puro); `assess*Study()` (capa de integración por instrumento).
+**Consumidores:** equipo técnico (dictamen metodológico). EvidenceStore (futuro: átomos `kind: "sample-quality"`), paneles de estudios (futuro: Tripirámide visual).
+**Relacionado con:** CONTRACT-EVIDENCE-QUALITY, CONTRACT-EVIDENCE, CONTRACT-COMPLEMENTARY-STUDIES.
 
 ---
 
@@ -298,15 +298,13 @@ LocalHealthPlanDocument (PLS)
 
 ---
 
-## Expediente de certificación
+## Expedientes de certificación
 
-El estado contractual de los Sprint 0 y Sprint 1 queda formalizado en:
-
-`docs/certification/CERTIFICATION-SPRINT-0-1.md` — 2026-06-28
-
-Este expediente incluye la clasificación de deuda, los componentes congelados y reservados,
-la nota sobre la familia de compiladores (LocalHealthProfileCompiler, NHSHealthProfileCompiler,
-LocalHealthPlanCompiler) y los prerequisitos del Sprint 2.
+| Expediente | Fecha | Estado |
+|---|---|---|
+| `docs/certification/CERTIFICATION-SPRINT-0-1.md` | 2026-06-28 | Sprints 0–1: pipeline E2E, 309 tests |
+| `docs/certification/PRODUCT-1-CERTIFICATION.md` | 2026-06-29 | Producto 1 — Sistema de Estudios Complementarios: 6 instrumentos, 481 tests |
+| `docs/certification/PRODUCT-2-SAM-CERTIFICATION.md` | 2026-06-29 | Producto 2 — SAM NG: motor + integración 6 instrumentos + IBSE dual, 553 tests |
 
 El plano arquitectónico completo que responde a la pregunta
 "¿qué debe existir para producir un Perfil de Salud Local, un Plan Local de Salud y una

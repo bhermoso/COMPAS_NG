@@ -1,12 +1,46 @@
 import type { SuenoAggregates } from "../../domain/sueno";
 import { splitRow } from "../csv-utils/splitRow";
+import { getMethodologicalModule } from "../../domain/methodology";
 
-// Campos canónicos derivados por la EAS para monitorización del sueño.
-// COMPÁS NG los consume directamente — no reconstruye ningún índice desde ítems.
+// ── Configuración derivada de SUENO_EAS_MODULE ────────────────────────────────
+// Los campos canónicos se obtienen del módulo metodológico en lugar de estar
+// duplicados aquí. El módulo mapea outputField → savVariable (columna CSV).
+
+const _rawSuenoModule = getMethodologicalModule("sueno-eas");
+if (!_rawSuenoModule) {
+  throw new Error(
+    "[SuenoCSVParser] Módulo 'sueno-eas' no encontrado en el registro metodológico. " +
+    "Verifica que SUENO_EAS_MODULE esté registrado en domain/methodology/registry.ts."
+  );
+}
+const _suenoSavAdapter = _rawSuenoModule.adapters?.sav;
+if (!_suenoSavAdapter) {
+  throw new Error(
+    "[SuenoCSVParser] SUENO_EAS_MODULE no tiene adaptador SAV configurado. " +
+    "El parser requiere adapters.sav.variables con outputField 'duracion' y 'calidad'."
+  );
+}
+
+const _duracionVar = _suenoSavAdapter.variables.find(v => v.outputField === "duracion");
+if (!_duracionVar) {
+  throw new Error(
+    "[SuenoCSVParser] Variable 'duracion' no encontrada en SUENO_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='duracion' y savVariable='P33_R'."
+  );
+}
+const _calidadVar = _suenoSavAdapter.variables.find(v => v.outputField === "calidad");
+if (!_calidadVar) {
+  throw new Error(
+    "[SuenoCSVParser] Variable 'calidad' no encontrada en SUENO_EAS_MODULE.adapters.sav. " +
+    "El módulo debe declarar una entrada con outputField='calidad' y savVariable='P33A'."
+  );
+}
+
+// Campos canónicos derivados del módulo.
 // P33_R mide CANTIDAD (horas vs. recomendación SES); P33A mide CALIDAD subjetiva.
 // Son dimensiones independientes: se espera ~29 % de discordancia entre ambas.
-const P33R_FIELD = "P33_R";
-const P33A_FIELD = "P33A";
+const P33R_FIELD = _duracionVar.savVariable;   // "P33_R"
+const P33A_FIELD = _calidadVar.savVariable;    // "P33A"
 
 const EMPTY_AGGREGATES: SuenoAggregates = {
   n: 0,

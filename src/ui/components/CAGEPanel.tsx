@@ -21,11 +21,11 @@ export function CAGEPanel({
     <section className="workspace-panel">
       <div className="study-upload">
         <div className="study-upload__zone">
-          <label htmlFor="cage-csv-input" className="study-upload__label">
+          <label htmlFor="cage-panel-csv-input" className="study-upload__label">
             Cargar CSV CAGE-EAS (.csv)
           </label>
           <input
-            id="cage-csv-input"
+            id="cage-panel-csv-input"
             type="file"
             accept=".csv"
             disabled={isLoading === true}
