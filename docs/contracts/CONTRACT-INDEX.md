@@ -1,7 +1,7 @@
 # CONTRACT-INDEX — Índice maestro de contratos arquitectónicos
 
 > COMPÁS NG — Referencia de arquitectura contractual
-> Última actualización: Sprint 2.3 — 2026-06-28
+> Última actualización: Sprint 2 recertificación — 2026-06-29
 
 Este documento es la puerta de entrada a la arquitectura contractual de COMPÁS NG.
 No duplica contenido de los contratos. Cada entrada contiene: propósito, alcance, estado y relaciones.
@@ -149,8 +149,22 @@ Contrato del `LocalHealthPlanCompiler`. Define cómo se produce el `LocalHealthP
 **Productores:** `LocalHealthPlanCompiler` (pendiente de implementar; tipos de dominio en Sprint 2.3).
 **Consumidores:** Equipo técnico, UI (exportación futura DOCX/PDF/HTML).
 **Tipos:** `src/domain/health-plan/LocalHealthPlanDocument.ts`, `src/domain/compilation/CompilationManifest.ts`.
-**Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica).
-**Prerequisitos antes de implementar:** ampliación CONTRACT-MIT-PSL (actor model `approved`), ampliación CONTRACT-ACTION-PLAN (validación formal Nivel 3).
+**Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica), CONTRACT-INSTITUTIONAL-LIFECYCLE.
+**Prerequisitos satisfechos (Sprint 2):** actor model `approved` implementado (CONTRACT-INSTITUTIONAL-LIFECYCLE); validación formal del Nivel 3 implementada (`FormalValidationRecord`, `createFormalValidation.ts`).
+**Prerequisitos pendientes:** `UnaddressedNeed[]` en `ActionPlanDraft` (G-PLS-7); `PLSEvaluationFramework` (G-PLS-10). Ver §16 de este contrato.
+
+---
+
+## Modelo de ciclo de vida institucional
+
+### CONTRACT-INSTITUTIONAL-LIFECYCLE
+**Estado:** VIGENTE
+
+Contrato del modelo canónico de ciclos de vida institucional de los objetos de COMPÁS NG. Define los tres tipos de objeto por ciclo de vida (efímero, vivo con estados, artefacto institucional), el ciclo completo del PSL (6 estados, transiciones, irreversibilidad), la validación formal de objetos efímeros del Nivel 3 (`FormalValidationRecord`), la aprobación institucional del PSL (`PSLApprovalRecord`) y el actor model completo (5 roles con tabla de permisos por transición).
+
+**Productores:** `src/application/institutional-lifecycle/approvePSL.ts`, `createFormalValidation.ts`.
+**Consumidores:** `handleApprovePSL` y `handleFormalValidation` en `src/App.tsx`; paneles `PSLApproveAction` y `FormalValidationForm`; `LocalHealthPlanCompiler` (futuro: gates G-PLS-1, G-PLS-5, G-PLS-6).
+**Relacionado con:** CONTRACT-MIT-PSL (PSL y sus 6 estados), CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER (gate G-LHC-1), CONTRACT-LOCAL-HEALTH-PLAN-COMPILER (gates G-PLS-1, G-PLS-5, G-PLS-6), CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT (aprobación institucional del PLS).
 
 ---
 

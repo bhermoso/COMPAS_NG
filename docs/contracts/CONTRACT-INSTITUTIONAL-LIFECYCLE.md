@@ -1,7 +1,7 @@
 # CONTRACT-INSTITUTIONAL-LIFECYCLE
 
 > COMPÁS NG — Contrato del modelo institucional de estados, validaciones y aprobaciones
-> Sprint 2.4 — 2026-06-28
+> Sprint 2.4 — 2026-06-28 | Recertificado 2026-06-29
 > Estado: VIGENTE
 
 ---
@@ -187,8 +187,10 @@ Ambos son necesarios: el PSL lleva el estado mínimo (para que los gates funcion
 | Creación de FormalValidationRecord | `src/application/institutional-lifecycle/createFormalValidation.ts` | ✅ Implementado |
 | Actualización del workspace | `src/domain/workspace/MunicipalityWorkspace.ts` | ✅ Implementado (`pslApproval`, `formalValidations`) |
 | Tests | `tests/institutional-lifecycle.test.ts` (40 tests) | ✅ Implementado |
-| Handler `handleApprovePSL` en UI | `src/App.tsx` | ❌ Pendiente (Sprint 2.5) |
-| Handler `handleFormalValidation` en UI | `src/App.tsx` | ❌ Pendiente (Sprint 2.5) |
+| Handler `handleApprovePSL` en UI | `src/App.tsx` | ✅ Implementado (Sprint 2) |
+| Handler `handleFormalValidation` en UI | `src/App.tsx` | ✅ Implementado (Sprint 2) |
+| Panel UI de aprobación del PSL (`PSLApproveAction`) | `src/ui/components/LocalHealthProfileView.tsx` | ✅ Implementado (Sprint 2) |
+| Formulario de validación formal (`FormalValidationForm`) | `src/ui/components/FormalValidationForm.tsx` | ✅ Implementado (Sprint 2) |
 
 ---
 
@@ -220,9 +222,13 @@ El compilador puede producir el `LocalHealthPlanDocument`. La aprobación por la
 
 ---
 
-## 10. Pendiente de Sprint 2.5
+## 10. Integración completada en Sprint 2
 
-- Handler `handleApprovePSL` en `src/App.tsx`
-- Handler `handleFormalValidation` para ActionPlan y Agenda en `src/App.tsx`
-- Panel UI de aprobación del PSL
-- Visualización del estado de las validaciones formales en el pipeline
+Todos los elementos de UI identificados como pendientes han sido integrados:
+
+- ✅ Handler `handleApprovePSL` — `src/App.tsx` (línea ~461)
+- ✅ Handler `handleFormalValidation` para ActionPlan y Agenda — `src/App.tsx` (línea ~480)
+- ✅ Panel UI de aprobación del PSL (`PSLApproveAction`) — `src/ui/components/LocalHealthProfileView.tsx`
+- ✅ Visualización del estado de validaciones formales (`FormalValidationForm`) — `src/ui/components/ActionPlanPanel.tsx` y `AgendaPanel.tsx`
+
+Pendiente de sprint posterior: consumo de aprobación y validaciones formales por `LocalHealthPlanCompiler` (ver H-04 y H-05 en `ARCHITECTURAL-GAP-REGISTER.md`).

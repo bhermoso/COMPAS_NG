@@ -130,14 +130,17 @@ no es opcional ni puede eliminarse.
 
 ---
 
-## 4. Sprint 0 — Objetivo vigente
+## 4. Sprint 0 — Cerrado (certificado 2026-06-28)
 
-**Sprint 0 es el objetivo en curso. No se desarrollarán motores nuevos hasta
-que este sprint esté completamente cerrado.**
+**El Sprint 0 está arquitectónicamente certificado. Todos los criterios del Gate 1 (§5)
+fueron superados sin excepción. El desarrollo de motores está autorizado desde el cierre
+de este sprint.**
 
-El Sprint 0 cierra la deuda técnica acumulada y garantiza que la plataforma
-existente funciona de forma completamente determinista antes de incorporar
-el Motor de Interpretación Territorial, el PSL, el Plan de Acción, la Agenda,
+Ver expediente de certificación completo: `docs/certification/CERTIFICATION-SPRINT-0-1.md`.
+
+El Sprint 0 cerró la deuda técnica acumulada y garantizó que la plataforma
+existente funciona de forma completamente determinista, habilitando la incorporación del
+Motor de Interpretación Territorial, el PSL, el Plan de Acción, la Agenda,
 el Seguimiento y el Compilador como objetos productivos.
 
 ### 4.1 Alcance del Sprint 0
