@@ -2,6 +2,50 @@
   "municipalityId": "zagra",
   "name": "Zagra",
   "province": "Granada",
-  "status": "normalized-folder-created",
-  "files": []
+  "status": "normalized-dossier-populated",
+  "files": [
+    { "path": "sources/informe-salud-zagra.docx", "kind": "health-report", "status": "canonical-copy" },
+    { "path": "sources/informe salud zagra.doc", "kind": "health-report-legacy", "status": "preserved-source" },
+    { "path": "sources/informe salud zagra.pdf", "kind": "health-report-pdf", "status": "preserved-source" },
+    { "path": "sources/activos-zagra.csv", "kind": "community-assets", "status": "canonical-copy" },
+    { "path": "sources/activos zagra.xls", "kind": "community-assets-legacy", "status": "preserved-source" },
+    { "path": "sources/znts y activos zagra.xlsx", "kind": "community-assets-legacy", "status": "preserved-source" },
+    { "path": "sources/IECA_export (2).xls", "kind": "municipal-statistical-source", "status": "preserved-source" },
+    { "path": "sources/GM Zagra.pdf", "kind": "municipal-context-source", "status": "preserved-source" },
+    { "path": "sources/PriorizacinCiudadanaZagra_DataDictionary_2026-06-20.csv", "kind": "redcap-data-dictionary", "study": "thematic-prioritisation", "status": "source-reference" },
+    { "path": "profiles/PSLzagra.doc", "kind": "local-health-profile-legacy", "status": "preserved-source" },
+    { "path": "profiles/PSLzagra.pdf", "kind": "local-health-profile-legacy-pdf", "status": "preserved-source" },
+    { "path": "prioritisation/problemas priorizados y acciones a desarrollar Zagra.xls", "kind": "prioritisation-and-actions", "status": "preserved-source" },
+    { "path": "plans/acuerdo relas ZAGRA.doc", "kind": "relas-agreement", "status": "preserved-source" },
+    { "path": "plans/acuerdo relas zagra.pdf", "kind": "relas-agreement-pdf", "status": "preserved-source" },
+    { "path": "plans/peticion relas zagra.pdf", "kind": "relas-request", "status": "preserved-source" },
+    { "path": "plans/respuesta zagra.pdf", "kind": "relas-response", "status": "preserved-source" },
+    { "path": "plans/programa taller relas zagra.doc", "kind": "relas-workshop-program", "status": "preserved-source" },
+    { "path": "plans/programa taller relas zagra.pdf", "kind": "relas-workshop-program-pdf", "status": "preserved-source" },
+    { "path": "plans/ppt zagra.ppt", "kind": "presentation", "status": "preserved-source" },
+    { "path": "plans/ppt zagra27abril.ppt", "kind": "presentation", "status": "preserved-source" },
+    { "path": "exports/DSC_0001.JPG", "kind": "image", "status": "preserved-export" },
+    { "path": "exports/DSC_0002.JPG", "kind": "image", "status": "preserved-export" },
+    { "path": "exports/zagra.jpg", "kind": "image", "status": "preserved-export" },
+    { "path": "exports/zagra2.jpg", "kind": "image", "status": "preserved-export" },
+    { "path": "exports/fotos-zagra-villanueva/", "kind": "image-folder", "status": "preserved-export" }
+  ],
+  "legacySources": [
+    "R ZAGRA/"
+  ],
+  "knownExactDuplicates": [
+    {
+      "paths": ["exports/DSC_0001.JPG", "exports/zagra2.jpg"],
+      "sha256": "c3681731bd9b563decde9576eda0f27288fe35b4aab97db21884d4f48312b405"
+    },
+    {
+      "paths": ["exports/DSC_0002.JPG", "exports/zagra.jpg"],
+      "sha256": "460e5fd3bc20ac02546d65757aa67673d19ad9bc8e42b862408e736118b9e6fb"
+    }
+  ],
+  "notes": [
+    "The historical R ZAGRA folder has been preserved.",
+    "The normalized dossier copies all detected Zagra files into a structured municipal expediente.",
+    "Exact image duplicates are documented but not deleted."
+  ]
 }
