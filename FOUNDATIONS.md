@@ -165,22 +165,40 @@ Cada cambio en COMPÁS NG debe ser:
 
 ---
 
-## Documentos relacionados
+## Gobernanza documental
 
-| Documento | Cubre |
-|---|---|
-| `ARCHITECTURE-CONSTITUTION.md` | Principios de diseño permanentes (Arts. 1–14) |
-| `VISUAL-CONTRACT.md` | Identidad institucional, gramática visual de capas, ciclo institucional |
-| `docs/architecture/OPERATING-CONSTITUTION.md` | Gate 1, Sprint 0, proceso de aprobación de IA, criterios de aceptación |
-| `docs/contracts/CONTRACT-REPOSITORY.md` | Ciclo de vida documental, canonicidad, operaciones, invariantes |
-| `docs/contracts/CONTRACT-EVIDENCE.md` | EvidenceAtom, EvidenceStore, IntegrityGuard |
-| `docs/contracts/CONTRACT-PERSISTENCE.md` | localStorage, rehidratación, migraciones |
-| `docs/contracts/CONTRACT-COMPLEMENTARY-STUDIES.md` | Estudios Complementarios, taxonomía, patrón de implementación |
-| `docs/contracts/CONTRACT-INTERPRETATION.md` | Naturaleza y límites de la interpretación territorial, capas del conocimiento, papel de la IA |
-| `docs/contracts/CONTRACT-MIT-PSL.md` | Motor de Interpretación Territorial y Perfil de Salud Local |
-| `docs/contracts/CONTRACT-ACTION-PLAN.md` | Plan de Acción, Agenda y Seguimiento (Nivel 3) |
-| `docs/contracts/CONTRACT-COMPILER.md` | Compilador del Plan Local de Salud (reserva arquitectónica) |
-| `docs/contracts/CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE.md` | Inferencia Estructural Territorial (investigación futura) |
+Los documentos de COMPÁS NG no tienen la misma función ni el mismo nivel normativo.
+
+La siguiente matriz define el papel de cada uno dentro del sistema.
+
+| Capa documental | Documento(s) principal(es) | Función | Nivel normativo |
+|---|---|---|---|
+| Constitución | `ARCHITECTURE-CONSTITUTION.md` | Principios permanentes | Máximo |
+| Fundamentos | `FOUNDATIONS.md` | Modelo estructural del sistema | Muy alto |
+| Constitución operativa | `docs/architecture/OPERATING-CONSTITUTION.md` | Reglas operativas y criterios de ejecución | Muy alto |
+| Arquitectura | `docs/architecture/*` | Diseño arquitectónico y productos institucionales | Alto |
+| Contratos | `docs/contracts/*` | Especificaciones verificables de implementación | Alto |
+| Metodología | `docs/methodology/*` | Marco metodológico y científico | Alto |
+| Gobernanza evolutiva | `docs/architecture/ARCHITECTURAL-GAP-REGISTER.md` | Gestión auditada de huecos y reservas | Alto |
+| Planificación | `ROADMAP.md` | Secuencia temporal de evolución | Medio |
+
+### Jerarquía documental
+
+En caso de discrepancia entre documentos, prevalecerá el documento situado en el nivel normativo superior:
+
+1. `ARCHITECTURE-CONSTITUTION.md`
+2. `FOUNDATIONS.md`
+3. `OPERATING-CONSTITUTION.md`
+4. Contratos (`docs/contracts`)
+5. Arquitectura (`docs/architecture`)
+6. Metodología (`docs/methodology`)
+7. `ARCHITECTURAL-GAP-REGISTER.md`
+8. `ROADMAP.md`
+
+El Roadmap nunca modifica la arquitectura.
+El Architectural Gap Register nunca redefine contratos.
+Los contratos nunca contradicen la Constitución.
+Toda evolución debe respetar esta jerarquía documental.
 
 ---
 
