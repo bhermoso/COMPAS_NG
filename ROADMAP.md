@@ -235,3 +235,15 @@ Ejemplos:
 Esta línea no se implementará como automatización decisoria, sino como infraestructura para construir memoria longitudinal, trazabilidad del proceso y contexto interpretativo para profesionales de salud pública.
 
 No se abordará antes de consolidar el Repositorio Documental Municipal, los contratos documentales y la arquitectura de Estudios Complementarios.
+
+---
+
+## Registro de huecos arquitectónicos
+
+La deuda técnica, las implementaciones pendientes, las decisiones metodológicas abiertas
+y las reservas arquitectónicas se clasifican en:
+
+`docs/architecture/ARCHITECTURAL-GAP-REGISTER.md`
+
+Este registro evita tratar como deuda técnica todo aquello que simplemente está diseñado,
+reservado o pendiente de decisión metodológica.
