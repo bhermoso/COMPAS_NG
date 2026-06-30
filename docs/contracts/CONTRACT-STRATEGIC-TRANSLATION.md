@@ -2,6 +2,7 @@
 
 > Contrato del Motor de Traducción Estratégica de COMPÁS NG.
 > Versión 1.0 — Sprint 1 — 2026-06-27
+> **Estado: ARCHIVADO — Supersedido por CONTRACT-MTE.md (2026-06-30)**
 
 ---
 
