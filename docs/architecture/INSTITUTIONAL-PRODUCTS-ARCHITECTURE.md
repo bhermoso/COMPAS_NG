@@ -636,7 +636,8 @@ Son capas complementarias con alcances distintos:
 
 | Ámbito | Documento de referencia |
 |---|---|
-| Interfaz de la aplicación React (paneles, navegación, componentes) | VISUAL-CONTRACT |
+| Identidad visual de la aplicación React (colores, tipografía, composición) | `VISUAL-CONTRACT` |
+| Semántica de navegación (vocabulario visible, espacios de trabajo, Home, ciclo) | `CONTRACT-NAVIGATION` |
 | Documentos institucionales compilados (PSL-C, PLS, PSL-NHS) | Contratos de compilador específicos |
 | HTML en diccionarios REDCap | `CONTRACT-REDCAP-VISUAL-TEMPLATE` (ver §7) |
 

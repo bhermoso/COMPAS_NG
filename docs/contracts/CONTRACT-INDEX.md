@@ -264,6 +264,19 @@ Investiga la posibilidad de construir hipótesis estructurales sobre determinant
 
 ---
 
+## Identidad semántica e interfaz
+
+### CONTRACT-NAVIGATION
+**Estado:** VIGENTE
+
+Contrato de navegación e identidad semántica de la interfaz de COMPÁS NG. Cubre el hueco entre el VISUAL-CONTRACT (identidad visual) y INSTITUTIONAL-PRODUCTS-ARCHITECTURE (catálogo de productos): define qué vocabulario es visible para el usuario y cuál permanece interno, qué representa cada espacio de trabajo, qué es la Home, y los principios para representar el ciclo institucional. Governa toda la interfaz durante la evolución futura del sistema.
+
+**Productores:** Equipo responsable de la interfaz (governa la UI, no un componente de código).
+**Consumidores:** Todo el código React (`src/App.tsx`, `src/ui/components/`), cualquier nueva vista o componente.
+**Relacionado con:** `VISUAL-CONTRACT`, `INSTITUTIONAL-PRODUCTS-ARCHITECTURE`, `FOUNDATIONS §2`, `OPERATING-CONSTITUTION` Bloque F, `CONTRACT-PSL-COMPAS`, `CONTRACT-NHS-HEALTH-PROFILE`, `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT`.
+
+---
+
 ## Gobernanza de sesiones de trabajo
 
 ### CONTRACT-PMO

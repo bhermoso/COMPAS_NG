@@ -457,6 +457,15 @@ Este contrato no debe convertirse en un catálogo de reglas CSS. Si una regla de
 implementación no puede expresarse como principio de identidad, pertenece al código,
 no a este documento.
 
+## 14. Relación con el Contrato de Navegación
+
+`CONTRACT-NAVIGATION` complementa este documento en la capa semántica: define qué vocabulario es visible para el usuario, qué representa cada espacio de trabajo y los principios para el ciclo institucional. Ambos contratos operan en planos distintos y no se contradicen:
+
+- Este contrato governa **cómo se ve** la interfaz (identidad visual, estilo, composición).
+- `CONTRACT-NAVIGATION` governa **qué se dice y qué representa** la interfaz (vocabulario, semántica, estructura institucional).
+
+En caso de tensión entre principios visuales y principios semánticos, el caso debe revisarse explícitamente. No existe jerarquía predefinida entre los dos contratos en sus planos respectivos; la jerarquía aplica cuando ambos tratan el mismo objeto.
+
 ---
 
 *Primera versión: 2026-06-21 — Contrato formalizado tras estabilización de Zagra.*
