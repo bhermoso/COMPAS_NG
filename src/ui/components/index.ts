@@ -26,3 +26,6 @@ export * from "./MonitoringPanel";
 export * from "./StrategicFrameworkPanel";
 export * from "./ThematicPrioritisationModal";
 export * from "./QuestionnaireBuilderPanel";
+export * from "./NHSHealthProfileView";
+export * from "./LecturaEstrategicaView";
+export * from "./PAIView";

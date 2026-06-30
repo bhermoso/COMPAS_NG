@@ -50,6 +50,7 @@ import {
 } from "./infrastructure/persistence/local-storage";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
+import { compileNHSHealthProfile } from "./application/nhs-health-profile-compiler";
 import { approvePSL, createFormalValidation } from "./application/institutional-lifecycle";
 import { isFormalValidationStale } from "./domain/institutional-lifecycle";
 
@@ -73,6 +74,9 @@ import {
   ActionPlanPanel,
   AgendaPanel,
   MonitoringPanel,
+  NHSHealthProfileView,
+  LecturaEstrategicaView,
+  PAIView,
 } from "./ui/components";
 import "./App.css";
 
@@ -117,15 +121,17 @@ function slugifyMunicipalityId(name: string): string {
 
 // ── Tipos y constantes de módulo ─────────────────────────────
 
-type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "priorizacion" | "plan";
+type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "nhs" | "priorizacion" | "lectura" | "plan";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Repositorio documental" },
   { id: "analisis",      label: "Análisis territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
+  { id: "nhs",           label: "Perfil Comparativo" },
   { id: "priorizacion",  label: "Priorizaciones" },
-  { id: "plan",          label: "Elaboración del Plan" },
+  { id: "lectura",       label: "Lectura Estratégica" },
+  { id: "plan",          label: "Plan de Acción" },
 ];
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
@@ -453,6 +459,26 @@ export default function App() {
       return {
         ...prev,
         compiledProfiles: [...(prev.compiledProfiles ?? []), result.artifact],
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
+  const handleCompileNHS = useCallback(() => {
+    setWorkspace((prev) => {
+      const psl = prev.validatedPSL;
+      if (!psl) return prev;
+      const result = compileNHSHealthProfile({
+        psl,
+        workspace: prev,
+        municipalityName: prev.municipality.identity.name,
+        municipalityProvince: prev.municipality.identity.province,
+        existingArtifactCount: prev.nhsArtifact ? 1 : 0,
+      });
+      if (!result.ok) return prev;
+      return {
+        ...prev,
+        nhsArtifact: result.artifact,
         updatedAt: new Date().toISOString(),
       };
     });
@@ -1914,6 +1940,42 @@ export default function App() {
           />
         )}
 
+        {/* ── ④b Perfil Comparativo tipo NHS ────────────────── */}
+        {view === "nhs" && (
+          workspace.nhsArtifact ? (
+            <NHSHealthProfileView artifact={workspace.nhsArtifact} />
+          ) : (
+            <section className="workspace-panel">
+              <p className="eyebrow">Producto 4 · Perfil Comparativo de Salud</p>
+              <h2>Perfil Comparativo tipo NHS</h2>
+              <p className="panel-note">
+                El Perfil Comparativo se genera a partir del Perfil de Salud Local validado.
+                Muestra los indicadores clave de los estudios complementarios con comparación
+                respecto a la referencia provincial (Granada) cuando está disponible.
+              </p>
+              {pslValidated ? (
+                <>
+                  <p className="panel-note">
+                    El PSL está validado y hay {runtime.psl.complementaryStudyCount} instrumento(s) disponible(s).
+                    Puede generarse el Perfil Comparativo.
+                  </p>
+                  <button
+                    type="button"
+                    className="psl-doc-compile-action__btn"
+                    onClick={handleCompileNHS}
+                  >
+                    Generar Perfil Comparativo (PSL-NHS)
+                  </button>
+                </>
+              ) : (
+                <p className="panel-note">
+                  El PSL debe estar validado para generar el Perfil Comparativo.
+                </p>
+              )}
+            </section>
+          )
+        )}
+
         {/* ── ⑤ Priorizaciones — técnica y participativa ──────── */}
         {view === "priorizacion" && (
           <>
@@ -1948,7 +2010,32 @@ export default function App() {
           </>
         )}
 
-        {/* ── ⑥ Plan Local de Salud — encaje EPVSA + plan + agenda + seguimiento */}
+        {/* ── ⑥ Lectura Estratégica Local + PAI ───────────────── */}
+        {view === "lectura" && (
+          runtime.lectura ? (
+            <>
+              <LecturaEstrategicaView lectura={runtime.lectura} />
+              {runtime.pai && <PAIView pai={runtime.pai} />}
+            </>
+          ) : (
+            <section className="workspace-panel">
+              <p className="eyebrow">Producto 5 · Motor de Traducción Estratégica</p>
+              <h2>Lectura Estratégica Local</h2>
+              <p className="panel-note">
+                La Lectura Estratégica Local se genera automáticamente cuando el Perfil de Salud
+                Local está validado. Navega a "Perfil de Salud Local" y valida el PSL para
+                activar este producto.
+              </p>
+              {pslValidated === false && (
+                <p className="panel-note">
+                  El PSL está en estado "{runtime.psl.status}". Se requiere "validated" o "approved".
+                </p>
+              )}
+            </section>
+          )
+        )}
+
+        {/* ── ⑦ Plan Local de Salud — encaje EPVSA + plan + agenda + seguimiento */}
         {view === "plan" && (
           <>
             <EPVSAPanel

@@ -27,6 +27,11 @@ import {
   runReconciliacionInterpretativa,
   type ReconciliacionResult,
 } from "../reconciliation";
+import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
+import { translate as translateMTE } from "../mte";
+import { StaticFrameworkProvider } from "../mte";
+import type { BorradorPAI } from "../pai";
+import { generatePAI } from "../pai";
 
 // ── Runtime interface ──────────────────────────────────────────────────────
 
@@ -61,6 +66,14 @@ export interface MunicipalityRuntime {
   actionPlan: ActionPlanDraft;
   agenda: AgendaDraft;
   monitoring: MonitoringDraft;
+
+  // Producto 5 — Motor de Traducción Estratégica
+  // Disponible solo cuando el PSL está validado o aprobado.
+  lectura: LecturaEstrategicaLocal | undefined;
+
+  // Producto 6 — Plan de Acción Inteligente
+  // Disponible solo cuando la lectura estratégica está disponible.
+  pai: BorradorPAI | undefined;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -147,6 +160,26 @@ export function createMunicipalityRuntime(
   const agenda = generateAgendaDraft(actionPlan);
   const monitoring = generateMonitoringDraft(agenda);
 
+  // ── Producto 5 — Motor de Traducción Estratégica
+  // Solo cuando el PSL está validado/aprobado y no está desactualizado.
+  const pslListoParaMTE =
+    (psl.status === "validated" || psl.status === "approved") && !pslIsStale;
+
+  let lectura: LecturaEstrategicaLocal | undefined;
+  if (pslListoParaMTE) {
+    const provider = new StaticFrameworkProvider(getAllStrategicElements(), "1.0.0");
+    const mteResult = translateMTE(psl, provider);
+    lectura = mteResult.ok ? mteResult.lectura : undefined;
+  }
+
+  // ── Producto 6 — Plan de Acción Inteligente
+  let pai: BorradorPAI | undefined;
+  if (lectura != null) {
+    const provider = new StaticFrameworkProvider(getAllStrategicElements(), "1.0.0");
+    const paiResult = generatePAI(lectura, provider);
+    pai = paiResult.ok ? paiResult.borrador : undefined;
+  }
+
   return {
     workspace: input.workspace,
     integrityGuard,
@@ -168,6 +201,8 @@ export function createMunicipalityRuntime(
     actionPlan,
     agenda,
     monitoring,
+    lectura,
+    pai,
   };
 }
 

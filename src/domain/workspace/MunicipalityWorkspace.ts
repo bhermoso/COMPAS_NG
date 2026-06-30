@@ -11,6 +11,7 @@ import type { CAGEStudy } from "../cage";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 import type { LocalHealthProfile } from "../health-profile";
 import type { LocalHealthProfileArtifact } from "../health-profile-artifact";
+import type { NHSHealthProfileArtifact } from "../nhs-health-profile";
 import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
 
 /**
@@ -75,6 +76,11 @@ export interface MunicipalityWorkspace {
    * Ordenados cronológicamente por compiledAt (el más reciente es el último).
    */
   compiledProfiles?: LocalHealthProfileArtifact[];
+  /**
+   * Perfil Comparativo tipo NHS (PSL-NHS) compilado más reciente.
+   * Se sobreescribe en cada compilación (solo se conserva la última versión activa).
+   */
+  nhsArtifact?: NHSHealthProfileArtifact;
   /**
    * Registro de la aprobación institucional del PSL (transición validated → approved).
    * Complementa los campos psl.approvedAt / psl.approvedBy con los datos
