@@ -1903,6 +1903,7 @@ export default function App() {
             psl={runtime.psl}
             pslIsStale={runtime.pslIsStale}
             municipalityName={municipality.name}
+            compiledProfiles={workspace.compiledProfiles}
             onValidate={handleValidatePSL}
             onInvalidate={handleInvalidatePSL}
             onEditConclusion={handleEditPSLConclusion}

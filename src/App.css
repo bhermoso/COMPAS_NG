@@ -5635,3 +5635,234 @@ h3 {
   .study-bar-row__value  { width: 18%; }
   .study-bar-row__level  { width: 12%; }
 }
+
+/* ── PSL-C: Artefactos compilados ────────────────────────────────────────── */
+
+.psl-compiled-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.psl-artifact-card {
+  border: 1px solid #c9d6e6;
+  border-radius: 10px;
+  background: #f8faff;
+  overflow: hidden;
+}
+
+.psl-artifact-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #e2ecf6;
+  background: #eef5fd;
+}
+
+.psl-artifact-version {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #0074c8;
+  padding: 3px 9px;
+  border-radius: 4px;
+}
+
+.psl-artifact-municipality {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1a2b3c;
+  flex: 1;
+}
+
+.psl-artifact-date {
+  font-size: 0.8rem;
+  color: #526070;
+}
+
+.psl-artifact-frozen {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0074c8;
+  border: 1px solid #c0d8f0;
+  border-radius: 4px;
+  padding: 2px 8px;
+  background: #fff;
+}
+
+.psl-artifact-stats {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e2ecf6;
+}
+
+.psl-artifact-stats__item {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  color: #334155;
+  border-right: 1px solid #e2ecf6;
+}
+
+.psl-artifact-stats__item:last-child {
+  border-right: none;
+}
+
+.psl-artifact-stats__val {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0074c8;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.psl-artifact-trace {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 8px 18px;
+  border-bottom: 1px solid #e2ecf6;
+  background: #fff;
+}
+
+.psl-artifact-trace__item {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-family: ui-monospace, monospace;
+}
+
+.psl-artifact-trace__label {
+  font-family: inherit;
+  font-weight: 700;
+  color: #526070;
+  margin-right: 4px;
+}
+
+.psl-artifact-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: #fff9ec;
+  border-bottom: 1px solid #e2ecf6;
+  font-size: 0.8rem;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.psl-artifact-warning::before {
+  content: "⚠";
+  flex-shrink: 0;
+}
+
+.psl-artifact-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  border-top: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0074c8;
+  text-align: left;
+}
+
+.psl-artifact-toggle:hover {
+  background: #f0f7ff;
+}
+
+.psl-artifact-body {
+  border-top: 1px solid #e2ecf6;
+  padding: 18px 18px 20px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.psl-artifact-section__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0074c8;
+  margin: 0 0 8px;
+}
+
+.psl-artifact-section__text {
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.psl-artifact-areas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.psl-artifact-area {
+  padding: 10px 14px;
+  border: 1px solid #dde5ef;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.psl-artifact-area__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1a2b3c;
+  margin: 0 0 4px;
+}
+
+.psl-artifact-area__rationale {
+  font-size: 0.82rem;
+  color: #526070;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.psl-artifact-area__caution {
+  font-size: 0.78rem;
+  color: #92400e;
+  margin: 6px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid #f59e0b;
+}
+
+.psl-artifact-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.psl-artifact-topic-chip {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0074c8;
+  background: #e8f3fd;
+  border: 1px solid #c0d8f0;
+  border-radius: 4px;
+  padding: 3px 10px;
+}
+
+.psl-artifact-cautela {
+  font-size: 0.82rem;
+  color: #526070;
+  line-height: 1.6;
+  padding: 10px 14px;
+  border-left: 3px solid #f59e0b;
+  background: #fffbf0;
+  margin: 0;
+}

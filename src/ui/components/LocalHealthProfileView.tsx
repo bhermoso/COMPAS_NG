@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { LocalHealthProfile, PSLScaffoldChapter } from "../../domain/health-profile";
+import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
@@ -7,6 +8,7 @@ interface LocalHealthProfileViewProps {
   psl: LocalHealthProfile;
   pslIsStale: boolean;
   municipalityName: string;
+  compiledProfiles?: LocalHealthProfileArtifact[];
   onValidate: (validatedBy: string) => void;
   onInvalidate: () => void;
   onEditConclusion?: (content: string) => void;
@@ -387,12 +389,141 @@ function PSLApproveAction({
   );
 }
 
+// ── PSL-C: tarjeta de artefacto compilado ────────────────────────────────────
+
+function PSLCArtefactoCard({ artifact }: { artifact: LocalHealthProfileArtifact }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const compiledDate = new Date(artifact.compiledAt);
+  const dateStr = compiledDate.toLocaleDateString("es-ES", {
+    day: "2-digit", month: "long", year: "numeric",
+  });
+  const timeStr = compiledDate.toLocaleTimeString("es-ES", {
+    hour: "2-digit", minute: "2-digit",
+  });
+
+  const areas = artifact.lecturaTerritorial.areasDeIntervencion;
+  const trazabilidad = artifact.sourceHash.slice(0, 8);
+
+  return (
+    <div className="psl-artifact-card">
+      <div className="psl-artifact-card__header">
+        <span className="psl-artifact-version">{artifact.artifactVersion}</span>
+        <span className="psl-artifact-municipality">{artifact.portada.municipalityName}</span>
+        <span className="psl-artifact-date">{dateStr} · {timeStr}</span>
+        <span className="psl-artifact-frozen">Documento congelado</span>
+      </div>
+
+      <div className="psl-artifact-stats">
+        <div className="psl-artifact-stats__item">
+          <span className="psl-artifact-stats__val">{artifact.baseDocumental.totalEvidenceAtoms}</span>
+          átomos de evidencia
+        </div>
+        <div className="psl-artifact-stats__item">
+          <span className="psl-artifact-stats__val">{areas.length}</span>
+          {areas.length === 1 ? "área de intervención" : "áreas de intervención"}
+        </div>
+        <div className="psl-artifact-stats__item">
+          <span className="psl-artifact-stats__val">{artifact.baseDocumental.complementaryStudyCount}</span>
+          instrumentos complementarios
+        </div>
+      </div>
+
+      <div className="psl-artifact-trace">
+        <span className="psl-artifact-trace__item">
+          <span className="psl-artifact-trace__label">Hash:</span>{trazabilidad}…
+        </span>
+        <span className="psl-artifact-trace__item">
+          <span className="psl-artifact-trace__label">PSL origen:</span>{artifact.sourcePSLId}
+        </span>
+        {artifact.notaValidacion.pslValidatedBy && (
+          <span className="psl-artifact-trace__item">
+            <span className="psl-artifact-trace__label">Validado por:</span>
+            {artifact.notaValidacion.pslValidatedBy}
+          </span>
+        )}
+      </div>
+
+      <div className="psl-artifact-warning">
+        Este artefacto requiere validación institucional explícita antes de su uso oficial.
+      </div>
+
+      <button
+        type="button"
+        className="psl-artifact-toggle"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        {expanded ? "▲ Ocultar contenido institucional" : "▼ Ver contenido institucional"}
+      </button>
+
+      {expanded && (
+        <div className="psl-artifact-body">
+
+          {artifact.lecturaTerritorial.territorialSummary && (
+            <div>
+              <p className="psl-artifact-section__label">Lectura territorial</p>
+              <p className="psl-artifact-section__text">{artifact.lecturaTerritorial.territorialSummary}</p>
+            </div>
+          )}
+
+          {areas.length > 0 && (
+            <div>
+              <p className="psl-artifact-section__label">
+                Áreas de intervención ({areas.length})
+              </p>
+              <div className="psl-artifact-areas">
+                {areas.map((area, i) => (
+                  <div key={i} className="psl-artifact-area">
+                    <p className="psl-artifact-area__title">{area.title}</p>
+                    <p className="psl-artifact-area__rationale">{area.rationale}</p>
+                    {area.cautions.map((c, j) => (
+                      <p key={j} className="psl-artifact-area__caution">{c}</p>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {artifact.conclusiones.content && (
+            <div>
+              <p className="psl-artifact-section__label">Conclusiones</p>
+              <p className="psl-artifact-section__text">{artifact.conclusiones.content}</p>
+            </div>
+          )}
+
+          {artifact.priorizacion.tematicasSeleccionadasLabels.length > 0 && (
+            <div>
+              <p className="psl-artifact-section__label">Prioridades ciudadanas</p>
+              <div className="psl-artifact-topics">
+                {artifact.priorizacion.tematicasSeleccionadasLabels.map((t, i) => (
+                  <span key={i} className="psl-artifact-topic-chip">{t}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {artifact.cautelasMetodologicas.hasCautelas && (
+            <div>
+              <p className="psl-artifact-section__label">Cautelas metodológicas</p>
+              <p className="psl-artifact-cautela">{artifact.cautelasMetodologicas.nota}</p>
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function LocalHealthProfileView({
   psl,
   pslIsStale,
   municipalityName,
+  compiledProfiles,
   onValidate,
   onInvalidate,
   onEditConclusion,
@@ -1014,6 +1145,26 @@ export function LocalHealthProfileView({
               con autoría humana, y documente el consenso del Grupo Motor en el capítulo VII.
             </p>
           )}
+        </section>
+      )}
+
+      {/* ── Perfiles PSL-C compilados ──────────────────────────── */}
+      {compiledProfiles != null && compiledProfiles.length > 0 && (
+        <section className="workspace-panel">
+          <p className="eyebrow">Perfiles de Salud Local Compilados</p>
+          <h2>Documentos institucionales generados</h2>
+          <p className="panel-note">
+            {compiledProfiles.length === 1
+              ? "Un Perfil de Salud Local ha sido compilado como documento institucional. "
+              : `${compiledProfiles.length} Perfiles de Salud Local han sido compilados como documentos institucionales. `}
+            Cada compilación es un artefacto congelado e inmutable que representa el estado
+            del diagnóstico en el momento de su generación.
+          </p>
+          <div className="psl-compiled-list">
+            {[...compiledProfiles].reverse().map((artifact) => (
+              <PSLCArtefactoCard key={artifact.id} artifact={artifact} />
+            ))}
+          </div>
         </section>
       )}
 
