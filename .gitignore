@@ -12,6 +12,7 @@ dist/
 *backup*
 COMPAS_NG_BACKUPS_*/
 COMPAS_NG_EVIDENCIAS_*/
+_archive/
 
 # Local data and validation files
 *.doc
