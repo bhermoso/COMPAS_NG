@@ -129,13 +129,13 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 ## Producto 4 — Perfil de Salud Local tipo NHS (PSL-NHS)
 
 ### CONTRACT-NHS-HEALTH-PROFILE
-**Estado:** CONCEPTUAL
+**Estado:** VIGENTE
 
-Contrato canónico del Producto 4. Define el PSL-NHS como producto institucional distinto del PSL-C: naturaleza comparativa/sintética, relación con Producto 3 (comparten fuente pero no se sustituyen), fuentes (estudios complementarios + datos de referencia Granada/Andalucía), salida esperada, gates mínimos del compilador y exclusiones explícitas (no recomendaciones, no MTE, no Plan de Acción, no IA generativa, no sustitución del PSL-C). Prerrequisito de implementación: datos de referencia para ≥3 instrumentos.
+Contrato canónico del Producto 4 (v1.0). Define el PSL-NHS como producto institucional de diagnóstico comparativo: audiencia política y ciudadana (no técnica), organización por dominio causal (no por instrumento), 7 indicadores canónicos con sus campos técnicos y valores de referencia disponibles, estructura documental de 4 partes (Marco municipal / Indicadores por dominio / Participación ciudadana / Alcance del diagnóstico), portada especificada, comportamiento con datos parciales definido, y 3 gates de compilación. Prerrequisito inmediato: conectar `MethodologicalModule.ReferenceValues` de DUKE, PREDIMED y SF-12 al `NHSHealthProfileCompiler` (D4-01). Los valores de referencia ya existen en el sistema — no se requieren datos externos nuevos para implementar el documento con comparadores para 3 instrumentos.
 
-**Productores futuros:** `NHSHealthProfileCompiler` (pendiente de implementar; contrato del compilador pendiente: `CONTRACT-NHS-HEALTH-PROFILE-COMPILER`).
-**Consumidores futuros:** Equipo técnico, corporación municipal, ciudadanía.
-**Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID.
+**Productores:** `NHSHealthProfileCompiler` (pendiente de implementar; `CONTRACT-NHS-HEALTH-PROFILE-COMPILER` por crear al iniciar P4).
+**Consumidores:** Corporación municipal, ciudadanía, comunicación institucional.
+**Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID, CONTRACT-NAVIGATION, VISUAL-CONTRACT.
 
 ---
 

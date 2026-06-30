@@ -232,7 +232,7 @@ Los siguientes elementos quedan fuera del alcance de esta certificación:
 | Visualización completa del PSL en UI | Desarrollo funcional posterior |
 | Exportación DOCX/PDF del PSL-C | Capa de rendering pendiente |
 | Handler UI PSL `validated` → `approved` | Deuda D3-03; bloquea Producto 7 |
-| Datos de referencia Granada/Andalucía | Deuda D3-04; mejora Producto 4 |
+| Valores de referencia en compilador P4 | D3-04 reclasificado → D4-01 (wiring, no datos): DUKE/PREDIMED/SF-12 ya disponibles en el sistema |
 | IA generativa sobre el PSL | Fuera del principio de no-sustitución |
 | Integración SAM en App.tsx (orquestación UI) | Pendiente de intervención UI |
 
@@ -246,7 +246,7 @@ La deuda residual del Producto 3 es de naturaleza funcional/UI, no arquitectóni
 |---|---|---|---|
 | D3-02 | Orquestación runtime SAM → EvidenceStore (wiring no activo) | Implementación pendiente | No bloquea PSL-C; afecta a las cautelas de calidad muestral automáticas |
 | D3-03 | Handler UI PSL `validated` → `approved` | UI | Compilador del PLS (Producto 7) |
-| D3-04 | Datos de referencia Granada/Andalucía | Disponibilidad de datos | NHS Profile (Producto 4); no bloquea PSL-C |
+| ~~D3-04~~ | Reclasificado → D4-01 (`CONTRACT-NHS-HEALTH-PROFILE §14`). Valores de referencia ya existen en el sistema (DUKE, PREDIMED, SF-12). | — | — |
 
 **No existen deudas arquitectónicas abiertas en el Producto 3.** La arquitectura SAM → EvidenceStore → MIT → PSL está diseñada y sus componentes implementados: `samAssessmentToEvidenceAtom()` produce EvidenceAtoms válidos (23 tests), LT1 los clasifica correctamente. El wiring de orquestación automática (D3-02) permanece pendiente sin bloquear la certificación del PSL.
 
@@ -280,7 +280,7 @@ El build es limpio. 575/575 tests pasan (D3-01 resuelto: +2 tests de trazabilida
 | Comportamiento funcional alterado | Ninguno |
 | Deudas arquitectónicas abiertas | Ninguna (D3-02 es deuda de orquestación, no arquitectónica) |
 | **Producto 3** | **CERTIFICADO** |
-| Deuda residual | D3-02 (orquestación SAM), D3-03 (UI approved), D3-04 (datos referencia) — ninguna bloquea PSL-C |
+| Deuda residual | D3-02 (orquestación SAM), D3-03 (UI approved) — ninguna bloquea PSL-C. D3-04 reclasificado en P4. |
 | Prerrequisitos de Producto 4 autorizados | Sí, cuando el equipo lo decida |
 
 ---
