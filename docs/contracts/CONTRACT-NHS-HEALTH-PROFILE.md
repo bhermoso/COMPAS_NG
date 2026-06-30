@@ -20,7 +20,7 @@ El PSL-NHS **no es el PSL-C (Producto 3)**.
 | Comparadores | No (diagnóstico absoluto) | Sí (Granada/Andalucía como referencia) |
 | Audiencia primaria | Equipo técnico, Distrito Sanitario, Junta | Corporación municipal, ciudadanía, prensa |
 | Conclusiones | Sí (Capítulo V, autoría humana) | No |
-| Recomendaciones | No (D3-05: pendiente de corrección) | No |
+| Recomendaciones | No (D3-05 resuelto: PSL no contiene recomendaciones) | No |
 | Áreas de intervención | Sí (candidaturas técnicas, Cap. VII) | No |
 
 **Invariante P4-I1:** el PSL-NHS no sustituye al PSL-C. Son productos complementarios que sirven finalidades distintas con las mismas fuentes de evidencia.
@@ -193,7 +193,7 @@ La implementación plena del PSL-NHS está condicionada a la disponibilidad de d
 
 | Documento | Rol |
 |---|---|
-| `CONTRACT-PSL-COMPAS.md` | Define el Producto 3 como fuente; D3-04 y D3-05 como deudas relevantes |
+| `CONTRACT-PSL-COMPAS.md` | Define el Producto 3 como fuente; D3-04 como deuda relevante (D3-05 resuelto) |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER.md` | Compilador del Producto 3; comparte arquitectura de puerta y trazabilidad |
 | `CONTRACT-COMPLEMENTARY-STUDIES.md` | Define los 6 instrumentos cuyo output es el contenido primario del PSL-NHS |
 | `CONTRACT-DYNAMIC-TRIPYRAMID.md` | SAM como fuente de cautelas de calidad muestral para el PSL-NHS |

@@ -144,8 +144,8 @@ El EvidenceStore contiene evidencia estructurada. El MIT la interpreta. El PSL s
 **G2 — SAM no constituye evidencia territorial**
 Los EvidenceAtoms de tipo `kind: "sample-quality"` expresan adecuación muestral, no datos sobre el territorio. El LT1 los clasifica en `methodologicalCautions`, nunca en `indicators`, `determinants` ni `assets`. No pueden distorsionar el diagnóstico territorial.
 
-**G3 — SAM entra como cautela metodológica**
-La vía `samAssessmentToEvidenceAtom() → EvidenceStore → LT1 methodologicalCautions` es la única ruta de SAM al PSL. No existe ninguna ruta directa. El PSL Capítulo IV incorpora las cautelas SAM exactamente igual que cualquier otra cautela metodológica.
+**G3 — La ruta canónica de SAM al PSL está definida pero no activada (D3-02)**
+La ruta `samAssessmentToEvidenceAtom() → EvidenceStore → LT1 methodologicalCautions` es la ÚNICA ruta arquitectónicamente válida de SAM al PSL. No existe ninguna ruta directa. Cada componente de esta ruta está implementado y testado individualmente. Sin embargo, la orquestación automática (la llamada a `samAssessmentToEvidenceAtom()` desde el runtime) no está activa. Cuando D3-02 se complete, los átomos `sample-quality` entrarán al EvidenceStore automáticamente y el PSL Cap. IV los reflejará como cautelas metodológicas sin ningún cambio adicional en el PSL mismo.
 
 **G4 — El PSL no conoce SAM**
 `buildLocalHealthProfile.ts` no importa ningún tipo de SAM. `LocalHealthProfile.ts` no referencia SAM. El PSL es agnóstico respecto al origen de sus cautelas metodológicas. Si mañana SAM no existiera, el PSL funcionaría exactamente igual.
@@ -177,7 +177,7 @@ Los seis instrumentos del Producto 1 tienen representación explícita en el PSL
 | `LocalHealthProfile` (tipo, 7 capítulos, 6 estados) | ✅ Implementado | `src/domain/health-profile/LocalHealthProfile.ts` |
 | `buildLocalHealthProfile()` (función pura) | ✅ Implementado | `src/application/health-profile/buildLocalHealthProfile.ts` |
 | Integración 6 instrumentos Producto 1 (flags explícitos) | ✅ Completa | `ibsePresent … cagePresent` |
-| Integración SAM (via EvidenceStore → LT1) | ✅ Implementada | `LT1Engine.ts` + `samAssessmentToEvidenceAtom()` |
+| Integración SAM (via EvidenceStore → LT1) | ⚠️ Arquitectónica, no activa (D3-02) | Plumbing implementado; `samAssessmentToEvidenceAtom()` no se invoca en runtime; LT1 procesaría átomos `sample-quality` si llegaran |
 | `LocalHealthProfileCompiler` (7 gates G-LHC-1 a G-LHC-7) | ✅ Implementado | `src/application/health-profile-compiler/` |
 | `LocalHealthProfileArtifact` (PSL-C inmutable) | ✅ Implementado | `src/domain/health-profile-artifact/` |
 | Ciclo de vida PSL (generated → validated → approved) | ✅ parcial | `approved` pendiente de handler UI |
@@ -244,18 +244,19 @@ La deuda residual del Producto 3 es de naturaleza funcional/UI, no arquitectóni
 
 | ID | Deuda | Tipo | Bloquea |
 |---|---|---|---|
+| D3-02 | Orquestación runtime SAM → EvidenceStore (wiring no activo) | Implementación pendiente | No bloquea PSL-C; afecta a las cautelas de calidad muestral automáticas |
 | D3-03 | Handler UI PSL `validated` → `approved` | UI | Compilador del PLS (Producto 7) |
 | D3-04 | Datos de referencia Granada/Andalucía | Disponibilidad de datos | NHS Profile (Producto 4); no bloquea PSL-C |
 
-**No existen deudas arquitectónicas abiertas en el Producto 3.** El flujo SAM → EvidenceStore → MIT → PSL está cerrado de extremo a extremo. La arquitectura de capas es coherente y certificada.
+**No existen deudas arquitectónicas abiertas en el Producto 3.** La arquitectura SAM → EvidenceStore → MIT → PSL está diseñada y sus componentes implementados: `samAssessmentToEvidenceAtom()` produce EvidenceAtoms válidos (23 tests), LT1 los clasifica correctamente. El wiring de orquestación automática (D3-02) permanece pendiente sin bloquear la certificación del PSL.
 
 ---
 
 ## 9. Dictamen de certificación
 
-La auditoría directa del repositorio —incluyendo el dominio `LocalHealthProfile`, la función pura `buildLocalHealthProfile`, el compilador `LocalHealthProfileCompiler`, el clasificador LT1, la integración SAM→EvidenceAtom→MIT, la simetría de los seis instrumentos del Producto 1 y los tests de integración con datos reales de Atarfe— permite establecer el siguiente dictamen:
+La auditoría directa del repositorio —incluyendo el dominio `LocalHealthProfile`, la función pura `buildLocalHealthProfile`, el compilador `LocalHealthProfileCompiler`, el clasificador LT1, la arquitectura SAM→EvidenceAtom→MIT (componentes implementados; orquestación D3-02 pendiente), la simetría de los seis instrumentos del Producto 1 y los tests de integración con datos reales de Atarfe— permite establecer el siguiente dictamen:
 
-El `LocalHealthProfile` es un objeto canónico completo con siete capítulos estructurados, ciclo de vida explícito y trazabilidad total. El `LocalHealthProfileCompiler` produce artefactos inmutables mediante siete gates. La integración con los Productos 1 y 2 está arquitectónicamente completa: los seis instrumentos tienen representación explícita y los resultados SAM entran como cautelas metodológicas a través del canal canónico EvidenceStore → MIT. El MIT permanece agnóstico respecto al origen de los átomos. El PSL no conoce SAM. La separación evidencia / interpretación / perfil es invariante.
+El `LocalHealthProfile` es un objeto canónico completo con siete capítulos estructurados, ciclo de vida explícito y trazabilidad total. El `LocalHealthProfileCompiler` produce artefactos inmutables mediante siete gates. La integración con el Producto 1 es completa: los seis instrumentos tienen representación explícita en el PSL y en el PSL-C. La integración con el Producto 2 (SAM) es arquitectónicamente correcta: la ruta `samAssessmentToEvidenceAtom() → EvidenceStore → LT1 → PSL` está diseñada, sus componentes implementados y testados; la orquestación automática permanece pendiente (D3-02) pero no bloquea el PSL. El MIT permanece agnóstico respecto al origen de los átomos. El PSL no conoce SAM. La separación evidencia / interpretación / perfil es invariante.
 
 El build es limpio. 575/575 tests pasan (D3-01 resuelto: +2 tests de trazabilidad del artefacto). Los Productos 1 y 2 no registran regresiones.
 
@@ -270,16 +271,16 @@ El build es limpio. 575/575 tests pasan (D3-01 resuelto: +2 tests de trazabilida
 | Expediente | PRODUCT-3-PSL-CERTIFICATION |
 | Fecha de emisión | 2026-06-30 |
 | Repositorio | `C:\Users\blash\Desktop\COMPAS_NG` |
-| Tests totales | 573/573 passing — 16 ficheros |
+| Tests totales | 575/575 passing — 16 ficheros |
 | Build | Limpio — sin errores TypeScript strict |
 | Instrumentos complementarios integrados | 6/6 con flags explícitos |
-| Integración SAM | ✅ vía EvidenceStore → LT1 methodologicalCautions |
+| Integración SAM | ⚠️ Arquitectura correcta; orquestación runtime pendiente (D3-02) |
 | Ciclo de vida PSL | ✅ generated → validated (approved: pendiente UI) |
 | Compilador PSL-C | ✅ 7 gates, inmutabilidad, trazabilidad, persistencia acumulativa |
 | Comportamiento funcional alterado | Ninguno |
-| Deudas arquitectónicas abiertas | Ninguna |
+| Deudas arquitectónicas abiertas | Ninguna (D3-02 es deuda de orquestación, no arquitectónica) |
 | **Producto 3** | **CERTIFICADO** |
-| Deuda residual | D3-03 (UI approved), D3-04 (datos referencia) — no bloquean PSL-C |
+| Deuda residual | D3-02 (orquestación SAM), D3-03 (UI approved), D3-04 (datos referencia) — ninguna bloquea PSL-C |
 | Prerrequisitos de Producto 4 autorizados | Sí, cuando el equipo lo decida |
 
 ---
