@@ -126,6 +126,19 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 
 ---
 
+## Producto 4 — Perfil de Salud Local tipo NHS (PSL-NHS)
+
+### CONTRACT-NHS-HEALTH-PROFILE
+**Estado:** CONCEPTUAL
+
+Contrato canónico del Producto 4. Define el PSL-NHS como producto institucional distinto del PSL-C: naturaleza comparativa/sintética, relación con Producto 3 (comparten fuente pero no se sustituyen), fuentes (estudios complementarios + datos de referencia Granada/Andalucía), salida esperada, gates mínimos del compilador y exclusiones explícitas (no recomendaciones, no MTE, no Plan de Acción, no IA generativa, no sustitución del PSL-C). Prerrequisito de implementación: datos de referencia para ≥3 instrumentos.
+
+**Productores futuros:** `NHSHealthProfileCompiler` (pendiente de implementar; contrato del compilador pendiente: `CONTRACT-NHS-HEALTH-PROFILE-COMPILER`).
+**Consumidores futuros:** Equipo técnico, corporación municipal, ciudadanía.
+**Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID.
+
+---
+
 ## Nivel 2 tardío — Compiladores de diagnóstico
 
 ### CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER

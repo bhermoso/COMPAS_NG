@@ -85,7 +85,7 @@ function basePSL(overrides: Partial<LocalHealthProfile> = {}): LocalHealthProfil
       { id: "ait-2", title: "Alimentación saludable", rationale: "Baja adherencia dieta mediterránea.", relatedEvidenceIds: ["ev-2"], cautions: [] },
     ],
     conclusiones: authoredChapter("El municipio de Atarfe presenta una situación de salud compleja con necesidades en salud mental y nutrición."),
-    recomendaciones: authoredChapter("Se recomienda priorizar intervenciones en salud mental comunitaria y promoción de alimentación saludable."),
+    cierreInterpretativo: authoredChapter("El diagnóstico presenta limitaciones en la cobertura de datos cualitativos. Las áreas identificadas requieren validación del equipo técnico."),
     priorizacion: basePriorizacion(true),
     priorizacionStatus: "complete",
     generatedAt: "2026-06-28T09:30:00.000Z",
@@ -122,8 +122,8 @@ describe("validateCompilationPreconditions", () => {
     expect(v.some((x) => x.gate === "G-LHC-2")).toBe(true);
   });
 
-  it("G-LHC-3: recomendaciones scaffold → violación", () => {
-    const v = validateCompilationPreconditions(basePSL({ recomendaciones: scaffoldChapter() }));
+  it("G-LHC-3: cierreInterpretativo scaffold → violación", () => {
+    const v = validateCompilationPreconditions(basePSL({ cierreInterpretativo: scaffoldChapter() }));
     expect(v.some((x) => x.gate === "G-LHC-3")).toBe(true);
   });
 
@@ -144,8 +144,8 @@ describe("validateCompilationPreconditions", () => {
     expect(v.some((x) => x.gate === "G-LHC-6")).toBe(true);
   });
 
-  it("G-LHC-7: recomendaciones vacías → violación", () => {
-    const v = validateCompilationPreconditions(basePSL({ recomendaciones: authoredChapter("  ") }));
+  it("G-LHC-7: cierreInterpretativo vacío → violación", () => {
+    const v = validateCompilationPreconditions(basePSL({ cierreInterpretativo: authoredChapter("  ") }));
     expect(v.some((x) => x.gate === "G-LHC-7")).toBe(true);
   });
 
@@ -153,7 +153,7 @@ describe("validateCompilationPreconditions", () => {
     const psl = basePSL({
       status: "generated",
       conclusiones: scaffoldChapter(),
-      recomendaciones: scaffoldChapter(),
+      cierreInterpretativo: scaffoldChapter(),
       priorizacionStatus: "scaffold",
       priorizacion: basePriorizacion(false),
     });
@@ -270,12 +270,12 @@ describe("compileLocalHealthProfile — compilación correcta", () => {
     }
   });
 
-  it("recomendaciones del artefacto coinciden con las del PSL origen", () => {
+  it("cierreInterpretativo del artefacto coincide con el del PSL origen", () => {
     const result = compileLocalHealthProfile(INPUT_ATARFE);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.artifact.recomendaciones.content).toBe(
-        INPUT_ATARFE.psl.recomendaciones.content
+      expect(result.artifact.cierreInterpretativo.content).toBe(
+        INPUT_ATARFE.psl.cierreInterpretativo.content
       );
     }
   });

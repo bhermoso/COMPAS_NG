@@ -35,11 +35,11 @@ El compilador **rechaza** la compilación si alguna de estas condiciones no se c
 |---|---|---|
 | G-LHC-1 | `psl.status === "validated"` | Solo los PSL técnicamente validados pueden exportarse como documento institucional |
 | G-LHC-2 | `psl.conclusiones.status === "authored"` | Las conclusiones deben ser de autoría humana, no scaffold del sistema |
-| G-LHC-3 | `psl.recomendaciones.status === "authored"` | Las recomendaciones deben ser de autoría humana, no scaffold del sistema |
+| G-LHC-3 | `psl.cierreInterpretativo.status === "authored"` | El cierre interpretativo debe ser de autoría humana, no scaffold del sistema |
 | G-LHC-4 | `psl.priorizacionStatus === "complete"` | El capítulo VII requiere deliberación y consenso documentados |
 | G-LHC-5 | `psl.priorizacion.consensoDocumentado === true` | El consenso debe constar explícitamente en el PSL |
 | G-LHC-6 | `psl.conclusiones.content.trim().length > 0` | No pueden exportarse conclusiones vacías |
-| G-LHC-7 | `psl.recomendaciones.content.trim().length > 0` | No pueden exportarse recomendaciones vacías |
+| G-LHC-7 | `psl.cierreInterpretativo.content.trim().length > 0` | No puede exportarse un cierre interpretativo vacío |
 
 Si algún gate falla, el compilador devuelve `CompilationResult` con `ok: false` y una lista de violaciones. No lanza excepciones.
 
@@ -106,7 +106,7 @@ El PSL-C contiene exactamente estas secciones. Nada más.
 | `baseDocumental` | Estadísticas de evidencia: total de átomos, orígenes, estudios complementarios, advertencias | `psl.totalEvidenceAtoms`, `psl.originsSummary`, etc. |
 | `lecturaTerritorial` | Síntesis territorial: resumen, determinantes, activos, indicadores, áreas de intervención, tensiones estructurales | `psl.territorialSummary`, `psl.areasDeIntervencion`, etc. |
 | `conclusiones` | Texto de conclusiones de autoría humana | `psl.conclusiones.content` |
-| `recomendaciones` | Texto de recomendaciones de autoría humana | `psl.recomendaciones.content` |
+| `cierreInterpretativo` | Alcance, limitaciones y síntesis metodológica del diagnóstico. Sin prescripción de acciones. Autoría humana. | `psl.cierreInterpretativo.content` |
 | `priorizacion` | Candidaturas técnicas, temáticas ciudadanas seleccionadas, nota de deliberación, estado del consenso | `psl.priorizacion`, `psl.priorizacionStatus` |
 | `notaValidacion` | Quién validó el PSL origen, cuándo, hash del PSL origen | `psl.validatedAt`, `psl.validatedBy`, hash calculado |
 | `cautelasMetodologicas` | Advertencias de integridad y cautelas derivadas del EvidenceStore | `psl.integrityWarnings`, `psl.integrityErrors` |

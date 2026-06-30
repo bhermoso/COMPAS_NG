@@ -77,7 +77,7 @@ export interface PSLCArtifactConclusiones {
   content: string;    // Texto de autoría humana (caps. V del PSL)
 }
 
-export interface PSLCArtifactRecomendaciones {
+export interface PSLCArtifactCierreInterpretativo {
   content: string;    // Texto de autoría humana (cap. VI del PSL)
 }
 
@@ -139,7 +139,7 @@ export interface LocalHealthProfileArtifact {
   baseDocumental: PSLCArtifactBaseDocumental;
   lecturaTerritorial: PSLCArtifactLecturaTerritorial;
   conclusiones: PSLCArtifactConclusiones;
-  recomendaciones: PSLCArtifactRecomendaciones;
+  cierreInterpretativo: PSLCArtifactCierreInterpretativo;
   priorizacion: PSLCArtifactPriorizacion;
   notaValidacion: PSLCArtifactNotaValidacion;
   cautelasMetodologicas: PSLCArtifactCautelas;

@@ -64,7 +64,7 @@ function basePSL(overrides: Partial<LocalHealthProfile> = {}): LocalHealthProfil
     ruidoEstructural: [],
     areasDeIntervencion: [],
     conclusiones: scaffoldChapter(),
-    recomendaciones: scaffoldChapter(),
+    cierreInterpretativo: scaffoldChapter(),
     priorizacion: basePriorizacion(),
     priorizacionStatus: "scaffold",
     generatedAt: new Date().toISOString(),
@@ -84,8 +84,8 @@ describe('hasPSLHumanContent', () => {
     expect(hasPSLHumanContent(basePSL({ conclusiones: authoredChapter() }))).toBe(true);
   });
 
-  it('recomendaciones authored → true', () => {
-    expect(hasPSLHumanContent(basePSL({ recomendaciones: authoredChapter() }))).toBe(true);
+  it('cierreInterpretativo authored → true', () => {
+    expect(hasPSLHumanContent(basePSL({ cierreInterpretativo: authoredChapter() }))).toBe(true);
   });
 
   it('consensoDocumentado true → true', () => {
@@ -107,7 +107,7 @@ describe('hasPSLHumanContent', () => {
   it('todos los campos humanos presentes → true', () => {
     const psl = basePSL({
       conclusiones: authoredChapter(),
-      recomendaciones: authoredChapter(),
+      cierreInterpretativo: authoredChapter(),
       priorizacion: { ...basePriorizacion(), consensoDocumentado: true, deliberacionNota: "Consenso alcanzado." },
       priorizacionStatus: "complete",
     });

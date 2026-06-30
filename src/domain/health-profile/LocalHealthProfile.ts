@@ -5,7 +5,7 @@ import type { MunicipalityId } from "../municipality";
 export type LocalHealthProfileStatus =
   | "generated"   // generado automáticamente; sin revisión humana
   | "review"      // en revisión técnica activa
-  | "validated"   // validado técnicamente (capítulos I–VI completos)
+  | "validated"   // validado técnicamente (capítulos I–V y VII completos)
   | "approved"    // aprobado institucionalmente (capítulo VII completo)
   | "superseded"  // sustituido por versión posterior para el mismo municipio
   | "archived";   // retirado por cierre, obsolescencia o decisión técnica
@@ -48,7 +48,7 @@ export interface PSLAreaIntervencion {
   cautions: string[];
 }
 
-// ── Capítulos scaffold (V y VI) ──────────────────────────────────────────────
+// ── Capítulo scaffold (V) y cierre interpretativo (VI) ───────────────────────
 // El sistema genera un andamiaje; la autoría definitiva es siempre humana.
 
 export type PSLChapterStatus = "scaffold" | "review" | "authored";
@@ -155,10 +155,10 @@ export interface LocalHealthProfile {
   // Requiere autoría humana antes de la validación.
   conclusiones: PSLScaffoldChapter;
 
-  // ── Capítulo VI: Recomendaciones ──────────────────────────────────────────
-  // Scaffold: orientaciones estratégicas derivadas del análisis.
-  // No incluyen actuaciones concretas. Requieren autoría humana.
-  recomendaciones: PSLScaffoldChapter;
+  // ── Capítulo VI: Cierre interpretativo ───────────────────────────────────
+  // Alcance, limitaciones metodológicas y síntesis del diagnóstico.
+  // No prescribe acciones. Requiere autoría humana.
+  cierreInterpretativo: PSLScaffoldChapter;
 
   // ── Capítulo VII: Síntesis y Priorización ─────────────────────────────────
   // Scaffold: priorización técnica + participativa. Deliberación: solo humana.

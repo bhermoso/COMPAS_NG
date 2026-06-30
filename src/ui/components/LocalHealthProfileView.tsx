@@ -10,7 +10,7 @@ interface LocalHealthProfileViewProps {
   onValidate: (validatedBy: string) => void;
   onInvalidate: () => void;
   onEditConclusion?: (content: string) => void;
-  onEditRecomendaciones?: (content: string) => void;
+  onEditCierreInterpretativo?: (content: string) => void;
   onDocumentarDeliberacion?: (nota: string) => void;
   onCompile?: () => void;
   onApprove?: (approvedBy: string, role: "coordination" | "group-motor", approvingBody: string) => void;
@@ -396,7 +396,7 @@ export function LocalHealthProfileView({
   onValidate,
   onInvalidate,
   onEditConclusion,
-  onEditRecomendaciones,
+  onEditCierreInterpretativo,
   onDocumentarDeliberacion,
   onCompile,
   onApprove,
@@ -888,24 +888,24 @@ export function LocalHealthProfileView({
         )}
       </section>
 
-      {/* ── VI: Recomendaciones ──────────────────────────────────────────── */}
+      {/* ── VI: Cierre interpretativo ────────────────────────────────────── */}
       <section id="psl-cap-vi" className="psl-doc-section workspace-panel">
-        <SectionHeader num="VI" title="Recomendaciones" />
-        {psl.status === "validated" && onEditRecomendaciones ? (
+        <SectionHeader num="VI" title="Cierre interpretativo" />
+        {psl.status === "validated" && onEditCierreInterpretativo ? (
           <PSLChapterEditor
-            chapter={psl.recomendaciones}
-            label="Recomendaciones"
-            onSave={onEditRecomendaciones}
+            chapter={psl.cierreInterpretativo}
+            label="Cierre interpretativo"
+            onSave={onEditCierreInterpretativo}
           />
         ) : (
           <div className="psl-doc-scaffold-block">
             <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
-            {stripBrackets(psl.recomendaciones.content) && (
+            {stripBrackets(psl.cierreInterpretativo.content) && (
               <p className="psl-doc-scaffold-block__content">
-                {stripBrackets(psl.recomendaciones.content)}
+                {stripBrackets(psl.cierreInterpretativo.content)}
               </p>
             )}
-            <p className="psl-doc-scaffold-block__note">{psl.recomendaciones.authorshipNote}</p>
+            <p className="psl-doc-scaffold-block__note">{psl.cierreInterpretativo.authorshipNote}</p>
           </div>
         )}
       </section>
@@ -993,7 +993,7 @@ export function LocalHealthProfileView({
           <p className="eyebrow">Exportación institucional</p>
           <h2>Compilar Perfil de Salud Local</h2>
           {psl.conclusiones.status === "authored" &&
-           psl.recomendaciones.status === "authored" &&
+           psl.cierreInterpretativo.status === "authored" &&
            psl.priorizacionStatus === "complete" ? (
             <>
               <p className="panel-note">

@@ -87,8 +87,8 @@ Si un componente no puede vincularse a ninguno de los tres, no pertenece al sist
   ╔═══════════════════════════════════════════╗
   ║         PRODUCTOS DOCUMENTALES           ║
   ║                                          ║
-  ║  Perfil de Salud Local     (PRODUCTO 1)  ║
-  ║  NHS Health Profile        (PRODUCTO 1b) ║
+  ║  Perfil de Salud Local     (PRODUCTO 3)  ║
+  ║  NHS Health Profile        (PRODUCTO 4) ║
   ║  Plan Local de Salud       (PRODUCTO 2)  ║
   ║  Resumen Ejecutivo         (futuro)      ║
   ╚═══════════════════════════════════════════╝
@@ -413,7 +413,7 @@ La Biblioteca Metodológica completa (6/6) es prerequisito del Constructor funci
 
 ## VI. Productos documentales
 
-### VI.1 Perfil de Salud Local (Producto 1)
+### VI.1 Perfil de Salud Local (Producto 3)
 
 **Naturaleza:** Documento institucional de diagnóstico territorial.
 
@@ -433,9 +433,9 @@ El `LocalHealthProfile` tiene 7 capítulos. El Perfil compilado deberá determin
 
 Estas preguntas no están respondidas. `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` las debe responder.
 
-### VI.2 NHS Health Profile (Producto 1b)
+### VI.2 NHS Health Profile (Producto 4)
 
-**Naturaleza:** Representación editorial del diagnóstico territorial. No es un documento distinto del Perfil; es un formato alternativo del mismo objeto PSL.
+**Naturaleza:** Producto institucional distinto del PSL-C (Producto 3). No es una versión corta ni un formato alternativo del mismo objeto: es un artefacto independiente derivado de la misma base de evidencia, con finalidad, audiencia y estructura propias. Diagnóstico comparativo sintético, sin texto narrativo de análisis.
 
 **Modelo de referencia:** NHS Local Health Profiles (Public Health England).
 Características: alta densidad informativa, tipografía como elemento estructural, indicadores comparativos, presentación editorial sobria.
@@ -531,8 +531,8 @@ handleValidatePSL() → LocalHealthProfile [status: "validated"]
 LocalHealthProfileCompiler [SPRINT 2]
     │
     ▼
-LocalHealthProfileArtifact  ← PRODUCTO 1
-NHSHealthProfileArtifact    ← PRODUCTO 1b (path paralelo desde el mismo PSL validated)
+LocalHealthProfileArtifact  ← PRODUCTO 3
+NHSHealthProfileArtifact    ← PRODUCTO 4 (path paralelo desde el mismo PSL validated)
 ```
 
 ### Flujo 2 — Producción del Plan Local de Salud

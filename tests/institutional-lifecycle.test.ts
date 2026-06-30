@@ -66,7 +66,7 @@ function validatedPSL(overrides: Partial<LocalHealthProfile> = {}): LocalHealthP
     ruidoEstructural: [],
     areasDeIntervencion: [],
     conclusiones: authoredChapter("Conclusiones del equipo técnico."),
-    recomendaciones: authoredChapter("Recomendaciones del equipo técnico."),
+    cierreInterpretativo: authoredChapter("Cierre interpretativo del equipo técnico."),
     priorizacion: basePriorizacion(true),
     priorizacionStatus: "complete",
     generatedAt: "2026-06-28T09:30:00.000Z",

@@ -30,7 +30,7 @@ El **Perfil de Salud Local COMPÁS (PSL-C)** es el producto analítico territori
 
 El PSL-C **no es un plan**. No prescribe actuaciones. No selecciona prioridades institucionales. No asigna líneas estratégicas. No produce compromisos de planificación. No decide.
 
-El PSL-C **no sustituye al equipo técnico**. Los capítulos de conclusiones y recomendaciones son scaffold orientativo hasta que el equipo técnico los redacte y autorice explícitamente.
+El PSL-C **no sustituye al equipo técnico**. Los capítulos de conclusiones (V) y cierre interpretativo (VI) son scaffold orientativo hasta que el equipo técnico los redacte y autorice explícitamente. **El PSL concluye, pero no recomienda**: las recomendaciones pertenecen al Motor de Traducción Estratégica y al Plan de Acción.
 
 El PSL-C es la condición necesaria para activar el Nivel 3 del ciclo de planificación. Ningún motor del Nivel 3 puede consumir directamente los outputs del MIT; todos deben pasar por el PSL (regla PSL-C1).
 
@@ -142,7 +142,7 @@ Nivel 3 — Decisión y planificación
 - Proporciona un resumen territorial asistido (MIT).
 - Identifica áreas de intervención candidatas (no las aprueba).
 - Referencia cautelas metodológicas (SAM, MIT, IntegrityGuard).
-- Contiene conclusiones y recomendaciones de autoría humana.
+- Contiene conclusiones diagnósticas y cierre interpretativo de autoría humana.
 
 ### 3.2 Qué el PSL NO hace
 
@@ -167,7 +167,7 @@ La estructura de siete capítulos está implementada y congelada:
 | **III — Diagnóstico integrado** | Stats del EvidenceStore: total átomos, por origen, por tipo, ids, errores | Sistema |
 | **IV — Interpretación territorial** | MIT + Reconciliación: resumen, determinantes, activos, indicadores, áreas intervención, tensiones, conflictos, marcos | Sistema (asistido) |
 | **V — Conclusiones** | Scaffold → **Autoría humana** obligatoria antes de validar | **Humana** |
-| **VI — Recomendaciones** | Scaffold → **Autoría humana** obligatoria antes de validar | **Humana** |
+| **VI — Cierre interpretativo** | Alcance, limitaciones y síntesis metodológica del diagnóstico. Scaffold → **Autoría humana** obligatoria antes de validar. Sin prescripción de acciones. | **Humana** |
 | **VII — Síntesis y priorización** | Candidaturas técnicas + selección participativa + deliberación (solo humana) | Mixta |
 
 ### 4.1 Campos de diagnóstico integrado (Cap. III) — estado actual vs. objetivo
@@ -255,6 +255,7 @@ El Producto 3 se considera completo cuando:
 | D3-02 | Integración de `SampleQualityAssessment` en PSL (opción A o B) | Implementación pendiente | Cautelas metodológicas de calidad muestral en PSL |
 | D3-03 | Handler UI de transición PSL `validated` → `approved` | Implementación UI | Acceso al compilador del Producto 7 (PLS) |
 | D3-04 | Datos de referencia Granada/Andalucía en paneles EAS | Disponibilidad de datos | PSL NHS (Producto 4); no bloquea PSL-C |
+| ~~D3-05~~ | ~~Capítulo VI "Recomendaciones" contradice la regla "el PSL concluye, pero no recomienda"~~ | **RESUELTO 2026-06-30**: `recomendaciones` eliminado del modelo; Cap. VI reemplazado por `cierreInterpretativo`; gates G-LHC-3 y G-LHC-7 actualizados. | — |
 
 ---
 
@@ -268,7 +269,7 @@ El Producto 3 se considera completo cuando:
 
 **PSL-P3-2 — SAM no modifica evidencia territorial**: los resultados de SAM son contexto sobre la calidad muestral de los estudios, no evidencia del territorio. No alteran los resultados de los instrumentos. No afectan el diagnóstico territorial directamente.
 
-**PSL-P3-3 — Los capítulos V, VI y VII requieren autoría humana para su uso productivo**: el sistema genera scaffold. La compilación en PSL-C solo es posible cuando V y VI tienen `status: "authored"` y VII tiene `consensoDocumentado: true`.
+**PSL-P3-3 — Los capítulos V, VI y VII requieren autoría humana para su uso productivo**: el sistema genera scaffold. La compilación en PSL-C solo es posible cuando V (conclusiones) y VI (cierre interpretativo) tienen `status: "authored"` y VII tiene `consensoDocumentado: true`.
 
 ---
 

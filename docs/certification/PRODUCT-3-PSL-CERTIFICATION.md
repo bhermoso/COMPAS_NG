@@ -91,7 +91,7 @@ MIT → EstadoTerritorialEvolutivo
     │
     ▼
 buildLocalHealthProfile()   [función pura]
-  Capítulos I–VII
+  Capítulos I–VII (Cap. VI = cierreInterpretativo — sin recomendaciones)
     │
     ▼
 LocalHealthProfile   [objeto vivo, Nivel 2]

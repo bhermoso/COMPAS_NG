@@ -378,7 +378,7 @@ export default function App() {
       hasPSLHumanContent(workspace.validatedPSL) &&
       !window.confirm(
         "El Perfil de Salud Local contiene contenido redactado por el equipo técnico " +
-        "(conclusiones, recomendaciones o deliberación documentada).\n\n" +
+        "(conclusiones, cierre interpretativo o deliberación documentada).\n\n" +
         "Al regenerar el perfil, este contenido se perderá definitivamente.\n\n" +
         "¿Descartar el contenido y regenerar el perfil?"
       )
@@ -405,14 +405,14 @@ export default function App() {
     });
   }, []);
 
-  const handleEditPSLRecomendaciones = useCallback((content: string) => {
+  const handleEditPSLCierreInterpretativo = useCallback((content: string) => {
     setWorkspace((prev) => {
       if (!prev.validatedPSL) return prev;
       return {
         ...prev,
         validatedPSL: {
           ...prev.validatedPSL,
-          recomendaciones: { ...prev.validatedPSL.recomendaciones, content, status: "authored" as const },
+          cierreInterpretativo: { ...prev.validatedPSL.cierreInterpretativo, content, status: "authored" as const },
         },
         updatedAt: new Date().toISOString(),
       };
@@ -1906,7 +1906,7 @@ export default function App() {
             onValidate={handleValidatePSL}
             onInvalidate={handleInvalidatePSL}
             onEditConclusion={handleEditPSLConclusion}
-            onEditRecomendaciones={handleEditPSLRecomendaciones}
+            onEditCierreInterpretativo={handleEditPSLCierreInterpretativo}
             onDocumentarDeliberacion={handleDocumentarDeliberacion}
             onCompile={handleCompilePSL}
             onApprove={handleApprovePSL}

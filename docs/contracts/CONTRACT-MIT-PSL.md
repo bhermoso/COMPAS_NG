@@ -366,11 +366,13 @@ conclusiones antes de que el PSL pueda considerarse validado.
 Tras la validación del PSL, el equipo puede editar este capítulo en la
 interfaz. Al guardar el texto, el estado del capítulo pasa a `"authored"`.
 
-**Capítulo VI — Recomendaciones** (scaffold)
+**Capítulo VI — Cierre interpretativo** (scaffold)
 
-Mismo comportamiento que el Capítulo V. El sistema genera orientaciones
-estratégicas derivadas de las áreas de intervención. El equipo técnico
-debe redactar o revisar las recomendaciones definitivas.
+El sistema genera un borrador orientativo con el alcance del diagnóstico,
+las limitaciones metodológicas identificadas y una síntesis del proceso
+interpretativo. El equipo técnico debe redactar el cierre definitivo.
+Este capítulo documenta qué puede y qué no puede concluirse a partir
+de la evidencia disponible. No formula acciones ni orientaciones estratégicas.
 
 **Capítulo VII — Síntesis y Priorización** (scaffold + participación)
 
@@ -491,8 +493,8 @@ La resolución de un conflicto es responsabilidad del equipo técnico.
 
 El estado `generated` indica que el sistema ha producido un borrador técnico.
 No implica revisión, acuerdo técnico ni aprobación institucional. Las
-conclusiones (cap. V) y recomendaciones (cap. VI) en estado `generated` son
-propuestas asistidas del sistema, no posicionamientos del equipo técnico.
+conclusiones (cap. V) y el cierre interpretativo (cap. VI) en estado `generated`
+son propuestas asistidas del sistema, no posicionamientos del equipo técnico.
 
 **I-PSL-2 — El PSL no es el Plan Local de Salud compilado**
 
@@ -504,11 +506,18 @@ institucionales.
 
 **I-PSL-3 — Los capítulos V y VI son scaffold hasta autoría humana explícita**
 
-Los textos de conclusiones y recomendaciones generados por el sistema son
-orientativos. Están marcados con `status: "scaffold"` y con un `authorshipNote`
-que recuerda la obligación de autoría humana. Solo cuando el equipo técnico
-redacta y guarda su propio texto, el estado pasa a `"authored"`. El sistema
-nunca promueve automáticamente de `"scaffold"` a `"authored"`.
+Los textos de conclusiones (cap. V) y cierre interpretativo (cap. VI) generados
+por el sistema son orientativos. Están marcados con `status: "scaffold"` y con
+un `authorshipNote` que recuerda la obligación de autoría humana. Solo cuando
+el equipo técnico redacta y guarda su propio texto, el estado pasa a `"authored"`.
+El sistema nunca promueve automáticamente de `"scaffold"` a `"authored"`.
+
+**Invariante terminológico — El PSL concluye, pero no recomienda.**
+El Capítulo V formula conclusiones diagnósticas. El Capítulo VI cierra la
+lectura interpretativa documentando alcance y limitaciones. Ningún capítulo del
+PSL formula recomendaciones ni orientaciones estratégicas. Las recomendaciones
+pertenecen al Motor de Traducción Estratégica (Producto 5) y al Plan de Acción
+(Producto 6).
 
 **I-PSL-4 — La deliberación del capítulo VII nunca es generada por el sistema**
 

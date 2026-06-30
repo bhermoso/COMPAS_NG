@@ -7,7 +7,7 @@ export type {
   PSLCArtifactAreaIntervencion,
   PSLCArtifactLecturaTerritorial,
   PSLCArtifactConclusiones,
-  PSLCArtifactRecomendaciones,
+  PSLCArtifactCierreInterpretativo,
   PSLCArtifactCandidatura,
   PSLCArtifactPriorizacion,
   PSLCArtifactNotaValidacion,

@@ -19,6 +19,7 @@ import type {
   LocalHealthProfileArtifact,
   PSLCArtifactAreaIntervencion,
   PSLCArtifactCandidatura,
+  PSLCArtifactCierreInterpretativo,
 } from "../../domain/health-profile-artifact";
 
 // ── Tipos públicos ─────────────────────────────────────────────────────────────
@@ -62,10 +63,10 @@ export function validateCompilationPreconditions(
     });
   }
 
-  if (psl.recomendaciones.status !== "authored") {
+  if (psl.cierreInterpretativo.status !== "authored") {
     violations.push({
       gate: "G-LHC-3",
-      message: `Las recomendaciones (Cap. VI) deben estar en estado "authored". Estado actual: "${psl.recomendaciones.status}".`,
+      message: `El cierre interpretativo (Cap. VI) debe estar en estado "authored". Estado actual: "${psl.cierreInterpretativo.status}".`,
     });
   }
 
@@ -90,10 +91,10 @@ export function validateCompilationPreconditions(
     });
   }
 
-  if (!psl.recomendaciones.content.trim()) {
+  if (!psl.cierreInterpretativo.content.trim()) {
     violations.push({
       gate: "G-LHC-7",
-      message: "Las recomendaciones no pueden estar vacías.",
+      message: "El cierre interpretativo no puede estar vacío.",
     });
   }
 
@@ -114,8 +115,8 @@ export function computePSLHash(psl: LocalHealthProfile): string {
     psl.totalEvidenceAtoms.toString(),
     psl.conclusiones.content,
     psl.conclusiones.status,
-    psl.recomendaciones.content,
-    psl.recomendaciones.status,
+    psl.cierreInterpretativo.content,
+    psl.cierreInterpretativo.status,
     psl.priorizacionStatus,
     psl.priorizacion.consensoDocumentado.toString(),
     psl.priorizacion.deliberacionNota,
@@ -251,10 +252,10 @@ export function compileLocalHealthProfile(
       content: psl.conclusiones.content,
     },
 
-    // ── Recomendaciones (Cap. VI) — autoría humana ─────────────────────────
-    recomendaciones: {
-      content: psl.recomendaciones.content,
-    },
+    // ── Cierre interpretativo (Cap. VI) — autoría humana ──────────────────
+    cierreInterpretativo: {
+      content: psl.cierreInterpretativo.content,
+    } satisfies PSLCArtifactCierreInterpretativo,
 
     // ── Priorización (Cap. VII) ────────────────────────────────────────────
     priorizacion: {

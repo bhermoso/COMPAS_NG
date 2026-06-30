@@ -10,7 +10,7 @@
  *  - No llama a localStorage.
  *  - No depende de React.
  *  - No genera datos simulados; todo contenido procede de los inputs.
- *  - Los capítulos V y VI son scaffold marcados como "authored" pendiente.
+ *  - El capítulo V es scaffold marcado como "authored" pendiente.
  *  - El capítulo VII contiene datos reales + nota de deliberación humana.
  *  - El Informe de Salud se referencia por ID; nunca se embebe su contenido.
  */
@@ -181,14 +181,14 @@ export function buildLocalHealthProfile(
         "territorio. El contenido generado por el sistema es orientativo.",
     },
 
-    // ── VI: Recomendaciones (scaffold) ────────────────────────────────────
-    recomendaciones: {
-      content: buildRecomendacionesScaffold(oitParaDecision, reconciliacion, mit),
+    // ── VI: Cierre interpretativo (scaffold) ──────────────────────────────
+    cierreInterpretativo: {
+      content: buildCierreInterpretativoScaffold(mit, reconciliacion, oitParaDecision),
       status: "scaffold",
       authorshipNote:
-        "Requiere autoría humana. El equipo técnico debe formular las " +
-        "orientaciones estratégicas derivadas del análisis. Las áreas de " +
-        "intervención son candidaturas del sistema, no recomendaciones técnicas.",
+        "Requiere autoría humana. El equipo técnico debe documentar el alcance " +
+        "del diagnóstico, sus limitaciones metodológicas y la síntesis interpretativa " +
+        "del territorio. Este capítulo no formula acciones ni recomendaciones.",
     },
 
     // ── VII: Síntesis y Priorización (scaffold) ───────────────────────────
@@ -209,7 +209,7 @@ export function buildLocalHealthProfile(
 export function hasPSLHumanContent(psl: LocalHealthProfile): boolean {
   return (
     psl.conclusiones.status === "authored" ||
-    psl.recomendaciones.status === "authored" ||
+    psl.cierreInterpretativo.status === "authored" ||
     psl.priorizacion.consensoDocumentado
   );
 }
@@ -331,67 +331,70 @@ function buildConclusionesScaffold(
   return parts.join("\n\n");
 }
 
-function buildRecomendacionesScaffold(
-  oitParaDecision: OITResult,
-  reconciliacion: ReconciliacionResult,
+function buildCierreInterpretativoScaffold(
   mit: EstadoTerritorialEvolutivo,
+  reconciliacion: ReconciliacionResult,
+  oitParaDecision: OITResult,
 ): string {
-  const hasReal =
-    oitParaDecision.opportunities.length > 0 &&
-    oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
-
-  if (!hasReal) {
+  if (mit.totalEvidencias === 0) {
     return (
-      "Base documental insuficiente para formular orientaciones estratégicas. " +
-      "Las recomendaciones requieren una base de evidencia territorial consolidada."
+      "Base documental insuficiente para formular un cierre interpretativo. " +
+      "Incorpora documentos al repositorio antes de redactar este capítulo."
     );
   }
 
   const parts: string[] = [];
 
-  // ── Intro ─────────────────────────────────────────────────────────────────
+  // ── Alcance del diagnóstico ───────────────────────────────────────────────
   parts.push(
-    "A partir del diagnóstico territorial, se proponen las siguientes " +
-    "orientaciones estratégicas para consideración del equipo técnico, " +
-    "la ciudadanía y las instituciones:"
+    `El diagnóstico se ha construido a partir de ${mit.totalEvidencias} evidencias ` +
+    `estructuradas. El alcance del análisis está delimitado por las fuentes disponibles ` +
+    `en el repositorio municipal en el momento de la generación del perfil.`
   );
 
-  // ── Orientaciones por área (título + rationale + cautelas) ────────────────
-  const orientaciones = oitParaDecision.opportunities
-    .map((area, i) => {
-      const cautionNote =
-        area.cautions.length > 0
-          ? ` Aspectos a considerar: ${area.cautions.slice(0, 2).join("; ")}.`
-          : "";
-      return `${i + 1}. ${area.title}\n${area.rationale}${cautionNote}`;
-    })
-    .join("\n\n");
-  parts.push(orientaciones);
+  // ── Limitaciones metodológicas ────────────────────────────────────────────
+  const hasConflictos = reconciliacion.conflictos.length > 0;
+  const hasTensionesNoEscaladas = reconciliacion.tensionesNoEscaladas.length > 0;
 
-  // ── Tensiones no escaladas a monitorizar ─────────────────────────────────
-  if (reconciliacion.tensionesNoEscaladas.length > 0) {
+  if (hasConflictos || hasTensionesNoEscaladas) {
+    const items: string[] = [];
+    if (hasConflictos) {
+      items.push(
+        `${reconciliacion.conflictos.length} conflicto(s) interpretativo(s) sin resolver ` +
+        `que condicionan la lectura territorial`
+      );
+    }
+    if (hasTensionesNoEscaladas) {
+      items.push(
+        `${reconciliacion.tensionesNoEscaladas.length} tensión(es) identificada(s) ` +
+        `que no han derivado en área de intervención pero permanecen activas`
+      );
+    }
     parts.push(
-      `${reconciliacion.tensionesNoEscaladas.length} tensión(es) identificada(s) ` +
-      `como relevante(s) no han derivado en área de intervención; ` +
-      `se recomienda mantenerlas bajo seguimiento técnico.`
+      `El diagnóstico presenta las siguientes limitaciones a considerar: ` +
+      items.join("; ") + "."
     );
   }
 
-  // ── Marcos estratégicos aplicados ────────────────────────────────────────
-  if (mit.marcosAplicados.length > 0) {
-    const marcos = mit.marcosAplicados.map((m) => m.framework).join(", ");
+  // ── Áreas identificadas (sin prescripción) ────────────────────────────────
+  const hasReal =
+    oitParaDecision.opportunities.length > 0 &&
+    oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
+
+  if (hasReal) {
     parts.push(
-      `El encaje con los marcos estratégicos aplicados (${marcos}) debe ` +
-      `explorarse para cada orientación, verificando la correspondencia con ` +
-      `sus objetivos y programas específicos.`
+      `El análisis ha identificado ${oitParaDecision.opportunities.length} ` +
+      `área(s) territorial(es) con evidencia suficiente para ser consideradas ` +
+      `en el proceso de priorización (Capítulo VII). Su validación y priorización ` +
+      `corresponde al equipo técnico y a la ciudadanía.`
     );
   }
 
-  // ── Cautela de autoría ────────────────────────────────────────────────────
+  // ── Cautela de cierre ─────────────────────────────────────────────────────
   parts.push(
-    "Estas orientaciones son propuestas técnicas preliminares, no recomendaciones " +
-    "formales. El equipo técnico, la ciudadanía y las instituciones son quienes " +
-    "deliberan y aprueban las recomendaciones definitivas del Plan Local de Salud."
+    "Este capítulo cierra la lectura interpretativa del territorio. " +
+    "El diagnóstico concluye aquí; las decisiones de planificación y las " +
+    "orientaciones estratégicas se desarrollan en productos posteriores."
   );
 
   return parts.join("\n\n");
