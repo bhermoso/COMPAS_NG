@@ -322,17 +322,15 @@ export const PREDIMED_EAS_MODULE: MethodologicalModule = {
       },
     ],
     referenceValues: {
-      population:
-        "Adultos ≥16 años, Granada — microdatos EAS (nTotal=3064; nVálido=712). " +
-        "Fixture reproducible: fixtures/predimed-eas-granada.csv. " +
-        "Script de regeneración: scripts/export-predimed-granada.mjs.",
+      population: "Adultos ≥16 años, Granada (EAS)",
       mean: 7.6,
-      source: "fixtures/predimed-eas-granada.csv",
+      source: "Encuesta Andaluza de Salud (EAS), microdatos adulto Granada",
     },
     contextualNotes: [
-      "Solo los registros con campo `Predimed` válido contribuyen al cálculo " +
-      "(712 de 3064 en el fixture Granada = 23,2 %). Las oleadas sin módulo PREDIMED " +
-      "generan una tasa de incompletos estructuralmente alta.",
+      "Valor de referencia (media 7,6): n=712 registros válidos sobre 3.064 totales (23,2 %). " +
+      "Trazabilidad interna: fixtures/predimed-eas-granada.csv · scripts/export-predimed-granada.mjs.",
+      "Solo los registros con campo `Predimed` válido contribuyen al cálculo. " +
+      "Las oleadas sin módulo PREDIMED generan una tasa de incompletos estructuralmente alta.",
       "Alta adherencia (≥9): 37,9 % de los registros válidos (Granada, EAS).",
       "Adherencia media (7–8): 26,1 %. Baja adherencia (≤6): 36,0 %.",
       "Los umbrales (≤6/7–8/≥9) siguen la adaptación EAS Andalucía. " +

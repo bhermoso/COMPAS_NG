@@ -259,9 +259,11 @@ export const DUKE_EAS_MODULE: MethodologicalModule = {
     referenceValues: {
       population: "Adultos ≥16 años, Andalucía (EAS Granada)",
       mean: 49.2,
-      source: "Fixture EAS Granada — parseDUKECSV (fixtures/duke-eas-granada.csv, n=3028)",
+      source: "Encuesta Andaluza de Salud (EAS), microdatos adulto Granada",
     },
     contextualNotes: [
+      "Valor de referencia (media 49,2): calculado sobre n=3.028 registros válidos. " +
+      "Trazabilidad interna: fixtures/duke-eas-granada.csv · parseDUKECSV.",
       "La escala confidencial tiene rango 7–35 (umbral EAS: 35 = normal; <35 = bajo).",
       "La escala afectiva tiene rango 4–20 (umbral EAS: 20 = normal; <20 = bajo).",
       "Los umbrales EAS son más estrictos que los clínicos publicados (Bellón, 1996).",
