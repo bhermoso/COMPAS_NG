@@ -22,7 +22,7 @@ export function generateLT1(store: EvidenceStore): LT1Result {
       atom.kind === "participation"
   );
   const methodologicalCautions = store.atoms.filter(
-    (atom) => atom.kind === "methodological-caution"
+    (atom) => atom.kind === "methodological-caution" || atom.kind === "sample-quality"
   );
 
   const supportingEvidenceIds = store.atoms.map((atom) => atom.id);

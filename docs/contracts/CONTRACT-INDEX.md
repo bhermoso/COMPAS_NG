@@ -113,6 +113,19 @@ Contrato del Motor de Interpretación Territorial (MIT) y del Perfil de Salud Lo
 
 ---
 
+## Producto 3 — Perfil de Salud Local COMPÁS (PSL-C)
+
+### CONTRACT-PSL-COMPAS
+**Estado:** VIGENTE
+
+Contrato canónico del Producto 3. Define el PSL-C como producto analítico territorial en el catálogo de COMPÁS NG: naturaleza, fuentes consumibles (incluyendo Productos 1 y 2), separación arquitectónica estricta, estructura canónica de 7 capítulos, relación con SAM y Estudios Complementarios, y deuda registrada (D3-01 a D3-04).
+
+**Productores:** `buildLocalHealthProfile` + `LocalHealthProfileCompiler`.
+**Consumidores:** Equipo técnico (diagnóstico), Nivel 3 (vía PSL-C1), compiladores superiores.
+**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID.
+
+---
+
 ## Nivel 2 tardío — Compiladores de diagnóstico
 
 ### CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER
@@ -304,7 +317,8 @@ LocalHealthPlanDocument (PLS)
 |---|---|---|
 | `docs/certification/CERTIFICATION-SPRINT-0-1.md` | 2026-06-28 | Sprints 0–1: pipeline E2E, 309 tests |
 | `docs/certification/PRODUCT-1-CERTIFICATION.md` | 2026-06-29 | Producto 1 — Sistema de Estudios Complementarios: 6 instrumentos, 481 tests |
-| `docs/certification/PRODUCT-2-SAM-CERTIFICATION.md` | 2026-06-29 | Producto 2 — SAM NG: motor + integración 6 instrumentos + IBSE dual, 553 tests |
+| `docs/certification/PRODUCT-2-SAM-CERTIFICATION.md` | 2026-06-30 | Producto 2 — SAM NG: motor + integración + samAssessmentToEvidenceAtom, 573 tests |
+| `docs/certification/PRODUCT-3-PSL-CERTIFICATION.md` | 2026-06-30 | Producto 3 — PSL-C: 7 capítulos, compiler 7 gates, integración SAM+P1, 573 tests |
 
 El plano arquitectónico completo que responde a la pregunta
 "¿qué debe existir para producir un Perfil de Salud Local, un Plan Local de Salud y una

@@ -200,8 +200,8 @@ La FPC se aplica en todos los cálculos, sin posibilidad de omitirla. Esto garan
 **G6 — Cautelas metodológicas automáticas y calibradas**
 Cada `SampleQualityAssessment` incluye cautelas específicas según el nivel de calidad (LOW/MEDIUM) y dos cautelas estándar para todos los niveles: referencia a la fuente poblacional y recordatorio de no-modificación. Verificado en tests de cautelas.
 
-**G7 — Separación entre evaluación y evidencia**
-SAM no genera `EvidenceAtom`. El campo `EvidenceOrigin: "sam"` está reservado en el dominio pero no instanciado. La evaluación metodológica no entra en el `EvidenceStore` todavía. Esta separación es deliberada y está documentada en `CONTRACT-DYNAMIC-TRIPYRAMID.md`.
+**G7 — Conversión canónica a EvidenceAtom**
+`samAssessmentToEvidenceAtom()` convierte un `SampleQualityAssessment` en un `EvidenceAtom` con `kind: "sample-quality"` y `origin: "sam"`, completando el patrón arquitectónico del Producto 1. La conversión es una función pura que no muta el assessment de entrada. El motor SAM permanece sin conocimiento del EvidenceAtom; la conversión vive exclusivamente en la capa de aplicación.
 
 **G8 — Semántica correcta de la clasificación**
 La clasificación `sampleQuality: "high" | "medium" | "low"` expresa la **adecuación del tamaño muestral observado respecto al tamaño muestral teórico** calculado mediante Cochran+FPC para una población de referencia determinada. No expresa calidad científica global del instrumento ni validez del estudio. Esta distinción está documentada en el `sampleQualityRationale` de cada dictamen.
@@ -220,7 +220,7 @@ Vite build: ✓ 449 módulos transformados — sin errores — sin errores TypeS
 ### Tests
 
 ```
-553/553 tests pasan en 15 ficheros de test
+573/573 tests pasan en 16 ficheros de test
 ```
 
 Tests que verifican directamente el Producto 2:
@@ -228,9 +228,10 @@ Tests que verifican directamente el Producto 2:
 | Fichero de test | Tests | Qué verifica |
 |---|---|---|
 | `tests/sam.test.ts` | 33 | Motor puro: Cochran raw, FPC para Atarfe (N=15.472) y N=500 sintético, clasificación HIGH/MEDIUM/LOW, fronteras exactas (100 %/60 %), inmutabilidad, cautelas, invariantes del objeto resultado |
-| `tests/sam-integration.test.ts` | 39 | Integración con DUKE, PREDIMED, SF-12, Sueño, CAGE; IBSE dual (16+ y full); campos `nObserved` canónicos; ausencia de EvidenceAtom; no mutación de estudios; instanciación idéntica del motor |
+| `tests/sam-integration.test.ts` | 39 | Integración con DUKE, PREDIMED, SF-12, Sueño, CAGE; IBSE dual (16+ y full); campos `nObserved` canónicos; ausencia de EvidenceAtom en studies; no mutación de estudios; instanciación idéntica del motor |
+| `tests/sam-to-evidence-atom.test.ts` | 20 | Conversión `samAssessmentToEvidenceAtom`: kind, origin, id estable, mapeo confidence, content = sampleQualityRationale, cautelas en limitations, trazabilidad, no mutación del assessment |
 
-Tests directamente relacionados con Producto 2: **72 de 553** (13,0 %).
+Tests directamente relacionados con Producto 2: **92 de 573** (16,1 %).
 
 ### Ausencia de regresiones
 
@@ -270,7 +271,7 @@ Ningún archivo de `src/` preexistente fue modificado durante la implementación
 | Fixture escolar Atarfe (MTI-BDU 2025) | ✅ Disponible | `fixtures/population/` |
 | Tripirámide visual (UI) | ⏳ Pendiente | — |
 | Persistencia en workspace | ⏳ Pendiente | — |
-| `EvidenceAtom kind="sample-quality"` | ⏳ Pendiente | Reservado en dominio |
+| `samAssessmentToEvidenceAtom()` | ✅ Implementada | `src/application/sam/SAMAssessmentToEvidenceAtom.ts` |
 | Estratificación | ⏳ Pendiente | — |
 | Ponderación | ⏳ Pendiente | — |
 | Desplazamiento | ⏳ Pendiente | — |
@@ -298,9 +299,9 @@ La FPC es obligatoria. Municipios con N < 2.000 ven reducido su `nTheoretical` s
 
 Los parsers, agregados, semántica y `EvidenceAtom` de los seis instrumentos complementarios permanecen intactos. La capa `assess*Study()` es un adaptador de solo lectura: extrae `nObserved` del campo canónico correspondiente y delega en el motor. No tiene acceso de escritura al estudio.
 
-### SAM no genera EvidenceAtom todavía
+### Patrón de conversión a EvidenceAtom (completado 2026-06-30)
 
-El campo `EvidenceOrigin: "sam"` está reservado en `EvidenceAtom.ts` pero ninguna ruta de código lo instancia. La integración futura (cuando se decida) requerirá crear funciones específicas de generación sin modificar el motor SAM.
+`samAssessmentToEvidenceAtom()` convierte un `SampleQualityAssessment` en un `EvidenceAtom kind: "sample-quality"` siguiendo el mismo patrón arquitectónico de todos los instrumentos del Producto 1 (`XStudyToEvidenceAtoms`). La función vive en `src/application/sam/` y no modifica el motor. El motor permanece sin conocimiento de `EvidenceAtom`; la conversión es responsabilidad de la capa de aplicación.
 
 ### IBSE — dos preguntas, un instrumento
 
@@ -351,7 +352,7 @@ La auditoría directa del repositorio —incluyendo lectura de código fuente, t
 
 El motor `computeSampleQualityAssessment()` es correcto, puro e inmutable. Los tipos de dominio `PopulationReference` y `SampleQualityAssessment` son canónicos y completos. La capa de integración `assessStudies.ts` conecta correctamente los seis instrumentos del Producto 1 con el motor sin modificar ninguno de ellos. Los fixtures poblacionales están derivados de fuentes reales verificadas. La evaluación dual de IBSE es metodológicamente correcta y está implementada de forma independiente. La clasificación de calidad muestral es coherente con el contrato `CONTRACT-DYNAMIC-TRIPYRAMID.md` y sus semántica es explícita.
 
-El build es limpio. 553/553 tests pasan, de los cuales 72 verifican directamente el Producto 2. Los 481 tests anteriores no registran ninguna regresión.
+El build es limpio. 573/573 tests pasan, de los cuales 92 verifican directamente el Producto 2. Los 481 tests anteriores no registran ninguna regresión.
 
 > **El Producto 2 — SAM NG queda oficialmente certificado.**
 
@@ -364,8 +365,8 @@ El build es limpio. 553/553 tests pasan, de los cuales 72 verifican directamente
 | Expediente | PRODUCT-2-SAM-CERTIFICATION |
 | Fecha de emisión | 2026-06-29 |
 | Repositorio | `C:\Users\blash\Desktop\COMPAS_NG` |
-| Tests totales | 553/553 passing — 15 ficheros |
-| Tests directamente relacionados con Producto 2 | 72/553 (13,0 %) |
+| Tests totales | 573/573 passing — 16 ficheros |
+| Tests directamente relacionados con Producto 2 | 92/573 (16,1 %) |
 | Build | Limpio — 449 módulos — sin errores TypeScript |
 | Instrumentos integrados | 6/6 (DUKE-EAS, PREDIMED-EAS, SF-12 EAS, Sueño EAS, CAGE-EAS, IBSE) |
 | Evaluaciones IBSE | 2 (16+ y muestra completa) |

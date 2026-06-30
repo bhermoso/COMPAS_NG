@@ -125,6 +125,9 @@ export interface LocalHealthProfile {
   ibsePresent: boolean;
   dukePresent: boolean;
   predimedPresent: boolean;
+  sf12Present: boolean;
+  suenoPresent: boolean;
+  cagePresent: boolean;
   thematicPrioritisationPresent: boolean;
   complementaryStudyCount: number;
 

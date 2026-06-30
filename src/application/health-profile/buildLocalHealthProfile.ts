@@ -146,6 +146,9 @@ export function buildLocalHealthProfile(
     ibsePresent: workspace.ibseStudy !== undefined,
     dukePresent: workspace.dukeStudy !== undefined,
     predimedPresent: workspace.predimedStudy !== undefined,
+    sf12Present: workspace.sf12Study !== undefined,
+    suenoPresent: workspace.suenoStudy !== undefined,
+    cagePresent: workspace.cageStudy !== undefined,
     thematicPrioritisationPresent: workspace.thematicPrioritisation !== undefined,
     complementaryStudyCount,
 
