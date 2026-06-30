@@ -223,6 +223,9 @@ export function compileLocalHealthProfile(
       ibsePresent: psl.ibsePresent,
       dukePresent: psl.dukePresent,
       predimedPresent: psl.predimedPresent,
+      sf12Present: psl.sf12Present,
+      suenoPresent: psl.suenoPresent,
+      cagePresent: psl.cagePresent,
       thematicPrioritisationPresent: psl.thematicPrioritisationPresent,
     },
 

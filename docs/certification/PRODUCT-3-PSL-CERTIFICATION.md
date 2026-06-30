@@ -257,7 +257,7 @@ La auditoría directa del repositorio —incluyendo el dominio `LocalHealthProfi
 
 El `LocalHealthProfile` es un objeto canónico completo con siete capítulos estructurados, ciclo de vida explícito y trazabilidad total. El `LocalHealthProfileCompiler` produce artefactos inmutables mediante siete gates. La integración con los Productos 1 y 2 está arquitectónicamente completa: los seis instrumentos tienen representación explícita y los resultados SAM entran como cautelas metodológicas a través del canal canónico EvidenceStore → MIT. El MIT permanece agnóstico respecto al origen de los átomos. El PSL no conoce SAM. La separación evidencia / interpretación / perfil es invariante.
 
-El build es limpio. 573/573 tests pasan. Los Productos 1 y 2 no registran regresiones.
+El build es limpio. 575/575 tests pasan (D3-01 resuelto: +2 tests de trazabilidad del artefacto). Los Productos 1 y 2 no registran regresiones.
 
 > **El Producto 3 — Perfil de Salud Local COMPÁS queda oficialmente certificado.**
 

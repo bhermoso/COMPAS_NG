@@ -103,7 +103,7 @@ El PSL-C contiene exactamente estas secciones. Nada más.
 | `identificacionMunicipal` | ID del municipio, nombre, provincia, fecha de generación del PSL origen | `psl.municipalityId`, metadatos |
 | `marcoEstrategico` | IDs de las secciones del marco estratégico aplicadas | `psl.strategicFrameworkSectionIds` |
 | `informeSalud` | Referencia al Informe de Salud (título, documentId), sin el contenido del documento | `psl.healthReportDocumentId`, `psl.healthReportTitle` |
-| `baseDocumental` | Estadísticas de evidencia: total de átomos, orígenes, estudios complementarios, advertencias | `psl.totalEvidenceAtoms`, `psl.originsSummary`, etc. |
+| `baseDocumental` | Estadísticas de evidencia: total de átomos, orígenes, flags individuales de los 6 estudios complementarios (`ibsePresent`…`cagePresent`), total y advertencias de integridad | `psl.totalEvidenceAtoms`, `psl.originsSummary`, `psl.ibsePresent`…`psl.cagePresent`, etc. |
 | `lecturaTerritorial` | Síntesis territorial: resumen, determinantes, activos, indicadores, áreas de intervención, tensiones estructurales | `psl.territorialSummary`, `psl.areasDeIntervencion`, etc. |
 | `conclusiones` | Texto de conclusiones de autoría humana | `psl.conclusiones.content` |
 | `cierreInterpretativo` | Alcance, limitaciones y síntesis metodológica del diagnóstico. Sin prescripción de acciones. Autoría humana. | `psl.cierreInterpretativo.content` |

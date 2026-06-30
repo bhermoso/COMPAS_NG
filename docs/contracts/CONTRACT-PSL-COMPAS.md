@@ -57,10 +57,10 @@ Los seis instrumentos del Producto 1 contribuyen al PSL a través del EvidenceSt
 | DUKE-EAS | `duke-eas` | `dukePresent: boolean` + evidencia en EvidenceStore |
 | PREDIMED-EAS | `predimed-eas` | `predimedPresent: boolean` + evidencia en EvidenceStore |
 | SF-12 EAS | `sf12-eas` | `complementaryStudyCount` + evidencia en EvidenceStore |
-| Sueño EAS | `sueno-eas` | `complementaryStudyCount` + evidencia en EvidenceStore |
-| CAGE-EAS | `cage-eas` | `complementaryStudyCount` + evidencia en EvidenceStore |
+| Sueño EAS | `sueno-eas` | `suenoPresent: boolean` + evidencia en EvidenceStore |
+| CAGE-EAS | `cage-eas` | `cagePresent: boolean` + evidencia en EvidenceStore |
 
-**Pendiente (deuda registrada):** los tres últimos instrumentos (SF-12, Sueño, CAGE) no tienen flags explícitos (`sf12Present`, `suenoPresent`, `cagePresent`) en el tipo `LocalHealthProfile`. Su presencia se contabiliza en `complementaryStudyCount` pero no se puede distinguir individualmente. La corrección mínima es añadir tres campos booleanos sin modificar el pipeline.
+Los seis instrumentos tienen representación individual en el `LocalHealthProfile` (`ibsePresent`, `dukePresent`, `predimedPresent`, `sf12Present`, `suenoPresent`, `cagePresent`) y en el `LocalHealthProfileArtifact` (`baseDocumental`). Ningún instrumento certificado queda reducido solo a `complementaryStudyCount` — el conteo es redundante y conservado por conveniencia.
 
 ### 2.3 Sistema de Ajuste Muestral — Producto 2 (SAM NG)
 
@@ -172,16 +172,16 @@ La estructura de siete capítulos está implementada y congelada:
 
 ### 4.1 Campos de diagnóstico integrado (Cap. III) — estado actual vs. objetivo
 
-| Campo | Estado actual | Objetivo Producto 3 |
+| Campo | Estado | Nota |
 |---|---|---|
-| `ibsePresent` | ✅ Implementado | Mantener |
-| `dukePresent` | ✅ Implementado | Mantener |
-| `predimedPresent` | ✅ Implementado | Mantener |
-| `sf12Present` | ❌ No existe | Añadir |
-| `suenoPresent` | ❌ No existe | Añadir |
-| `cagePresent` | ❌ No existe | Añadir |
-| `samAssessments[]` | ❌ No existe | Añadir (pending SAM integration) |
-| `complementaryStudyCount` | ✅ Implementado | Mantener como total |
+| `ibsePresent` | ✅ Implementado | En PSL y PSL-C |
+| `dukePresent` | ✅ Implementado | En PSL y PSL-C |
+| `predimedPresent` | ✅ Implementado | En PSL y PSL-C |
+| `sf12Present` | ✅ Implementado | En PSL y PSL-C (D3-01 resuelto) |
+| `suenoPresent` | ✅ Implementado | En PSL y PSL-C (D3-01 resuelto) |
+| `cagePresent` | ✅ Implementado | En PSL y PSL-C (D3-01 resuelto) |
+| `samAssessments[]` | ❌ No existe | Pendiente (D3-02) |
+| `complementaryStudyCount` | ✅ Implementado | Total de estudios presentes |
 
 ### 4.2 Secciones del LocalHealthProfileArtifact (PSL-C compilado)
 
@@ -251,7 +251,7 @@ El Producto 3 se considera completo cuando:
 
 | ID | Deuda | Tipo | Bloquea |
 |---|---|---|---|
-| D3-01 | Flags explícitos de SF-12, Sueño y CAGE en `LocalHealthProfile` | Implementación mínima | Trazabilidad completa de Producto 1 en PSL |
+| ~~D3-01~~ | ~~Flags explícitos de SF-12, Sueño y CAGE en `LocalHealthProfile`~~ | **RESUELTO 2026-06-30**: `sf12Present`, `suenoPresent`, `cagePresent` presentes en `LocalHealthProfile` y en `PSLCArtifactBaseDocumental`; compilador actualizado. | — |
 | D3-02 | Integración de `SampleQualityAssessment` en PSL (opción A o B) | Implementación pendiente | Cautelas metodológicas de calidad muestral en PSL |
 | D3-03 | Handler UI de transición PSL `validated` → `approved` | Implementación UI | Acceso al compilador del Producto 7 (PLS) |
 | D3-04 | Datos de referencia Granada/Andalucía en paneles EAS | Disponibilidad de datos | PSL NHS (Producto 4); no bloquea PSL-C |

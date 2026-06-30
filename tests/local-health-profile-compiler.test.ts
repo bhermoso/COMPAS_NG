@@ -62,6 +62,9 @@ function basePSL(overrides: Partial<LocalHealthProfile> = {}): LocalHealthProfil
     ibsePresent: true,
     dukePresent: true,
     predimedPresent: true,
+    sf12Present: false,
+    suenoPresent: false,
+    cagePresent: false,
     thematicPrioritisationPresent: true,
     complementaryStudyCount: 3,
     territorialSummary: "El territorio de Atarfe presenta un perfil de salud con fortalezas en cohesión social.",
@@ -303,6 +306,33 @@ describe("compileLocalHealthProfile — compilación correcta", () => {
       expect(candidaturas[0].title).toBe("Salud mental");
       expect("id" in candidaturas[0]).toBe(false);
       expect("relatedEvidenceIds" in candidaturas[0]).toBe(false);
+    }
+  });
+
+  it("baseDocumental: los seis flags de estudios complementarios reflejan el PSL origen", () => {
+    const psl = basePSL({ sf12Present: true, suenoPresent: true, cagePresent: true, complementaryStudyCount: 6 });
+    const result = compileLocalHealthProfile({ ...INPUT_ATARFE, psl });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const bd = result.artifact.baseDocumental;
+      expect(bd.ibsePresent).toBe(true);
+      expect(bd.dukePresent).toBe(true);
+      expect(bd.predimedPresent).toBe(true);
+      expect(bd.sf12Present).toBe(true);
+      expect(bd.suenoPresent).toBe(true);
+      expect(bd.cagePresent).toBe(true);
+      expect(bd.complementaryStudyCount).toBe(6);
+    }
+  });
+
+  it("baseDocumental: flags ausentes se propagan como false al artefacto", () => {
+    const result = compileLocalHealthProfile(INPUT_ATARFE);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const bd = result.artifact.baseDocumental;
+      expect(bd.sf12Present).toBe(false);
+      expect(bd.suenoPresent).toBe(false);
+      expect(bd.cagePresent).toBe(false);
     }
   });
 
