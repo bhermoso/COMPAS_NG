@@ -273,9 +273,7 @@ export const DUKE_EAS_MODULE: MethodologicalModule = {
     referenceValues: {
       population: "Adultos ≥16 años — EAS Granada Metropolitano",
       mean: 49.2,
-      source:
-        "Encuesta Andaluza de Salud (EAS), microdatos adulto Granada. " +
-        "n = 3.028 registros válidos. Trazabilidad: fixtures/duke-eas-granada.csv.",
+      source: "Encuesta Andaluza de Salud (EAS), microdatos adulto Granada",
     },
     contextualNotes: [
       "Umbral de interpretación clínica (Bellón, 1996): adecuado ≥40, moderado 32–39, bajo <32.",
@@ -283,7 +281,8 @@ export const DUKE_EAS_MODULE: MethodologicalModule = {
       "cualquier valor inferior = apoyo bajo. Este umbral más estricto produce tasas de bajo apoyo " +
       "mayores que los criterios clínicos publicados.",
       "La escala confidencial tiene rango 7–35; la afectiva, rango 4–20.",
-      "Valor de referencia EAS Granada: media 49,2 sobre 55 (n = 3.028).",
+      "Valor de referencia EAS Granada: media 49,2 sobre 55 (n = 3.028). " +
+      "Trazabilidad interna: fixtures/duke-eas-granada.csv.",
       "Los resultados son agregados de la muestra disponible, no estimaciones poblacionales.",
       "Una muestra inferior a 30 registros válidos limita la fiabilidad de los resultados.",
     ],

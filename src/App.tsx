@@ -1971,6 +1971,7 @@ export default function App() {
               healthReport={runtime.workspace.healthReport}
             />
             <EstudiosComplementariosPanel
+              municipalityName={municipality.name}
               ibseStudy={runtime.workspace.ibseStudy}
               isLoadingIBSE={isLoadingIBSE}
               ibseMessage={ibseMessage}
