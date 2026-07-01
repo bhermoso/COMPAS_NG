@@ -135,6 +135,8 @@ function StudyRow({
 // ── Props del panel principal ─────────────────────────────────────────────────
 
 interface EstudiosComplementariosPanelProps {
+  municipalityName?: string;
+
   ibseStudy?: IBSEStudy;
   isLoadingIBSE?: boolean;
   ibseMessage?: string | null;
@@ -173,6 +175,7 @@ interface EstudiosComplementariosPanelProps {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function EstudiosComplementariosPanel({
+  municipalityName,
   ibseStudy,
   isLoadingIBSE,
   ibseMessage,
@@ -257,7 +260,7 @@ export function EstudiosComplementariosPanel({
           onLoadCSV={onLoadDUKECSV}
           onDelete={makeDeleteHandler("duke-eas")}
         >
-          <DUKEPanel dukeStudy={dukeStudy} isLoading={isLoadingDUKE} message={dukeMessage} onLoadCSV={onLoadDUKECSV} />
+          <DUKEPanel dukeStudy={dukeStudy} isLoading={isLoadingDUKE} message={dukeMessage} onLoadCSV={onLoadDUKECSV} municipalityName={municipalityName} />
         </StudyRow>
 
         <StudyRow

@@ -242,31 +242,48 @@ export const DUKE_EAS_MODULE: MethodologicalModule = {
       max: 55,
       direction: "higher-is-better",
     },
+    // Umbrales clínicos de interpretación (Bellón, 1996).
+    // Distintos de los umbrales de recodificación EAS (ver algorithm.notes):
+    // la EAS clasifica solo el máximo (55) como "normal"; Bellón usa ≥32 como corte.
+    // COMPÁS NG usa los umbrales Bellón para interpretar el nivel, y la recodificación
+    // EAS para calcular el porcentaje de "apoyo bajo" en la muestra.
     thresholds: [
       {
-        min: 55,
+        min: 40,
         max: 55,
-        label: "Apoyo normal (global)",
-        description: "Puntuación global máxima: 55/55. Clasificación EAS: apoyo social funcional normal.",
+        label: "adecuado",
+        description:
+          "Apoyo social funcional adecuado (puntuación global ≥ 40/55, Bellón, 1996).",
+      },
+      {
+        min: 32,
+        max: 39,
+        label: "moderado",
+        description:
+          "Apoyo social funcional moderado (puntuación global 32–39/55).",
       },
       {
         min: 11,
-        max: 54,
-        label: "Apoyo bajo (global)",
-        description: "Puntuación global inferior al máximo. Clasificación EAS: apoyo social funcional bajo.",
+        max: 31,
+        label: "bajo",
+        description:
+          "Apoyo social funcional bajo (puntuación global < 32/55, según Bellón, 1996).",
       },
     ],
     referenceValues: {
-      population: "Adultos ≥16 años, Andalucía (EAS Granada)",
+      population: "Adultos ≥16 años — EAS Granada Metropolitano",
       mean: 49.2,
-      source: "Encuesta Andaluza de Salud (EAS), microdatos adulto Granada",
+      source:
+        "Encuesta Andaluza de Salud (EAS), microdatos adulto Granada. " +
+        "n = 3.028 registros válidos. Trazabilidad: fixtures/duke-eas-granada.csv.",
     },
     contextualNotes: [
-      "Valor de referencia (media 49,2): calculado sobre n=3.028 registros válidos. " +
-      "Trazabilidad interna: fixtures/duke-eas-granada.csv · parseDUKECSV.",
-      "La escala confidencial tiene rango 7–35 (umbral EAS: 35 = normal; <35 = bajo).",
-      "La escala afectiva tiene rango 4–20 (umbral EAS: 20 = normal; <20 = bajo).",
-      "Los umbrales EAS son más estrictos que los clínicos publicados (Bellón, 1996).",
+      "Umbral de interpretación clínica (Bellón, 1996): adecuado ≥40, moderado 32–39, bajo <32.",
+      "Umbral de recodificación EAS (distinto): solo puntuación máxima (55/35/20) = apoyo normal; " +
+      "cualquier valor inferior = apoyo bajo. Este umbral más estricto produce tasas de bajo apoyo " +
+      "mayores que los criterios clínicos publicados.",
+      "La escala confidencial tiene rango 7–35; la afectiva, rango 4–20.",
+      "Valor de referencia EAS Granada: media 49,2 sobre 55 (n = 3.028).",
       "Los resultados son agregados de la muestra disponible, no estimaciones poblacionales.",
       "Una muestra inferior a 30 registros válidos limita la fiabilidad de los resultados.",
     ],
@@ -465,5 +482,81 @@ export const DUKE_EAS_MODULE: MethodologicalModule = {
         },
       ],
     },
+  },
+
+  institutionalNote: {
+    diagnosticInterpretation:
+      "El DUKE-EAS permite conocer en qué medida la población adulta del municipio " +
+      "percibe que dispone de apoyo cuando lo necesita — tanto en el plano confidencial " +
+      "(con quién hablar de problemas) como en el afectivo (quién muestra interés y cariño). " +
+      "Una puntuación media baja no implica necesariamente aislamiento real, pero indica " +
+      "una brecha entre la demanda de apoyo percibida y la disponibilidad sentida. " +
+      "El componente con mayor déficit relativo orienta sobre el tipo de red de apoyo " +
+      "que merece atención prioritaria: si el apoyo confidencial es más bajo, señala " +
+      "dificultades para encontrar con quién hablar; si el afectivo es más bajo, señala " +
+      "déficit de reconocimiento y afecto percibidos. Ambas dimensiones tienen implicaciones " +
+      "distintas para la intervención comunitaria.",
+
+    implications: [
+      "Revisión de la disponibilidad y accesibilidad de redes de apoyo comunitario " +
+      "en el municipio (asociaciones, centros de participación, servicios sociales).",
+      "Análisis del asociacionismo local y de la participación en actividades colectivas " +
+      "como factores protectores del apoyo social.",
+      "Identificación de grupos con mayor aislamiento percibido: personas mayores que " +
+      "viven solas, personas con enfermedades crónicas, población recién llegada.",
+      "Cruce con indicadores de salud mental (SF-12 MCS) y bienestar socioemocional " +
+      "(IBSE) para construir una imagen integrada del apoyo relacional del municipio.",
+      "Valoración de los activos comunitarios existentes y su capacidad real para " +
+      "responder a las necesidades de apoyo de la población.",
+    ],
+
+    publicHealthApplication: {
+      measures: [
+        "Percepción subjetiva de disponibilidad de apoyo social funcional.",
+        "Apoyo confidencial: con quién hablar de problemas laborales, personales o económicos.",
+        "Apoyo afectivo: quién muestra afecto, interés y reconocimiento.",
+        "Prevalencia de apoyo social bajo en la muestra (puntuación inferior a umbrales de referencia).",
+      ],
+      doesNotMeasure: [
+        "Soledad objetiva ni aislamiento social real.",
+        "Tamaño ni composición de la red social de relaciones.",
+        "Acceso efectivo a servicios sociales ni apoyo institucional.",
+        "Bienestar social objetivo ni integración social medida externamente.",
+      ],
+      contextualUse: [
+        "Útil para identificar grupos de población que perciben que cuentan con poco " +
+        "apoyo funcional cuando lo necesitan.",
+        "Los resultados deben interpretarse junto a indicadores de cohesión social, " +
+        "participación ciudadana y salud mental.",
+        "Especialmente relevante en municipios con alta proporción de personas mayores, " +
+        "alta movilidad poblacional o baja densidad de servicios comunitarios.",
+      ],
+      commonMisinterpretations: [
+        "Una puntuación baja no equivale a aislamiento social: puede reflejar expectativas " +
+        "elevadas de apoyo, no la ausencia de red.",
+        "El instrumento mide la percepción subjetiva, no la realidad objetiva de las redes.",
+        "La recodificación EAS (solo puntuación máxima = apoyo normal) es más estricta " +
+        "que el umbral clínico publicado (Bellón, 1996: < 32 sobre 55 = apoyo bajo). " +
+        "Esto produce tasas de apoyo bajo EAS más elevadas que las clínicas de referencia.",
+      ],
+    },
+
+    pslIntegration: {
+      chapter: "Determinantes de Salud",
+      determinants: [
+        "Apoyo social y redes comunitarias",
+        "Capital social del municipio",
+        "Cohesión social",
+      ],
+      contribution:
+        "Los resultados del DUKE-EAS alimentan el análisis de determinantes sociales " +
+        "del Perfil de Salud Local. La prevalencia de apoyo bajo orienta la identificación " +
+        "de áreas de intervención en cohesión comunitaria y fortalecimiento de redes de apoyo. " +
+        "Combinado con los resultados de SF-12 MCS (salud mental percibida) e IBSE " +
+        "(bienestar socioemocional escolar), contribuye a construir una imagen integrada " +
+        "del apoyo relacional y emocional del municipio.",
+    },
+
+    relatedInstrumentIds: ["sf12-eas", "ibse"],
   },
 };

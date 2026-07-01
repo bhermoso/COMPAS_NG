@@ -222,6 +222,32 @@ export interface ModuleAdapters {
   sav?: SavAdapter;
 }
 
+// ─── Nota institucional ───────────────────────────────────────────────────────
+// Contenido editorial para el informe diagnóstico de cada instrumento en COMPÁS NG.
+// No forma parte de la definición metodológica del instrumento: describe cómo
+// usarlo e interpretarlo en el contexto del diagnóstico municipal.
+
+export interface PublicHealthApplicationNote {
+  measures: string[];
+  doesNotMeasure: string[];
+  contextualUse: string[];
+  commonMisinterpretations?: string[];
+}
+
+export interface PSLIntegrationNote {
+  chapter: string;
+  determinants: string[];
+  contribution: string;
+}
+
+export interface InstitutionalNote {
+  diagnosticInterpretation: string;
+  implications: string[];
+  publicHealthApplication: PublicHealthApplicationNote;
+  pslIntegration: PSLIntegrationNote;
+  relatedInstrumentIds?: string[];
+}
+
 // ─── Módulo Metodológico ──────────────────────────────────────────────────────
 
 export interface MethodologicalModule {
@@ -234,4 +260,5 @@ export interface MethodologicalModule {
   limitations: string[];
   bibliography: BibliographicReference[];
   adapters?: ModuleAdapters;
+  institutionalNote?: InstitutionalNote;
 }
