@@ -10,6 +10,7 @@ export * from "./SF12Panel";
 export * from "./SuenoPanel";
 export * from "./CAGEPanel";
 export * from "./EstudiosComplementariosPanel";
+export * from "./ActivosSaludPanel";
 export * from "./MunicipalInventoryPanel";
 export * from "./LocalHealthProfilePanel";
 export * from "./LocalHealthProfileView";

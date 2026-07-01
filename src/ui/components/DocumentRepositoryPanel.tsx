@@ -55,13 +55,6 @@ type DocCategory =
   | "community-asset"
   | "other-source";
 
-const CATEGORY_LABEL: Record<DocCategory, string> = {
-  "primary-source":      "Fuente documental primaria",
-  "complementary-study": "Estudios complementarios",
-  "community-asset":     "Activos comunitarios",
-  "other-source":        "Otras fuentes documentales",
-};
-
 function getCategory(document: MunicipalDocument): DocCategory {
   if (document.kind === "health-report") return "primary-source";
   if (document.kind === "community-asset") return "community-asset";
@@ -73,13 +66,6 @@ function getCategory(document: MunicipalDocument): DocCategory {
   }
   return "other-source";
 }
-
-const CATEGORY_ORDER: DocCategory[] = [
-  "primary-source",
-  "complementary-study",
-  "community-asset",
-  "other-source",
-];
 
 const STUDY_TAG_ORDER: Record<string, number> = {
   ibse: 0,
@@ -104,100 +90,79 @@ interface DocumentRepositoryPanelProps {
 }
 
 export function DocumentRepositoryPanel({ repository, onDelete }: DocumentRepositoryPanelProps) {
-  // Agrupar por categoría
-  const grouped = new Map<DocCategory, MunicipalDocument[]>();
-  for (const cat of CATEGORY_ORDER) {
-    grouped.set(cat, []);
-  }
-  for (const doc of repository.documents) {
-    const cat = getCategory(doc);
-    grouped.get(cat)!.push(doc);
-  }
-
-  const totalDocuments = repository.documents.length;
+  // Solo muestra "otras fuentes documentales" — las capas 1–3 (Informe de Salud,
+  // Estudios complementarios, Activos para la salud) tienen sus propios paneles.
+  const otherDocs = sortWithinCategory(
+    repository.documents.filter((d) => getCategory(d) === "other-source")
+  );
 
   return (
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Repositorio documental</p>
+          <p className="eyebrow">Diagnóstico territorial</p>
           <h2>
-            Documentos registrados
-            {totalDocuments > 0 && (
-              <span className="doc-repo__count">{totalDocuments}</span>
+            Otras fuentes documentales
+            {otherDocs.length > 0 && (
+              <span className="doc-repo__count">{otherDocs.length}</span>
             )}
           </h2>
         </div>
         <p className="panel-note">
-          Fuentes documentales cargadas en este espacio de trabajo municipal.
-          Cada documento alimenta el análisis territorial según su tipo.
+          Memorias, planes, diagnósticos sectoriales, encuestas y otros documentos
+          incorporados al análisis territorial del municipio.
         </p>
       </div>
 
-      {totalDocuments === 0 ? (
+      {otherDocs.length === 0 ? (
         <p className="empty-state">
-          Todavía no hay documentos registrados. Usa el panel superior para
-          añadir el primero.
+          No hay fuentes documentales adicionales registradas.
+          Puedes incorporar memorias de actividades, planes locales, diagnósticos de
+          barrio u otros documentos de contexto desde el formulario inferior.
         </p>
       ) : (
-        <>
-          {CATEGORY_ORDER.map((cat) => {
-            const docs = sortWithinCategory(grouped.get(cat) ?? []);
-            if (docs.length === 0) return null;
-            return (
-              <div key={cat} className="doc-repo__group">
-                <p className="doc-repo__group-label">{CATEGORY_LABEL[cat]}</p>
-                <div className="document-list">
-                  {docs.map((document) => (
-                    <article
-                      className={`document-row${document.kind === "health-report" ? " document-row--primary" : ""}`}
-                      key={document.id}
-                      data-document-kind={document.kind}
-                      data-document-tags={document.tags.join(" ")}
-                    >
-                      <div>
-                        <p className="document-kind">
-                          {getDocumentKindLabel(document)}
-                        </p>
-                        <h3>
-                          {document.title}
-                          {document.kind === "health-report" && (
-                            <span className="doc-repo__primary-badge">
-                              Documento fuente principal
-                            </span>
-                          )}
-                        </h3>
-                        {document.source.system && (
-                          <p className="doc-repo__source">{document.source.system}</p>
-                        )}
-                      </div>
-                      <div className="doc-repo__actions">
-                        <span className="status-pill">
-                          {STATUS_LABEL[document.status] ?? document.status}
-                        </span>
-                        {onDelete && (
-                          <button
-                            type="button"
-                            className="doc-repo__delete"
-                            onClick={() => {
-                              if (window.confirm(
-                                `¿Eliminar «${document.title}»?\nSe borrarán también sus evidencias derivadas.`
-                              )) {
-                                onDelete(document.id);
-                              }
-                            }}
-                          >
-                            Eliminar
-                          </button>
-                        )}
-                      </div>
-                    </article>
-                  ))}
-                </div>
+        <div className="document-list">
+          {otherDocs.map((document) => (
+            <article
+              className="document-row"
+              key={document.id}
+              data-document-kind={document.kind}
+              data-document-tags={document.tags.join(" ")}
+            >
+              <div>
+                <p className="document-kind">
+                  {getDocumentKindLabel(document)}
+                </p>
+                <h3>{document.title}</h3>
+                {document.source.system && (
+                  <p className="doc-repo__source">{document.source.system}</p>
+                )}
               </div>
-            );
-          })}
-        </>
+              <div className="doc-repo__actions">
+                <span className="status-pill">
+                  {STATUS_LABEL[document.status] ?? document.status}
+                </span>
+                {onDelete && (
+                  <button
+                    type="button"
+                    className="doc-repo__delete"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `¿Eliminar «${document.title}»?\nSe borrarán también sus evidencias derivadas.`
+                        )
+                      ) {
+                        onDelete(document.id);
+                      }
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
       )}
     </section>
   );

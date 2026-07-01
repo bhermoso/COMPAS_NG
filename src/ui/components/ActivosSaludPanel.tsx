@@ -1,0 +1,94 @@
+import { useState } from "react";
+import type { MunicipalDocumentRepository } from "../../domain/repository";
+
+interface ActivosSaludPanelProps {
+  repository: MunicipalDocumentRepository;
+  onDeleteDocument?: (documentId: string) => void;
+}
+
+export function ActivosSaludPanel({ repository, onDeleteDocument }: ActivosSaludPanelProps) {
+  const [showList, setShowList] = useState(false);
+
+  const assetDocs = repository.documents.filter(
+    (d) => d.kind === "community-asset" || d.kind === "localiza-salud"
+  );
+  const assetNames = assetDocs.flatMap((d) =>
+    (d.sourceText ?? "").split("\n").map((s) => s.trim()).filter(Boolean)
+  );
+
+  return (
+    <section className="workspace-panel activos-panel">
+      <div className="panel-header">
+        <div>
+          <p className="eyebrow">Diagnóstico territorial</p>
+          <h2>Activos para la salud</h2>
+        </div>
+        <p className="panel-note">
+          Recursos comunitarios, equipamientos y redes del municipio que contribuyen
+          a la salud de la población.
+        </p>
+      </div>
+
+      {assetNames.length === 0 ? (
+        <p className="empty-state">
+          No se han incorporado activos comunitarios para la salud.
+          Pueden registrarse a través de Localiza Salud u otras fuentes de inventario comunitario.
+        </p>
+      ) : (
+        <div className="activos-body">
+          <div className="activos-summary">
+            <span className="activos-summary__count">
+              <strong>{assetNames.length}</strong> activos comunitarios incorporados
+            </span>
+            <button
+              type="button"
+              className="activos-summary__toggle"
+              onClick={() => setShowList((v) => !v)}
+              aria-expanded={showList}
+            >
+              {showList ? "Ocultar activos ▲" : "Ver activos ▾"}
+            </button>
+          </div>
+
+          {showList && (
+            <ul className="activos-list">
+              {assetNames.slice(0, 12).map((name, i) => (
+                <li key={i} className="activos-list__item">{name}</li>
+              ))}
+              {assetNames.length > 12 && (
+                <li className="activos-list__more">
+                  y {assetNames.length - 12} más…
+                </li>
+              )}
+            </ul>
+          )}
+
+          {assetDocs.map((doc) => (
+            <div key={doc.id} className="activos-source">
+              <span className="activos-source__label">
+                Fuente: {doc.title}
+              </span>
+              {onDeleteDocument && (
+                <button
+                  type="button"
+                  className="activos-source__delete"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `¿Eliminar los activos de «${doc.title}»?\nSe borrarán también sus evidencias derivadas.`
+                      )
+                    ) {
+                      onDeleteDocument(doc.id);
+                    }
+                  }}
+                >
+                  Eliminar
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}

@@ -57,14 +57,14 @@ export function DocumentIngestionPanel({
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Repositorio documental municipal</p>
-          <h2>Añadir documentación municipal</h2>
+          <p className="eyebrow">Añadir o sustituir fuentes</p>
+          <h2>Incorporar nueva documentación</h2>
         </div>
         <p className="panel-note">
           Pega el texto de cualquier documento municipal —informe de salud,
           memoria de actividades, diagnóstico de barrio, encuesta de
-          participación— y el sistema lo transforma en unidades de evidencia
-          que alimentan la lectura territorial y el análisis completo.
+          participación— y el sistema lo transforma en evidencias que
+          alimentan el análisis territorial.
         </p>
       </div>
 

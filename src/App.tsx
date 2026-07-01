@@ -37,8 +37,6 @@ import {
   MAX_SELECTED_TOPICS,
   createThematicPrioritisation,
 } from "./domain/thematic-prioritisation";
-import { createMunicipalSnapshot } from "./domain/municipality-context";
-import { createMunicipalInventory } from "./application/municipal-inventory";
 
 import { parseThematicPrioritisationCSV, thematicPrioritisationToEvidenceAtoms } from "./application/thematic-prioritisation";
 import { buildEstadoResumen } from "./application/territorial-interpretation";
@@ -61,7 +59,7 @@ import {
   EvidenceStorePanel,
   HealthReportViewer,
   EstudiosComplementariosPanel,
-  MunicipalInventoryPanel,
+  ActivosSaludPanel,
   LocalHealthProfileView,
   ThematicPrioritisationPanel,
   ThematicPrioritisationModal,
@@ -121,18 +119,19 @@ function slugifyMunicipalityId(name: string): string {
 
 // ── Tipos y constantes de módulo ─────────────────────────────
 
-type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "nhs" | "priorizacion" | "lectura" | "plan";
+type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "nhs" | "priorizacion" | "lectura" | "plan" | "plan-local" | "evaluacion";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
-  { id: "repositorio",   label: "Repositorio documental" },
-  { id: "analisis",      label: "Análisis territorial" },
+  { id: "repositorio",   label: "Diagnóstico territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
-  { id: "nhs",           label: "Perfil Comparativo" },
-  { id: "priorizacion",  label: "Priorizaciones" },
-  { id: "lectura",       label: "Lectura Estratégica" },
+  { id: "nhs",           label: "Perfil Ejecutivo de Salud Local" },
   { id: "plan",          label: "Plan de Acción" },
+  { id: "plan-local",    label: "Plan Local de Salud" },
+  { id: "evaluacion",    label: "Evaluación" },
 ];
+// Vistas eliminadas de la navegación principal pero accesibles para desarrollo:
+// "analisis" (D-002), "lectura" (D-004), "priorizacion" (integrada en Plan de Acción).
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "health-report",             label: "Informe de Salud" },
@@ -354,10 +353,6 @@ export default function App() {
     }
   }, [runtime.mit.version]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const municipalInventory = useMemo(() => {
-    const snapshot = createMunicipalSnapshot(workspace);
-    return createMunicipalInventory(snapshot);
-  }, [workspace]);
 
   // runtime.psl is built inside MunicipalityRuntime as the canonical Nivel 2 → Nivel 3 bridge.
 
@@ -1484,7 +1479,7 @@ export default function App() {
   return (
     <>
       {/* Barra de navegación con contexto municipal */}
-      <nav className="app-nav">
+      <nav className={view === "inicio" ? "app-nav app-nav--home" : "app-nav"}>
         <div className="app-nav__bar" />
         <div className="app-nav__inner">
           <span className="app-nav__brand">
@@ -1509,8 +1504,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Franja de contexto municipal — siempre visible */}
-        <div className="app-nav__municipality">
+        {/* Franja de contexto municipal — oculta en inicio, visible en vistas operativas */}
+        {view !== "inicio" && <div className="app-nav__municipality">
           <div className="app-nav__municipality-row">
             <span className="app-nav__municipality-name">
               {municipality.name}
@@ -1542,18 +1537,20 @@ export default function App() {
               {showMunicipalitySelector ? "Cerrar ▲" : "Cambiar ámbito ▾"}
             </button>
           </div>
-        </div>
+        </div>}
       </nav>
 
-      {/* Ciclo de Planificación Local — siempre visible en todas las vistas */}
-      <LocalHealthPlanningCycle
-        healthReportLoaded={runtime.workspace.healthReport !== undefined}
-        pslHasEvidence={runtime.psl.totalEvidenceAtoms > 0}
-        pslStatus={runtime.psl.status}
-        pslIsStale={runtime.pslIsStale}
-        thematicPrioritisationDone={runtime.workspace.thematicPrioritisation !== undefined}
-        onNavigate={(v) => setView(v as AppView)}
-      />
+      {/* Ciclo de Planificación Local — oculto en inicio, visible en vistas operativas */}
+      {view !== "inicio" && (
+        <LocalHealthPlanningCycle
+          healthReportLoaded={runtime.workspace.healthReport !== undefined}
+          pslHasEvidence={runtime.psl.totalEvidenceAtoms > 0}
+          pslStatus={runtime.psl.status}
+          pslIsStale={runtime.pslIsStale}
+          thematicPrioritisationDone={runtime.workspace.thematicPrioritisation !== undefined}
+          onNavigate={(v) => setView(v as AppView)}
+        />
+      )}
 
       <main className="app-shell">
         {persistenceMessage !== null && (
@@ -1663,224 +1660,316 @@ export default function App() {
           </section>
         )}
 
-        {/* ── ① Inicio — Dashboard del expediente municipal ─── */}
-        {view === "inicio" && (() => {
-          // Fuentes cargadas — siempre desde el estado actual del workspace
-          const hrLoaded      = runtime.workspace.healthReport !== undefined;
-          const loadedStudies = [
-            runtime.workspace.ibseStudy,
-            runtime.workspace.dukeStudy,
-            runtime.workspace.predimedStudy,
-            runtime.workspace.sf12Study,
-            runtime.workspace.suenoStudy,
-            runtime.workspace.cageStudy,
-          ].filter(Boolean).length;
-          // hasAssets desde municipalInventory: detecta activos de cualquier origen
-          // (Localiza Salud, community-asset, manual) vía EvidenceStore.atoms
-          const hasAssets  = municipalInventory.hasAssets;
-          const prioLoaded = runtime.workspace.thematicPrioritisation !== undefined;
-          const atomCount  = runtime.workspace.evidenceStore.atoms.length;
-
-          // Siguiente acción institucional recomendada
-          const nextAction: { text: string; label: string; view: AppView } = (() => {
-            if (!hrLoaded && atomCount === 0) {
-              return {
-                text:  "El expediente no tiene aún ninguna fuente documental cargada.",
-                label: "Ir al Repositorio documental",
-                view:  "repositorio",
-              };
-            }
-            if (!hrLoaded) {
-              return {
-                text:  "El Informe de Salud es la fuente diagnóstica primaria. No está registrado.",
-                label: "Cargar Informe de Salud",
-                view:  "repositorio",
-              };
-            }
-            if (atomCount === 0) {
-              return {
-                text:  "El repositorio tiene documentos pero no hay evidencias estructuradas.",
-                label: "Revisar el Repositorio",
-                view:  "repositorio",
-              };
-            }
-            if (!pslValidated) {
-              return {
-                text:  "El Perfil de Salud Local está en borrador. Requiere revisión y validación técnica.",
-                label: "Revisar el Perfil de Salud Local",
-                view:  "psl",
-              };
-            }
-            if (!prioLoaded) {
-              return {
-                text:  "El PSL está validado. El siguiente paso es la priorización temática con la ciudadanía.",
-                label: "Iniciar priorización",
-                view:  "priorizacion",
-              };
-            }
-            return {
-              text:  "PSL validado y priorización realizada. Puede avanzar al Plan de Acción.",
-              label: "Ver Elaboración del Plan",
-              view:  "plan",
-            };
-          })();
-
-          const isStale = runtime.pslIsStale;
-          const pslChipClass =
-            pslValidated                                        ? "exp-psl-chip--validated" :
-            runtime.psl.status === "validated" && isStale       ? "exp-psl-chip--stale" :
-            atomCount > 0                                       ? "exp-psl-chip--draft" :
-                                                                  "exp-psl-chip--empty";
-
-          const pslChipLabel =
-            pslValidated                                        ? "Validado técnicamente" :
-            runtime.psl.status === "validated" && isStale       ? "Validado · evidencia modificada" :
-            atomCount > 0                                       ? "Borrador disponible" :
-                                                                  "Base documental insuficiente";
-
-          return (
-            <>
-              {/* Cabecera institucional del municipio */}
-              <header className="muni-header workspace-panel">
-                <div className="gradient-bar" />
-                <p className="eyebrow">Plan Local de Salud 2027–2030 · Junta de Andalucía</p>
-                <h1 className="muni-header__name">{municipality.name}</h1>
-                <div className="muni-header__meta">
-                  <span>{municipality.province}</span>
-                  {municipality.ineCode && (
-                    <>
-                      <span className="muni-header__sep">·</span>
-                      <span>INE {municipality.ineCode}</span>
-                    </>
-                  )}
-                  {municipality.territorialType && municipality.territorialType !== "municipio" && (
-                    <>
-                      <span className="muni-header__sep">·</span>
-                      <span>{TERRITORIAL_TYPE_LABEL[municipality.territorialType] ?? municipality.territorialType}</span>
-                    </>
-                  )}
+        {/* ── ① Inicio — Portada institucional de COMPÁS */}
+        {view === "inicio" && (
+          <>
+            {/* ═══ CUBIERTA — identidad COMPÁS NG ═══ */}
+            <div className="home-cover">
+              <div className="home-cover__stripe" />
+              <div className="home-cover__inner">
+                {/* Marco de referencia — sin atribución oficial */}
+                <div className="home-cover__chain">
+                  <span className="home-cover__chain-level">Marco de referencia</span>
+                  <span className="home-cover__chain-sep">·</span>
+                  <span className="home-cover__chain-level">RELAS</span>
+                  <span className="home-cover__chain-sep">·</span>
+                  <span className="home-cover__chain-level">Planificación Local de Salud</span>
+                  <span className="home-cover__chain-sep">·</span>
+                  <span className="home-cover__chain-level">Salud pública municipal</span>
+                  <span className="home-cover__chain-sep">·</span>
+                  <span className="home-cover__chain-level">Andalucía</span>
                 </div>
-              </header>
 
-              {/* Estado del expediente municipal */}
-              <section className="workspace-panel expediente-card">
-                <div className="exp-card__header">
-                  <div>
-                    <p className="eyebrow">Estado del expediente</p>
-                    <h2>Perfil de Salud Local</h2>
+                {/* Marca — el único foco visual */}
+                <div className="home-cover__brand">
+                  <h1 className="home-cover__wordmark">COMPÁS</h1>
+                  <span className="home-cover__ng">NG</span>
+                </div>
+
+                {/* Regla de identidad — franja canónica bajo la marca */}
+                <hr className="home-cover__rule" />
+
+                {/* Subtítulo */}
+                <p className="home-cover__subtitle">
+                  Herramienta en desarrollo para la planificación local en salud
+                </p>
+              </div>
+            </div>
+
+            {/* ═══ MISIÓN — qué es y para qué sirve ═══ */}
+            <section className="home-mission">
+              <div className="home-mission__inner">
+                <p className="home-mission__statement">
+                  Prototipo metodológico orientado a apoyar la elaboración de Planes Locales
+                  de Salud municipales, tomando como referencia el marco RELAS y la experiencia
+                  acumulada de <strong>COMPÁS</strong>.
+                </p>
+                <div className="home-mission__context">
+                  <p className="home-mission__context-label">Marco de referencia</p>
+                  <ul className="home-mission__context-list">
+                    <li className="home-mission__context-item">Marco RELAS · Planificación Local de Salud</li>
+                    <li className="home-mission__context-item">Salud pública municipal · Andalucía</li>
+                    <li className="home-mission__context-item">Experiencia histórica de COMPÁS</li>
+                    <li className="home-mission__context-item">Herramienta en desarrollo — no desplegada oficialmente</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* ═══ PROCESO — cómo trabaja ═══ */}
+            <section className="home-process">
+              <div className="home-process__inner">
+                <p className="home-section-eyebrow">Proceso</p>
+                <h2 className="home-process__heading">El ciclo de planificación local en salud</h2>
+                <div className="home-process__cycle">
+                  <div className="home-process__phase home-process__phase--1">
+                    <span className="home-process__ordinal">01</span>
+                    <span className="home-process__verb">Diagnosticar</span>
+                    <p className="home-process__desc">
+                      Informe de salud, estudios complementarios y activos comunitarios
+                      organizados y analizados.
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    className="exp-card__goto"
-                    onClick={() => setView("psl")}
-                  >
-                    Ir al Perfil de Salud Local
-                  </button>
-                </div>
-
-                {/* Estado del PSL */}
-                <div className="exp-card__psl-row">
-                  <span className={`exp-psl-chip ${pslChipClass}`}>
-                    {pslChipLabel}
-                  </span>
-                  {atomCount > 0 && (
-                    <span className="exp-card__atoms">
-                      {atomCount} evidencia{atomCount !== 1 ? "s" : ""} estructurada{atomCount !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-
-                {/* Aviso de PSL desactualizado */}
-                {isStale && (
-                  <div className="exp-card__stale-notice">
-                    El expediente ha sido modificado desde la última validación del PSL.
-                    Las fuentes mostradas corresponden al estado actual del repositorio,
-                    no a las que alimentaron el PSL validado.
+                  <div className="home-process__phase home-process__phase--2">
+                    <span className="home-process__ordinal">02</span>
+                    <span className="home-process__verb">Perfilar</span>
+                    <p className="home-process__desc">
+                      Perfil de Salud Local: síntesis interpretativa validada técnicamente
+                      por el equipo.
+                    </p>
                   </div>
-                )}
+                  <div className="home-process__phase home-process__phase--3">
+                    <span className="home-process__ordinal">03</span>
+                    <span className="home-process__verb">Priorizar</span>
+                    <p className="home-process__desc">
+                      Selección técnica y participativa de las áreas de actuación
+                      prioritarias.
+                    </p>
+                  </div>
+                  <div className="home-process__phase home-process__phase--4">
+                    <span className="home-process__ordinal">04</span>
+                    <span className="home-process__verb">Planificar</span>
+                    <p className="home-process__desc">
+                      Plan de Acción: líneas de actuación, objetivos e indicadores
+                      trazados al diagnóstico.
+                    </p>
+                  </div>
+                  <div className="home-process__phase home-process__phase--5">
+                    <span className="home-process__ordinal">05</span>
+                    <span className="home-process__verb">Elaborar</span>
+                    <p className="home-process__desc">
+                      Plan Local de Salud: diagnóstico, priorización y plan
+                      compilados como documento institucional.
+                    </p>
+                  </div>
+                  <div className="home-process__phase home-process__phase--6">
+                    <span className="home-process__ordinal">06</span>
+                    <span className="home-process__verb">Evaluar</span>
+                    <p className="home-process__desc">
+                      Grado de cumplimiento del plan, resultados alcanzados y
+                      recomendaciones para el ciclo siguiente.
+                    </p>
+                  </div>
+                </div>
+                <p className="home-process__note">
+                  Las decisiones sobre el diagnóstico, la priorización y el plan corresponden
+                  al equipo técnico, a la ciudadanía y a la autoridad competente.
+                  COMPÁS organiza la información y apoya el proceso; no sustituye la deliberación
+                  institucional.
+                </p>
+              </div>
+            </section>
 
-                {/* Fuentes del expediente */}
-                <div className="exp-card__sources">
-                  <p className="exp-card__sources-label">Fuentes del expediente</p>
-                  <div className="exp-card__sources-grid">
-                    <div className={`exp-source ${hrLoaded ? "exp-source--yes" : "exp-source--no"}`}>
-                      <span className="exp-source__name">Informe de Salud</span>
-                      <span className="exp-source__status">{hrLoaded ? "Presente" : "Pendiente"}</span>
+            {/* ═══ FLUJO — entradas y salidas de COMPÁS ═══ */}
+            <section className="home-products">
+              <div className="home-products__inner">
+
+                {/* Zona 1: Fuentes — entran en COMPÁS, no las genera */}
+                <div className="home-sources">
+                  <p className="home-section-eyebrow">Fuentes para el diagnóstico</p>
+                  <p className="home-sources__note">
+                    Documentos elaborados fuera de COMPÁS e incorporados al proceso diagnóstico.
+                  </p>
+                  <div className="home-sources__list">
+                    <div className="home-source">
+                      <p className="home-source__name">Informe de Salud</p>
+                      <p className="home-source__desc">
+                        Documento fuente elaborado fuera de COMPÁS e incorporado
+                        al proceso diagnóstico.
+                      </p>
                     </div>
-                    <div className={`exp-source ${loadedStudies > 0 ? "exp-source--yes" : "exp-source--no"}`}>
-                      <span className="exp-source__name">Estudios complementarios</span>
-                      <span className="exp-source__status">{loadedStudies} de 6</span>
-                    </div>
-                    <div className={`exp-source ${hasAssets ? "exp-source--yes" : "exp-source--no"}`}>
-                      <span className="exp-source__name">Activos comunitarios</span>
-                      <span className="exp-source__status">{hasAssets ? "Registrados" : "Pendiente"}</span>
-                    </div>
-                    <div className={`exp-source ${prioLoaded ? "exp-source--yes" : "exp-source--no"}`}>
-                      <span className="exp-source__name">Priorización ciudadana</span>
-                      <span className="exp-source__status">{prioLoaded ? "Realizada" : "Pendiente"}</span>
+                    <div className="home-source">
+                      <p className="home-source__name">Estudios complementarios</p>
+                      <p className="home-source__desc">
+                        Información recogida mediante estudios específicos que
+                        complementa el diagnóstico territorial.
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Siguiente acción */}
-                <div className="exp-card__next">
-                  <p className="exp-card__next-label">Siguiente acción recomendada</p>
-                  <div className="exp-card__next-body">
-                    <p className="exp-card__next-text">{nextAction.text}</p>
-                    <button
-                      type="button"
-                      className="exp-card__next-btn"
-                      onClick={() => setView(nextAction.view)}
-                    >
-                      {nextAction.label}
-                    </button>
+                {/* Conector — COMPÁS transforma las fuentes */}
+                <div className="home-transform">
+                  <span className="home-transform__arrow">↓</span>
+                  <span className="home-transform__label">COMPÁS analiza y transforma</span>
+                </div>
+
+                {/* Zona 2: Salidas — documentos que genera COMPÁS */}
+                <div className="home-outputs">
+                  <p className="home-section-eyebrow">Documentos que produce COMPÁS NG</p>
+                  <div className="home-products__list">
+                    <div className="home-product home-product--1">
+                      <p className="home-product__name">Perfil de Salud Local</p>
+                      <p className="home-product__desc">
+                        Síntesis interpretativa del diagnóstico territorial validada
+                        técnicamente. Documento base para la planificación.
+                      </p>
+                    </div>
+                    <div className="home-product home-product--2">
+                      <p className="home-product__name">Perfil Ejecutivo de Salud Local</p>
+                      <p className="home-product__desc">
+                        Presentación ejecutiva y sintética del Perfil de Salud Local
+                        destinada a comunicación institucional y apoyo a la toma de decisiones.
+                      </p>
+                    </div>
+                    <div className="home-product home-product--3">
+                      <p className="home-product__name">Plan de Acción Local en Salud</p>
+                      <p className="home-product__desc">
+                        Líneas estratégicas, objetivos, indicadores, programas y actuaciones
+                        construidos a partir del diagnóstico y la priorización.
+                      </p>
+                    </div>
+                    <div className="home-product home-product--4">
+                      <p className="home-product__name">Plan Local de Salud</p>
+                      <p className="home-product__desc">
+                        Documento institucional que integra diagnóstico, priorización,
+                        plan de acción, seguimiento y evaluación.
+                      </p>
+                    </div>
+                    <div className="home-product home-product--5">
+                      <p className="home-product__name">Informe de Evaluación</p>
+                      <p className="home-product__desc">
+                        Documento de evaluación anual, bianual, trianual o final
+                        del Plan Local de Salud.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </section>
 
-              {/* Inventario detallado de fuentes */}
-              <MunicipalInventoryPanel inventory={municipalInventory} />
-            </>
-          );
-        })()}
+              </div>
+            </section>
+          </>
+        )}
 
         {/* ── ② Repositorio documental ─────────────────────── */}
         {view === "repositorio" && (
           <>
-            <DocumentIngestionPanel
-              documentKinds={DOCUMENT_KINDS}
-              kind={kind}
-              title={title}
-              plainText={plainText}
-              lastProcessedDocument={lastProcessedDocument}
-              atomsCreated={lastAtomCount}
-              isLoadingHealthReport={isLoadingHealthReport}
-              healthReportMessage={lastHealthReportMessage}
-              onKindChange={setKind}
-              onTitleChange={setTitle}
-              onPlainTextChange={setPlainText}
-              onProcessDocument={handleProcessDocument}
-              onLoadHealthReport={handleLoadHealthReport}
-            />
-            <DocumentRepositoryPanel
-              repository={runtime.workspace.repository}
-              onDelete={handleDeleteDocument}
-            />
-            <EvidenceStorePanel
-              evidenceStore={runtime.workspace.evidenceStore}
-              defaultOpen={false}
-            />
-            {/* ── Fuentes documentales primarias ───────────── */}
-            <div className="repo-section-divider">
-              <span className="repo-section-divider__text">Fuentes documentales primarias</span>
-            </div>
+            {/* ── BLOQUE 1+2: Cabecera del diagnóstico territorial ── */}
+            {(() => {
+              const hrLoaded = runtime.workspace.healthReport !== undefined;
+              const atoms = runtime.workspace.evidenceStore.atoms;
+              const atomCount = atoms.length;
+              const studies = [
+                runtime.workspace.ibseStudy,
+                runtime.workspace.dukeStudy,
+                runtime.workspace.predimedStudy,
+                runtime.workspace.sf12Study,
+                runtime.workspace.suenoStudy,
+                runtime.workspace.cageStudy,
+              ];
+              const studiesLoaded = studies.filter(Boolean).length;
+              const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
+              const ibseAtoms = atoms.filter(a => a.provenance.origin === "ibse").length;
+              const studyAtoms = atoms.filter(a => a.provenance.origin === "complementary-study").length;
+
+              // Capa 3: Activos para la salud
+              const docs = runtime.workspace.repository.documents;
+              const assetDocs = docs.filter(
+                (d) => d.kind === "community-asset" || d.kind === "localiza-salud"
+              );
+              const assetNames = assetDocs.flatMap((d) =>
+                (d.sourceText ?? "").split("\n").map((s) => s.trim()).filter(Boolean)
+              );
+              const assetCount = assetNames.length;
+
+              // Capa 4: Otras fuentes documentales (excluye capas 1–3)
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas"];
+              const otherDocCount = docs.filter(
+                (d) =>
+                  d.kind !== "health-report" &&
+                  d.kind !== "community-asset" &&
+                  d.kind !== "localiza-salud" &&
+                  d.kind !== "complementary-study" &&
+                  !(d.kind === "redcap-export" && d.tags.some((t) => STUDY_TAGS.includes(t)))
+              ).length;
+
+              type DiagState = "ready" | "partial" | "empty";
+              const diagState: DiagState =
+                hrLoaded && atomCount > 0 ? "ready"
+                : (hrLoaded || atomCount > 0 || docs.length > 0) ? "partial"
+                : "empty";
+
+              const conclusionMsg: Record<DiagState, string> = {
+                ready:   "Diagnóstico con evidencia suficiente para revisar el Perfil de Salud Local.",
+                partial: "Diagnóstico parcial. Para avanzar al Perfil de Salud Local es necesario incorporar al menos el Informe de Salud.",
+                empty:   "El diagnóstico está vacío. Comienza incorporando el Informe de Salud del municipio.",
+              };
+
+              return (
+                <section className="diag-header workspace-panel">
+                  <div className="diag-header__title-row">
+                    <div>
+                      <p className="eyebrow">Diagnóstico territorial</p>
+                      <h2 className="diag-header__municipality">{municipality.name}</h2>
+                      <p className="diag-header__subtitle">
+                        Estado metodológico del diagnóstico del municipio.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="diag-status">
+                    <p className="diag-status__heading">Estado del diagnóstico</p>
+                    <ul className="diag-status__list">
+                      <li className={`diag-status__item diag-status__item--${hrLoaded ? "ok" : "missing"}`}>
+                        <span className="diag-status__label">Informe de Salud</span>
+                        <span className="diag-status__value">
+                          {hrLoaded ? `Incorporado · ${hrAtoms} evidencias` : "No incorporado"}
+                        </span>
+                      </li>
+                      <li className={`diag-status__item diag-status__item--${studiesLoaded > 0 ? "ok" : "pending"}`}>
+                        <span className="diag-status__label">Estudios complementarios</span>
+                        <span className="diag-status__value">
+                          {studiesLoaded > 0
+                            ? `${studiesLoaded} de 6 · ${ibseAtoms + studyAtoms} evidencias`
+                            : "Ninguno incorporado"}
+                        </span>
+                      </li>
+                      <li className={`diag-status__item diag-status__item--${assetCount > 0 ? "ok" : "pending"}`}>
+                        <span className="diag-status__label">Activos para la salud</span>
+                        <span className="diag-status__value">
+                          {assetCount > 0 ? `${assetCount} activos incorporados` : "Sin activos registrados"}
+                        </span>
+                      </li>
+                      <li className={`diag-status__item diag-status__item--${otherDocCount > 0 ? "ok" : "pending"}`}>
+                        <span className="diag-status__label">Otras fuentes documentales</span>
+                        <span className="diag-status__value">
+                          {otherDocCount > 0 ? `${otherDocCount} registradas` : "Ninguna registrada"}
+                        </span>
+                      </li>
+                    </ul>
+
+                    <div className={`diag-status__conclusion diag-status__conclusion--${diagState}`}>
+                      {conclusionMsg[diagState]}
+                    </div>
+                  </div>
+                </section>
+              );
+            })()}
+
+            {/* ── Capas del diagnóstico ── */}
             <HealthReportViewer
               healthReport={runtime.workspace.healthReport}
             />
-            {/* ── Estudios Complementarios ──────────────────── */}
-            <div className="repo-section-divider">
-              <span className="repo-section-divider__text">Estudios Complementarios</span>
-            </div>
             <EstudiosComplementariosPanel
               ibseStudy={runtime.workspace.ibseStudy}
               isLoadingIBSE={isLoadingIBSE}
@@ -1909,6 +1998,56 @@ export default function App() {
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />
+            <ActivosSaludPanel
+              repository={runtime.workspace.repository}
+              onDeleteDocument={handleDeleteDocument}
+            />
+            <DocumentRepositoryPanel
+              repository={runtime.workspace.repository}
+              onDelete={handleDeleteDocument}
+            />
+
+            {/* ── BLOQUE 4: Añadir o sustituir fuentes ── */}
+            <DocumentIngestionPanel
+              documentKinds={DOCUMENT_KINDS}
+              kind={kind}
+              title={title}
+              plainText={plainText}
+              lastProcessedDocument={lastProcessedDocument}
+              atomsCreated={lastAtomCount}
+              isLoadingHealthReport={isLoadingHealthReport}
+              healthReportMessage={lastHealthReportMessage}
+              onKindChange={setKind}
+              onTitleChange={setTitle}
+              onPlainTextChange={setPlainText}
+              onProcessDocument={handleProcessDocument}
+              onLoadHealthReport={handleLoadHealthReport}
+            />
+
+            {/* ── BLOQUE 5: Evidencias incorporadas al análisis ── */}
+            <EvidenceStorePanel
+              evidenceStore={runtime.workspace.evidenceStore}
+              defaultOpen={false}
+            />
+
+            {/* ── BLOQUE 6: Continuación del proceso ── */}
+            <section className="diag-continue workspace-panel">
+              <div className="diag-continue__inner">
+                <div>
+                  <p className="diag-continue__label">Siguiente paso</p>
+                  <p className="diag-continue__text">
+                    Revisar el diagnóstico e iniciar la elaboración del Perfil de Salud Local
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="diag-continue__btn"
+                  onClick={() => setView("psl")}
+                >
+                  Ir al Perfil de Salud Local →
+                </button>
+              </div>
+            </section>
           </>
         )}
 
@@ -1940,36 +2079,36 @@ export default function App() {
           />
         )}
 
-        {/* ── ④b Perfil Comparativo tipo NHS ────────────────── */}
+        {/* ── ④b Panel de Salud Local ────────────────── */}
         {view === "nhs" && (
           workspace.nhsArtifact ? (
             <NHSHealthProfileView artifact={workspace.nhsArtifact} />
           ) : (
             <section className="workspace-panel">
-              <p className="eyebrow">Producto 4 · Perfil Comparativo de Salud</p>
-              <h2>Perfil Comparativo tipo NHS</h2>
+              <p className="eyebrow">Panel de Salud Local · {municipality.name}</p>
+              <h2>Panel de Salud Local</h2>
               <p className="panel-note">
-                El Perfil Comparativo se genera a partir del Perfil de Salud Local validado.
-                Muestra los indicadores clave de los estudios complementarios con comparación
-                respecto a la referencia provincial (Granada) cuando está disponible.
+                El Panel de Salud Local es una síntesis visual del Perfil de Salud Local,
+                con indicadores clave, comparación territorial y mensajes principales para
+                comunicación institucional y ciudadana. Inspirado en los NHS Health Profiles.
               </p>
               {pslValidated ? (
                 <>
                   <p className="panel-note">
-                    El PSL está validado y hay {runtime.psl.complementaryStudyCount} instrumento(s) disponible(s).
-                    Puede generarse el Perfil Comparativo.
+                    El Perfil de Salud Local está validado y hay {runtime.psl.complementaryStudyCount} instrumento(s) disponible(s).
+                    Puede generarse el Panel de Salud Local.
                   </p>
                   <button
                     type="button"
                     className="psl-doc-compile-action__btn"
                     onClick={handleCompileNHS}
                   >
-                    Generar Perfil Comparativo (PSL-NHS)
+                    Generar Panel de Salud Local
                   </button>
                 </>
               ) : (
                 <p className="panel-note">
-                  El PSL debe estar validado para generar el Perfil Comparativo.
+                  El Perfil de Salud Local debe estar validado para generar el Panel de Salud Local.
                 </p>
               )}
             </section>
@@ -2035,9 +2174,36 @@ export default function App() {
           )
         )}
 
-        {/* ── ⑦ Plan Local de Salud — encaje EPVSA + plan + agenda + seguimiento */}
+        {/* ── ⑦ Plan de Acción — priorización + encaje EPVSA + plan + agenda + seguimiento */}
         {view === "plan" && (
           <>
+            {/* Priorización — integrada en Plan de Acción (antes view independiente) */}
+            <section className="workspace-panel">
+              <p className="eyebrow">Plan Local de Salud 2027–2030</p>
+              <h2>Priorización territorial</h2>
+              <p className="panel-note">
+                La priorización integra dos fuentes complementarias: las áreas
+                candidatas derivadas del Perfil de Salud Local y las temáticas
+                expresadas por la ciudadanía en el proceso de participación.
+                La decisión definitiva corresponde al equipo técnico y a la comunidad,
+                no al sistema.
+              </p>
+            </section>
+            <PrioritizationPanel
+              prioritization={runtime.prioritization}
+              pslStatus={runtime.psl.status}
+              pslIsStale={runtime.pslIsStale}
+              hasInsufficientEvidence={pipelineIsEmpty}
+            />
+            <div className="repo-section-divider">
+              <span className="repo-section-divider__text">Participación ciudadana</span>
+            </div>
+            <ThematicPrioritisationPanel
+              savedIds={
+                runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
+              }
+              onOpen={handleOpenThematicModal}
+            />
             <EPVSAPanel
               epvsa={runtime.epvsa}
               isBlocked={!pslValidated}
@@ -2062,6 +2228,54 @@ export default function App() {
               isBlocked={!pslValidated}
             />
           </>
+        )}
+
+        {/* ── ⑧ Plan Local de Salud — espacio canónico (compilador pendiente) */}
+        {view === "plan-local" && (
+          <section className="workspace-panel">
+            <p className="eyebrow">Planificación municipal · {municipality.name}</p>
+            <h2>Plan Local de Salud</h2>
+            <p className="panel-note">
+              El Plan Local de Salud es el documento institucional definitivo del proceso de
+              planificación. Integra el Perfil de Salud Local, la priorización, el Plan de Acción
+              validado, la agenda de actuaciones, el sistema de seguimiento y la evaluación en un
+              compromiso formal de la corporación municipal.
+            </p>
+            {workspace.pslApproval !== undefined ? (
+              <p className="panel-note">
+                El Perfil de Salud Local está aprobado institucionalmente. La compilación del Plan
+                Local de Salud estará disponible en la siguiente versión del sistema.
+              </p>
+            ) : pslValidated ? (
+              <p className="panel-note">
+                El Perfil de Salud Local está validado técnicamente. Para compilar el Plan Local de
+                Salud es necesario que el Perfil sea aprobado institucionalmente y que el Plan de
+                Acción haya sido validado formalmente.
+              </p>
+            ) : (
+              <p className="panel-note">
+                Para compilar el Plan Local de Salud es necesario completar primero el Perfil de
+                Salud Local y validarlo técnicamente.
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* ── ⑨ Evaluación — espacio canónico (pendiente de implementación) */}
+        {view === "evaluacion" && (
+          <section className="workspace-panel">
+            <p className="eyebrow">Evaluación del Plan · {municipality.name}</p>
+            <h2>Evaluación del Plan Local de Salud</h2>
+            <p className="panel-note">
+              El Informe de Evaluación valora el grado de cumplimiento del Plan Local de Salud,
+              los resultados alcanzados y las recomendaciones para el ciclo siguiente. Puede
+              realizarse de forma anual, bianual, trianual o como evaluación final del plan.
+            </p>
+            <p className="panel-note">
+              Este espacio estará disponible cuando el Plan Local de Salud se encuentre en
+              fase de seguimiento y evaluación.
+            </p>
+          </section>
         )}
 
       </main>

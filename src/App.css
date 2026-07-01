@@ -632,6 +632,15 @@ h3 {
   flex-shrink: 0;
 }
 
+/* ── Modo inicio: nav sobrio, sin duplicar identidad visual de la portada ── */
+.app-nav--home .app-nav__brand {
+  display: none;
+}
+
+.app-nav--home .app-nav__inner {
+  justify-content: flex-end;
+}
+
 .app-nav__brand-ng {
   font-size: 0.58rem;
   font-weight: 900;
@@ -693,19 +702,282 @@ h3 {
   color: #ffffff;
 }
 
+/* ── Portada institucional de COMPÁS (vista Inicio) ─────── */
+
+.compas-landing {
+  overflow: hidden;
+}
+
+.compas-landing__institution-block {
+  margin: 0 0 20px;
+}
+
+.compas-landing__inst-primary {
+  margin: 0 0 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.01em;
+}
+
+.compas-landing__inst-secondary {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.compas-landing__inst-sep {
+  margin: 0 8px;
+  color: #cbd5e1;
+}
+
+.compas-landing__divider {
+  border: none;
+  border-top: 1px solid #e4eaf3;
+  margin: 0 0 36px;
+}
+
+.compas-landing__subtitle {
+  margin: 8px 0 14px;
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.compas-landing__desc {
+  margin: 0;
+  max-width: 640px;
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.compas-landing__products-heading {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+
+.compas-landing__products {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.compas-landing__product {
+  padding: 22px 24px;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid transparent;
+  border-radius: 0 6px 6px 0;
+  background: #ffffff;
+}
+
+.compas-landing__product--1 { border-left-color: #0074c8; }
+.compas-landing__product--2 { border-left-color: #00acd9; }
+.compas-landing__product--3 { border-left-color: #94d40b; }
+.compas-landing__product--4 { border-left-color: #ffb61b; }
+.compas-landing__product--5 { border-left-color: #ff6600; }
+.compas-landing__product--6 { border-left-color: #dc143c; }
+.compas-landing__product--7 { border-left-color: #64748b; grid-column: 1 / -1; }
+
+.compas-landing__product-name {
+  margin: 0 0 8px;
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.compas-landing__product-desc {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.compas-landing__workspace-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.compas-landing__workspace-name {
+  margin: 0 0 5px;
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: #172033;
+}
+
+.compas-landing__workspace-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  background: #0074c8;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.compas-landing__workspace-btn:hover {
+  filter: brightness(0.93);
+}
+
+.compas-landing__workspace-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.compas-landing__workspace-action-label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.compas-landing__workspace-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.compas-landing__workspace-diagnostics {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.compas-landing__ws-indicator {
+  font-size: 0.83rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compas-landing__ws-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.compas-landing__ws-indicator--ok {
+  color: #1e293b;
+}
+
+.compas-landing__ws-indicator--ok::before {
+  background: #059669;
+}
+
+/* ── Ciclo metodológico COMPÁS (vista Inicio) ────────────── */
+
+.compas-landing__method-heading {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+
+.compas-landing__cycle {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.compas-landing__cycle-sep {
+  width: 1px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.compas-landing__cycle-step {
+  flex: 1;
+  padding: 1.1rem 0.8rem 1.4rem;
+  border-bottom: 3px solid transparent;
+  text-align: center;
+}
+
+.compas-landing__cycle-step--1 { border-bottom-color: #0074c8; }
+.compas-landing__cycle-step--2 { border-bottom-color: #00acd9; }
+.compas-landing__cycle-step--3 { border-bottom-color: #94d40b; }
+.compas-landing__cycle-step--4 { border-bottom-color: #ffb61b; }
+.compas-landing__cycle-step--5 { border-bottom-color: #ff6600; }
+.compas-landing__cycle-step--6 { border-bottom-color: #dc143c; }
+
+.compas-landing__cycle-num {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: none;
+  line-height: 1;
+  margin-bottom: 0.45rem;
+}
+
+.compas-landing__cycle-step--1 .compas-landing__cycle-num { color: #0074c8; }
+.compas-landing__cycle-step--2 .compas-landing__cycle-num { color: #00acd9; }
+.compas-landing__cycle-step--3 .compas-landing__cycle-num { color: #6ea80a; }
+.compas-landing__cycle-step--4 .compas-landing__cycle-num { color: #b45309; }
+.compas-landing__cycle-step--5 .compas-landing__cycle-num { color: #cc4e00; }
+.compas-landing__cycle-step--6 .compas-landing__cycle-num { color: #dc143c; }
+
+.compas-landing__cycle-verb {
+  margin: 0 0 0.4rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.compas-landing__cycle-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.58;
+}
+
+.compas-landing__cycle-note {
+  margin: 24px 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-align: center;
+  font-style: italic;
+  line-height: 1.6;
+}
+
 /* ── Home institucional ─────────────────────────────────── */
 
 .compas-brand-row {
   display: flex;
   align-items: flex-start;
-  margin: 14px 0 0;
+  margin: 0;
 }
 
 .compas-wordmark {
-  font-size: clamp(4.4rem, 11vw, 8.8rem);
+  font-size: clamp(3.8rem, 7.5vw, 6.2rem);
   font-weight: 900;
-  letter-spacing: -0.06em;
-  line-height: 0.93;
+  letter-spacing: -0.05em;
+  line-height: 0.96;
   margin: 0;
   max-width: none;
   color: #0074c8;
@@ -714,15 +986,15 @@ h3 {
 .compas-ng-badge {
   display: inline-flex;
   align-items: center;
-  padding: 5px 11px;
+  padding: 5px 12px;
   background: #172033;
   color: #ffffff;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.14em;
   border-radius: 7px;
-  margin-top: 12px;
-  margin-left: 14px;
+  margin-top: 14px;
+  margin-left: 16px;
   align-self: flex-start;
 }
 
@@ -752,6 +1024,439 @@ h3 {
   color: #526070;
   background: #f8fbff;
   letter-spacing: 0.01em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOME — Portada institucional COMPÁS NG  (segunda versión)
+   La portada responde a cuatro preguntas: qué es / para qué sirve /
+   qué productos / cómo trabaja. No contiene información municipal.
+   Paleta COMPÁS recuperada como identidad, no como decoración.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Cubierta — identidad COMPÁS ────────────────────────── */
+
+/* Contenedor raíz — escapa el padding del app-shell
+   text-align: left anula la herencia de #root { text-align: center } */
+.home-cover {
+  margin: -32px -48px 0;
+  background: #ffffff;
+  text-align: left;
+}
+
+/* Franja de identidad superior — señal cromática canónica */
+.home-cover__stripe {
+  height: 8px;
+  background: linear-gradient(
+    90deg,
+    #0074c8 0%   16.66%,
+    #00acd9 16.66% 33.33%,
+    #94d40b 33.33% 50%,
+    #ffb61b 50%   66.66%,
+    #ff6600 66.66% 83.33%,
+    #dc143c 83.33% 100%
+  );
+}
+
+/* Zona de contenido de la cubierta */
+.home-cover__inner {
+  max-width: 1216px;
+  margin: 0 auto;
+  padding: 48px 72px 0;
+}
+
+/* Cadena institucional — epígrafe que apoya, no compite */
+.home-cover__chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  margin-bottom: 40px;
+}
+
+.home-cover__chain-level {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.home-cover__chain-sep {
+  color: #d1dae6;
+  font-size: 0.65rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Marca — el centro de gravedad de la cubierta */
+.home-cover__brand {
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  line-height: 1;
+}
+
+.home-cover__wordmark {
+  font-size: clamp(5.5rem, 10.5vw, 9.5rem);
+  font-weight: 900;
+  letter-spacing: -0.065em;
+  line-height: 0.88;
+  color: #0074c8;
+  margin: 0;
+  max-width: none;
+}
+
+.home-cover__ng {
+  font-size: clamp(1rem, 2vw, 1.65rem);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #334155;
+  margin-top: 0.3em;
+  margin-left: 0.5em;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* Regla de marca — franja del gradiente bajo el wordmark */
+.home-cover__rule {
+  display: block;
+  width: 360px;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    #0074c8 0%   16.66%,
+    #00acd9 16.66% 33.33%,
+    #94d40b 33.33% 50%,
+    #ffb61b 50%   66.66%,
+    #ff6600 66.66% 83.33%,
+    #dc143c 83.33% 100%
+  );
+  border: none;
+  margin: 18px 0 20px;
+}
+
+/* Subtítulo institucional */
+.home-cover__subtitle {
+  font-size: clamp(1.05rem, 2.1vw, 1.5rem);
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.25;
+  padding-bottom: 48px;
+}
+
+/* ── Misión — qué es y para qué sirve ──────────────────── */
+
+.home-mission {
+  background: #f4f7fb;
+  border-top: 1px solid #e4eaf3;
+  border-bottom: 1px solid #e4eaf3;
+  margin: 0 -48px;
+  text-align: left;
+}
+
+.home-mission__inner {
+  max-width: 1216px;
+  margin: 0 auto;
+  padding: 52px 72px 56px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 64px;
+  align-items: start;
+}
+
+.home-mission__statement {
+  font-size: clamp(1.05rem, 2.1vw, 1.35rem);
+  font-weight: 500;
+  color: #172033;
+  line-height: 1.65;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.home-mission__statement strong {
+  font-weight: 800;
+  color: #0074c8;
+}
+
+/* Bloque de contexto institucional — columna derecha */
+.home-mission__context {
+  border-left: 3px solid #e2e8f0;
+  padding-left: 28px;
+}
+
+.home-mission__context-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 12px;
+}
+
+.home-mission__context-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-mission__context-item {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+/* ── Proceso — cómo trabaja ─────────────────────────────── */
+
+.home-process {
+  background: #ffffff;
+  border-bottom: 1px solid #e4eaf3;
+  margin: 0 -48px;
+  text-align: left;
+}
+
+.home-process__inner {
+  max-width: 1216px;
+  margin: 0 auto;
+  padding: 52px 72px 60px;
+}
+
+/* Epígrafe de sección — compartido por proceso y productos */
+.home-section-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0074c8;
+  margin: 0 0 10px;
+}
+
+.home-process__heading {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #172033;
+  margin: 0 0 40px;
+}
+
+/* Ciclo de planificación — seis fases como composición horizontal */
+.home-process__cycle {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.home-process__phase {
+  padding: 0 20px 0 0;
+  border-top: 3px solid transparent;
+  padding-top: 18px;
+}
+
+.home-process__phase--1 { border-top-color: #0074c8; }
+.home-process__phase--2 { border-top-color: #00acd9; }
+.home-process__phase--3 { border-top-color: #94d40b; }
+.home-process__phase--4 { border-top-color: #ffb61b; }
+.home-process__phase--5 { border-top-color: #ff6600; }
+.home-process__phase--6 { border-top-color: #dc143c; }
+
+/* Número de fase — elemento tipográfico, no etiqueta */
+.home-process__ordinal {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.home-process__phase--1 .home-process__ordinal { color: #0074c8; }
+.home-process__phase--2 .home-process__ordinal { color: #00acd9; }
+.home-process__phase--3 .home-process__ordinal { color: #6ea80a; }
+.home-process__phase--4 .home-process__ordinal { color: #b45309; }
+.home-process__phase--5 .home-process__ordinal { color: #cc4e00; }
+.home-process__phase--6 .home-process__ordinal { color: #dc143c; }
+
+.home-process__verb {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.home-process__desc {
+  font-size: 0.79rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.home-process__note {
+  margin: 44px 0 0;
+  font-size: 0.80rem;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.65;
+  max-width: 800px;
+}
+
+/* ── Productos institucionales ─────────────────────────── */
+
+.home-products {
+  background: #f4f7fb;
+  border-bottom: 1px solid #d9e4f0;
+  margin: 0 -48px;
+  text-align: left;
+}
+
+.home-products__inner {
+  max-width: 1216px;
+  margin: 0 auto;
+  padding: 52px 72px 64px;
+}
+
+.home-products__heading {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #172033;
+  margin: 0 0 36px;
+}
+
+/* Lista editorial — no tarjetas, no grids de cajas comerciales */
+.home-products__list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #d9e4f0;
+}
+
+/* Fila de producto: nombre a la izquierda, descripción a la derecha */
+.home-product {
+  padding: 16px 0 16px 20px;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid #e8eef6;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: baseline;
+}
+
+.home-product:last-child {
+  border-bottom: 1px solid #d9e4f0;
+}
+
+.home-product--1 { border-left-color: #0074c8; }
+.home-product--2 { border-left-color: #00acd9; }
+.home-product--3 { border-left-color: #94d40b; }
+.home-product--4 { border-left-color: #ffb61b; }
+.home-product--5 { border-left-color: #ff6600; }
+.home-product--6 { border-left-color: #dc143c; }
+.home-product--7 { border-left-color: #64748b; }
+
+.home-product__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.home-product__desc {
+  font-size: 0.85rem;
+  color: #526070;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Fuentes para el diagnóstico (zona discreta) ──── */
+
+.home-sources {
+  padding: 20px 24px 20px;
+  background: #f0f4f8;
+  border: 1px solid #dce5ef;
+  border-radius: 4px;
+  margin-bottom: 0;
+}
+
+.home-sources__note {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
+  margin: 4px 0 14px;
+  line-height: 1.5;
+}
+
+.home-sources__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.home-source {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: baseline;
+  padding: 10px 0 10px 16px;
+  border-left: 2px dashed #b0bec9;
+  border-bottom: 1px solid #e2eaf2;
+}
+
+.home-source:last-child {
+  border-bottom: none;
+}
+
+.home-source__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.home-source__desc {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── Conector entre fuentes y salidas ────────────── */
+
+.home-transform {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 16px 24px;
+  text-align: left;
+}
+
+.home-transform__arrow {
+  font-size: 1.4rem;
+  color: #0074c8;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.home-transform__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+/* ── Zona de salidas — ocupa todo el ancho ───────── */
+
+.home-outputs {
+  /* hereda estilos del contexto home-products__inner */
 }
 
 /* ── Franja de contexto municipal ──────────────────────── */
@@ -1058,6 +1763,279 @@ h3 {
   margin: 6px 0 0;
   font-size: 0.82rem;
   color: #dc2626;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DIAGNÓSTICO TERRITORIAL — Pantalla 2
+   Reorganiza la vista "repositorio" alrededor del estado del
+   diagnóstico municipal, no alrededor del gestor documental.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Cabecera del diagnóstico ─────────────────────────────── */
+
+.diag-header {
+  /* extiende workspace-panel */
+}
+
+.diag-header__municipality {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: #172033;
+  margin: 6px 0 6px;
+}
+
+.diag-header__subtitle {
+  font-size: 0.92rem;
+  color: #64748b;
+  line-height: 1.55;
+  margin: 0 0 28px;
+}
+
+/* ── Estado del diagnóstico ──────────────────────────────── */
+
+.diag-status {
+  border-top: 1px solid #e4eaf3;
+  padding-top: 22px;
+}
+
+.diag-status__heading {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 14px;
+}
+
+.diag-status__list {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.diag-status__item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-left: 3px solid transparent;
+  border-radius: 0 4px 4px 0;
+  text-align: left;
+}
+
+.diag-status__item--ok      { border-left-color: #059669; }
+.diag-status__item--missing { border-left-color: #dc143c; }
+.diag-status__item--pending { border-left-color: #cbd5e1; }
+
+.diag-status__label {
+  font-size: 0.70rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.diag-status__value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.diag-status__item--ok      .diag-status__value { color: #059669; }
+.diag-status__item--missing .diag-status__value { color: #dc143c; }
+.diag-status__item--pending .diag-status__value { color: #94a3b8; }
+
+/* Conclusión del estado */
+.diag-status__conclusion {
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.5;
+  border-left: 3px solid transparent;
+  text-align: left;
+}
+
+.diag-status__conclusion--ready {
+  background: #f0fdf4;
+  color: #059669;
+  border-left-color: #059669;
+}
+
+.diag-status__conclusion--partial {
+  background: #fff7ed;
+  color: #b45309;
+  border-left-color: #ffb61b;
+}
+
+.diag-status__conclusion--empty {
+  background: #f8fafc;
+  color: #64748b;
+  border-left-color: #cbd5e1;
+}
+
+/* ── Añadir o sustituir fuentes ─────────────────────────── */
+
+.diag-add-sources {
+  /* extiende workspace-panel */
+}
+
+.diag-add-sources__note {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 4px 0 0;
+  line-height: 1.55;
+}
+
+/* ── Activos para la salud ─────────────────────────────── */
+
+.activos-panel {
+  /* extiende workspace-panel */
+}
+
+.activos-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activos-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.activos-summary__count {
+  font-size: 0.92rem;
+  color: #334155;
+}
+
+.activos-summary__count strong {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.activos-summary__toggle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0077c8;
+  background: none;
+  border: 1px solid #cce3f5;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.activos-summary__toggle:hover {
+  background: #f0f8ff;
+}
+
+.activos-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activos-list__item {
+  font-size: 0.88rem;
+  color: #334155;
+  padding: 5px 12px;
+  background: #f8fafc;
+  border-left: 3px solid #059669;
+  border-radius: 2px;
+}
+
+.activos-list__more {
+  font-size: 0.82rem;
+  color: #64748b;
+  padding: 4px 12px;
+  font-style: italic;
+}
+
+.activos-source {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 6px;
+  border-top: 1px solid #e4eaf3;
+}
+
+.activos-source__label {
+  font-size: 0.78rem;
+  color: #64748b;
+  flex: 1;
+}
+
+.activos-source__delete {
+  font-size: 0.78rem;
+  color: #dc2626;
+  background: none;
+  border: 1px solid #fca5a5;
+  border-radius: 3px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.activos-source__delete:hover {
+  background: #fff1f1;
+}
+
+/* ── Continuación del proceso ───────────────────────────── */
+
+.diag-continue {
+  /* extiende workspace-panel */
+}
+
+.diag-continue__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.diag-continue__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 5px;
+}
+
+.diag-continue__text {
+  font-size: 0.92rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.diag-continue__btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  background: #0074c8;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.diag-continue__btn:hover {
+  background: #005fa3;
 }
 
 /* ── Flujo de trabajo (Inicio) ──────────────────────────── */
@@ -4505,14 +5483,15 @@ h3 {
 /* ── Ciclo de Planificación Local ─────────────────────────────────────────── */
 
 .lhpc {
-  background: #ffffff;
+  background: #f8fafc;
+  border-top: 1px solid #e8edf3;
   border-bottom: 1px solid #e4eaf3;
 }
 
 .lhpc__inner {
   max-width: 1216px;
   margin: 0 auto;
-  padding: 8px 48px;
+  padding: 10px 48px;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -4587,6 +5566,20 @@ h3 {
   color: #b0bec9;
   font-style: italic;
   display: block;
+}
+
+.lhpc__scope-separator {
+  width: 1px;
+  background: #d9e2ef;
+  margin: 5px 8px;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+}
+
+.lhpc__phase--scope-start {
+  border-left: 2px solid #e2e8f0;
+  margin-left: 4px;
 }
 
 /* ── Estados del ciclo ────────────────────────────────────── */

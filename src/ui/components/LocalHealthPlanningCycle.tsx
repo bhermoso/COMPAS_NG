@@ -20,6 +20,8 @@ interface CyclePhase {
   status: PhaseStatus;
   note?: string;
   navigateTo?: AppViewId;
+  statusLabel?: string; // sobreescribe STATUS_LABEL cuando fuente cargada ≠ producto completado
+  scopeBoundary?: boolean; // true → insertar separador visual antes de esta fase
 }
 
 export interface LocalHealthPlanningCycleProps {
@@ -107,6 +109,7 @@ function derivePhases({
       num:         2,
       label:       "Informe de Salud",
       status:      healthReportLoaded ? "completed" : "current",
+      statusLabel: healthReportLoaded ? "Disponible" : undefined,
       navigateTo:  "repositorio",
     },
     {
@@ -133,11 +136,12 @@ function derivePhases({
       navigateTo:  planPhase !== "blocked" ? "plan" : undefined,
     },
     {
-      id:          "agendas",
-      num:         6,
-      label:       "Agendas anuales",
-      status:      pslValidated ? "pending" : "blocked",
-      navigateTo:  pslValidated ? "plan" : undefined,
+      id:            "agendas",
+      num:           6,
+      label:         "Agendas anuales",
+      status:        pslValidated ? "pending" : "blocked",
+      navigateTo:    pslValidated ? "plan" : undefined,
+      scopeBoundary: true,
     },
     {
       id:          "plan-local",
@@ -167,8 +171,8 @@ export function LocalHealthPlanningCycle(props: LocalHealthPlanningCycleProps) {
                   {phase.num}
                 </span>
                 <span className="lhpc__phase-label">{phase.label}</span>
-                <span className="lhpc__phase-status" aria-label={`Estado: ${STATUS_LABEL[phase.status]}`}>
-                  {STATUS_LABEL[phase.status]}
+                <span className="lhpc__phase-status" aria-label={`Estado: ${phase.statusLabel ?? STATUS_LABEL[phase.status]}`}>
+                  {phase.statusLabel ?? STATUS_LABEL[phase.status]}
                   {phase.note && (
                     <span className="lhpc__phase-note">{phase.note}</span>
                   )}
@@ -179,7 +183,7 @@ export function LocalHealthPlanningCycle(props: LocalHealthPlanningCycleProps) {
             return (
               <li
                 key={phase.id}
-                className={`lhpc__phase lhpc__phase--${phase.status}${isClickable ? " lhpc__phase--nav" : ""}`}
+                className={`lhpc__phase lhpc__phase--${phase.status}${isClickable ? " lhpc__phase--nav" : ""}${phase.scopeBoundary ? " lhpc__phase--scope-start" : ""}`}
               >
                 {isClickable ? (
                   <button
