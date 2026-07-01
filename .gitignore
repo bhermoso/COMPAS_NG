@@ -42,3 +42,10 @@ audit.mjs
 
 # Local EAS / microdata files
 *.sav
+
+# Local backup files
+*.bak_
+*.bak_*
+
+# Local spreadsheet extracts
+*.xls
