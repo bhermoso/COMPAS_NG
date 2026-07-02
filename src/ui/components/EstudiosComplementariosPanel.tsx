@@ -7,6 +7,7 @@ import type { SuenoStudy } from "../../domain/sueno";
 import type { CAGEStudy } from "../../domain/cage";
 import type { AUDITCStudy } from "../../domain/auditc";
 import type { IPAQStudy } from "../../domain/ipaq";
+import type { GHQ12Study } from "../../domain/ghq12";
 import type { MunicipalDocumentRepository } from "../../domain/repository";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
@@ -16,6 +17,7 @@ import { SuenoPanel } from "./SuenoPanel";
 import { CAGEPanel } from "./CAGEPanel";
 import { AUDITCPanel } from "./AUDITCPanel";
 import { IPAQPanel } from "./IPAQPanel";
+import { GHQ12Panel } from "./GHQ12Panel";
 
 // ── Fila de instrumento ───────────────────────────────────────────────────────
 // Lista fija y ordenada. El botón de carga es siempre visible.
@@ -181,6 +183,11 @@ interface EstudiosComplementariosPanelProps {
   ipaqMessage?: string | null;
   onLoadIPAQCSV?: (file: File) => void;
 
+  ghq12Study?: GHQ12Study;
+  isLoadingGHQ12?: boolean;
+  ghq12Message?: string | null;
+  onLoadGHQ12CSV?: (file: File) => void;
+
   // Repositorio y callback de borrado para el botón Eliminar
   repository?: MunicipalDocumentRepository;
   onDeleteDocument?: (documentId: string) => void;
@@ -222,10 +229,14 @@ export function EstudiosComplementariosPanel({
   isLoadingIPAQ,
   ipaqMessage,
   onLoadIPAQCSV,
+  ghq12Study,
+  isLoadingGHQ12,
+  ghq12Message,
+  onLoadGHQ12CSV,
   repository,
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study].filter(Boolean).length;
 
   // Busca el documentId de un estudio por su tag en el repositorio
   function docIdByTag(tag: string): string | undefined {
@@ -249,7 +260,7 @@ export function EstudiosComplementariosPanel({
           Instrumentos de medición sobre bienestar, apoyo social, alimentación y
           conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de 8 disponibles en este espacio de trabajo.`
+            ? `${loadedCount} de 9 disponibles en este espacio de trabajo.`
             : "Ningún estudio cargado en este espacio de trabajo."}
         </p>
       </div>
@@ -373,6 +384,21 @@ export function EstudiosComplementariosPanel({
           onDelete={makeDeleteHandler("ipaq-eas")}
         >
           <IPAQPanel ipaqStudy={ipaqStudy} municipalityName={municipalityName} />
+        </StudyRow>
+
+        <StudyRow
+          name="GHQ-12"
+          subtitle="Malestar psicológico (REDCap)"
+          inputId="ghq12-csv-input"
+          loaded={ghq12Study !== undefined}
+          isLoading={isLoadingGHQ12}
+          recordSummary={ghq12Study ? `${ghq12Study.aggregates.nValid} válidos · probable malestar ${ghq12Study.aggregates.pctPositive.toFixed(1)} %` : undefined}
+          sourceFileName={ghq12Study?.sourceFileName}
+          message={ghq12Message}
+          onLoadCSV={onLoadGHQ12CSV}
+          onDelete={makeDeleteHandler("ghq12")}
+        >
+          <GHQ12Panel ghq12Study={ghq12Study} municipalityName={municipalityName} />
         </StudyRow>
       </div>
     </section>

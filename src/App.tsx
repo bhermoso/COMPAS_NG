@@ -38,6 +38,8 @@ import { parseAUDITCCSV, auditcStudyToEvidenceAtoms } from "./application/auditc
 import { createAUDITCStudy } from "./domain/auditc";
 import { parseIPAQCSV, ipaqStudyToEvidenceAtoms } from "./application/ipaq";
 import { createIPAQStudy } from "./domain/ipaq";
+import { parseGHQ12CSV, ghq12StudyToEvidenceAtoms } from "./application/ghq12";
+import { createGHQ12Study } from "./domain/ghq12";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -162,6 +164,7 @@ const SUENO_DOCUMENT_TAG = "sueno-eas";
 const CAGE_DOCUMENT_TAG = "cage-eas";
 const AUDITC_DOCUMENT_TAG = "auditc";
 const IPAQ_DOCUMENT_TAG = "ipaq-eas";
+const GHQ12_DOCUMENT_TAG = "ghq12";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -198,6 +201,10 @@ function isAUDITCDocument(document: MunicipalDocument | undefined): boolean {
 
 function isIPAQDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, IPAQ_DOCUMENT_TAG);
+}
+
+function isGHQ12Document(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, GHQ12_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -297,6 +304,8 @@ export default function App() {
   const [auditcMessage, setAuditcMessage] = useState<string | null>(null);
   const [isLoadingIPAQ, setIsLoadingIPAQ] = useState(false);
   const [ipaqMessage, setIpaqMessage] = useState<string | null>(null);
+  const [isLoadingGHQ12, setIsLoadingGHQ12] = useState(false);
+  const [ghq12Message, setGhq12Message] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -1251,6 +1260,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadGHQ12CSV(file: File): Promise<void> {
+    setIsLoadingGHQ12(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseGHQ12CSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createGHQ12Study({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const ghq12Atoms = attachDocumentIdToAtoms(
+        ghq12StudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          GHQ12_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "redcap-export",
+          title: `GHQ-12 - ${file.name}`,
+          source: {
+            system: "Encuesta municipal propia — exportación REDCap",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["complementary-study", GHQ12_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(GHQ12_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of ghq12Atoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          ghq12Study: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setGhq12Message(
+        aggregates.nValid > 0
+          ? `GHQ-12 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Probable malestar (≥3): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${ghq12Atoms.length} evidencias incorporadas.${warn}`
+          : `CSV GHQ-12 procesado sin registros con los 12 ítems completos.${warn}`
+      );
+    } catch {
+      setGhq12Message("Error al procesar el CSV. Verifica que incluya las columnas ghq12_q1 a ghq12_q12.");
+    } finally {
+      setIsLoadingGHQ12(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1463,6 +1543,10 @@ export default function App() {
       setIpaqMessage(null);
       setIsLoadingIPAQ(false);
     }
+    if (isGHQ12Document(deletedDocument)) {
+      setGhq12Message(null);
+      setIsLoadingGHQ12(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1481,6 +1565,7 @@ export default function App() {
       const deletesCAGE = isCAGEDocument(doc);
       const deletesAUDITC = isAUDITCDocument(doc);
       const deletesIPAQ = isIPAQDocument(doc);
+      const deletesGHQ12 = isGHQ12Document(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1545,6 +1630,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesGHQ12 &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(GHQ12_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1564,6 +1656,7 @@ export default function App() {
         cageStudy: deletesCAGE ? undefined : prev.cageStudy,
         auditcStudy: deletesAUDITC ? undefined : prev.auditcStudy,
         ipaqStudy: deletesIPAQ ? undefined : prev.ipaqStudy,
+        ghq12Study: deletesGHQ12 ? undefined : prev.ghq12Study,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -2049,6 +2142,7 @@ export default function App() {
                 runtime.workspace.cageStudy,
                 runtime.workspace.auditcStudy,
                 runtime.workspace.ipaqStudy,
+                runtime.workspace.ghq12Study,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
               const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
@@ -2066,7 +2160,7 @@ export default function App() {
               const assetCount = assetNames.length;
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3)
-              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas"];
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12"];
               const otherDocCount = docs.filter(
                 (d) =>
                   d.kind !== "health-report" &&
@@ -2177,6 +2271,10 @@ export default function App() {
               isLoadingIPAQ={isLoadingIPAQ}
               ipaqMessage={ipaqMessage}
               onLoadIPAQCSV={handleLoadIPAQCSV}
+              ghq12Study={runtime.workspace.ghq12Study}
+              isLoadingGHQ12={isLoadingGHQ12}
+              ghq12Message={ghq12Message}
+              onLoadGHQ12CSV={handleLoadGHQ12CSV}
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />

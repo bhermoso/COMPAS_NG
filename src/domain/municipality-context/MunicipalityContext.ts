@@ -23,6 +23,7 @@ import type { SuenoStudy } from "../sueno";
 import type { CAGEStudy } from "../cage";
 import type { AUDITCStudy } from "../auditc";
 import type { IPAQStudy } from "../ipaq";
+import type { GHQ12Study } from "../ghq12";
 import type { EvidenceStore } from "../evidence";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 
@@ -48,6 +49,8 @@ export interface MunicipalSnapshot {
   auditcStudy?: AUDITCStudy;
 
   ipaqStudy?: IPAQStudy;
+
+  ghq12Study?: GHQ12Study;
 
   evidenceStore: EvidenceStore;
 

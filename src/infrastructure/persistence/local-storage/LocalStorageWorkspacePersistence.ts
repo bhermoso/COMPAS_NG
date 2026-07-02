@@ -196,6 +196,14 @@ export function loadWorkspaceFromLocalStorage(
       parsed.ipaqStudy.warnings = [];
     }
 
+    if (parsed.ghq12Study && !Array.isArray(parsed.ghq12Study.methodologicalCautions)) {
+      parsed.ghq12Study.methodologicalCautions = [];
+    }
+
+    if (parsed.ghq12Study && !Array.isArray(parsed.ghq12Study.warnings)) {
+      parsed.ghq12Study.warnings = [];
+    }
+
     // Migrar kind incorrecto en documentos EAS complementarios (registrados como
     // "redcap-export" antes de la corrección semántica). Los tags son la fuente
     // canónica de identificación; el kind solo afecta al display en el Repositorio.
@@ -233,6 +241,7 @@ export function loadWorkspaceFromLocalStorage(
         { studyKey: "cageStudy",     originTag: "cage-eas",    atomOrigin: "complementary-study" },
         { studyKey: "auditcStudy",   originTag: "auditc",      atomOrigin: "complementary-study" },
         { studyKey: "ipaqStudy",     originTag: "ipaq-eas",    atomOrigin: "complementary-study" },
+        { studyKey: "ghq12Study",    originTag: "ghq12",       atomOrigin: "complementary-study" },
       ];
 
       for (const { studyKey, originTag, atomOrigin } of studyRepairs) {

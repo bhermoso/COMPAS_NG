@@ -16,6 +16,7 @@ import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional
 import type { QuestionnaireProject } from "../questionnaire";
 import type { AUDITCStudy } from "../auditc";
 import type { IPAQStudy } from "../ipaq";
+import type { GHQ12Study } from "../ghq12";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -108,6 +109,11 @@ export interface MunicipalityWorkspace {
    * Campos derivados oficiales de la EAS: IPAQ_DICO (alta actividad) y P34A_R (inactividad en ocio).
    */
   ipaqStudy?: IPAQStudy;
+  /**
+   * Estudio GHQ-12 (Cuestionario de Salud General, 12 ítems).
+   * Administración propia via REDCap. Cribado de malestar psicológico.
+   */
+  ghq12Study?: GHQ12Study;
   /**
    * Proyectos de encuesta del Gestor de Encuestas de Salud (GES).
    * Acumulativos: cada diseño de encuesta añade una entrada.

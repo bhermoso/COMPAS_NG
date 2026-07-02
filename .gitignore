@@ -32,6 +32,7 @@ _archive/
 !fixtures/ibse-granada-provincia.csv
 !fixtures/auditc-municipal.csv
 !fixtures/ipaq-eas-granada.csv
+!fixtures/ghq12-municipal.csv
 
 # Local municipal data folders
 Alfacar/
