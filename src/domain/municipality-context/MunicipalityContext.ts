@@ -25,6 +25,7 @@ import type { AUDITCStudy } from "../auditc";
 import type { IPAQStudy } from "../ipaq";
 import type { GHQ12Study } from "../ghq12";
 import type { PHQ9Study } from "../phq9";
+import type { PSQIStudy } from "../psqi";
 import type { EvidenceStore } from "../evidence";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 
@@ -54,6 +55,8 @@ export interface MunicipalSnapshot {
   ghq12Study?: GHQ12Study;
 
   phq9Study?: PHQ9Study;
+
+  psqiStudy?: PSQIStudy;
 
   evidenceStore: EvidenceStore;
 

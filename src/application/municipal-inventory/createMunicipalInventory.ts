@@ -16,6 +16,7 @@ export interface MunicipalInventory {
   hasIPAQ: boolean;
   hasGHQ12: boolean;
   hasPHQ9: boolean;
+  hasPSQI: boolean;
   hasAssets: boolean;
 
   repositoryDocumentCount: number;
@@ -30,6 +31,7 @@ export interface MunicipalInventory {
   ipaqRecordCount: number;
   ghq12RecordCount: number;
   phq9RecordCount: number;
+  psqiRecordCount: number;
 
   hasThematicPrioritisation: boolean;
   hasStrategicPrioritisation: boolean;
@@ -52,6 +54,7 @@ export function createMunicipalInventory(
   const hasIPAQ        = snapshot.ipaqStudy !== undefined;
   const hasGHQ12       = snapshot.ghq12Study !== undefined;
   const hasPHQ9        = snapshot.phq9Study !== undefined;
+  const hasPSQI        = snapshot.psqiStudy !== undefined;
   const hasAssets      = snapshot.evidenceStore.atoms.some(
     (atom) => atom.kind === "asset"
   );
@@ -68,6 +71,7 @@ export function createMunicipalInventory(
   const ipaqRecordCount         = snapshot.ipaqStudy?.aggregates.nValidIPAQ ?? 0;
   const ghq12RecordCount        = snapshot.ghq12Study?.aggregates.nValid ?? 0;
   const phq9RecordCount         = snapshot.phq9Study?.aggregates.nValid ?? 0;
+  const psqiRecordCount         = snapshot.psqiStudy?.aggregates.nValid ?? 0;
 
   const hasThematicPrioritisation  = snapshot.thematicPrioritisation !== undefined;
   const hasStrategicPrioritisation = snapshot.strategicPrioritisation !== undefined;
@@ -95,6 +99,7 @@ export function createMunicipalInventory(
     hasIPAQ,
     hasGHQ12,
     hasPHQ9,
+    hasPSQI,
     hasAssets,
     repositoryDocumentCount,
     evidenceAtomCount,
@@ -108,6 +113,7 @@ export function createMunicipalInventory(
     ipaqRecordCount,
     ghq12RecordCount,
     phq9RecordCount,
+    psqiRecordCount,
     hasThematicPrioritisation,
     hasStrategicPrioritisation,
     hasMunicipalEnrichment,

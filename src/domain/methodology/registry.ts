@@ -9,6 +9,7 @@ import { AUDITC_MODULE } from "./definitions/auditc";
 import { IPAQ_EAS_MODULE } from "./definitions/ipaq-eas";
 import { GHQ12_MODULE } from "./definitions/ghq12";
 import { PHQ9_MODULE } from "./definitions/phq9";
+import { PSQI_MODULE } from "./definitions/psqi";
 
 // Catálogo declarativo de módulos metodológicos.
 // Para incorporar un módulo nuevo: añadir una entrada al array inicial del Map.
@@ -25,6 +26,7 @@ const REGISTRY = new Map<ModuleId, MethodologicalModule>([
   [IPAQ_EAS_MODULE.identity.id, IPAQ_EAS_MODULE],
   [GHQ12_MODULE.identity.id, GHQ12_MODULE],
   [PHQ9_MODULE.identity.id, PHQ9_MODULE],
+  [PSQI_MODULE.identity.id, PSQI_MODULE],
 ]);
 
 export function getMethodologicalModule(id: ModuleId): MethodologicalModule | undefined {

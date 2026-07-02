@@ -9,6 +9,7 @@ import type { AUDITCStudy } from "../../domain/auditc";
 import type { IPAQStudy } from "../../domain/ipaq";
 import type { GHQ12Study } from "../../domain/ghq12";
 import type { PHQ9Study } from "../../domain/phq9";
+import type { PSQIStudy } from "../../domain/psqi";
 import type { MunicipalDocumentRepository } from "../../domain/repository";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
@@ -20,6 +21,7 @@ import { AUDITCPanel } from "./AUDITCPanel";
 import { IPAQPanel } from "./IPAQPanel";
 import { GHQ12Panel } from "./GHQ12Panel";
 import { PHQ9Panel } from "./PHQ9Panel";
+import { PSQIPanel } from "./PSQIPanel";
 
 // ── Fila de instrumento ───────────────────────────────────────────────────────
 // Lista fija y ordenada. El botón de carga es siempre visible.
@@ -195,6 +197,11 @@ interface EstudiosComplementariosPanelProps {
   phq9Message?: string | null;
   onLoadPHQ9CSV?: (file: File) => void;
 
+  psqiStudy?: PSQIStudy;
+  isLoadingPSQI?: boolean;
+  psqiMessage?: string | null;
+  onLoadPSQICSV?: (file: File) => void;
+
   // Repositorio y callback de borrado para el botón Eliminar
   repository?: MunicipalDocumentRepository;
   onDeleteDocument?: (documentId: string) => void;
@@ -244,10 +251,14 @@ export function EstudiosComplementariosPanel({
   isLoadingPHQ9,
   phq9Message,
   onLoadPHQ9CSV,
+  psqiStudy,
+  isLoadingPSQI,
+  psqiMessage,
+  onLoadPSQICSV,
   repository,
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study, phq9Study].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study, phq9Study, psqiStudy].filter(Boolean).length;
 
   // Busca el documentId de un estudio por su tag en el repositorio
   function docIdByTag(tag: string): string | undefined {
@@ -271,7 +282,7 @@ export function EstudiosComplementariosPanel({
           Instrumentos de medición sobre bienestar, apoyo social, alimentación y
           conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de 10 disponibles en este espacio de trabajo.`
+            ? `${loadedCount} de 11 disponibles en este espacio de trabajo.`
             : "Ningún estudio cargado en este espacio de trabajo."}
         </p>
       </div>
@@ -425,6 +436,21 @@ export function EstudiosComplementariosPanel({
           onDelete={makeDeleteHandler("phq9")}
         >
           <PHQ9Panel phq9Study={phq9Study} municipalityName={municipalityName} />
+        </StudyRow>
+
+        <StudyRow
+          name="PSQI"
+          subtitle="Calidad del sueño (REDCap)"
+          inputId="psqi-csv-input"
+          loaded={psqiStudy !== undefined}
+          isLoading={isLoadingPSQI}
+          recordSummary={psqiStudy ? `${psqiStudy.aggregates.nValid} válidos · mal dormidor ${psqiStudy.aggregates.pctPositive.toFixed(1)} %` : undefined}
+          sourceFileName={psqiStudy?.sourceFileName}
+          message={psqiMessage}
+          onLoadCSV={onLoadPSQICSV}
+          onDelete={makeDeleteHandler("psqi")}
+        >
+          <PSQIPanel psqiStudy={psqiStudy} municipalityName={municipalityName} />
         </StudyRow>
       </div>
     </section>

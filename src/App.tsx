@@ -42,6 +42,8 @@ import { parseGHQ12CSV, ghq12StudyToEvidenceAtoms } from "./application/ghq12";
 import { createGHQ12Study } from "./domain/ghq12";
 import { parsePHQ9CSV, phq9StudyToEvidenceAtoms } from "./application/phq9";
 import { createPHQ9Study } from "./domain/phq9";
+import { parsePSQICSV, psqiStudyToEvidenceAtoms } from "./application/psqi";
+import { createPSQIStudy } from "./domain/psqi";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -168,6 +170,7 @@ const AUDITC_DOCUMENT_TAG = "auditc";
 const IPAQ_DOCUMENT_TAG = "ipaq-eas";
 const GHQ12_DOCUMENT_TAG = "ghq12";
 const PHQ9_DOCUMENT_TAG = "phq9";
+const PSQI_DOCUMENT_TAG = "psqi";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -212,6 +215,10 @@ function isGHQ12Document(document: MunicipalDocument | undefined): boolean {
 
 function isPHQ9Document(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, PHQ9_DOCUMENT_TAG);
+}
+
+function isPSQIDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, PSQI_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -315,6 +322,8 @@ export default function App() {
   const [ghq12Message, setGhq12Message] = useState<string | null>(null);
   const [isLoadingPHQ9, setIsLoadingPHQ9] = useState(false);
   const [phq9Message, setPhq9Message] = useState<string | null>(null);
+  const [isLoadingPSQI, setIsLoadingPSQI] = useState(false);
+  const [psqiMessage, setPsqiMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -1391,6 +1400,57 @@ export default function App() {
     }
   }
 
+  async function handleLoadPSQICSV(file: File): Promise<void> {
+    setIsLoadingPSQI(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parsePSQICSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createPSQIStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const psqiAtoms = attachDocumentIdToAtoms(psqiStudyToEvidenceAtoms(study), documentId);
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, PSQI_DOCUMENT_TAG);
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId, kind: "redcap-export",
+          title: `PSQI - ${file.name}`,
+          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
+          sourceFileName: file.name,
+          tags: ["complementary-study", PSQI_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
+              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(PSQI_DOCUMENT_TAG))
+          ),
+          updatedAt: now,
+        };
+        for (const atom of psqiAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return { ...prev, repository: nextRepository, psqiStudy: study, evidenceStore: nextStore, updatedAt: now };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setPsqiMessage(
+        aggregates.nValid > 0
+          ? `PSQI cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Mal dormidor (>5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${psqiAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV PSQI procesado sin registros con los 7 componentes completos.${warn}`
+      );
+    } catch {
+      setPsqiMessage("Error al procesar el CSV. Verifica que incluya las columnas psqi_c1 a psqi_c7.");
+    } finally {
+      setIsLoadingPSQI(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1611,6 +1671,10 @@ export default function App() {
       setPhq9Message(null);
       setIsLoadingPHQ9(false);
     }
+    if (isPSQIDocument(deletedDocument)) {
+      setPsqiMessage(null);
+      setIsLoadingPSQI(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1631,6 +1695,7 @@ export default function App() {
       const deletesIPAQ = isIPAQDocument(doc);
       const deletesGHQ12 = isGHQ12Document(doc);
       const deletesPHQ9 = isPHQ9Document(doc);
+      const deletesPSQI = isPSQIDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1709,6 +1774,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesPSQI &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(PSQI_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1730,6 +1802,7 @@ export default function App() {
         ipaqStudy: deletesIPAQ ? undefined : prev.ipaqStudy,
         ghq12Study: deletesGHQ12 ? undefined : prev.ghq12Study,
         phq9Study: deletesPHQ9 ? undefined : prev.phq9Study,
+        psqiStudy: deletesPSQI ? undefined : prev.psqiStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -2217,6 +2290,7 @@ export default function App() {
                 runtime.workspace.ipaqStudy,
                 runtime.workspace.ghq12Study,
                 runtime.workspace.phq9Study,
+                runtime.workspace.psqiStudy,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
               const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
@@ -2234,7 +2308,7 @@ export default function App() {
               const assetCount = assetNames.length;
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3)
-              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9"];
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi"];
               const otherDocCount = docs.filter(
                 (d) =>
                   d.kind !== "health-report" &&
@@ -2353,6 +2427,10 @@ export default function App() {
               isLoadingPHQ9={isLoadingPHQ9}
               phq9Message={phq9Message}
               onLoadPHQ9CSV={handleLoadPHQ9CSV}
+              psqiStudy={runtime.workspace.psqiStudy}
+              isLoadingPSQI={isLoadingPSQI}
+              psqiMessage={psqiMessage}
+              onLoadPSQICSV={handleLoadPSQICSV}
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />
