@@ -9,7 +9,10 @@ import {
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
-import { createCompleteMunicipalityWorkspace } from "./application/workspace";
+import {
+  createCompleteMunicipalityWorkspace,
+  isEmptyWorkspaceForPersistenceGuard,
+} from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
@@ -234,25 +237,7 @@ function loadOrCreateMunicipalityWorkspace(
   };
 }
 
-function isEmptyWorkspaceForPersistenceGuard(
-  workspace: MunicipalityWorkspace
-): boolean {
-  return (
-    workspace.repository.documents.length === 0 &&
-    workspace.evidenceStore.atoms.length === 0 &&
-    workspace.healthReport === undefined &&
-    workspace.ibseStudy === undefined &&
-    workspace.dukeStudy === undefined &&
-    workspace.predimedStudy === undefined &&
-    workspace.sf12Study === undefined &&
-    workspace.suenoStudy === undefined &&
-    workspace.cageStudy === undefined &&
-    workspace.thematicPrioritisation === undefined &&
-    workspace.thematicPrioritisationStudy === undefined &&
-    (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
-    workspace.validatedPSL === undefined
-  );
-}
+// isEmptyWorkspaceForPersistenceGuard importada desde application/workspace
 
 // ── Componente principal ─────────────────────────────────────
 

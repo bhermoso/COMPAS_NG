@@ -13,6 +13,7 @@ import type { LocalHealthProfile } from "../health-profile";
 import type { LocalHealthProfileArtifact } from "../health-profile-artifact";
 import type { NHSHealthProfileArtifact } from "../nhs-health-profile";
 import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
+import type { QuestionnaireProject } from "../questionnaire";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -94,6 +95,13 @@ export interface MunicipalityWorkspace {
    * Se invalidan automáticamente si el PSL cambia de versión.
    */
   formalValidations?: FormalValidationRecord[];
+  /**
+   * Proyectos de encuesta del Gestor de Encuestas de Salud (GES).
+   * Acumulativos: cada diseño de encuesta añade una entrada.
+   * Persisten entre sesiones vía la serialización normal del workspace.
+   * Aislados por municipio: workspaces distintos no comparten proyectos.
+   */
+  questionnaireProjects?: QuestionnaireProject[];
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

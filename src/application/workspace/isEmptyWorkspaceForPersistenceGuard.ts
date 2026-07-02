@@ -1,0 +1,41 @@
+import type { MunicipalityWorkspace } from "../../domain/workspace";
+
+/**
+ * Determina si un workspace está vacío a efectos de la guardia de persistencia.
+ *
+ * Contexto: cuando loadWorkspaceFromLocalStorage() falla pero hay datos en localStorage,
+ * App.tsx activa una guardia que impide que un workspace recién creado (vacío) sobreescriba
+ * los datos existentes. Esta función define qué significa "vacío" en ese contexto.
+ *
+ * INVARIANTE: toda colección opcional de MunicipalityWorkspace que el usuario pueda poblar
+ * DEBE aparecer aquí. Si falta una colección, el guard puede bloquear el guardado de datos
+ * reales, provocando pérdida silenciosa de información.
+ *
+ * Última revisión: Intervención GES (2026-07-02) — añadido questionnaireProjects;
+ *   auditoría de cierre — añadido compiledProfiles, nhsArtifact, pslApproval, formalValidations.
+ */
+export function isEmptyWorkspaceForPersistenceGuard(
+  workspace: MunicipalityWorkspace
+): boolean {
+  return (
+    workspace.repository.documents.length === 0 &&
+    workspace.evidenceStore.atoms.length === 0 &&
+    workspace.healthReport === undefined &&
+    workspace.ibseStudy === undefined &&
+    workspace.dukeStudy === undefined &&
+    workspace.predimedStudy === undefined &&
+    workspace.sf12Study === undefined &&
+    workspace.suenoStudy === undefined &&
+    workspace.cageStudy === undefined &&
+    workspace.thematicPrioritisation === undefined &&
+    workspace.thematicPrioritisationStudy === undefined &&
+    (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
+    workspace.validatedPSL === undefined &&
+    (workspace.compiledProfiles?.length ?? 0) === 0 &&
+    workspace.nhsArtifact === undefined &&
+    workspace.pslApproval === undefined &&
+    (workspace.formalValidations?.length ?? 0) === 0 &&
+    // Proyectos GES — omitido en Intervención 3, causa raíz de la regresión de persistencia
+    (workspace.questionnaireProjects?.length ?? 0) === 0
+  );
+}
