@@ -6,6 +6,7 @@ import { SF12_EAS_MODULE } from "./definitions/sf12-eas";
 import { SUENO_EAS_MODULE } from "./definitions/sueno-eas";
 import { CAGE_EAS_MODULE } from "./definitions/cage-eas";
 import { AUDITC_MODULE } from "./definitions/auditc";
+import { IPAQ_EAS_MODULE } from "./definitions/ipaq-eas";
 
 // Catálogo declarativo de módulos metodológicos.
 // Para incorporar un módulo nuevo: añadir una entrada al array inicial del Map.
@@ -19,6 +20,7 @@ const REGISTRY = new Map<ModuleId, MethodologicalModule>([
   [SUENO_EAS_MODULE.identity.id, SUENO_EAS_MODULE],
   [CAGE_EAS_MODULE.identity.id, CAGE_EAS_MODULE],
   [AUDITC_MODULE.identity.id, AUDITC_MODULE],
+  [IPAQ_EAS_MODULE.identity.id, IPAQ_EAS_MODULE],
 ]);
 
 export function getMethodologicalModule(id: ModuleId): MethodologicalModule | undefined {

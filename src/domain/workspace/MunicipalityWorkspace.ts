@@ -15,6 +15,7 @@ import type { NHSHealthProfileArtifact } from "../nhs-health-profile";
 import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
 import type { QuestionnaireProject } from "../questionnaire";
 import type { AUDITCStudy } from "../auditc";
+import type { IPAQStudy } from "../ipaq";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -102,6 +103,11 @@ export interface MunicipalityWorkspace {
    * incorporado en COMPÁS NG.
    */
   auditcStudy?: AUDITCStudy;
+  /**
+   * Estudio IPAQ-EAS (Actividad Física — International Physical Activity Questionnaire).
+   * Campos derivados oficiales de la EAS: IPAQ_DICO (alta actividad) y P34A_R (inactividad en ocio).
+   */
+  ipaqStudy?: IPAQStudy;
   /**
    * Proyectos de encuesta del Gestor de Encuestas de Salud (GES).
    * Acumulativos: cada diseño de encuesta añade una entrada.

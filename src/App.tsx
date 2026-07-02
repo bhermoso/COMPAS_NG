@@ -36,6 +36,8 @@ import { parseCAGECSV, cageStudyToEvidenceAtoms } from "./application/cage";
 import { createCAGEStudy } from "./domain/cage";
 import { parseAUDITCCSV, auditcStudyToEvidenceAtoms } from "./application/auditc";
 import { createAUDITCStudy } from "./domain/auditc";
+import { parseIPAQCSV, ipaqStudyToEvidenceAtoms } from "./application/ipaq";
+import { createIPAQStudy } from "./domain/ipaq";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -159,6 +161,7 @@ const SF12_DOCUMENT_TAG = "sf12-eas";
 const SUENO_DOCUMENT_TAG = "sueno-eas";
 const CAGE_DOCUMENT_TAG = "cage-eas";
 const AUDITC_DOCUMENT_TAG = "auditc";
+const IPAQ_DOCUMENT_TAG = "ipaq-eas";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -191,6 +194,10 @@ function isCAGEDocument(document: MunicipalDocument | undefined): boolean {
 
 function isAUDITCDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, AUDITC_DOCUMENT_TAG);
+}
+
+function isIPAQDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, IPAQ_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -288,6 +295,8 @@ export default function App() {
   const [cageMessage, setCageMessage] = useState<string | null>(null);
   const [isLoadingAUDITC, setIsLoadingAUDITC] = useState(false);
   const [auditcMessage, setAuditcMessage] = useState<string | null>(null);
+  const [isLoadingIPAQ, setIsLoadingIPAQ] = useState(false);
+  const [ipaqMessage, setIpaqMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -1171,6 +1180,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadIPAQCSV(file: File): Promise<void> {
+    setIsLoadingIPAQ(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseIPAQCSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createIPAQStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const ipaqAtoms = attachDocumentIdToAtoms(
+        ipaqStudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          IPAQ_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "complementary-study",
+          title: `IPAQ-EAS - ${file.name}`,
+          source: {
+            system: "Encuesta Andaluza de Salud — campos derivados oficiales",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["complementary-study", IPAQ_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(IPAQ_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of ipaqAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          ipaqStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setIpaqMessage(
+        aggregates.nValidIPAQ > 0 || aggregates.nValidP34AR > 0
+          ? `IPAQ-EAS cargado: ${aggregates.nValidIPAQ} válidos IPAQ_DICO · alta actividad ${aggregates.pctHigh.toFixed(1)} % (n=${aggregates.nHigh}). Inactividad tiempo libre: ${aggregates.pctInactive.toFixed(1)} %. ${ipaqAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV IPAQ procesado sin registros válidos en IPAQ_DICO ni P34A_R.${warn}`
+      );
+    } catch {
+      setIpaqMessage("Error al procesar el CSV. Verifica que incluya las columnas IPAQ_DICO y/o P34A_R.");
+    } finally {
+      setIsLoadingIPAQ(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1379,6 +1459,10 @@ export default function App() {
       setAuditcMessage(null);
       setIsLoadingAUDITC(false);
     }
+    if (isIPAQDocument(deletedDocument)) {
+      setIpaqMessage(null);
+      setIsLoadingIPAQ(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1396,6 +1480,7 @@ export default function App() {
       const deletesSueno = isSuenoDocument(doc);
       const deletesCAGE = isCAGEDocument(doc);
       const deletesAUDITC = isAUDITCDocument(doc);
+      const deletesIPAQ = isIPAQDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1453,6 +1538,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesIPAQ &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(IPAQ_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1471,6 +1563,7 @@ export default function App() {
         suenoStudy: deletesSueno ? undefined : prev.suenoStudy,
         cageStudy: deletesCAGE ? undefined : prev.cageStudy,
         auditcStudy: deletesAUDITC ? undefined : prev.auditcStudy,
+        ipaqStudy: deletesIPAQ ? undefined : prev.ipaqStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -1955,6 +2048,7 @@ export default function App() {
                 runtime.workspace.suenoStudy,
                 runtime.workspace.cageStudy,
                 runtime.workspace.auditcStudy,
+                runtime.workspace.ipaqStudy,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
               const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
@@ -1972,7 +2066,7 @@ export default function App() {
               const assetCount = assetNames.length;
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3)
-              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc"];
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas"];
               const otherDocCount = docs.filter(
                 (d) =>
                   d.kind !== "health-report" &&
@@ -2079,6 +2173,10 @@ export default function App() {
               isLoadingAUDITC={isLoadingAUDITC}
               auditcMessage={auditcMessage}
               onLoadAUDITCCSV={handleLoadAUDITCCSV}
+              ipaqStudy={runtime.workspace.ipaqStudy}
+              isLoadingIPAQ={isLoadingIPAQ}
+              ipaqMessage={ipaqMessage}
+              onLoadIPAQCSV={handleLoadIPAQCSV}
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />

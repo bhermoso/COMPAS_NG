@@ -22,6 +22,7 @@ import type { SF12Study } from "../sf12";
 import type { SuenoStudy } from "../sueno";
 import type { CAGEStudy } from "../cage";
 import type { AUDITCStudy } from "../auditc";
+import type { IPAQStudy } from "../ipaq";
 import type { EvidenceStore } from "../evidence";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 
@@ -45,6 +46,8 @@ export interface MunicipalSnapshot {
   cageStudy?: CAGEStudy;
 
   auditcStudy?: AUDITCStudy;
+
+  ipaqStudy?: IPAQStudy;
 
   evidenceStore: EvidenceStore;
 

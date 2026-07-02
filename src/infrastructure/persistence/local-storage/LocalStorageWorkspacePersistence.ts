@@ -188,6 +188,14 @@ export function loadWorkspaceFromLocalStorage(
       parsed.auditcStudy.warnings = [];
     }
 
+    if (parsed.ipaqStudy && !Array.isArray(parsed.ipaqStudy.methodologicalCautions)) {
+      parsed.ipaqStudy.methodologicalCautions = [];
+    }
+
+    if (parsed.ipaqStudy && !Array.isArray(parsed.ipaqStudy.warnings)) {
+      parsed.ipaqStudy.warnings = [];
+    }
+
     // Migrar kind incorrecto en documentos EAS complementarios (registrados como
     // "redcap-export" antes de la corrección semántica). Los tags son la fuente
     // canónica de identificación; el kind solo afecta al display en el Repositorio.
@@ -224,6 +232,7 @@ export function loadWorkspaceFromLocalStorage(
         { studyKey: "suenoStudy",    originTag: "sueno-eas",   atomOrigin: "complementary-study" },
         { studyKey: "cageStudy",     originTag: "cage-eas",    atomOrigin: "complementary-study" },
         { studyKey: "auditcStudy",   originTag: "auditc",      atomOrigin: "complementary-study" },
+        { studyKey: "ipaqStudy",     originTag: "ipaq-eas",    atomOrigin: "complementary-study" },
       ];
 
       for (const { studyKey, originTag, atomOrigin } of studyRepairs) {

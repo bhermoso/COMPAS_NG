@@ -6,6 +6,7 @@ import type { SF12Study } from "../../domain/sf12";
 import type { SuenoStudy } from "../../domain/sueno";
 import type { CAGEStudy } from "../../domain/cage";
 import type { AUDITCStudy } from "../../domain/auditc";
+import type { IPAQStudy } from "../../domain/ipaq";
 import type { MunicipalDocumentRepository } from "../../domain/repository";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
@@ -14,6 +15,7 @@ import { SF12Panel } from "./SF12Panel";
 import { SuenoPanel } from "./SuenoPanel";
 import { CAGEPanel } from "./CAGEPanel";
 import { AUDITCPanel } from "./AUDITCPanel";
+import { IPAQPanel } from "./IPAQPanel";
 
 // ── Fila de instrumento ───────────────────────────────────────────────────────
 // Lista fija y ordenada. El botón de carga es siempre visible.
@@ -174,6 +176,11 @@ interface EstudiosComplementariosPanelProps {
   auditcMessage?: string | null;
   onLoadAUDITCCSV?: (file: File) => void;
 
+  ipaqStudy?: IPAQStudy;
+  isLoadingIPAQ?: boolean;
+  ipaqMessage?: string | null;
+  onLoadIPAQCSV?: (file: File) => void;
+
   // Repositorio y callback de borrado para el botón Eliminar
   repository?: MunicipalDocumentRepository;
   onDeleteDocument?: (documentId: string) => void;
@@ -211,10 +218,14 @@ export function EstudiosComplementariosPanel({
   isLoadingAUDITC,
   auditcMessage,
   onLoadAUDITCCSV,
+  ipaqStudy,
+  isLoadingIPAQ,
+  ipaqMessage,
+  onLoadIPAQCSV,
   repository,
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy].filter(Boolean).length;
 
   // Busca el documentId de un estudio por su tag en el repositorio
   function docIdByTag(tag: string): string | undefined {
@@ -238,7 +249,7 @@ export function EstudiosComplementariosPanel({
           Instrumentos de medición sobre bienestar, apoyo social, alimentación y
           conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de 7 disponibles en este espacio de trabajo.`
+            ? `${loadedCount} de 8 disponibles en este espacio de trabajo.`
             : "Ningún estudio cargado en este espacio de trabajo."}
         </p>
       </div>
@@ -347,6 +358,21 @@ export function EstudiosComplementariosPanel({
           onDelete={makeDeleteHandler("auditc")}
         >
           <AUDITCPanel auditcStudy={auditcStudy} municipalityName={municipalityName} />
+        </StudyRow>
+
+        <StudyRow
+          name="IPAQ-EAS"
+          subtitle="Actividad física (EAS oficial)"
+          inputId="ipaq-csv-input"
+          loaded={ipaqStudy !== undefined}
+          isLoading={isLoadingIPAQ}
+          recordSummary={ipaqStudy ? `${ipaqStudy.aggregates.nValidIPAQ} válidos IPAQ_DICO · alta actividad ${ipaqStudy.aggregates.pctHigh.toFixed(1)} %` : undefined}
+          sourceFileName={ipaqStudy?.sourceFileName}
+          message={ipaqMessage}
+          onLoadCSV={onLoadIPAQCSV}
+          onDelete={makeDeleteHandler("ipaq-eas")}
+        >
+          <IPAQPanel ipaqStudy={ipaqStudy} municipalityName={municipalityName} />
         </StudyRow>
       </div>
     </section>
