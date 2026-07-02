@@ -14,6 +14,7 @@ import type { LocalHealthProfileArtifact } from "../health-profile-artifact";
 import type { NHSHealthProfileArtifact } from "../nhs-health-profile";
 import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
 import type { QuestionnaireProject } from "../questionnaire";
+import type { AUDITCStudy } from "../auditc";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -95,6 +96,12 @@ export interface MunicipalityWorkspace {
    * Se invalidan automáticamente si el PSL cambia de versión.
    */
   formalValidations?: FormalValidationRecord[];
+  /**
+   * Estudio AUDIT-C (Cribado de Consumo de Riesgo de Alcohol).
+   * Administración propia via REDCap. Primer instrumento histórico pendiente
+   * incorporado en COMPÁS NG.
+   */
+  auditcStudy?: AUDITCStudy;
   /**
    * Proyectos de encuesta del Gestor de Encuestas de Salud (GES).
    * Acumulativos: cada diseño de encuesta añade una entrada.

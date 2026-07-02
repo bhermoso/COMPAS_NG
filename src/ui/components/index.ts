@@ -9,6 +9,7 @@ export * from "./PREDIMEDPanel";
 export * from "./SF12Panel";
 export * from "./SuenoPanel";
 export * from "./CAGEPanel";
+export * from "./AUDITCPanel";
 export * from "./EstudiosComplementariosPanel";
 export * from "./ActivosSaludPanel";
 export * from "./MunicipalInventoryPanel";

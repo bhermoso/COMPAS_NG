@@ -34,6 +34,8 @@ import { parseSuenoCSV, suenoStudyToEvidenceAtoms } from "./application/sueno";
 import { createSuenoStudy } from "./domain/sueno";
 import { parseCAGECSV, cageStudyToEvidenceAtoms } from "./application/cage";
 import { createCAGEStudy } from "./domain/cage";
+import { parseAUDITCCSV, auditcStudyToEvidenceAtoms } from "./application/auditc";
+import { createAUDITCStudy } from "./domain/auditc";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -156,6 +158,7 @@ const PREDIMED_DOCUMENT_TAG = "predimed-eas";
 const SF12_DOCUMENT_TAG = "sf12-eas";
 const SUENO_DOCUMENT_TAG = "sueno-eas";
 const CAGE_DOCUMENT_TAG = "cage-eas";
+const AUDITC_DOCUMENT_TAG = "auditc";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -184,6 +187,10 @@ function isSuenoDocument(document: MunicipalDocument | undefined): boolean {
 
 function isCAGEDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, CAGE_DOCUMENT_TAG);
+}
+
+function isAUDITCDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, AUDITC_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -279,6 +286,8 @@ export default function App() {
   const [suenoMessage, setSuenoMessage] = useState<string | null>(null);
   const [isLoadingCAGE, setIsLoadingCAGE] = useState(false);
   const [cageMessage, setCageMessage] = useState<string | null>(null);
+  const [isLoadingAUDITC, setIsLoadingAUDITC] = useState(false);
+  const [auditcMessage, setAuditcMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -1091,6 +1100,77 @@ export default function App() {
     }
   }
 
+  async function handleLoadAUDITCCSV(file: File): Promise<void> {
+    setIsLoadingAUDITC(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseAUDITCCSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createAUDITCStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const auditcAtoms = attachDocumentIdToAtoms(
+        auditcStudyToEvidenceAtoms(study),
+        documentId
+      );
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(
+          prev.repository,
+          AUDITC_DOCUMENT_TAG
+        );
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId,
+          kind: "redcap-export",
+          title: `AUDIT-C - ${file.name}`,
+          source: {
+            system: "Encuesta municipal propia — exportación REDCap",
+            collectedAt: study.createdAt,
+          },
+          sourceFileName: file.name,
+          tags: ["complementary-study", AUDITC_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) =>
+              atom.municipalityId !== prev.municipality.identity.id ||
+              !(
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(AUDITC_DOCUMENT_TAG)
+              )
+          ),
+          updatedAt: now,
+        };
+        for (const atom of auditcAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return {
+          ...prev,
+          repository: nextRepository,
+          auditcStudy: study,
+          evidenceStore: nextStore,
+          updatedAt: now,
+        };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setAuditcMessage(
+        aggregates.nValid > 0
+          ? `AUDIT-C cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Consumo de riesgo (≥4): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${auditcAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV AUDIT-C procesado sin registros con los 3 ítems completos.${warn}`
+      );
+    } catch {
+      setAuditcMessage("Error al procesar el CSV. Verifica que incluya las columnas auditc_q1, auditc_q2 y auditc_q3.");
+    } finally {
+      setIsLoadingAUDITC(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1295,6 +1375,10 @@ export default function App() {
       setCageMessage(null);
       setIsLoadingCAGE(false);
     }
+    if (isAUDITCDocument(deletedDocument)) {
+      setAuditcMessage(null);
+      setIsLoadingAUDITC(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1311,6 +1395,7 @@ export default function App() {
       const deletesSF12 = isSF12Document(doc);
       const deletesSueno = isSuenoDocument(doc);
       const deletesCAGE = isCAGEDocument(doc);
+      const deletesAUDITC = isAUDITCDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1361,6 +1446,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesAUDITC &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(AUDITC_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1378,6 +1470,7 @@ export default function App() {
         sf12Study: deletesSF12 ? undefined : prev.sf12Study,
         suenoStudy: deletesSueno ? undefined : prev.suenoStudy,
         cageStudy: deletesCAGE ? undefined : prev.cageStudy,
+        auditcStudy: deletesAUDITC ? undefined : prev.auditcStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -1861,6 +1954,7 @@ export default function App() {
                 runtime.workspace.sf12Study,
                 runtime.workspace.suenoStudy,
                 runtime.workspace.cageStudy,
+                runtime.workspace.auditcStudy,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
               const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
@@ -1878,7 +1972,7 @@ export default function App() {
               const assetCount = assetNames.length;
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3)
-              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas"];
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc"];
               const otherDocCount = docs.filter(
                 (d) =>
                   d.kind !== "health-report" &&
@@ -1925,7 +2019,7 @@ export default function App() {
                         <span className="diag-status__label">Estudios complementarios</span>
                         <span className="diag-status__value">
                           {studiesLoaded > 0
-                            ? `${studiesLoaded} de 6 · ${ibseAtoms + studyAtoms} evidencias`
+                            ? `${studiesLoaded} de 7 · ${ibseAtoms + studyAtoms} evidencias`
                             : "Ninguno incorporado"}
                         </span>
                       </li>
@@ -1981,6 +2075,10 @@ export default function App() {
               isLoadingCAGE={isLoadingCAGE}
               cageMessage={cageMessage}
               onLoadCAGECSV={handleLoadCAGECSV}
+              auditcStudy={runtime.workspace.auditcStudy}
+              isLoadingAUDITC={isLoadingAUDITC}
+              auditcMessage={auditcMessage}
+              onLoadAUDITCCSV={handleLoadAUDITCCSV}
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />

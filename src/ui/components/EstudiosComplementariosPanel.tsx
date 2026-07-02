@@ -5,6 +5,7 @@ import type { PREDIMEDStudy } from "../../domain/predimed";
 import type { SF12Study } from "../../domain/sf12";
 import type { SuenoStudy } from "../../domain/sueno";
 import type { CAGEStudy } from "../../domain/cage";
+import type { AUDITCStudy } from "../../domain/auditc";
 import type { MunicipalDocumentRepository } from "../../domain/repository";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
@@ -12,6 +13,7 @@ import { PREDIMEDPanel } from "./PREDIMEDPanel";
 import { SF12Panel } from "./SF12Panel";
 import { SuenoPanel } from "./SuenoPanel";
 import { CAGEPanel } from "./CAGEPanel";
+import { AUDITCPanel } from "./AUDITCPanel";
 
 // ── Fila de instrumento ───────────────────────────────────────────────────────
 // Lista fija y ordenada. El botón de carga es siempre visible.
@@ -167,6 +169,11 @@ interface EstudiosComplementariosPanelProps {
   cageMessage?: string | null;
   onLoadCAGECSV?: (file: File) => void;
 
+  auditcStudy?: AUDITCStudy;
+  isLoadingAUDITC?: boolean;
+  auditcMessage?: string | null;
+  onLoadAUDITCCSV?: (file: File) => void;
+
   // Repositorio y callback de borrado para el botón Eliminar
   repository?: MunicipalDocumentRepository;
   onDeleteDocument?: (documentId: string) => void;
@@ -200,10 +207,14 @@ export function EstudiosComplementariosPanel({
   isLoadingCAGE,
   cageMessage,
   onLoadCAGECSV,
+  auditcStudy,
+  isLoadingAUDITC,
+  auditcMessage,
+  onLoadAUDITCCSV,
   repository,
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy].filter(Boolean).length;
 
   // Busca el documentId de un estudio por su tag en el repositorio
   function docIdByTag(tag: string): string | undefined {
@@ -227,7 +238,7 @@ export function EstudiosComplementariosPanel({
           Instrumentos de medición sobre bienestar, apoyo social, alimentación y
           conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de 6 disponibles en este espacio de trabajo.`
+            ? `${loadedCount} de 7 disponibles en este espacio de trabajo.`
             : "Ningún estudio cargado en este espacio de trabajo."}
         </p>
       </div>
@@ -245,7 +256,7 @@ export function EstudiosComplementariosPanel({
           onLoadCSV={onLoadIBSECSV}
           onDelete={makeDeleteHandler("ibse")}
         >
-          <IBSEPanel ibseStudy={ibseStudy} isLoading={isLoadingIBSE} message={ibseMessage} onLoadCSV={onLoadIBSECSV} />
+          <IBSEPanel ibseStudy={ibseStudy} isLoading={isLoadingIBSE} message={ibseMessage} onLoadCSV={onLoadIBSECSV} municipalityName={municipalityName} />
         </StudyRow>
 
         <StudyRow
@@ -275,7 +286,7 @@ export function EstudiosComplementariosPanel({
           onLoadCSV={onLoadPREDIMEDCSV}
           onDelete={makeDeleteHandler("predimed-eas")}
         >
-          <PREDIMEDPanel predimedStudy={predimedStudy} isLoading={isLoadingPREDIMED} message={predimedMessage} onLoadCSV={onLoadPREDIMEDCSV} />
+          <PREDIMEDPanel predimedStudy={predimedStudy} isLoading={isLoadingPREDIMED} message={predimedMessage} onLoadCSV={onLoadPREDIMEDCSV} municipalityName={municipalityName} />
         </StudyRow>
 
         <StudyRow
@@ -290,7 +301,7 @@ export function EstudiosComplementariosPanel({
           onLoadCSV={onLoadSF12CSV}
           onDelete={makeDeleteHandler("sf12-eas")}
         >
-          <SF12Panel sf12Study={sf12Study} isLoading={isLoadingSF12} message={sf12Message} onLoadCSV={onLoadSF12CSV} />
+          <SF12Panel sf12Study={sf12Study} isLoading={isLoadingSF12} message={sf12Message} onLoadCSV={onLoadSF12CSV} municipalityName={municipalityName} />
         </StudyRow>
 
         <StudyRow
@@ -305,7 +316,7 @@ export function EstudiosComplementariosPanel({
           onLoadCSV={onLoadSuenoCSV}
           onDelete={makeDeleteHandler("sueno-eas")}
         >
-          <SuenoPanel suenoStudy={suenoStudy} isLoading={isLoadingSueno} message={suenoMessage} onLoadCSV={onLoadSuenoCSV} />
+          <SuenoPanel suenoStudy={suenoStudy} isLoading={isLoadingSueno} message={suenoMessage} onLoadCSV={onLoadSuenoCSV} municipalityName={municipalityName} />
         </StudyRow>
 
         <StudyRow
@@ -320,7 +331,22 @@ export function EstudiosComplementariosPanel({
           onLoadCSV={onLoadCAGECSV}
           onDelete={makeDeleteHandler("cage-eas")}
         >
-          <CAGEPanel cageStudy={cageStudy} isLoading={isLoadingCAGE} message={cageMessage} onLoadCSV={onLoadCAGECSV} />
+          <CAGEPanel cageStudy={cageStudy} isLoading={isLoadingCAGE} message={cageMessage} onLoadCSV={onLoadCAGECSV} municipalityName={municipalityName} />
+        </StudyRow>
+
+        <StudyRow
+          name="AUDIT-C"
+          subtitle="Consumo de riesgo de alcohol (REDCap)"
+          inputId="auditc-csv-input"
+          loaded={auditcStudy !== undefined}
+          isLoading={isLoadingAUDITC}
+          recordSummary={auditcStudy ? `${auditcStudy.aggregates.nValid} válidos · riesgo ${auditcStudy.aggregates.pctPositive.toFixed(1)} %` : undefined}
+          sourceFileName={auditcStudy?.sourceFileName}
+          message={auditcMessage}
+          onLoadCSV={onLoadAUDITCCSV}
+          onDelete={makeDeleteHandler("auditc")}
+        >
+          <AUDITCPanel auditcStudy={auditcStudy} municipalityName={municipalityName} />
         </StudyRow>
       </div>
     </section>
