@@ -44,6 +44,8 @@ import { parsePHQ9CSV, phq9StudyToEvidenceAtoms } from "./application/phq9";
 import { createPHQ9Study } from "./domain/phq9";
 import { parsePSQICSV, psqiStudyToEvidenceAtoms } from "./application/psqi";
 import { createPSQIStudy } from "./domain/psqi";
+import { parseFagerstromCSV, fagerstromStudyToEvidenceAtoms } from "./application/fagerstrom";
+import { createFagerstromStudy } from "./domain/fagerstrom";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -171,6 +173,7 @@ const IPAQ_DOCUMENT_TAG = "ipaq-eas";
 const GHQ12_DOCUMENT_TAG = "ghq12";
 const PHQ9_DOCUMENT_TAG = "phq9";
 const PSQI_DOCUMENT_TAG = "psqi";
+const FAGERSTROM_DOCUMENT_TAG = "fagerstrom";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -219,6 +222,10 @@ function isPHQ9Document(document: MunicipalDocument | undefined): boolean {
 
 function isPSQIDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, PSQI_DOCUMENT_TAG);
+}
+
+function isFagerstromDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, FAGERSTROM_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -324,6 +331,8 @@ export default function App() {
   const [phq9Message, setPhq9Message] = useState<string | null>(null);
   const [isLoadingPSQI, setIsLoadingPSQI] = useState(false);
   const [psqiMessage, setPsqiMessage] = useState<string | null>(null);
+  const [isLoadingFagerstrom, setIsLoadingFagerstrom] = useState(false);
+  const [fagerstromMessage, setFagerstromMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -1451,6 +1460,57 @@ export default function App() {
     }
   }
 
+  async function handleLoadFagerstromCSV(file: File): Promise<void> {
+    setIsLoadingFagerstrom(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseFagerstromCSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createFagerstromStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const fagerstromAtoms = attachDocumentIdToAtoms(fagerstromStudyToEvidenceAtoms(study), documentId);
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, FAGERSTROM_DOCUMENT_TAG);
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId, kind: "redcap-export",
+          title: `Fagerström - ${file.name}`,
+          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
+          sourceFileName: file.name,
+          tags: ["complementary-study", FAGERSTROM_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
+              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(FAGERSTROM_DOCUMENT_TAG))
+          ),
+          updatedAt: now,
+        };
+        for (const atom of fagerstromAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return { ...prev, repository: nextRepository, fagerstromStudy: study, evidenceStore: nextStore, updatedAt: now };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setFagerstromMessage(
+        aggregates.nValid > 0
+          ? `Fagerström cargado: ${aggregates.nValid} fumadores activos de ${aggregates.n}. Dep. mod.+ (≥5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${fagerstromAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV Fagerström procesado sin registros con los 6 ítems completos.${warn}`
+      );
+    } catch {
+      setFagerstromMessage("Error al procesar el CSV. Verifica que incluya las columnas ftnd_q1 a ftnd_q6.");
+    } finally {
+      setIsLoadingFagerstrom(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1675,6 +1735,10 @@ export default function App() {
       setPsqiMessage(null);
       setIsLoadingPSQI(false);
     }
+    if (isFagerstromDocument(deletedDocument)) {
+      setFagerstromMessage(null);
+      setIsLoadingFagerstrom(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1696,6 +1760,7 @@ export default function App() {
       const deletesGHQ12 = isGHQ12Document(doc);
       const deletesPHQ9 = isPHQ9Document(doc);
       const deletesPSQI = isPSQIDocument(doc);
+      const deletesFagerstrom = isFagerstromDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1781,6 +1846,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesFagerstrom &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(FAGERSTROM_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1803,6 +1875,7 @@ export default function App() {
         ghq12Study: deletesGHQ12 ? undefined : prev.ghq12Study,
         phq9Study: deletesPHQ9 ? undefined : prev.phq9Study,
         psqiStudy: deletesPSQI ? undefined : prev.psqiStudy,
+        fagerstromStudy: deletesFagerstrom ? undefined : prev.fagerstromStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -2291,6 +2364,7 @@ export default function App() {
                 runtime.workspace.ghq12Study,
                 runtime.workspace.phq9Study,
                 runtime.workspace.psqiStudy,
+                runtime.workspace.fagerstromStudy,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
               const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
@@ -2308,7 +2382,7 @@ export default function App() {
               const assetCount = assetNames.length;
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3)
-              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi"];
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi", "fagerstrom"];
               const otherDocCount = docs.filter(
                 (d) =>
                   d.kind !== "health-report" &&
@@ -2431,6 +2505,10 @@ export default function App() {
               isLoadingPSQI={isLoadingPSQI}
               psqiMessage={psqiMessage}
               onLoadPSQICSV={handleLoadPSQICSV}
+              fagerstromStudy={runtime.workspace.fagerstromStudy}
+              isLoadingFagerstrom={isLoadingFagerstrom}
+              fagerstromMessage={fagerstromMessage}
+              onLoadFagerstromCSV={handleLoadFagerstromCSV}
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />

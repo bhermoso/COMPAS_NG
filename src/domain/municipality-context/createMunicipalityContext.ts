@@ -34,6 +34,7 @@ export function createMunicipalSnapshot(
     ghq12Study:              workspace.ghq12Study,
     phq9Study:               workspace.phq9Study,
     psqiStudy:               workspace.psqiStudy,
+    fagerstromStudy:         workspace.fagerstromStudy,
     thematicPrioritisation:       workspace.thematicPrioritisation,
     thematicPrioritisationStudy:  workspace.thematicPrioritisationStudy,
     evidenceStore:                workspace.evidenceStore,
