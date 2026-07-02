@@ -8,6 +8,7 @@ import { CAGE_EAS_MODULE } from "./definitions/cage-eas";
 import { AUDITC_MODULE } from "./definitions/auditc";
 import { IPAQ_EAS_MODULE } from "./definitions/ipaq-eas";
 import { GHQ12_MODULE } from "./definitions/ghq12";
+import { PHQ9_MODULE } from "./definitions/phq9";
 
 // Catálogo declarativo de módulos metodológicos.
 // Para incorporar un módulo nuevo: añadir una entrada al array inicial del Map.
@@ -23,6 +24,7 @@ const REGISTRY = new Map<ModuleId, MethodologicalModule>([
   [AUDITC_MODULE.identity.id, AUDITC_MODULE],
   [IPAQ_EAS_MODULE.identity.id, IPAQ_EAS_MODULE],
   [GHQ12_MODULE.identity.id, GHQ12_MODULE],
+  [PHQ9_MODULE.identity.id, PHQ9_MODULE],
 ]);
 
 export function getMethodologicalModule(id: ModuleId): MethodologicalModule | undefined {

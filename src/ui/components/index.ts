@@ -12,6 +12,7 @@ export * from "./CAGEPanel";
 export * from "./AUDITCPanel";
 export * from "./IPAQPanel";
 export * from "./GHQ12Panel";
+export * from "./PHQ9Panel";
 export * from "./EstudiosComplementariosPanel";
 export * from "./ActivosSaludPanel";
 export * from "./MunicipalInventoryPanel";

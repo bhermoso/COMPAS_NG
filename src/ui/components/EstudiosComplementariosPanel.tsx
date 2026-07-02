@@ -8,6 +8,7 @@ import type { CAGEStudy } from "../../domain/cage";
 import type { AUDITCStudy } from "../../domain/auditc";
 import type { IPAQStudy } from "../../domain/ipaq";
 import type { GHQ12Study } from "../../domain/ghq12";
+import type { PHQ9Study } from "../../domain/phq9";
 import type { MunicipalDocumentRepository } from "../../domain/repository";
 import { IBSEPanel } from "./IBSEPanel";
 import { DUKEPanel } from "./DUKEPanel";
@@ -18,6 +19,7 @@ import { CAGEPanel } from "./CAGEPanel";
 import { AUDITCPanel } from "./AUDITCPanel";
 import { IPAQPanel } from "./IPAQPanel";
 import { GHQ12Panel } from "./GHQ12Panel";
+import { PHQ9Panel } from "./PHQ9Panel";
 
 // ── Fila de instrumento ───────────────────────────────────────────────────────
 // Lista fija y ordenada. El botón de carga es siempre visible.
@@ -188,6 +190,11 @@ interface EstudiosComplementariosPanelProps {
   ghq12Message?: string | null;
   onLoadGHQ12CSV?: (file: File) => void;
 
+  phq9Study?: PHQ9Study;
+  isLoadingPHQ9?: boolean;
+  phq9Message?: string | null;
+  onLoadPHQ9CSV?: (file: File) => void;
+
   // Repositorio y callback de borrado para el botón Eliminar
   repository?: MunicipalDocumentRepository;
   onDeleteDocument?: (documentId: string) => void;
@@ -233,10 +240,14 @@ export function EstudiosComplementariosPanel({
   isLoadingGHQ12,
   ghq12Message,
   onLoadGHQ12CSV,
+  phq9Study,
+  isLoadingPHQ9,
+  phq9Message,
+  onLoadPHQ9CSV,
   repository,
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study].filter(Boolean).length;
+  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study, phq9Study].filter(Boolean).length;
 
   // Busca el documentId de un estudio por su tag en el repositorio
   function docIdByTag(tag: string): string | undefined {
@@ -260,7 +271,7 @@ export function EstudiosComplementariosPanel({
           Instrumentos de medición sobre bienestar, apoyo social, alimentación y
           conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de 9 disponibles en este espacio de trabajo.`
+            ? `${loadedCount} de 10 disponibles en este espacio de trabajo.`
             : "Ningún estudio cargado en este espacio de trabajo."}
         </p>
       </div>
@@ -399,6 +410,21 @@ export function EstudiosComplementariosPanel({
           onDelete={makeDeleteHandler("ghq12")}
         >
           <GHQ12Panel ghq12Study={ghq12Study} municipalityName={municipalityName} />
+        </StudyRow>
+
+        <StudyRow
+          name="PHQ-9"
+          subtitle="Síntomas depresivos (REDCap)"
+          inputId="phq9-csv-input"
+          loaded={phq9Study !== undefined}
+          isLoading={isLoadingPHQ9}
+          recordSummary={phq9Study ? `${phq9Study.aggregates.nValid} válidos · síntomas mod.+ ${phq9Study.aggregates.pctPositive.toFixed(1)} %` : undefined}
+          sourceFileName={phq9Study?.sourceFileName}
+          message={phq9Message}
+          onLoadCSV={onLoadPHQ9CSV}
+          onDelete={makeDeleteHandler("phq9")}
+        >
+          <PHQ9Panel phq9Study={phq9Study} municipalityName={municipalityName} />
         </StudyRow>
       </div>
     </section>
