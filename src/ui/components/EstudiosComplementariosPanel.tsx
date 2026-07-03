@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  loadGranadaTerritorialReferences,
+  type GranadaTerritorialReferences,
+  type TerritorialComparison as TerritorialComparisonModel,
+} from "../../application/complementary-studies";
 import type { IBSEStudy } from "../../domain/ibse";
 import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
@@ -26,6 +31,7 @@ import { PHQ9Panel } from "./PHQ9Panel";
 import { PSQIPanel } from "./PSQIPanel";
 import { FagerstromPanel } from "./FagerstromPanel";
 import { SBQPanel } from "./SBQPanel";
+import { TerritorialComparison } from "./TerritorialComparison";
 
 // ── Fila de instrumento ───────────────────────────────────────────────────────
 // Lista fija y ordenada. El botón de carga es siempre visible.
@@ -35,6 +41,7 @@ import { SBQPanel } from "./SBQPanel";
 interface StudyRowProps {
   name: string;
   subtitle: string;
+  group: string;
   inputId: string;
   loaded: boolean;
   isLoading?: boolean;
@@ -44,11 +51,13 @@ interface StudyRowProps {
   onLoadCSV?: (file: File) => void;
   onDelete?: () => void;
   children?: React.ReactNode;
+  comparison?: TerritorialComparisonModel;
 }
 
 function StudyRow({
   name,
   subtitle,
+  group,
   inputId,
   loaded,
   isLoading,
@@ -58,17 +67,23 @@ function StudyRow({
   onLoadCSV,
   onDelete,
   children,
+  comparison,
 }: StudyRowProps) {
   const [showDetail, setShowDetail] = useState(false);
 
   return (
-    <div className={`ec-study-row${loaded ? " ec-study-row--loaded" : ""}`}>
+    <div
+      className={`ec-study-row${loaded ? " ec-study-row--loaded" : ""}`}
+      data-group={group.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-")}
+      data-study={inputId.replace("-csv-input", "")}
+    >
       <div className="ec-study-row__header">
         <span
           className={`ec-study-row__dot${loaded ? " ec-study-row__dot--loaded" : ""}`}
           aria-hidden="true"
         />
         <div className="ec-study-row__meta">
+          <span className="ec-study-row__group">{group}</span>
           <span className="ec-study-row__name">{name}</span>
           <span className="ec-study-row__subtitle">{subtitle}</span>
         </div>
@@ -138,7 +153,10 @@ function StudyRow({
             {showDetail ? "Ocultar detalle ▲" : "Ver detalle ▾"}
           </button>
           {showDetail && (
-            <div className="ec-study-row__detail">{children}</div>
+            <div className="ec-study-row__detail">
+              {comparison && <TerritorialComparison comparison={comparison} />}
+              {children}
+            </div>
           )}
         </>
       )}
@@ -281,6 +299,85 @@ export function EstudiosComplementariosPanel({
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
   const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study, phq9Study, psqiStudy, fagerstromStudy, sbqStudy].filter(Boolean).length;
+  const [granadaReferences, setGranadaReferences] = useState<GranadaTerritorialReferences>();
+
+  useEffect(() => {
+    let active = true;
+    loadGranadaTerritorialReferences()
+      .then((references) => {
+        if (active) setGranadaReferences(references);
+      })
+      .catch(() => {
+        if (active) setGranadaReferences(undefined);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const municipality = municipalityName ?? "Municipio";
+  const easSource = "microdatos EAS de Granada (PROV=18), agregados con el parser canónico";
+  const noAndalucia = "La referencia de Andalucía se mostrará cuando exista un fixture oficial metodológicamente equivalente.";
+  const buildComparison = (
+    metrics: TerritorialComparisonModel["metrics"],
+    source: string | null,
+    methodologicalNote?: string,
+  ): TerritorialComparisonModel => ({ municipalityName: municipality, metrics, source, methodologicalNote });
+  const metric = (
+    label: string,
+    municipalityValue: number,
+    granadaValue: number | null,
+    unit: string,
+    direction: "higher-is-favourable" | "lower-is-favourable",
+  ) => ({ label, municipalityValue, granadaValue, andaluciaValue: null, unit, direction });
+
+  const comparisons = {
+    ibse: ibseStudy && buildComparison(
+      [metric("Índice IBSE", ibseStudy.aggregates.meanTotal, granadaReferences?.ibse.meanTotal ?? null, "/100", "higher-is-favourable")],
+      "monitor IBSE provincial de Granada, agregado con el parser canónico",
+      "Referencia contextual provincial; no procede de la EAS ni constituye una estimación poblacional.",
+    ),
+    duke: dukeStudy && buildComparison(
+      [metric("Apoyo social global", dukeStudy.aggregates.meanGlobal, granadaReferences?.duke.meanGlobal ?? null, "/55", "higher-is-favourable")],
+      easSource, noAndalucia,
+    ),
+    predimed: predimedStudy && buildComparison(
+      [metric("Adherencia mediterránea", predimedStudy.aggregates.meanScore, granadaReferences?.predimed.meanScore ?? null, "/14", "higher-is-favourable")],
+      easSource, noAndalucia,
+    ),
+    sf12: sf12Study && buildComparison([
+      metric("Salud física percibida (PCS)", sf12Study.aggregates.meanPCS, granadaReferences?.sf12.meanPCS ?? null, "/100", "higher-is-favourable"),
+      metric("Salud mental percibida (MCS)", sf12Study.aggregates.meanMCS, granadaReferences?.sf12.meanMCS ?? null, "/100", "higher-is-favourable"),
+    ], easSource, noAndalucia),
+    sueno: suenoStudy && buildComparison([
+      metric("Sueño insuficiente", suenoStudy.aggregates.pctInsufficientSleep, granadaReferences?.sueno.pctInsufficientSleep ?? null, " %", "lower-is-favourable"),
+      metric("Descanso insuficiente", suenoStudy.aggregates.pctNoRest, granadaReferences?.sueno.pctNoRest ?? null, " %", "lower-is-favourable"),
+    ], easSource, noAndalucia),
+    cage: cageStudy && buildComparison(
+      [metric("Riesgo CAGE", cageStudy.aggregates.pctRisk, granadaReferences?.cage.pctRisk ?? null, " %", "lower-is-favourable")],
+      easSource, noAndalucia,
+    ),
+    ipaq: ipaqStudy && buildComparison([
+      metric("Actividad física alta", ipaqStudy.aggregates.pctHigh, granadaReferences?.ipaq.pctHigh ?? null, " %", "higher-is-favourable"),
+      metric("Inactividad en tiempo libre", ipaqStudy.aggregates.pctInactive, granadaReferences?.ipaq.pctInactive ?? null, " %", "lower-is-favourable"),
+    ], easSource, noAndalucia),
+    auditc: auditcStudy && buildComparison(
+      [metric("Cribado AUDIT-C positivo", auditcStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+    ),
+    ghq12: ghq12Study && buildComparison(
+      [metric("Cribado GHQ-12 positivo", ghq12Study.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+    ),
+    phq9: phq9Study && buildComparison(
+      [metric("Síntomas depresivos moderados o superiores", phq9Study.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+    ),
+    psqi: psqiStudy && buildComparison(
+      [metric("Mala calidad del sueño", psqiStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+    ),
+    fagerstrom: fagerstromStudy && buildComparison(
+      [metric("Dependencia moderada o superior", fagerstromStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+    ),
+    sbq: sbqStudy && buildComparison(
+      [metric("Sedentarismo elevado", sbqStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+    ),
+  };
 
   // Busca el documentId de un estudio por su tag en el repositorio
   function docIdByTag(tag: string): string | undefined {
@@ -313,6 +410,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="IBSE"
           subtitle="Bienestar socioemocional escolar"
+          group="Bienestar"
+          comparison={comparisons.ibse}
           inputId="ibse-csv-input"
           loaded={ibseStudy !== undefined}
           isLoading={isLoadingIBSE}
@@ -328,6 +427,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="DUKE-EAS"
           subtitle="Apoyo social funcional"
+          group="Apoyo social"
+          comparison={comparisons.duke}
           inputId="duke-csv-input"
           loaded={dukeStudy !== undefined}
           isLoading={isLoadingDUKE}
@@ -343,6 +444,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="PREDIMED-EAS"
           subtitle="Adherencia a dieta mediterránea"
+          group="Alimentación"
+          comparison={comparisons.predimed}
           inputId="predimed-csv-input"
           loaded={predimedStudy !== undefined}
           isLoading={isLoadingPREDIMED}
@@ -358,6 +461,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="SF-12 EAS"
           subtitle="Salud percibida (PCS / MCS)"
+          group="Bienestar"
+          comparison={comparisons.sf12}
           inputId="sf12-csv-input"
           loaded={sf12Study !== undefined}
           isLoading={isLoadingSF12}
@@ -373,6 +478,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="Sueño EAS"
           subtitle="Duración y calidad subjetiva del sueño"
+          group="Sueño"
+          comparison={comparisons.sueno}
           inputId="sueno-csv-input"
           loaded={suenoStudy !== undefined}
           isLoading={isLoadingSueno}
@@ -388,6 +495,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="CAGE-EAS"
           subtitle="Riesgo de alcoholismo"
+          group="Alcohol"
+          comparison={comparisons.cage}
           inputId="cage-csv-input"
           loaded={cageStudy !== undefined}
           isLoading={isLoadingCAGE}
@@ -403,6 +512,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="AUDIT-C"
           subtitle="Consumo de riesgo de alcohol (REDCap)"
+          group="Alcohol"
+          comparison={comparisons.auditc}
           inputId="auditc-csv-input"
           loaded={auditcStudy !== undefined}
           isLoading={isLoadingAUDITC}
@@ -418,6 +529,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="IPAQ-EAS"
           subtitle="Actividad física (EAS oficial)"
+          group="Actividad física"
+          comparison={comparisons.ipaq}
           inputId="ipaq-csv-input"
           loaded={ipaqStudy !== undefined}
           isLoading={isLoadingIPAQ}
@@ -433,6 +546,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="GHQ-12"
           subtitle="Malestar psicológico (REDCap)"
+          group="Bienestar"
+          comparison={comparisons.ghq12}
           inputId="ghq12-csv-input"
           loaded={ghq12Study !== undefined}
           isLoading={isLoadingGHQ12}
@@ -448,6 +563,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="PHQ-9"
           subtitle="Síntomas depresivos (REDCap)"
+          group="Bienestar"
+          comparison={comparisons.phq9}
           inputId="phq9-csv-input"
           loaded={phq9Study !== undefined}
           isLoading={isLoadingPHQ9}
@@ -463,6 +580,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="PSQI"
           subtitle="Calidad del sueño (REDCap)"
+          group="Sueño"
+          comparison={comparisons.psqi}
           inputId="psqi-csv-input"
           loaded={psqiStudy !== undefined}
           isLoading={isLoadingPSQI}
@@ -478,6 +597,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="Fagerström (FTND)"
           subtitle="Dependencia a la nicotina (REDCap)"
+          group="Tabaco"
+          comparison={comparisons.fagerstrom}
           inputId="fagerstrom-csv-input"
           loaded={fagerstromStudy !== undefined}
           isLoading={isLoadingFagerstrom}
@@ -493,6 +614,8 @@ export function EstudiosComplementariosPanel({
         <StudyRow
           name="SBQ"
           subtitle="Comportamiento sedentario (REDCap)"
+          group="Sedentarismo"
+          comparison={comparisons.sbq}
           inputId="sbq-csv-input"
           loaded={sbqStudy !== undefined}
           isLoading={isLoadingSBQ}

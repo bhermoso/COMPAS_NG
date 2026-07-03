@@ -5730,6 +5730,16 @@ h3 {
   background: #fafcff;
 }
 
+/* Orden visual por dimensión; no altera el modelo ni la persistencia. */
+.ec-study-row[data-group="bienestar"]        { order: 10; }
+.ec-study-row[data-group="apoyo-social"]     { order: 20; }
+.ec-study-row[data-group="alimentacion"]     { order: 30; }
+.ec-study-row[data-group="actividad-fisica"] { order: 40; }
+.ec-study-row[data-group="sueno"]            { order: 50; }
+.ec-study-row[data-group="alcohol"]          { order: 60; }
+.ec-study-row[data-group="tabaco"]           { order: 70; }
+.ec-study-row[data-group="sedentarismo"]     { order: 80; }
+
 /* Cabecera de fila: siempre visible */
 .ec-study-row__header {
   display: flex;
@@ -5758,6 +5768,14 @@ h3 {
   gap: 2px;
   min-width: 130px;
   flex-shrink: 0;
+}
+.ec-study-row__group {
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #526070;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 .ec-study-row__name {
   font-size: 0.88rem;
@@ -5856,6 +5874,7 @@ h3 {
 /* Panel de detalles inline (cuando está cargado) */
 .ec-study-row__detail {
   border-top: 1px solid #e4eaf3;
+  background: #ffffff;
 }
 .ec-study-row__detail > .workspace-panel {
   margin: 0;
@@ -5864,6 +5883,128 @@ h3 {
   box-shadow: none;
   padding: 20px 24px;
   background: #ffffff;
+}
+
+/* Las comparaciones previas quedan sustituidas por el bloque calculado común. */
+.ec-study-row[data-study="ibse"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row[data-study="duke"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row[data-study="predimed"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row[data-study="sf12"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row[data-study="sueno"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row[data-study="cage"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row[data-study="auditc"] .study-report > .study-report__section:nth-of-type(3),
+.ec-study-row__detail .study-bar-mark--ref,
+.ec-study-row__detail .study-report__legend-item--ref {
+  display: none;
+}
+
+/* Comparación territorial compartida por todos los estudios. */
+.territorial-comparison {
+  padding: 20px 24px;
+  border-bottom: 1px solid #d9e2ef;
+  background: #f7f9fc;
+}
+
+.territorial-comparison__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.territorial-comparison__subtitle {
+  margin: 3px 0 0;
+  color: #526070;
+  font-size: 0.78rem;
+}
+
+.territorial-comparison__table-wrap {
+  overflow-x: auto;
+  border: 1px solid #c9d6e6;
+  background: #ffffff;
+}
+
+.territorial-comparison__table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.territorial-comparison__table th,
+.territorial-comparison__table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e4eaf3;
+  border-right: 1px solid #e4eaf3;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.8rem;
+}
+
+.territorial-comparison__table tr:last-child th,
+.territorial-comparison__table tr:last-child td { border-bottom: 0; }
+.territorial-comparison__table th:last-child,
+.territorial-comparison__table td:last-child { border-right: 0; }
+
+.territorial-comparison__table thead th {
+  background: #edf2f7;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.territorial-comparison__table tbody th {
+  width: 34%;
+  color: #334155;
+  font-weight: 600;
+}
+
+.territorial-comparison__municipal {
+  color: #0f5d4b;
+  font-weight: 750;
+}
+
+.territorial-comparison__interpretation {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-left: 3px solid #0f5d4b;
+  background: #ffffff;
+  color: #334155;
+}
+
+.territorial-comparison__interpretation-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #0f5d4b;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.territorial-comparison__interpretation p {
+  margin: 3px 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.territorial-comparison__source,
+.territorial-comparison__note {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.territorial-comparison__note {
+  padding-top: 8px;
+  border-top: 1px solid #d9e2ef;
+}
+
+@media (max-width: 760px) {
+  .territorial-comparison { padding: 16px; }
+  .territorial-comparison__table { min-width: 580px; }
 }
 
 @media (max-width: 760px) {
