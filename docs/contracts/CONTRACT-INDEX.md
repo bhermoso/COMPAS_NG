@@ -253,6 +253,24 @@ Define el Motor de Traducción Estratégica (MTE): flujo PSL validado → Priori
 
 ---
 
+### CONTRACT-GES-EAS-COMPATIBILITY
+**Estado:** VIGENTE
+
+Principio de Compatibilidad EAS del Gestor de Encuestas de Salud. Define el criterio metodológico
+permanente que rige la definición de instrumentos en el catálogo de COMPÁS NG: cuando un instrumento
+tiene equivalente en la EAS, su implementación debe ser compatible en preguntas, categorías, códigos,
+recodificaciones y algoritmos. Establece tres invariantes arquitectónicos (I-EAS-1: independencia de
+origen en parsers; I-EAS-2: transparencia en EvidenceStore; I-EAS-3: verificación contra codebook oficial),
+las adaptaciones documentadas (`sexo` extendido a 4 categorías; `anio_nacimiento` vs `ED_01`), y la
+especificación del Bloque de Identificación y Clasificación (6 variables: `fecha_encuesta`, `municipio_cod`,
+`sexo`, `anio_nacimiento`, `nivel_educativo`, `situacion_laboral`).
+
+**Productores:** GES — `buildRedcapDictionary`, `SociodemographicRedcapBlock`.  
+**Consumidores:** Toda futura definición de instrumento del catálogo de COMPÁS NG.  
+**Relacionado con:** CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-EVIDENCE, CONTRACT-DYNAMIC-TRIPYRAMID.
+
+---
+
 ### CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE
 **Estado:** FUTURO
 
