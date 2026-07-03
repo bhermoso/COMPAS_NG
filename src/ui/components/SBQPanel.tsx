@@ -46,8 +46,8 @@ export function SBQPanel({ sbqStudy, municipalityName }: SBQPanelProps) {
       <section className="study-report__section">
         <p className="study-report__section-title">En síntesis</p>
         <ul className="study-report__summary-list">
-          <li>En {mun}, el {agg.pctPositive.toFixed(1)} % (n={agg.nPositive} de {agg.nValid}) presenta comportamiento altamente sedentario (SBQ >8h/día).</li>
-          <li>Media de tiempo sedentario: {agg.meanHours.toFixed(2)} h/día. Distribución: bajo (≤4h) {agg.nLow}, moderado (4–8h) {agg.nModerate}, alto (>8h) {agg.nHigh}.</li>
+          <li>En {mun}, el {agg.pctPositive.toFixed(1)} % (n={agg.nPositive} de {agg.nValid}) presenta comportamiento altamente sedentario (SBQ &gt;8h/día).</li>
+          <li>Media de tiempo sedentario: {agg.meanHours.toFixed(2)} h/día. Distribución: bajo (≤4h) {agg.nLow}, moderado (4–8h) {agg.nModerate}, alto (&gt;8h) {agg.nHigh}.</li>
           {agg.missing > 0 && <li>{agg.missing} de {agg.n} registros excluidos ({missingRate} %).</li>}
           <li>{quality.note}</li>
         </ul>
@@ -112,7 +112,7 @@ export function SBQPanel({ sbqStudy, municipalityName }: SBQPanelProps) {
             <dt>Fecha de importación</dt><dd>{formatDate(sbqStudy.createdAt)}</dd>
             <dt>Registros procesados</dt><dd>{agg.n}</dd>
             <dt>Registros válidos</dt><dd>{agg.nValid}</dd>
-            <dt>Altamente sedentarios (>8h)</dt><dd>{agg.nPositive}</dd>
+            <dt>Altamente sedentarios (&gt;8h)</dt><dd>{agg.nPositive}</dd>
             <dt>Media horas/día</dt><dd>{agg.meanHours.toFixed(2)} h</dd>
           </dl>
         </div>

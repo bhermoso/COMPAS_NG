@@ -106,7 +106,7 @@ export function parseGHQ12CSV(csvText: string): GHQ12CSVParseResult {
   const idxs = COLS.map((col) => header.indexOf(col));
 
   const warnings: string[] = [];
-  const missingCols = COLS.filter((col, i) => idxs[i] === -1);
+  const missingCols = COLS.filter((_, i) => idxs[i] === -1);
   if (missingCols.length > 0) {
     warnings.push(`Columnas no encontradas: ${missingCols.join(", ")}.`);
   }

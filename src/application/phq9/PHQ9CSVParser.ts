@@ -72,7 +72,7 @@ export function parsePHQ9CSV(csvText: string): PHQ9CSVParseResult {
   const header = splitRow(lines[0]).map((v) => v.trim());
   const idxs = COLS.map((col) => header.indexOf(col));
   const warnings: string[] = [];
-  const missingCols = COLS.filter((col, i) => idxs[i] === -1);
+  const missingCols = COLS.filter((_, i) => idxs[i] === -1);
   if (missingCols.length > 0) warnings.push(`Columnas no encontradas: ${missingCols.join(", ")}.`);
   if (idxs.every((idx) => idx === -1)) {
     return { aggregates: EMPTY_AGGREGATES, methodologicalCautions: buildCautions(EMPTY_AGGREGATES), warnings };

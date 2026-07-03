@@ -46,7 +46,7 @@ export function PSQIPanel({ psqiStudy, municipalityName }: PSQIPanelProps) {
       <section className="study-report__section">
         <p className="study-report__section-title">En síntesis</p>
         <ul className="study-report__summary-list">
-          <li>En {mun}, el {agg.pctPositive.toFixed(1)} % (n={agg.nPositive} de {agg.nValid}) presenta mala calidad del sueño (PSQI global >5).</li>
+          <li>En {mun}, el {agg.pctPositive.toFixed(1)} % (n={agg.nPositive} de {agg.nValid}) presenta mala calidad del sueño (PSQI global &gt;5).</li>
           <li>Score medio: {agg.meanScore.toFixed(2)}/21. Distribución: buen dormidor (≤5) {agg.nScore0to5}, mal dormidor leve-moderado (6–10) {agg.nScore6to10}, grave (11–21) {agg.nScore11to21}.</li>
           {agg.missing > 0 && <li>{agg.missing} de {agg.n} registros excluidos ({missingRate} %).</li>}
           <li>{quality.note}</li>
@@ -112,7 +112,7 @@ export function PSQIPanel({ psqiStudy, municipalityName }: PSQIPanelProps) {
             <dt>Fecha de importación</dt><dd>{formatDate(psqiStudy.createdAt)}</dd>
             <dt>Registros procesados</dt><dd>{agg.n}</dd>
             <dt>Registros válidos</dt><dd>{agg.nValid}</dd>
-            <dt>Mal dormidor (>5)</dt><dd>{agg.nPositive}</dd>
+            <dt>Mal dormidor (&gt;5)</dt><dd>{agg.nPositive}</dd>
           </dl>
         </div>
       </details>
