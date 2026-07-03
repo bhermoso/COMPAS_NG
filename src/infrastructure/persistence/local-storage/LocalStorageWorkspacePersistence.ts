@@ -228,6 +228,14 @@ export function loadWorkspaceFromLocalStorage(
       parsed.fagerstromStudy.warnings = [];
     }
 
+    if (parsed.sbqStudy && !Array.isArray(parsed.sbqStudy.methodologicalCautions)) {
+      parsed.sbqStudy.methodologicalCautions = [];
+    }
+
+    if (parsed.sbqStudy && !Array.isArray(parsed.sbqStudy.warnings)) {
+      parsed.sbqStudy.warnings = [];
+    }
+
     // Migrar kind incorrecto en documentos EAS complementarios (registrados como
     // "redcap-export" antes de la corrección semántica). Los tags son la fuente
     // canónica de identificación; el kind solo afecta al display en el Repositorio.
@@ -269,6 +277,7 @@ export function loadWorkspaceFromLocalStorage(
         { studyKey: "phq9Study",     originTag: "phq9",        atomOrigin: "complementary-study" },
         { studyKey: "psqiStudy",     originTag: "psqi",        atomOrigin: "complementary-study" },
         { studyKey: "fagerstromStudy", originTag: "fagerstrom", atomOrigin: "complementary-study" },
+        { studyKey: "sbqStudy",        originTag: "sbq",         atomOrigin: "complementary-study" },
       ];
 
       for (const { studyKey, originTag, atomOrigin } of studyRepairs) {

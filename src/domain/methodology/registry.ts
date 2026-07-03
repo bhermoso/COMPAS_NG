@@ -11,6 +11,7 @@ import { GHQ12_MODULE } from "./definitions/ghq12";
 import { PHQ9_MODULE } from "./definitions/phq9";
 import { PSQI_MODULE } from "./definitions/psqi";
 import { FAGERSTROM_MODULE } from "./definitions/fagerstrom";
+import { SBQ_MODULE } from "./definitions/sbq";
 
 // Catálogo declarativo de módulos metodológicos.
 // Para incorporar un módulo nuevo: añadir una entrada al array inicial del Map.
@@ -29,6 +30,7 @@ const REGISTRY = new Map<ModuleId, MethodologicalModule>([
   [PHQ9_MODULE.identity.id, PHQ9_MODULE],
   [PSQI_MODULE.identity.id, PSQI_MODULE],
   [FAGERSTROM_MODULE.identity.id, FAGERSTROM_MODULE],
+  [SBQ_MODULE.identity.id, SBQ_MODULE],
 ]);
 
 export function getMethodologicalModule(id: ModuleId): MethodologicalModule | undefined {

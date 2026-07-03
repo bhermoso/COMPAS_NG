@@ -46,6 +46,8 @@ import { parsePSQICSV, psqiStudyToEvidenceAtoms } from "./application/psqi";
 import { createPSQIStudy } from "./domain/psqi";
 import { parseFagerstromCSV, fagerstromStudyToEvidenceAtoms } from "./application/fagerstrom";
 import { createFagerstromStudy } from "./domain/fagerstrom";
+import { parseSBQCSV, sbqStudyToEvidenceAtoms } from "./application/sbq";
+import { createSBQStudy } from "./domain/sbq";
 import { stableAssetKey, upsertEvidenceAtom, type EvidenceAtom } from "./domain/evidence";
 import {
   THEMATIC_TOPICS,
@@ -174,6 +176,7 @@ const GHQ12_DOCUMENT_TAG = "ghq12";
 const PHQ9_DOCUMENT_TAG = "phq9";
 const PSQI_DOCUMENT_TAG = "psqi";
 const FAGERSTROM_DOCUMENT_TAG = "fagerstrom";
+const SBQ_DOCUMENT_TAG = "sbq";
 const THEMATIC_PRIORITISATION_DOCUMENT_TAG = "thematic-prioritisation";
 
 function hasDocumentTag(document: MunicipalDocument | undefined, tag: string): boolean {
@@ -226,6 +229,10 @@ function isPSQIDocument(document: MunicipalDocument | undefined): boolean {
 
 function isFagerstromDocument(document: MunicipalDocument | undefined): boolean {
   return hasDocumentTag(document, FAGERSTROM_DOCUMENT_TAG);
+}
+
+function isSBQDocument(document: MunicipalDocument | undefined): boolean {
+  return hasDocumentTag(document, SBQ_DOCUMENT_TAG);
 }
 
 function isThematicPrioritisationDocument(
@@ -333,6 +340,8 @@ export default function App() {
   const [psqiMessage, setPsqiMessage] = useState<string | null>(null);
   const [isLoadingFagerstrom, setIsLoadingFagerstrom] = useState(false);
   const [fagerstromMessage, setFagerstromMessage] = useState<string | null>(null);
+  const [isLoadingSBQ, setIsLoadingSBQ] = useState(false);
+  const [sbqMessage, setSbqMessage] = useState<string | null>(null);
   const [pendingTopics, setPendingTopics] = useState<string[]>(
     () => workspace.thematicPrioritisation?.selectedTopicIds ?? []
   );
@@ -1511,6 +1520,57 @@ export default function App() {
     }
   }
 
+  async function handleLoadSBQCSV(file: File): Promise<void> {
+    setIsLoadingSBQ(true);
+    try {
+      const text = await file.text();
+      const { aggregates, methodologicalCautions, warnings } = parseSBQCSV(text);
+      const documentId = crypto.randomUUID();
+      const study = createSBQStudy({
+        municipalityId: workspace.municipality.identity.id,
+        sourceFileName: file.name,
+        aggregates,
+        methodologicalCautions,
+        warnings,
+      });
+      const sbqAtoms = attachDocumentIdToAtoms(sbqStudyToEvidenceAtoms(study), documentId);
+      setWorkspace((prev) => {
+        const now = new Date().toISOString();
+        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, SBQ_DOCUMENT_TAG);
+        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
+          id: documentId, kind: "redcap-export",
+          title: `SBQ - ${file.name}`,
+          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
+          sourceFileName: file.name,
+          tags: ["complementary-study", SBQ_DOCUMENT_TAG],
+        });
+        let nextStore = {
+          ...prev.evidenceStore,
+          atoms: prev.evidenceStore.atoms.filter(
+            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
+              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(SBQ_DOCUMENT_TAG))
+          ),
+          updatedAt: now,
+        };
+        for (const atom of sbqAtoms) {
+          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
+          nextStore = upsertEvidenceAtom(nextStore, atom, key);
+        }
+        return { ...prev, repository: nextRepository, sbqStudy: study, evidenceStore: nextStore, updatedAt: now };
+      });
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      setSbqMessage(
+        aggregates.nValid > 0
+          ? `SBQ cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Alt. sedentario (>8h): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). Media: ${aggregates.meanHours.toFixed(2)} h/día. ${sbqAtoms.length} evidencias incorporadas.${warn}`
+          : `CSV SBQ procesado sin registros con los 9 ítems completos.${warn}`
+      );
+    } catch {
+      setSbqMessage("Error al procesar el CSV. Verifica que incluya las columnas sbq_q1 a sbq_q9.");
+    } finally {
+      setIsLoadingSBQ(false);
+    }
+  }
+
   function handleTopicToggle(topicId: string) {
     setPendingTopics((prev) => {
       if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
@@ -1739,6 +1799,10 @@ export default function App() {
       setFagerstromMessage(null);
       setIsLoadingFagerstrom(false);
     }
+    if (isSBQDocument(deletedDocument)) {
+      setSbqMessage(null);
+      setIsLoadingSBQ(false);
+    }
     if (isThematicPrioritisationDocument(deletedDocument)) {
       setTpImportMessage(null);
       setPendingTopics([]);
@@ -1761,6 +1825,7 @@ export default function App() {
       const deletesPHQ9 = isPHQ9Document(doc);
       const deletesPSQI = isPSQIDocument(doc);
       const deletesFagerstrom = isFagerstromDocument(doc);
+      const deletesSBQ = isSBQDocument(doc);
       const deletesThematicPrioritisation = isThematicPrioritisationDocument(doc);
 
       return {
@@ -1853,6 +1918,13 @@ export default function App() {
                 return false;
               }
               if (
+                deletesSBQ &&
+                atom.provenance.origin === "complementary-study" &&
+                atom.tags.includes(SBQ_DOCUMENT_TAG)
+              ) {
+                return false;
+              }
+              if (
                 deletesThematicPrioritisation &&
                 atom.provenance.origin === "citizen-participation"
               ) {
@@ -1876,6 +1948,7 @@ export default function App() {
         phq9Study: deletesPHQ9 ? undefined : prev.phq9Study,
         psqiStudy: deletesPSQI ? undefined : prev.psqiStudy,
         fagerstromStudy: deletesFagerstrom ? undefined : prev.fagerstromStudy,
+        sbqStudy: deletesSBQ ? undefined : prev.sbqStudy,
         thematicPrioritisation: deletesThematicPrioritisation
           ? undefined
           : prev.thematicPrioritisation,
@@ -2365,6 +2438,7 @@ export default function App() {
                 runtime.workspace.phq9Study,
                 runtime.workspace.psqiStudy,
                 runtime.workspace.fagerstromStudy,
+                runtime.workspace.sbqStudy,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
               const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
@@ -2382,7 +2456,7 @@ export default function App() {
               const assetCount = assetNames.length;
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3)
-              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi", "fagerstrom"];
+              const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi", "fagerstrom", "sbq"];
               const otherDocCount = docs.filter(
                 (d) =>
                   d.kind !== "health-report" &&
@@ -2509,6 +2583,10 @@ export default function App() {
               isLoadingFagerstrom={isLoadingFagerstrom}
               fagerstromMessage={fagerstromMessage}
               onLoadFagerstromCSV={handleLoadFagerstromCSV}
+              sbqStudy={runtime.workspace.sbqStudy}
+              isLoadingSBQ={isLoadingSBQ}
+              sbqMessage={sbqMessage}
+              onLoadSBQCSV={handleLoadSBQCSV}
               repository={runtime.workspace.repository}
               onDeleteDocument={handleDeleteDocument}
             />

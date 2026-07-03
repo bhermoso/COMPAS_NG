@@ -20,6 +20,7 @@ import type { GHQ12Study } from "../ghq12";
 import type { PHQ9Study } from "../phq9";
 import type { PSQIStudy } from "../psqi";
 import type { FagerstromStudy } from "../fagerstrom";
+import type { SBQStudy } from "../sbq";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -123,6 +124,8 @@ export interface MunicipalityWorkspace {
   psqiStudy?: PSQIStudy;
   /** Estudio Fagerström (Test de Dependencia a la Nicotina, FTND). Solo fumadores activos. */
   fagerstromStudy?: FagerstromStudy;
+  /** Estudio SBQ (Cuestionario de Comportamiento Sedentario). */
+  sbqStudy?: SBQStudy;
   /**
    * Proyectos de encuesta del Gestor de Encuestas de Salud (GES).
    * Acumulativos: cada diseño de encuesta añade una entrada.

@@ -15,6 +15,7 @@ export * from "./GHQ12Panel";
 export * from "./PHQ9Panel";
 export * from "./PSQIPanel";
 export * from "./FagerstromPanel";
+export * from "./SBQPanel";
 export * from "./EstudiosComplementariosPanel";
 export * from "./ActivosSaludPanel";
 export * from "./MunicipalInventoryPanel";

@@ -27,6 +27,7 @@ import type { GHQ12Study } from "../ghq12";
 import type { PHQ9Study } from "../phq9";
 import type { PSQIStudy } from "../psqi";
 import type { FagerstromStudy } from "../fagerstrom";
+import type { SBQStudy } from "../sbq";
 import type { EvidenceStore } from "../evidence";
 import type { ThematicPrioritisation, ThematicPrioritisationStudy } from "../thematic-prioritisation";
 
@@ -60,6 +61,8 @@ export interface MunicipalSnapshot {
   psqiStudy?: PSQIStudy;
 
   fagerstromStudy?: FagerstromStudy;
+
+  sbqStudy?: SBQStudy;
 
   evidenceStore: EvidenceStore;
 

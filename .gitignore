@@ -36,6 +36,7 @@ _archive/
 !fixtures/phq9-municipal.csv
 !fixtures/psqi-municipal.csv
 !fixtures/fagerstrom-municipal.csv
+!fixtures/sbq-municipal.csv
 
 # Local municipal data folders
 Alfacar/
