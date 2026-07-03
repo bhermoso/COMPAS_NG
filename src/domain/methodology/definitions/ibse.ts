@@ -297,14 +297,52 @@ export const IBSE_MODULE: MethodologicalModule = {
   interpretation: {
     scale: {
       min: 0,
-      max: 10,
+      max: 100,
       direction: "higher-is-better",
     },
+    // Umbrales heurísticos del sistema. No son normativos ni clínicos.
+    // Definidos operativamente para orientar la lectura diagnóstica del técnico municipal.
+    thresholds: [
+      {
+        min: 75,
+        max: 100,
+        label: "alto",
+        description: "Nivel alto de bienestar socioemocional (≥75/100). Umbral heurístico del sistema.",
+      },
+      {
+        min: 60,
+        max: 74,
+        label: "medio",
+        description: "Nivel medio de bienestar socioemocional (60–74/100). Umbral heurístico del sistema.",
+      },
+      {
+        min: 50,
+        max: 59,
+        label: "medio-bajo",
+        description: "Nivel medio-bajo de bienestar socioemocional (50–59/100). Umbral heurístico del sistema.",
+      },
+      {
+        min: 0,
+        max: 49,
+        label: "bajo",
+        description: "Nivel bajo de bienestar socioemocional (<50/100). Umbral heurístico del sistema.",
+      },
+    ],
+    referenceValues: {
+      population: "Escolares — valores de referencia EAS Andalucía y Granada (histórico COMPÁS)",
+      source: "Valores de referencia procedentes del COMPÁS histórico (monitor IBSE): " +
+        "Andalucía ≈ 75.94 · Granada ≈ 81.78. Pendiente contraste con EAS oficial.",
+    },
     contextualNotes: [
+      "Escala 0–100. REDCap calcula los factores individuales (pre-aggregated); " +
+      "el parser agrega al nivel municipal.",
+      "Los umbrales (alto ≥75, medio 60–74, medio-bajo 50–59, bajo <50) son heurísticos " +
+      "del sistema, NO normativos ni clínicos. No tienen validez científica independiente.",
+      "Valores de referencia históricos (pendientes de contraste con EAS oficial): " +
+      "Andalucía ≈ 75.94 · Granada ≈ 81.78.",
       "Los resultados son medias de la muestra disponible, no estimaciones poblacionales.",
-      "La comparabilidad entre municipios y entre oleadas requiere homogeneidad metodológica en el proceso de recogida.",
-      "Una muestra inferior a 30 participantes válidos limita la fiabilidad de los resultados.",
-      "Los resultados deben interpretarse en el contexto del municipio concreto y no como indicadores normativos.",
+      "La comparabilidad entre municipios y oleadas requiere homogeneidad metodológica.",
+      "Una muestra inferior a 30 participantes válidos limita la fiabilidad.",
     ],
   },
 
@@ -361,5 +399,89 @@ export const IBSE_MODULE: MethodologicalModule = {
         "El parser lee esas columnas calculadas y agrega al nivel municipal.",
     },
     // sav: pendiente de contraste con EAS_dif_Adultos.sav
+  },
+
+  institutionalNote: {
+    diagnosticInterpretation:
+      "El IBSE es el único estudio de la batería específicamente centrado en la " +
+      "población escolar del municipio, con datos propios recogidos mediante el " +
+      "cuestionario REDCap municipal. Mide el bienestar subjetivo de los estudiantes " +
+      "en cuatro dimensiones: Vínculo (sentido de pertenencia y relaciones afectivas), " +
+      "Situación (valoración de la propia vida), Control (sensación de control sobre " +
+      "la propia vida) y Persona (autoestima e identidad personal). " +
+      "El índice total resume estas cuatro dimensiones en una escala 0–100. " +
+      "Cuando la dispersión interfactorial es alta (más de 20 puntos entre el factor " +
+      "más alto y el más bajo), el índice total puede ocultar diferencias relevantes " +
+      "entre dimensiones: en ese caso, el análisis por factor individual proporciona " +
+      "información diagnóstica más precisa. El factor con menor puntuación señala " +
+      "la dimensión más vulnerable del bienestar escolar en el municipio.",
+
+    implications: [
+      "Análisis de los factores de bienestar escolar con menor puntuación, que señalan " +
+      "las dimensiones más vulnerables del bienestar socioemocional de la población escolar.",
+      "Atención especial al Factor Vínculo (soledad, pertenencia): niveles bajos pueden " +
+      "indicar dificultades de integración y convivencia en el entorno escolar.",
+      "Cuando la dispersión interfactorial supere los 20 puntos, analizar cada factor " +
+      "de forma independiente antes de extraer conclusiones del índice total.",
+      "Cruce con datos municipales del ámbito educativo (absentismo, rendimiento) " +
+      "cuando estén disponibles.",
+      "Comparación con los valores de referencia disponibles (Andalucía ≈ 75.94, " +
+      "Granada ≈ 81.78) para contextualizar el resultado del municipio, " +
+      "manteniendo las cautelas sobre el origen de estos valores de referencia.",
+    ],
+
+    publicHealthApplication: {
+      measures: [
+        "Bienestar socioemocional subjetivo de la población escolar del municipio.",
+        "Factor Vínculo: sentido de pertenencia y calidad de las relaciones afectivas.",
+        "Factor Situación: valoración de la situación vital actual.",
+        "Factor Control: sensación de control sobre la propia vida.",
+        "Factor Persona: autoestima e identidad personal.",
+        "Dispersión interfactorial: heterogeneidad entre dimensiones del bienestar.",
+      ],
+      doesNotMeasure: [
+        "Salud mental clínica ni diagnósticos psicológicos o psiquiátricos.",
+        "Rendimiento académico ni adaptación escolar objetiva.",
+        "Clima escolar objetivo ni condiciones del entorno educativo.",
+        "Contexto familiar, socioeconómico o cultural de los estudiantes.",
+      ],
+      contextualUse: [
+        "Instrumento municipal de aplicación directa: los datos provienen del cuestionario " +
+        "administrado al alumnado del municipio, no de una encuesta provincial.",
+        "Los resultados son comparables entre municipios que usen la misma versión del " +
+        "cuestionario IBSE y el mismo protocolo de administración REDCap.",
+        "Las comparativas con Andalucía y Granada (valores históricos) deben interpretarse " +
+        "con cautela: proceden del monitor histórico COMPÁS, pendientes de contraste oficial.",
+      ],
+      commonMisinterpretations: [
+        "IBSE bajo no equivale a enfermedad mental: mide bienestar subjetivo cotidiano " +
+        "en contexto escolar, no psicopatología.",
+        "El índice total puede ser engañoso cuando la dispersión interfactorial es alta: " +
+        "siempre revisar los factores individuales cuando rango > 20 puntos.",
+        "Los umbrales (alto ≥75, medio 60–74, medio-bajo 50–59, bajo <50) son heurísticos " +
+        "del sistema, no normativos ni clínicos. No validan diagnósticos individuales.",
+        "Los datos representan al alumnado que respondió el cuestionario: " +
+        "pueden no representar a toda la población escolar del municipio.",
+      ],
+    },
+
+    pslIntegration: {
+      chapter: "Diagnóstico de Salud de la Población",
+      determinants: [
+        "Salud mental y bienestar",
+        "Infancia y adolescencia",
+        "Bienestar escolar y convivencia",
+      ],
+      contribution:
+        "El IBSE es el único estudio de la batería centrado específicamente en la " +
+        "población escolar del municipio. Aporta información sobre el bienestar " +
+        "socioemocional de los niños y adolescentes, una dimensión habitualmente " +
+        "sin cobertura en los datos epidemiológicos municipales estándar. " +
+        "Sus resultados alimentan el diagnóstico de salud del Perfil, con especial " +
+        "relevancia para la identificación de necesidades en el ámbito escolar " +
+        "y para las actuaciones de promoción de la salud mental infanto-juvenil.",
+    },
+
+    relatedInstrumentIds: ["sf12-eas", "sueno-eas"],
   },
 };

@@ -567,4 +567,78 @@ export const PREDIMED_EAS_MODULE: MethodologicalModule = {
       ],
     },
   },
+
+  institutionalNote: {
+    diagnosticInterpretation:
+      "El PREDIMED-EAS mide el grado en que la alimentación de la población adulta " +
+      "del municipio se ajusta al patrón de dieta mediterránea. Una puntuación media " +
+      "baja (≤6 sobre 14) indica que la mayoría de la muestra no cumple los criterios " +
+      "de adherencia asociados con menor riesgo cardiovascular. La distribución entre " +
+      "categorías (baja, media, alta adherencia) ofrece información sobre la proporción " +
+      "de población en cada nivel, más útil para la planificación que la media global. " +
+      "Una muestra con alta tasa de incompletos (oleadas EAS sin módulo PREDIMED) " +
+      "puede no representar adecuadamente a toda la población adulta del municipio.",
+
+    implications: [
+      "Análisis de los patrones alimentarios en relación con el acceso y la disponibilidad " +
+      "de alimentos saludables en el municipio.",
+      "Consideración del gradiente socioeconómico: la adherencia a la dieta mediterránea " +
+      "está asociada en la literatura con nivel educativo y renta.",
+      "Atención al grupo de baja adherencia (≤6): es el segmento de mayor riesgo " +
+      "nutricional desde el punto de vista de la prevención cardiovascular.",
+      "Cruce con datos de enfermedades crónicas cardiovasculares del municipio " +
+      "cuando estén disponibles en el Informe de Salud.",
+      "Valoración de los recursos de educación alimentaria existentes (centros de salud, " +
+      "programas escolares, mercados locales).",
+    ],
+
+    publicHealthApplication: {
+      measures: [
+        "Adherencia de la población adulta al patrón de dieta mediterránea.",
+        "Proporción de población en cada categoría de adherencia (baja ≤6, media 7–8, alta ≥9).",
+        "Media de la puntuación global de adherencia dietética en la muestra.",
+      ],
+      doesNotMeasure: [
+        "Calidad real de la dieta individual ni ingesta calórica.",
+        "Estado nutricional objetivo de la población.",
+        "Disponibilidad económica ni acceso geográfico a alimentos mediterráneos.",
+        "Riesgo cardiovascular individual.",
+      ],
+      contextualUse: [
+        "Indicador del patrón alimentario poblacional en el contexto del diagnóstico " +
+        "de determinantes de salud.",
+        "Para comparaciones interpoblacionales, usar la distribución por categorías, " +
+        "no solo la media global.",
+        "Los resultados deben interpretarse junto a otros indicadores de estilos de " +
+        "vida (actividad física, consumo de tabaco y alcohol).",
+      ],
+      commonMisinterpretations: [
+        "El ítem sobre consumo de vino (ítem 8) puede reducir artificialmente la " +
+        "puntuación en personas abstemias o con consumo limitado por prescripción médica. " +
+        "Interpretar la puntuación con precaución cuando la abstemia sea elevada.",
+        "El instrumento fue validado en adultos de 50–80 años con alto riesgo cardiovascular: " +
+        "en población adulta general más joven puede introducir sesgos de interpretación.",
+        "Una media alta no garantiza que toda la población coma bien: puede coexistir " +
+        "un grupo de baja adherencia significativo bajo la media.",
+      ],
+    },
+
+    pslIntegration: {
+      chapter: "Determinantes de Salud",
+      determinants: [
+        "Alimentación y nutrición",
+        "Estilos de vida saludable",
+        "Prevención de enfermedades crónicas",
+      ],
+      contribution:
+        "El PREDIMED-EAS aporta evidencia sobre el patrón alimentario de la " +
+        "población adulta del municipio, uno de los determinantes más influyentes " +
+        "en la prevención de enfermedades crónicas cardiovasculares. " +
+        "Alimenta el capítulo de determinantes de salud del Perfil, complementando " +
+        "indicadores de estilos de vida como el consumo de alcohol (CAGE-EAS) y " +
+        "el sueño (Sueño EAS).",
+    },
+
+    relatedInstrumentIds: ["sueno-eas", "cage-eas"],
+  },
 };

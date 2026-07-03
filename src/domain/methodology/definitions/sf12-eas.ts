@@ -203,4 +203,86 @@ export const SF12_EAS_MODULE: MethodologicalModule = {
       ],
     },
   },
+
+  institutionalNote: {
+    diagnosticInterpretation:
+      "El SF-12 describe cómo valora la población adulta del municipio su propia salud, " +
+      "en sus dimensiones física (PCS) y mental (MCS). Las puntuaciones se interpretan " +
+      "comparándolas con la norma española: una media de 50 equivale a la salud percibida " +
+      "media de la población española; una desviación de 3 o más puntos por debajo señala " +
+      "una diferencia clínicamente relevante. El PCS bajo indica que la muestra experimenta " +
+      "más limitaciones funcionales físicas de lo esperado: dificultad para actividades " +
+      "cotidianas, dolor, menor vitalidad. El MCS bajo apunta a peor bienestar emocional: " +
+      "más ansiedad, depresión o agotamiento mental percibidos. " +
+      "Ambas dimensiones son independientes: es posible tener PCS bajo y MCS alto o " +
+      "a la inversa. La composición por edad y sexo de la muestra influye " +
+      "significativamente: una muestra con mayor proporción de personas mayores tiende " +
+      "a mostrar PCS más bajo como patrón normativo del envejecimiento.",
+
+    implications: [
+      "Análisis de la prevalencia de enfermedades crónicas limitantes y su impacto " +
+      "en la funcionalidad física de la población del municipio.",
+      "Atención especial a grupos de población con peor salud mental percibida, " +
+      "habitualmente mujeres y personas de mayor edad según la evidencia nacional.",
+      "Cruce con DUKE-EAS (apoyo social): la baja salud mental percibida correlaciona " +
+      "con déficit de apoyo social funcional en la literatura.",
+      "Comparación con la norma española (PCS ≈ 50, MCS ≈ 50) para contextualizar " +
+      "si el municipio presenta desviaciones relevantes (≥3 puntos).",
+      "Consideración del envejecimiento poblacional: valores PCS bajos en municipios " +
+      "con alta proporción de personas mayores pueden ser un patrón esperable, " +
+      "no necesariamente evitable.",
+    ],
+
+    publicHealthApplication: {
+      measures: [
+        "Salud percibida global de la población adulta del municipio.",
+        "Componente Físico (PCS): limitaciones funcionales, dolor corporal, vitalidad, " +
+        "salud general percibida.",
+        "Componente Mental (MCS): bienestar emocional, rol emocional, salud mental " +
+        "percibida, funcionamiento social.",
+      ],
+      doesNotMeasure: [
+        "Morbilidad real ni diagnósticos clínicos.",
+        "Calidad de los servicios de salud disponibles en el municipio.",
+        "Determinantes objetivos de la salud: solo la percepción subjetiva.",
+        "Discapacidad ni limitaciones funcionales evaluadas objetivamente.",
+      ],
+      contextualUse: [
+        "Instrumento de monitorización poblacional: adecuado para comparar entre grupos " +
+        "de población y para el seguimiento a lo largo del tiempo.",
+        "Los resultados deben estratificarse por edad y sexo cuando estén disponibles " +
+        "los registros individuales.",
+        "La norma española (PCS ≈ 50, MCS ≈ 50) es el referente comparativo principal " +
+        "para identificar desviaciones significativas en el municipio.",
+      ],
+      commonMisinterpretations: [
+        "PCS y MCS miden dimensiones INDEPENDIENTES: no se suman ni se promedian " +
+        "para obtener un único valor de 'salud percibida'.",
+        "Un PCS bajo en municipios con alta proporción de personas mayores puede ser " +
+        "un patrón normativo del envejecimiento, no un indicador de problema evitable.",
+        "La norma española (≈50) es la media de la población de referencia, " +
+        "no un umbral clínico. No equivale a 'estar sano'.",
+      ],
+    },
+
+    pslIntegration: {
+      chapter: "Diagnóstico de Salud de la Población",
+      determinants: [
+        "Salud percibida",
+        "Salud mental y bienestar emocional",
+        "Funcionalidad física",
+      ],
+      contribution:
+        "El SF-12 proporciona una medida directa de la salud subjetiva de la " +
+        "población adulta del municipio, en sus dimensiones física y mental. " +
+        "Alimenta el capítulo de diagnóstico de salud del Perfil, específicamente " +
+        "la dimensión de salud percibida. El componente mental (MCS) es especialmente " +
+        "relevante para el análisis de salud mental poblacional, habitualmente " +
+        "infrarepresentada en los datos epidemiológicos municipales. " +
+        "Combinado con DUKE-EAS y Sueño EAS, contribuye a una imagen integrada " +
+        "del bienestar de la población adulta.",
+    },
+
+    relatedInstrumentIds: ["duke-eas", "sueno-eas"],
+  },
 };

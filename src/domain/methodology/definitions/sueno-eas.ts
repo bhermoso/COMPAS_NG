@@ -199,4 +199,79 @@ export const SUENO_EAS_MODULE: MethodologicalModule = {
       ],
     },
   },
+
+  institutionalNote: {
+    diagnosticInterpretation:
+      "El módulo de Sueño EAS mide dos dimensiones independientes del sueño de la " +
+      "población adulta: la duración respecto a las horas recomendadas (P33_R) y la " +
+      "calidad subjetiva del descanso (P33A). Un porcentaje de sueño insuficiente " +
+      "superior al 30–35 % indica que una parte relevante de la muestra no alcanza " +
+      "las horas recomendadas por la Sociedad Española del Sueño. La discordancia " +
+      "entre P33_R y P33A es estadísticamente esperada (~29 %) y no señala " +
+      "inconsistencia: alguien puede dormir las horas suficientes pero no descansar " +
+      "bien (o viceversa). Porcentajes de discordancia muy superiores al 29 % pueden " +
+      "indicar una prevalencia elevada de problemas de calidad del sueño independientes " +
+      "de la duración.",
+
+    implications: [
+      "Análisis de la prevalencia de sueño insuficiente en la población adulta y su " +
+      "relación con la salud mental y el bienestar cotidiano.",
+      "Cruce con SF-12 MCS (salud mental percibida): el sueño insuficiente correlaciona " +
+      "con peor bienestar emocional en la literatura.",
+      "Consideración del envejecimiento: los patrones de sueño cambian con la edad " +
+      "(personas mayores tienden a dormir menos horas pero de forma más fragmentada).",
+      "Valoración de los contextos laborales y de cuidados que impactan en el descanso " +
+      "(trabajo nocturno, cuidados de personas dependientes).",
+      "En municipios con IBSE disponible: cruce con bienestar socioemocional escolar, " +
+      "ya que el sueño insuficiente está asociado con peor rendimiento y bienestar en " +
+      "adolescentes.",
+    ],
+
+    publicHealthApplication: {
+      measures: [
+        "Proporción de adultos que duermen menos horas de las recomendadas por la " +
+        "Sociedad Española del Sueño (P33_R = 1: sueño insuficiente).",
+        "Proporción de adultos que sienten que las horas dormidas no les permiten " +
+        "descansar suficiente (P33A = 0: no descansa).",
+      ],
+      doesNotMeasure: [
+        "Diagnóstico de trastornos del sueño clínicamente definidos (insomnio, apnea, etc.).",
+        "Calidad objetiva del sueño mediante métodos instrumentales (polisomnografía).",
+        "Duración exacta del sueño en horas: solo clasifica si supera o no el umbral SES.",
+      ],
+      contextualUse: [
+        "Indicador de salud pública de los hábitos de sueño poblacionales, útil como " +
+        "aproximación al bienestar cotidiano y a la carga de fatiga en la población.",
+        "P33_R y P33A son dimensiones INDEPENDIENTES: no se suman ni se comparan directamente.",
+        "La referencia epidemiológica (~29 % de discordancia P33R/P33A) es orientativa, " +
+        "no un umbral de alerta: refleja la heterogeneidad natural de los patrones de sueño.",
+      ],
+      commonMisinterpretations: [
+        "Un porcentaje de sueño insuficiente alto no indica necesariamente un problema " +
+        "evitable: puede reflejar patrones culturales, laborales o de cuidados estructurales.",
+        "La discordancia ~29 % entre P33_R y P33A es esperada y coherente con la " +
+        "literatura: NO indica contradicción en las respuestas.",
+        "El missing en P33A puede ser estructural (oleadas EAS sin esta pregunta) y no " +
+        "equivale a rechazo de la respuesta.",
+      ],
+    },
+
+    pslIntegration: {
+      chapter: "Determinantes de Salud",
+      determinants: [
+        "Estilos de vida saludable",
+        "Salud mental y bienestar",
+        "Hábitos de descanso",
+      ],
+      contribution:
+        "El módulo de Sueño EAS contribuye al análisis de los determinantes de salud " +
+        "relacionados con los hábitos cotidianos y el bienestar de la población adulta. " +
+        "Sus resultados son especialmente relevantes en combinación con el componente " +
+        "mental del SF-12 (MCS) y, cuando esté disponible el IBSE, con el bienestar " +
+        "socioemocional escolar, construyendo una imagen integrada del descanso y el " +
+        "bienestar en el municipio.",
+    },
+
+    relatedInstrumentIds: ["sf12-eas", "ibse"],
+  },
 };

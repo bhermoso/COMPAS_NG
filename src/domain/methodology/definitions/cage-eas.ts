@@ -236,4 +236,81 @@ export const CAGE_EAS_MODULE: MethodologicalModule = {
       ],
     },
   },
+
+  institutionalNote: {
+    diagnosticInterpretation:
+      "El CAGE-EAS identifica señales de riesgo de consumo problemático de alcohol " +
+      "en la población adulta mediante el indicador binario CAGE_R. Un porcentaje " +
+      "elevado de CAGE_R positivo (superior al 5–10 % en la muestra) señala una " +
+      "prevalencia de indicadores de riesgo que merece atención en el diagnóstico. " +
+      "El missing estructural (~18 % en la EAS de Granada) corresponde " +
+      "mayoritariamente a personas abstemias que el protocolo EAS no evalúa: " +
+      "no representa rechazo de respuesta sino una limitación metodológica conocida. " +
+      "El CAGE ordinal (1–4) permite observar la distribución del consumo entre " +
+      "quienes sí fueron evaluados: desde el bebedor social (nivel 1) hasta " +
+      "indicadores de dependencia (nivel 4).",
+
+    implications: [
+      "Análisis de la prevalencia de señales de riesgo en el consumo de alcohol " +
+      "como posible área de intervención en el municipio.",
+      "Atención a la infradetección en mujeres: el CAGE fue diseñado originalmente " +
+      "para detectar el patrón de consumo masculino y puede subestimar el consumo " +
+      "problemático femenino.",
+      "Cruce con indicadores de salud mental (SF-12 MCS): el consumo problemático " +
+      "de alcohol correlaciona con peor bienestar emocional en la literatura.",
+      "Consideración de los contextos culturales y sociales del municipio: " +
+      "el consumo de alcohol tiene gradiente sociocultural relevante.",
+      "Valoración de los recursos de atención al consumo de alcohol disponibles " +
+      "en el municipio (centros de salud, programas de desintoxicación).",
+    ],
+
+    publicHealthApplication: {
+      measures: [
+        "Presencia de señales de riesgo de consumo problemático de alcohol " +
+        "(CAGE_R = 1: al menos 2 criterios positivos).",
+        "Distribución de la población evaluada por nivel de consumo (CAGE ordinal 1–4).",
+      ],
+      doesNotMeasure: [
+        "Diagnóstico de trastorno por consumo de alcohol: el CAGE es un cribado, no un instrumento diagnóstico.",
+        "Cantidad ni frecuencia de alcohol consumida.",
+        "Consumo en personas abstemias (el protocolo EAS no les administra el CAGE).",
+        "Impacto real del consumo en la salud individual.",
+      ],
+      contextualUse: [
+        "Cribado poblacional rápido: adecuado para identificar si el consumo problemático " +
+        "puede ser un área de intervención prioritaria en el municipio.",
+        "Para estimar la prevalencia poblacional del consumo problemático, " +
+        "el instrumento AUDIT o AUDIT-C es metodológicamente más apropiado que el CAGE.",
+        "El missing estructural por abstemia no debe imputarse como consumo bajo: " +
+        "son personas a quienes no corresponde aplicar el instrumento.",
+      ],
+      commonMisinterpretations: [
+        "Un CAGE positivo no es un diagnóstico: es una señal de riesgo que requeriría " +
+        "evaluación clínica individualizada.",
+        "El CAGE infradetecta el consumo problemático en mujeres, que pueden presentar " +
+        "patrones distintos a los 4 criterios del instrumento original.",
+        "La variable CAGE ordinal (1–4) es una clasificación de la EAS: " +
+        "no equivale directamente al número de ítems CAGE positivos.",
+        "El ~18 % de missing en CAGE_R no es error de recogida sino abstemia declarada: " +
+        "declararlo en toda comunicación de resultados.",
+      ],
+    },
+
+    pslIntegration: {
+      chapter: "Determinantes de Salud",
+      determinants: [
+        "Conductas de riesgo",
+        "Consumo de sustancias",
+        "Estilos de vida",
+      ],
+      contribution:
+        "El CAGE-EAS aporta un indicador de la prevalencia de señales de riesgo " +
+        "en el consumo de alcohol de la población adulta del municipio. " +
+        "Alimenta el análisis de conductas de riesgo en el capítulo de determinantes " +
+        "del Perfil de Salud Local, complementando indicadores de estilos de vida " +
+        "como la adherencia a la dieta mediterránea (PREDIMED-EAS).",
+    },
+
+    relatedInstrumentIds: ["predimed-eas", "sf12-eas"],
+  },
 };
