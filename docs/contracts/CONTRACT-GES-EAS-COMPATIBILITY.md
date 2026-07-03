@@ -5,7 +5,8 @@
 > Aplica a toda la evolución futura del catálogo de instrumentos de COMPÁS NG
 > y al Gestor de Encuestas de Salud (GES).  
 > No debe modificarse sin revisión explícita y deliberada.  
-> Fecha de emisión: 2026-07-02
+> Fecha de emisión: 2026-07-02  
+> Última revisión: 2026-07-03 — actualización §4.1, §5.3, §5.4, §6 tras auditoría metodológica del bloque sociodemográfico
 
 ---
 
@@ -83,8 +84,8 @@ Ninguna variable puede pasar a `verified` sin evidencia documental del codebook.
 | Sueño EAS | P33_R, P33A | `pending-verification` |
 | CAGE-EAS (consumo alcohol) | CAGE_R, CAGE | `pending-verification` |
 | `sexo` (bloque identificación) | SEX_01 | `pending-verification` |
-| `nivel_educativo` (bloque identificación) | ME_01 | `pending-verification` |
-| `situacion_laboral` (bloque identificación) | SIT_LAB (o equivalente EAS VI) | `pending-verification` |
+| `nivel_educativo` (bloque identificación) | **P60_2016** (VI EAS) | `pending-verification` |
+| `situacion_laboral` (bloque identificación) | **P61** (VI EAS) | `pending-verification` |
 
 ### 4.2 Instrumentos sin equivalente EAS (definición libre)
 
@@ -120,6 +121,86 @@ propia de COMPÁS NG para cumplimiento ético en encuestas contemporáneas.
 Los parsers y el SAM tratarán los códigos 3 y 4 como no estratificables
 demográficamente. Este comportamiento es metodológicamente correcto, no una
 limitación.
+
+### 5.3 `nivel_educativo` — agregación de 13 a 6 categorías respecto a P60_2016
+
+La EAS VI (P60_2016) tiene **13 categorías** de nivel educativo. El GES implementa
+**6 categorías** agrupadas para encuesta comunitaria de administración individual.
+
+#### Tabla de equivalencia P60_2016 → GES
+
+| GES | Etiqueta GES | P60_2016 incluidos | Estudios_MAX |
+|---|---|---|---|
+| 1 | Sin estudios o estudios primarios incompletos | 1 (no sabe leer), 2 (alfabetizado sin estudios) | 1 |
+| 2 | Estudios primarios completos | 3 | 1 |
+| 3 | Educación secundaria 1ª etapa | 4 (EGB 8ª), 5 (ESO) | 2 |
+| 4 | Educación secundaria 2ª etapa (incl. FP medio) | 6 (FP I grado medio), 8 (BUP/Bach) | 2 |
+| 5 | Formación Profesional de grado superior | 7 (FP II grado superior) | 2 |
+| 6 | Educación postsecundaria no superior, universitaria o de postgrado | 9, 10, 11, 12, 13 | 3 |
+
+#### Decisiones documentadas
+
+**GES-6 incluye P60=9** (Educación postsecundaria no superior, n=453 en EAS Granada).
+Esta categoría no es universitaria en sentido estricto, pero la EAS la agrupa en
+`Estudios_MAX=3`. El GES sigue la misma armonización para preservar la comparabilidad
+con la variable agregada EAS. La etiqueta GES-6 lo declara explícitamente:
+*"postsecundaria no superior, universitaria o de postgrado"*.
+
+**GES-1 fusiona P60=1 y P60=2** (analfabetismo y alfabetizado sin estudios).
+Esta fusión sigue el estándar habitual en encuestas comunitarias y es coherente con
+Estudios_MAX=1. El analfabetismo (P60=1, n≈70 en Granada) no tiene código propio en GES.
+
+**La comparación con EAS se realiza a través de Estudios_MAX** (3 niveles), no
+directamente desde P60_2016 (13 niveles). La tabla anterior define la correspondencia
+necesaria para esa comparación.
+
+**Riesgo residual:** La correspondencia GES → Estudios_MAX no es perfectamente
+determinista en la EAS (el cruce P60_2016 × Estudios_MAX muestra cruces residuales).
+El estado `pending-verification` debe mantenerse hasta disponer de la documentación
+oficial del algoritmo de cálculo de Estudios_MAX.
+
+---
+
+### 5.4 `situacion_laboral` — adaptación de 8 a 7 categorías respecto a P61
+
+La EAS VI (P61) tiene **8 categorías** de situación laboral. El GES implementa
+**7 categorías**, añadiendo incapacidad/invalidez permanente como categoría explícita.
+
+#### Tabla de equivalencia P61 → GES
+
+| GES | Etiqueta GES | P61 EAS VI | Tipo de correspondencia |
+|---|---|---|---|
+| 1 | Trabaja (por cuenta propia o ajena) | 1 (Trabaja) | 1:1 |
+| 2 | Jubilado/a o pensionista | 4 (Jubilado/a) + P62 | Fusión (ver nota) |
+| 3 | Parado/a o en busca de empleo | 2 (paro con exp.) + 3 (primer empleo) | Fusión (ver nota) |
+| 4 | Labores del hogar (exclusivamente) | 5 (Trabajo doméstico no remunerado) | 1:1 |
+| 5 | Estudiante | 6 (Estudiante) | 1:1 |
+| 6 | Incapacidad o invalidez permanente | 7 (Incapacidad/invalidez permanente) | 1:1 |
+| 7 | Otra situación | 8 (Otros) | 1:1 |
+
+#### Decisiones documentadas
+
+**GES-6 (Incapacidad/invalidez permanente) es categoría nueva** respecto al borrador
+anterior. Se añade explícitamente porque P61=7 representa n=659 en la muestra EAS de
+Granada (2,3 % de la muestra total) y es un colectivo de alta relevancia diagnóstica
+en salud pública. Sin esta categoría, estas personas caerían en "Otra situación" con
+pérdida de información.
+
+**GES-2 fusiona jubilados (P61=4) y pensionistas (P62 EAS)**. La EAS VI distingue a
+jubilados de actividad laboral (P61=4) de los pensionistas que no trabajaron (captados
+en P62). El GES los agrupa en un único código. Esta fusión limita la comparabilidad
+para ese subgrupo específico pero simplifica la administración.
+
+**GES-3 fusiona parados con experiencia (P61=2) y buscadores de primer empleo (P61=3)**.
+Esta fusión es habitual en encuestas de salud comunitaria. La distinción entre desempleo
+con y sin experiencia laboral previa tiene relevancia para análisis de mercado de trabajo
+pero no para el diagnóstico de salud prioritario del GES.
+
+**Riesgo residual:** La fusión GES-2 impide distinguir jubilación de invalidez, dado
+que ambas pueden tener P62=Sí en la EAS. El estado `pending-verification` debe
+mantenerse hasta certificar la correspondencia completa.
+
+---
 
 ### 5.2 `anio_nacimiento` vs `ED_01`
 
@@ -161,8 +242,8 @@ proporcionar las variables necesarias para:
 | `municipio_cod` | Sin equivalente | — | No |
 | `sexo` | `SEX_01` | `pending-verification` | Sí |
 | `anio_nacimiento` | `ED_01` (adaptación §5.2) | `pending-verification` | Sí |
-| `nivel_educativo` | `ME_01` | `pending-verification` | Sí |
-| `situacion_laboral` | SIT_LAB (o equivalente) | `pending-verification` | Sí |
+| `nivel_educativo` | `P60_2016` (ver §5.3) | `pending-verification` | Sí |
+| `situacion_laboral` | `P61` (ver §5.4) | `pending-verification` | Sí |
 
 ---
 

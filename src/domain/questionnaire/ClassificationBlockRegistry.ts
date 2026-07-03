@@ -16,11 +16,14 @@ export interface ClassificationBlockDefinition {
 const CLASSIFICATION_BLOCKS: ClassificationBlockDefinition[] = [
   {
     id: "eas-sociodemographic",
-    name: "Variables sociodemográficas EAS",
+    name: "Bloque de Identificación y Clasificación",
     description:
-      "Bloque previsto para variables de clasificación sociodemográfica procedentes de la Encuesta Andaluza de Salud.",
-    status: "planned",
-    source: "VI Encuesta Andaluza de Salud",
+      "Variables de clasificación sociodemográfica del Gestor de Encuestas de Salud. " +
+      "Incluye: fecha_encuesta, municipio_cod, sexo, anio_nacimiento, nivel_educativo, situacion_laboral. " +
+      "Compatibilidad EAS: sexo → SEX_01, nivel_educativo → ME_01, situacion_laboral → SIT_LAB (pending-verification). " +
+      "Ver CONTRACT-GES-EAS-COMPATIBILITY.",
+    status: "draft",
+    source: "VI Encuesta Andaluza de Salud / COMPÁS NG",
   },
   {
     id: "eas-household",
