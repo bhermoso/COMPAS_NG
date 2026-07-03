@@ -2,8 +2,35 @@
 
 Este directorio contiene los datos de referencia utilizados por la batería de
 tests de regresión. **Ningún fichero CSV de este directorio debe editarse a mano.**
-Todo fixture debe poder reconstruirse exactamente desde los microdatos oficiales
-EAS usando los scripts de `scripts/`.
+
+Los fixtures se clasifican en tres categorías según su origen:
+
+| Categoría | Descripción |
+|---|---|
+| `provincial-eas-granada` | Reproducible desde microdatos EAS (Encuesta Andaluza de Salud), filtro `PROV=18`. Representa la muestra provincial de Granada. No representa ningún municipio concreto. |
+| `municipal-demo` | Datos reales de un municipio o de un programa de monitorización municipal. No sustituyen al informe de salud ni se generalizan a otros municipios. |
+| `synthetic-validation` | Datos generados sintéticamente para validar el parser, los cálculos, el panel y el flujo. **No representan Granada, ni Andalucía, ni ningún municipio real. No deben interpretarse epidemiológicamente.** |
+
+---
+
+## Índice de clasificación
+
+| Fichero | Categoría | n |
+|---|---|---|
+| `predimed-eas-granada.csv` | `provincial-eas-granada` | 3.064 |
+| `sf12-eas-granada.csv` | `provincial-eas-granada` | 3.064 |
+| `duke-eas-granada.csv` | `provincial-eas-granada` | 3.028 (pre-filtrado) |
+| `sueno-eas-granada.csv` | `provincial-eas-granada` | 3.064 |
+| `cage-eas-granada.csv` | `provincial-eas-granada` | 3.064 |
+| `ipaq-eas-granada.csv` | `provincial-eas-granada` | 3.064 |
+| `ibse-atarfe.csv` | `municipal-demo` | 909 (REDCap Atarfe 2026) |
+| `ibse-granada-provincia.csv` | `municipal-demo` | 891 (monitor IBSE provincial) |
+| `auditc-municipal.csv` | `synthetic-validation` | 95 |
+| `ghq12-municipal.csv` | `synthetic-validation` | 100 |
+| `phq9-municipal.csv` | `synthetic-validation` | 80 |
+| `psqi-municipal.csv` | `synthetic-validation` | 60 |
+| `fagerstrom-municipal.csv` | `synthetic-validation` | 50 |
+| `sbq-municipal.csv` | `synthetic-validation` | 70 |
 
 ---
 
@@ -386,12 +413,332 @@ reemplaza con la exportación REDCap correspondiente.
 
 ---
 
+## `ibse-granada-provincia.csv`
+
+**Categoría:** `municipal-demo`
+
+### Origen
+
+Fixture generado a partir del monitor IBSE provincial de COMPÁS histórico.
+Contiene registros de participantes escolares de municipios de la provincia de Granada
+que completaron el cuestionario IBSE via REDCap en diferentes ciclos del monitor
+provincial. **No procede de microdatos EAS.** El IBSE no forma parte de la
+Encuesta Andaluza de Salud.
+
+Fuente de referencia: exportación acumulada del monitor IBSE provincial
+(`_COMPAS_REPO_DEPURADO_20260409`). La regeneración requiere acceso al proyecto
+REDCap del monitor provincial y no tiene script automatizado.
+
+### Estadísticos de referencia (Granada provincial, n=891)
+
+| Indicador | Valor |
+|---|---|
+| Registros exportados | 891 |
+| Registros completos (`monitor_ibse_complete=2`) | 814 (91,4 %) |
+| Media IBSE total | 76,2 / 100 |
+| Media Factor Vínculo | 64,6 / 100 |
+| Media Factor Situación | 84,4 / 100 |
+| Media Factor Control | 77,7 / 100 |
+| Media Factor Persona | 78,3 / 100 |
+
+### Uso en tests
+
+Sirve como referencia de contraste provincial para el parser IBSE. Los valores
+(especialmente `meanTotal=76.2`) son la fuente de los valores de referencia
+históricos usados en `IBSE_MODULE.interpretation.referenceValues`.
+
+### Limitaciones
+
+- Representa el monitor IBSE provincial de COMPÁS histórico, no una muestra
+  aleatoria ni representativa de la población escolar de Granada.
+- La composición por oleada, municipio y curso varía entre ciclos.
+- No es comparable directamente con los datos IBSE de un municipio específico
+  sin conocer la composición de cada muestra.
+
+---
+
+## `ipaq-eas-granada.csv`
+
+**Categoría:** `provincial-eas-granada`
+
+### Origen
+
+Fixture **reproducible** generado a partir de los microdatos oficiales de la EAS,
+provincia de Granada (`PROV = 18.0`), usando `EAS_COMPLETO.csv` como fuente.
+`EAS_microdatos_adulto_READY.csv` no contiene `IPAQ_DICO`: este campo derivado
+solo existe en `EAS_COMPLETO`.
+
+Script de referencia para regenerarlo:
+
+```
+scripts/export-ipaq-granada.mjs
+```
+
+### Qué mide este fixture y qué no mide
+
+Este fixture contiene dos indicadores de actividad física derivados por la EAS a
+partir de los ítems IPAQ administrados en la encuesta. **No contiene los ítems
+brutos IPAQ ni el cálculo en MET-minutos/semana.** Solo los indicadores dicotómicos
+derivados oficiales de la EAS.
+
+- `IPAQ_DICO` = clasificación de alta actividad física (1 = alta actividad: cumple
+  criterios de ≥600 MET-min/sem o equivalente). Campo derivado EAS.
+- `P34A_R` = inactividad física en tiempo libre (1 = no realiza actividad física
+  en su tiempo libre). Campo derivado EAS.
+
+### Estadísticos de referencia (Granada, n=3064)
+
+| Indicador | Valor |
+|---|---|
+| Registros exportados | 3.064 |
+| `IPAQ_DICO` válidos | 1.603 (52,3 %) |
+| `IPAQ_DICO` missing | 1.461 (47,7 %) — estructural (módulo no aplicado en todas las oleadas) |
+| Alta actividad (`IPAQ_DICO=1`) | 251 (15,7 % de válidos) |
+| No alta actividad (`IPAQ_DICO=0`) | 1.352 (84,3 % de válidos) |
+| `P34A_R` válidos | 3.058 (99,8 %) |
+| Inactividad en ocio (`P34A_R=1`) | 1.047 (34,2 % de válidos) |
+| Activos en ocio (`P34A_R=0`) | 2.011 (65,8 % de válidos) |
+
+### Estructura de columnas
+
+| Columna | Tipo | Cobertura | Descripción |
+|---|---|---|---|
+| `IPAQ_DICO` | **Campo canónico primario** | ~52 % | Alta actividad física (0=No / 1=Sí). Derivado IPAQ de la EAS. Missing estructural elevado por diseño muestral. |
+| `P34A_R` | **Campo canónico secundario** | ~100 % | Inactividad en tiempo libre (0=activo / 1=inactivo). Presente en todas las oleadas. |
+
+### Missing estructural en `IPAQ_DICO`
+
+El 47,7 % de missing en `IPAQ_DICO` es **estructural**: el módulo IPAQ completo
+no se administró en todas las oleadas de la EAS. Los registros de oleadas sin
+módulo IPAQ tienen `IPAQ_DICO` en blanco (no es ausencia de respuesta individual).
+`P34A_R` sí tiene cobertura universal porque corresponde a una pregunta general
+sobre actividad en el tiempo libre presente en todas las oleadas.
+
+### Comparabilidad con datos municipales propios
+
+`IPAQ_DICO` y `P34A_R` reflejan la **muestra EAS provincial de Granada** (n=3.064).
+No representan el estado de ningún municipio concreto. Su uso es como referencia
+contextual provincial para comparar con datos municipales propios.
+
+---
+
+## `auditc-municipal.csv`
+
+**Categoría:** `synthetic-validation`
+
+> **Advertencia metodológica:** este fixture es sintético. No representa datos
+> reales de ningún municipio, ni de Granada, ni de Andalucía. Su único uso
+> es la validación funcional del parser, los cálculos y el panel de AUDIT-C.
+> No debe interpretarse epidemiológicamente bajo ninguna circunstancia.
+
+### Origen
+
+Fixture generado sintéticamente para la batería de tests de AUDIT-C.
+Contiene 95 filas con valores de los 3 ítems del AUDIT-C (Q1, Q2, Q3) diseñados
+para cubrir el rango completo de scores (0–12), distintos niveles de riesgo y
+casos de datos incompletos o inválidos en las últimas filas.
+
+**No hay script de regeneración** — los valores exactos están fijados en el
+fixture para garantizar la reproducibilidad de los tests.
+
+### Estructura
+
+| Columna | Rango válido | Descripción |
+|---|---|---|
+| `auditc_q1` | 0–4 | Frecuencia de consumo |
+| `auditc_q2` | 0–4 | Cantidad habitual por ocasión |
+| `auditc_q3` | 0–4 | Frecuencia de consumo episódico intensivo |
+
+### Estadísticos del fixture (solo para trazabilidad de tests)
+
+| Indicador | Valor |
+|---|---|
+| Registros totales | 95 |
+| Registros válidos (3 ítems en rango 0–4) | 85 |
+| Registros excluidos (incompletos / inválidos) | 10 |
+| Score ≥ 4 (positivos AUDIT-C) | 18 (21,2 % de válidos) |
+| Score medio | 1,98 / 12 |
+| Sin consumo (score 0) | 28 |
+| Bajo riesgo (score 1–3) | 39 |
+| Riesgo (score 4–7) | 15 |
+| Alto riesgo (score ≥ 8) | 3 |
+
+---
+
+## `ghq12-municipal.csv`
+
+**Categoría:** `synthetic-validation`
+
+> **Advertencia metodológica:** fixture sintético para validación funcional del
+> parser GHQ-12. No representa datos reales de ningún municipio, ni de Granada,
+> ni de Andalucía. No debe interpretarse epidemiológicamente.
+
+### Origen
+
+Fixture sintético de 100 filas generado para validar el parser GHQ-12.
+Cubre el rango completo de respuestas Likert (0–3 por ítem), distintos niveles
+de malestar psicológico y 5 filas con datos incompletos o inválidos al final.
+
+### Estructura
+
+| Columnas | Rango válido | Descripción |
+|---|---|---|
+| `ghq12_q1`–`ghq12_q12` | 0–3 | 12 ítems Likert del GHQ-12 |
+
+### Estadísticos del fixture (trazabilidad de tests)
+
+| Indicador | Valor |
+|---|---|
+| Registros totales | 100 |
+| Registros válidos | 95 |
+| Probable malestar psicológico (score bimodal ≥ 3) | 25 (26,3 % de válidos) |
+
+---
+
+## `phq9-municipal.csv`
+
+**Categoría:** `synthetic-validation`
+
+> **Advertencia metodológica:** fixture sintético para validación funcional del
+> parser PHQ-9. No representa datos reales de ningún municipio. No debe
+> interpretarse epidemiológicamente.
+
+### Origen
+
+Fixture sintético de 80 filas generado para validar el parser PHQ-9.
+Cubre el rango completo de respuestas (0–3 por ítem), distintos niveles de
+severidad depresiva y 3 filas con datos inválidos al final.
+
+### Estructura
+
+| Columnas | Rango válido | Descripción |
+|---|---|---|
+| `phq9_q1`–`phq9_q9` | 0–3 | 9 ítems del PHQ-9 |
+
+### Estadísticos del fixture (trazabilidad de tests)
+
+| Indicador | Valor |
+|---|---|
+| Registros totales | 80 |
+| Registros válidos | 77 |
+| Depresión moderada o más (score ≥ 10) | 10 (13,0 % de válidos) |
+| Score medio | 8,65 / 27 |
+
+---
+
+## `psqi-municipal.csv`
+
+**Categoría:** `synthetic-validation`
+
+> **Advertencia metodológica:** fixture sintético para validación funcional del
+> parser PSQI. No representa datos reales de ningún municipio. No debe
+> interpretarse epidemiológicamente.
+
+### Origen
+
+Fixture sintético de 60 filas generado para validar el parser PSQI.
+Cubre el rango completo de puntuaciones de componente (0–3 por componente),
+distintos perfiles de calidad del sueño y 2 filas incompletas al final.
+
+### Estructura
+
+| Columnas | Rango válido | Descripción |
+|---|---|---|
+| `psqi_c1`–`psqi_c7` | 0–3 | 7 puntuaciones de componente del PSQI |
+
+### Estadísticos del fixture (trazabilidad de tests)
+
+| Indicador | Valor |
+|---|---|
+| Registros totales | 60 |
+| Registros válidos | 58 |
+| Mal dormidor (score global > 5) | 18 (31,0 % de válidos) |
+| Score medio | 6,26 / 21 |
+
+---
+
+## `fagerstrom-municipal.csv`
+
+**Categoría:** `synthetic-validation`
+
+> **Advertencia metodológica:** fixture sintético para validación funcional del
+> parser Fagerström (FTND). No representa datos reales de ningún municipio.
+> No debe interpretarse epidemiológicamente.
+
+### Origen
+
+Fixture sintético de 50 filas generado para validar el parser Fagerström.
+Contiene registros con los 6 ítems del FTND en sus respectivos rangos válidos
+y 2 filas con datos inválidos al final. El fixture asume una muestra de fumadores
+activos (contexto esperado del instrumento).
+
+### Estructura
+
+| Columna | Rango válido | Descripción |
+|---|---|---|
+| `ftnd_q1` | 0–4 | ¿Cuándo fuma el primer cigarrillo? |
+| `ftnd_q2` | 0–1 | ¿Le resulta difícil no fumar en lugares prohibidos? |
+| `ftnd_q3` | 0–1 | ¿A qué cigarrillo le costaría más renunciar? |
+| `ftnd_q4` | 0–1 | ¿Cuántos cigarrillos fuma al día? (dicotomizado) |
+| `ftnd_q5` | 0–1 | ¿Fuma más durante las primeras horas? |
+| `ftnd_q6` | 0–3 | ¿Fuma aunque esté enfermo? |
+
+### Estadísticos del fixture (trazabilidad de tests)
+
+| Indicador | Valor |
+|---|---|
+| Registros totales | 50 |
+| Registros válidos | 48 |
+| Dependencia moderada o más (score ≥ 5) | 15 (31,3 % de válidos) |
+| Score medio | 4,31 / 10 |
+
+---
+
+## `sbq-municipal.csv`
+
+**Categoría:** `synthetic-validation`
+
+> **Advertencia metodológica:** fixture sintético para validación funcional del
+> parser SBQ. No representa datos reales de ningún municipio, ni de Granada,
+> ni de Andalucía. No debe interpretarse epidemiológicamente.
+
+### Origen
+
+Fixture sintético de 70 filas generado para validar el parser del Sedentary
+Behavior Questionnaire (SBQ, Rosenberg et al., 2010). Cubre el rango completo
+de respuestas ordinales (0–4 por ítem, que se convierten a horas/día mediante
+midpoints) y 2 filas incompletas al final.
+
+### Estructura
+
+| Columnas | Rango válido | Descripción |
+|---|---|---|
+| `sbq_q1`–`sbq_q9` | 0–4 | 9 ítems sobre tiempo en actividades sedentarias distintas (0=nada, 1=<1h, 2=1–2h, 3=2–4h, 4=>4h) |
+
+La conversión ordinal→horas usa midpoints: 0→0h, 1→0,5h, 2→1,5h, 3→3h, 4→5h.
+El score total es la suma de las 9 conversiones (horas sedentarias estimadas / día).
+
+### Estadísticos del fixture (trazabilidad de tests)
+
+| Indicador | Valor |
+|---|---|
+| Registros totales | 70 |
+| Registros válidos | 68 |
+| Altamente sedentario (score > 8 h/día) | 20 (29,4 % de válidos) |
+| Score medio | 9,9 h/día |
+
+---
+
 ## Principio general
 
 Si se añade un fixture nuevo:
 
-1. Documenta aquí su origen, columnas relevantes y script de regeneración.
-2. No lo edites a mano: los tests de regresión deben poder reproducirse desde
-   los microdatos fuente.
-3. Si el fixture no tiene script de regeneración todavía, indica el origen
-   explícitamente en esta sección hasta que el script esté disponible.
+1. Clasifícalo en una de las tres categorías: `provincial-eas-granada`,
+   `municipal-demo` o `synthetic-validation`.
+2. Documéntalo en este README con origen, estructura, estadísticos y limitaciones.
+3. Los fixtures `provincial-eas-granada` deben poder regenerarse desde los
+   microdatos EAS usando un script en `scripts/`.
+4. Los fixtures `synthetic-validation` no deben editarse a mano una vez
+   establecidos: los tests de regresión dependen de sus valores exactos.
+5. Los fixtures `municipal-demo` requieren acceso al sistema de captura original
+   (REDCap u otro) para regenerarse; deben documentar la fuente explícitamente.
