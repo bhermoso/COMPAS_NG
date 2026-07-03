@@ -7,3 +7,4 @@ export type {
 } from "./QuestionnaireBuilder";
 
 export { generateRedcapDictionaryArtifact } from "./GenerateRedcapDictionaryArtifact";
+export { generateMethodologicalSpecArtifact } from "./GenerateMethodologicalSpecArtifact";

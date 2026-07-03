@@ -1,6 +1,7 @@
 export type QuestionnaireArtifactKind =
   | "questionnaire-json"
   | "redcap-data-dictionary-csv"
+  | "methodological-spec"
   | "technical-documentation"
   | "codebook"
   | "html-form";
