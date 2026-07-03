@@ -1301,6 +1301,11 @@ export default function App() {
     try {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseGHQ12CSV(text);
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      if (aggregates.nValid === 0) {
+        setGhq12Message(`CSV GHQ-12 procesado sin registros con los 12 ítems completos.${warn}`);
+        return;
+      }
       const documentId = crypto.randomUUID();
       const study = createGHQ12Study({
         municipalityId: workspace.municipality.identity.id,
@@ -1354,11 +1359,8 @@ export default function App() {
           updatedAt: now,
         };
       });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setGhq12Message(
-        aggregates.nValid > 0
-          ? `GHQ-12 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Probable malestar (≥3): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${ghq12Atoms.length} evidencias incorporadas.${warn}`
-          : `CSV GHQ-12 procesado sin registros con los 12 ítems completos.${warn}`
+        `GHQ-12 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Probable malestar (≥3): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${ghq12Atoms.length} evidencias incorporadas.${warn}`
       );
     } catch {
       setGhq12Message("Error al procesar el CSV. Verifica que incluya las columnas ghq12_q1 a ghq12_q12.");
@@ -1372,6 +1374,11 @@ export default function App() {
     try {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parsePHQ9CSV(text);
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      if (aggregates.nValid === 0) {
+        setPhq9Message(`CSV PHQ-9 procesado sin registros con los 9 ítems completos.${warn}`);
+        return;
+      }
       const documentId = crypto.randomUUID();
       const study = createPHQ9Study({
         municipalityId: workspace.municipality.identity.id,
@@ -1405,11 +1412,8 @@ export default function App() {
         }
         return { ...prev, repository: nextRepository, phq9Study: study, evidenceStore: nextStore, updatedAt: now };
       });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setPhq9Message(
-        aggregates.nValid > 0
-          ? `PHQ-9 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Síntomas mod.+ (≥10): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${phq9Atoms.length} evidencias incorporadas.${warn}`
-          : `CSV PHQ-9 procesado sin registros con los 9 ítems completos.${warn}`
+        `PHQ-9 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Síntomas mod.+ (≥10): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${phq9Atoms.length} evidencias incorporadas.${warn}`
       );
     } catch {
       setPhq9Message("Error al procesar el CSV. Verifica que incluya las columnas phq9_q1 a phq9_q9.");
@@ -1423,6 +1427,11 @@ export default function App() {
     try {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parsePSQICSV(text);
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      if (aggregates.nValid === 0) {
+        setPsqiMessage(`CSV PSQI procesado sin registros con los 7 componentes completos.${warn}`);
+        return;
+      }
       const documentId = crypto.randomUUID();
       const study = createPSQIStudy({
         municipalityId: workspace.municipality.identity.id,
@@ -1456,11 +1465,8 @@ export default function App() {
         }
         return { ...prev, repository: nextRepository, psqiStudy: study, evidenceStore: nextStore, updatedAt: now };
       });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setPsqiMessage(
-        aggregates.nValid > 0
-          ? `PSQI cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Mal dormidor (>5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${psqiAtoms.length} evidencias incorporadas.${warn}`
-          : `CSV PSQI procesado sin registros con los 7 componentes completos.${warn}`
+        `PSQI cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Mal dormidor (&gt;5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${psqiAtoms.length} evidencias incorporadas.${warn}`
       );
     } catch {
       setPsqiMessage("Error al procesar el CSV. Verifica que incluya las columnas psqi_c1 a psqi_c7.");
@@ -1474,6 +1480,11 @@ export default function App() {
     try {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseFagerstromCSV(text);
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      if (aggregates.nValid === 0) {
+        setFagerstromMessage(`CSV Fagerström procesado sin registros con los 6 ítems completos.${warn}`);
+        return;
+      }
       const documentId = crypto.randomUUID();
       const study = createFagerstromStudy({
         municipalityId: workspace.municipality.identity.id,
@@ -1507,11 +1518,8 @@ export default function App() {
         }
         return { ...prev, repository: nextRepository, fagerstromStudy: study, evidenceStore: nextStore, updatedAt: now };
       });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setFagerstromMessage(
-        aggregates.nValid > 0
-          ? `Fagerström cargado: ${aggregates.nValid} fumadores activos de ${aggregates.n}. Dep. mod.+ (≥5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${fagerstromAtoms.length} evidencias incorporadas.${warn}`
-          : `CSV Fagerström procesado sin registros con los 6 ítems completos.${warn}`
+        `Fagerström cargado: ${aggregates.nValid} fumadores activos de ${aggregates.n}. Dep. mod.+ (≥5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${fagerstromAtoms.length} evidencias incorporadas.${warn}`
       );
     } catch {
       setFagerstromMessage("Error al procesar el CSV. Verifica que incluya las columnas ftnd_q1 a ftnd_q6.");
@@ -1525,6 +1533,11 @@ export default function App() {
     try {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseSBQCSV(text);
+      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
+      if (aggregates.nValid === 0) {
+        setSbqMessage(`CSV SBQ procesado sin registros con los 9 ítems completos.${warn}`);
+        return;
+      }
       const documentId = crypto.randomUUID();
       const study = createSBQStudy({
         municipalityId: workspace.municipality.identity.id,
@@ -1558,11 +1571,8 @@ export default function App() {
         }
         return { ...prev, repository: nextRepository, sbqStudy: study, evidenceStore: nextStore, updatedAt: now };
       });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
       setSbqMessage(
-        aggregates.nValid > 0
-          ? `SBQ cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Alt. sedentario (>8h): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). Media: ${aggregates.meanHours.toFixed(2)} h/día. ${sbqAtoms.length} evidencias incorporadas.${warn}`
-          : `CSV SBQ procesado sin registros con los 9 ítems completos.${warn}`
+        `SBQ cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Alt. sedentario (&gt;8h): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). Media: ${aggregates.meanHours.toFixed(2)} h/día. ${sbqAtoms.length} evidencias incorporadas.${warn}`
       );
     } catch {
       setSbqMessage("Error al procesar el CSV. Verifica que incluya las columnas sbq_q1 a sbq_q9.");
@@ -2503,7 +2513,7 @@ export default function App() {
                         <span className="diag-status__label">Estudios complementarios</span>
                         <span className="diag-status__value">
                           {studiesLoaded > 0
-                            ? `${studiesLoaded} de 7 · ${ibseAtoms + studyAtoms} evidencias`
+                            ? `${studiesLoaded} de 13 · ${ibseAtoms + studyAtoms} evidencias`
                             : "Ninguno incorporado"}
                         </span>
                       </li>
