@@ -721,11 +721,11 @@ export default function App() {
         `Informe de Salud cargado: ${hrAtoms.length} sección(es) incorporada(s) al análisis territorial.`
       );
     } catch (err) {
-      console.error("[PDF-load-error]", err);
+      console.error("[health-report-load-error]", err);
       setLastHealthReportMessage(
         isPdf
           ? "Error al procesar el PDF. Verifica que sea un PDF válido y no esté protegido."
-          : "Error al cargar el informe. Comprueba que el fichero sea un .docx válido."
+          : "Error al cargar el informe. Si el documento procede de LibreOffice/OpenDocument, verifica que se haya exportado correctamente a .docx. Los ficheros muy grandes o con muchas imágenes pueden requerir más tiempo."
       );
     } finally {
       setIsLoadingHealthReport(false);

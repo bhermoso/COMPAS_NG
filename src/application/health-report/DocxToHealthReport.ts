@@ -17,22 +17,50 @@ export interface CreateHealthReportDocumentInput {
   authors?: HealthReportAuthor[];
 }
 
+// DOCX files converted from ODT (LibreOffice) can produce HTML with hundreds
+// of base64-encoded chart images, resulting in multi-MB strings that cause
+// browser memory pressure. Stripping data: URIs reduces the HTML from ~6 MB
+// to ~200 KB while preserving tables, headings and all text structure.
+// The HTML size limit (1 MB after stripping) is a secondary safety net.
+const HTML_SIZE_LIMIT_BYTES = 1 * 1024 * 1024;
+
+function stripDataUris(html: string): string {
+  return html.replace(/\s+src="data:[^"]+"/g, ' src=""');
+}
+
 export async function createHealthReportDocumentFromDocx(
   input: CreateHealthReportDocumentInput
 ): Promise<HealthReportDocument> {
-  const [textResult, htmlResult] = await Promise.all([
-    extractRawText({ arrayBuffer: input.arrayBuffer }),
-    convertToHtml({ arrayBuffer: input.arrayBuffer }),
-  ]);
-
+  // Text extraction always runs first. It is the authoritative content path
+  // and must succeed for the load to proceed.
+  const textResult = await extractRawText({ arrayBuffer: input.arrayBuffer });
   const originalText = textResult.value;
-  const originalHtml = htmlResult.value;
-  const tableCount = (originalHtml.match(/<table/g) ?? []).length;
+
+  // HTML conversion is best-effort. DOCX files converted from ODT or containing
+  // many embedded charts can produce very large HTML output. Failures here are
+  // recoverable: the document is still stored and its text is usable.
+  let originalHtml: string | undefined;
+  try {
+    const htmlResult = await convertToHtml({ arrayBuffer: input.arrayBuffer });
+    const stripped = stripDataUris(htmlResult.value);
+    if (stripped.length <= HTML_SIZE_LIMIT_BYTES) {
+      originalHtml = stripped;
+    }
+    // If still too large after stripping, fall through to text-only mode.
+  } catch {
+    // HTML conversion failed (unrecognized OOXML structure, memory pressure, etc.).
+    // Continue in text-only mode: the document is preserved as a literal source.
+  }
+
+  const format: HealthReportBody["format"] = originalHtml !== undefined ? "html" : "plain";
+  const tableCount = originalHtml !== undefined
+    ? (originalHtml.match(/<table/g) ?? []).length
+    : undefined;
 
   const body: HealthReportBody = {
     originalText,
     originalHtml,
-    format: "html",
+    format,
     charCount: originalText.length,
     tableCount,
     isAuthoritative: true,
