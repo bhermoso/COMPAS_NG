@@ -31,9 +31,8 @@ export const SBQ_MODULE: MethodologicalModule = {
       "Factor de conversión de puntuación ordinal a horas: 0→0h, 1→0.5h, 2→1.5h, 3→3h, 4→5h. " +
       "Punto de corte >8h/día: Rosenberg DE et al. (2010) Prev Chronic Dis.",
   },
-  items: Array.from({ length: 9 }, (_, i) => ({
-    id: `sbq_q${i + 1}`,
-    text: [
+  items: Array.from({ length: 9 }, (_, i) => {
+    const itemText = [
       "¿Cuántas horas al día suele dedicar a ver la televisión?",
       "¿Cuántas horas al día suele dedicar al ordenador (fuera del trabajo)?",
       "¿Cuántas horas al día suele dedicar a videojuegos?",
@@ -43,12 +42,15 @@ export const SBQ_MODULE: MethodologicalModule = {
       "¿Cuántas horas al día pasa sentado en el trabajo o estudiando?",
       "¿Cuántas horas al día pasa sentado o tumbado sin hacer nada?",
       "¿Cuántas horas al día pasa en otras actividades sedentarias no incluidas antes?",
-    ][i],
+    ][i];
+    return {
+    id: `sbq_q${i + 1}`,
+    text: itemText,
     redcapFormField: {
       fieldName: `sbq_q${i + 1}`,
       formName: "monitor_sbq",
       fieldType: "radio",
-      fieldLabel: `SBQ ítem ${i + 1}`,
+      fieldLabel: itemText,
       choicesOrCalculations: "0, Nada | 1, Menos de 1 hora | 2, 1-2 horas | 3, 2-4 horas | 4, Más de 4 horas",
       required: true,
       questionNumber: `${i + 1}`,
@@ -62,7 +64,7 @@ export const SBQ_MODULE: MethodologicalModule = {
       { value: 3, label: "2–4 horas" },
       { value: 4, label: "Más de 4 horas" },
     ],
-  })),
+  }; }),
   dimensions: [
     {
       id: "sedentarismo",

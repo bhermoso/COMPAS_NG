@@ -30,9 +30,8 @@ export const PSQI_MODULE: MethodologicalModule = {
     notes: "Validación española: Royuela Rico A, Macías Fernández JA. Propiedades clinimétricas " +
       "de la versión castellana del Cuestionario de Pittsburgh. Vigilia-Sueño 1997;9(2):81-94.",
   },
-  items: Array.from({ length: 7 }, (_, i) => ({
-    id: `psqi_c${i + 1}`,
-    text: [
+  items: Array.from({ length: 7 }, (_, i) => {
+    const itemText = [
       "Componente 1 — Calidad subjetiva del sueño",
       "Componente 2 — Latencia del sueño",
       "Componente 3 — Duración del sueño",
@@ -40,12 +39,15 @@ export const PSQI_MODULE: MethodologicalModule = {
       "Componente 5 — Perturbaciones del sueño",
       "Componente 6 — Uso de medicación para dormir",
       "Componente 7 — Disfunción diurna",
-    ][i],
+    ][i];
+    return {
+    id: `psqi_c${i + 1}`,
+    text: itemText,
     redcapFormField: {
       fieldName: `psqi_c${i + 1}`,
       formName: "monitor_psqi",
       fieldType: "radio",
-      fieldLabel: `PSQI componente ${i + 1}`,
+      fieldLabel: itemText,
       choicesOrCalculations: "0, Muy buena/Nunca/<6h/≥85%/Ninguna/Nunca/Ningún problema | 1, Bastante buena/Menos de 1 vez/6-7h/75-84%/Menos de 1 vez/Menos de 1 vez/Muy poco problema | 2, Bastante mala/1-2 veces/5-6h/65-74%/1-2 veces/1-2 veces/Algún problema | 3, Muy mala/3+ veces/<5h/<65%/3+ veces/3+ veces/Gran problema",
       required: true,
       questionNumber: `${i + 1}`,
@@ -58,7 +60,7 @@ export const PSQI_MODULE: MethodologicalModule = {
       { value: 2, label: "2 — Moderado" },
       { value: 3, label: "3 — Grave" },
     ],
-  })),
+  }; }),
   dimensions: [
     {
       id: "calidad-sueno",

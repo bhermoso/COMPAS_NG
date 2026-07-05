@@ -654,7 +654,11 @@ h3 {
 .app-nav__tabs {
   display: flex;
   gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+
+.app-nav__tabs::-webkit-scrollbar { display: none; }
 
 .app-nav__tab {
   border: none;
@@ -670,6 +674,8 @@ h3 {
   display: flex;
   align-items: center;
   gap: 7px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .app-nav__tab:hover {

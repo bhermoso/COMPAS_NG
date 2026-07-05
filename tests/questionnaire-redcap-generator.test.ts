@@ -482,6 +482,124 @@ describe('generateRedcapDictionaryArtifact()', () => {
 
 })
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Field Label — redacción literal de ítems (no etiquetas genéricas)
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe('buildRedcapDictionary() — fieldLabel contiene redacción real, no etiquetas genéricas', () => {
+
+  // Patrón de etiqueta genérica: "{INSTRUMENTO} ítem N" o "{INSTRUMENTO} componente N"
+  const GENERIC_PATTERN = /\b(ítem|item|componente)\s+\d+$/i
+
+  it('SBQ: todos los ítems tienen redacción de pregunta completa', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'sbq-test', name: 'SBQ test', methodologicalModules: ['sbq'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `SBQ fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+      expect(field.fieldLabel.length, `SBQ fieldLabel demasiado corto en ${field.fieldName}`)
+        .toBeGreaterThan(10)
+    }
+    // Verifica el primer ítem literalmente
+    const q1 = dict.fields.find(f => f.fieldName === 'sbq_q1')
+    expect(q1?.fieldLabel).toBe('¿Cuántas horas al día suele dedicar a ver la televisión?')
+    // Verifica el último ítem
+    const q9 = dict.fields.find(f => f.fieldName === 'sbq_q9')
+    expect(q9?.fieldLabel).toBe('¿Cuántas horas al día pasa en otras actividades sedentarias no incluidas antes?')
+  })
+
+  it('PHQ-9: todos los ítems tienen redacción de pregunta completa', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'phq9-test', name: 'PHQ-9 test', methodologicalModules: ['phq9'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `PHQ-9 fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+    }
+    const q1 = dict.fields.find(f => f.fieldName === 'phq9_q1')
+    expect(q1?.fieldLabel).toContain('Poco interés o placer en hacer cosas')
+    const q9 = dict.fields.find(f => f.fieldName === 'phq9_q9')
+    expect(q9?.fieldLabel).toContain('Pensamientos de que estaría mejor muerto')
+  })
+
+  it('PSQI: todos los componentes tienen descripción real del componente', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'psqi-test', name: 'PSQI test', methodologicalModules: ['psqi'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `PSQI fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+    }
+    const c1 = dict.fields.find(f => f.fieldName === 'psqi_c1')
+    expect(c1?.fieldLabel).toBe('Componente 1 — Calidad subjetiva del sueño')
+    const c7 = dict.fields.find(f => f.fieldName === 'psqi_c7')
+    expect(c7?.fieldLabel).toBe('Componente 7 — Disfunción diurna')
+  })
+
+  it('IBSE: fieldLabel es idéntico a item.text (sin regresión)', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'ibse-test', name: 'IBSE test', methodologicalModules: ['ibse'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `IBSE fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+    }
+    const deprimido = dict.fields.find(f => f.fieldName === 'ibse_deprimido')
+    expect(deprimido?.fieldLabel).toBe('Deprimido/a')
+  })
+
+  it('GHQ-12: fieldLabel es la pregunta completa (sin regresión)', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'ghq12-test', name: 'GHQ-12 test', methodologicalModules: ['ghq12'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `GHQ-12 fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+    }
+    const q1 = dict.fields.find(f => f.fieldName === 'ghq12_q1')
+    expect(q1?.fieldLabel).toBe('¿Ha podido concentrarse bien en lo que hacía?')
+  })
+
+  it('AUDIT-C: fieldLabel es la pregunta completa (sin regresión)', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'auditc-test', name: 'AUDIT-C test', methodologicalModules: ['auditc'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `AUDIT-C fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+    }
+    const q1 = dict.fields.find(f => f.fieldName === 'auditc_q1')
+    expect(q1?.fieldLabel).toBe('¿Con qué frecuencia consume bebidas alcohólicas?')
+  })
+
+  it('Fagerström: fieldLabel es descriptivo (sin regresión)', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({ id: 'fagerstrom-test', name: 'Fagerström test', methodologicalModules: ['fagerstrom'] })
+    )
+    for (const field of dict.fields) {
+      expect(field.fieldLabel, `Fagerström fieldLabel genérico en ${field.fieldName}`)
+        .not.toMatch(GENERIC_PATTERN)
+    }
+    const q1 = dict.fields.find(f => f.fieldName === 'ftnd_q1')
+    expect(q1?.fieldLabel).toBe('Tiempo hasta el primer cigarrillo')
+  })
+
+  it('proyecto multiinstrumento: ningún fieldLabel es genérico', () => {
+    const dict = buildRedcapDictionary(
+      createQuestionnaire({
+        id: 'multi-test',
+        name: 'Multi test',
+        methodologicalModules: ['sbq', 'phq9', 'psqi', 'ghq12', 'auditc'],
+      })
+    )
+    const genericFields = dict.fields.filter(f => GENERIC_PATTERN.test(f.fieldLabel))
+    expect(genericFields, `Campos con etiqueta genérica: ${genericFields.map(f => `${f.fieldName}="${f.fieldLabel}"`).join(', ')}`)
+      .toHaveLength(0)
+  })
+
+})
+
 // ── CSV helpers ───────────────────────────────────────────────────────────────
 // Parser CSV mínimo para verificar columnas individuales en filas simples
 // (sin celdas con comillas). Solo para uso interno de estos tests.

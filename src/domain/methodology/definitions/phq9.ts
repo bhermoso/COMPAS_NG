@@ -30,9 +30,8 @@ export const PHQ9_MODULE: MethodologicalModule = {
       "Validation and utility of the patient health questionnaire in diagnosing major depression " +
       "in Spanish inpatients. Psychosom Med 2001;63:679-86.",
   },
-  items: Array.from({ length: 9 }, (_, i) => ({
-    id: `phq9_q${i + 1}`,
-    text: [
+  items: Array.from({ length: 9 }, (_, i) => {
+    const itemText = [
       "¿Con qué frecuencia le han molestado los siguientes problemas? Poco interés o placer en hacer cosas",
       "Sentirse desanimado, deprimido, o sin esperanzas",
       "Con problemas para dormir o para mantenerse dormido, o dormir demasiado",
@@ -42,12 +41,15 @@ export const PHQ9_MODULE: MethodologicalModule = {
       "Problemas para concentrarse en cosas como leer el periódico o ver la televisión",
       "Moverse o hablar tan lento que otras personas lo notaron, o lo contrario — estar tan inquieto que se movió mucho más de lo habitual",
       "Pensamientos de que estaría mejor muerto o de hacerse daño de alguna manera",
-    ][i],
+    ][i];
+    return {
+    id: `phq9_q${i + 1}`,
+    text: itemText,
     redcapFormField: {
       fieldName: `phq9_q${i + 1}`,
       formName: "monitor_phq9",
       fieldType: "radio",
-      fieldLabel: `PHQ-9 ítem ${i + 1}`,
+      fieldLabel: itemText,
       choicesOrCalculations: "0, Nunca | 1, Varios días | 2, Más de la mitad de los días | 3, Casi todos los días",
       required: true,
       questionNumber: `${i + 1}`,
@@ -60,7 +62,7 @@ export const PHQ9_MODULE: MethodologicalModule = {
       { value: 2, label: "Más de la mitad de los días" },
       { value: 3, label: "Casi todos los días" },
     ],
-  })),
+  }; }),
   dimensions: [
     {
       id: "depresion",
