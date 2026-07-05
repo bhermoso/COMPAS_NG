@@ -8,6 +8,7 @@ import {
   removeMunicipalDocument,
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
+import { type QuestionnaireProject } from "./domain/questionnaire";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import {
   createCompleteMunicipalityWorkspace,
@@ -92,6 +93,7 @@ import {
   NHSHealthProfileView,
   LecturaEstrategicaView,
   PAIView,
+  GESPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -136,7 +138,7 @@ function slugifyMunicipalityId(name: string): string {
 
 // ── Tipos y constantes de módulo ─────────────────────────────
 
-type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "nhs" | "priorizacion" | "lectura" | "plan" | "plan-local" | "evaluacion";
+type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "nhs" | "priorizacion" | "lectura" | "plan" | "plan-local" | "evaluacion" | "ges";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
@@ -146,6 +148,7 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "plan",          label: "Plan de Acción" },
   { id: "plan-local",    label: "Plan Local de Salud" },
   { id: "evaluacion",    label: "Evaluación" },
+  { id: "ges",           label: "Gestor de Encuestas" },
 ];
 // Vistas eliminadas de la navegación principal pero accesibles para desarrollo:
 // "analisis" (D-002), "lectura" (D-004), "priorizacion" (integrada en Plan de Acción).
@@ -1750,6 +1753,34 @@ export default function App() {
     setPendingTopics([...topicIds]);
   }
 
+  // ── Handlers del Gestor de Encuestas (GES) ────────────────────────────────
+
+  function handleAddQuestionnaireProject(project: QuestionnaireProject): void {
+    setWorkspace((prev) => ({
+      ...prev,
+      questionnaireProjects: [...(prev.questionnaireProjects ?? []), project],
+      updatedAt: new Date().toISOString(),
+    }));
+  }
+
+  function handleUpdateQuestionnaireProject(updated: QuestionnaireProject): void {
+    setWorkspace((prev) => ({
+      ...prev,
+      questionnaireProjects: (prev.questionnaireProjects ?? []).map((p) =>
+        p.id === updated.id ? updated : p
+      ),
+      updatedAt: new Date().toISOString(),
+    }));
+  }
+
+  function handleDeleteQuestionnaireProject(projectId: string): void {
+    setWorkspace((prev) => ({
+      ...prev,
+      questionnaireProjects: (prev.questionnaireProjects ?? []).filter((p) => p.id !== projectId),
+      updatedAt: new Date().toISOString(),
+    }));
+  }
+
   function handleDeleteDocument(documentId: string) {
     const deletedDocument = workspace.repository.documents.find((d) => d.id === documentId);
 
@@ -2878,6 +2909,17 @@ export default function App() {
               fase de seguimiento y evaluación.
             </p>
           </section>
+        )}
+
+        {/* ── Gestor de Encuestas de Salud (GES) */}
+        {view === "ges" && (
+          <GESPanel
+            projects={workspace.questionnaireProjects ?? []}
+            municipalityName={municipality.name}
+            onAddProject={handleAddQuestionnaireProject}
+            onUpdateProject={handleUpdateQuestionnaireProject}
+            onDeleteProject={handleDeleteQuestionnaireProject}
+          />
         )}
 
       </main>
