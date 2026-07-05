@@ -104,6 +104,41 @@ export function MunicipalInventoryPanel({
               : undefined
           }
         />
+        <InventoryItem
+          label="Consumo de riesgo — AUDIT-C"
+          present={inventory.hasAUDITC}
+          detail={inventory.hasAUDITC ? `${inventory.auditcRecordCount} registros válidos` : undefined}
+        />
+        <InventoryItem
+          label="Actividad física — IPAQ-EAS"
+          present={inventory.hasIPAQ}
+          detail={inventory.hasIPAQ ? `${inventory.ipaqRecordCount} registros válidos` : undefined}
+        />
+        <InventoryItem
+          label="Malestar psicológico — GHQ-12"
+          present={inventory.hasGHQ12}
+          detail={inventory.hasGHQ12 ? `${inventory.ghq12RecordCount} registros válidos` : undefined}
+        />
+        <InventoryItem
+          label="Síntomas depresivos — PHQ-9"
+          present={inventory.hasPHQ9}
+          detail={inventory.hasPHQ9 ? `${inventory.phq9RecordCount} registros válidos` : undefined}
+        />
+        <InventoryItem
+          label="Calidad del sueño — PSQI"
+          present={inventory.hasPSQI}
+          detail={inventory.hasPSQI ? `${inventory.psqiRecordCount} registros válidos` : undefined}
+        />
+        <InventoryItem
+          label="Dependencia a la nicotina — Fagerström"
+          present={inventory.hasFagerstrom}
+          detail={inventory.hasFagerstrom ? `${inventory.fagerstromRecordCount} registros válidos` : undefined}
+        />
+        <InventoryItem
+          label="Comportamiento sedentario — SBQ"
+          present={inventory.hasSBQ}
+          detail={inventory.hasSBQ ? `${inventory.sbqRecordCount} registros válidos` : undefined}
+        />
       </ul>
 
       {/* Recuentos */}

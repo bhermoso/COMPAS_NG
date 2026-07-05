@@ -128,6 +128,13 @@ export interface LocalHealthProfile {
   sf12Present: boolean;
   suenoPresent: boolean;
   cagePresent: boolean;
+  auditcPresent?: boolean;
+  ipaqPresent?: boolean;
+  ghq12Present?: boolean;
+  phq9Present?: boolean;
+  psqiPresent?: boolean;
+  fagerstromPresent?: boolean;
+  sbqPresent?: boolean;
   thematicPrioritisationPresent: boolean;
   complementaryStudyCount: number;
 

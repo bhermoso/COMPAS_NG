@@ -226,6 +226,13 @@ export function compileLocalHealthProfile(
       sf12Present: psl.sf12Present,
       suenoPresent: psl.suenoPresent,
       cagePresent: psl.cagePresent,
+      auditcPresent: psl.auditcPresent,
+      ipaqPresent: psl.ipaqPresent,
+      ghq12Present: psl.ghq12Present,
+      phq9Present: psl.phq9Present,
+      psqiPresent: psl.psqiPresent,
+      fagerstromPresent: psl.fagerstromPresent,
+      sbqPresent: psl.sbqPresent,
       thematicPrioritisationPresent: psl.thematicPrioritisationPresent,
     },
 

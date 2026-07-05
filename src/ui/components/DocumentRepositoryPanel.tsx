@@ -32,6 +32,13 @@ const STUDY_LABEL_BY_TAG: Record<string, string> = {
   "sf12-eas": "SF-12 EAS",
   "sueno-eas": "Sueño EAS",
   "cage-eas": "CAGE-EAS",
+  auditc: "AUDIT-C",
+  "ipaq-eas": "IPAQ-EAS",
+  ghq12: "GHQ-12",
+  phq9: "PHQ-9",
+  psqi: "PSQI",
+  fagerstrom: "Fagerström",
+  sbq: "SBQ",
 };
 
 function getDocumentKindLabel(document: MunicipalDocument): string {
@@ -74,6 +81,13 @@ const STUDY_TAG_ORDER: Record<string, number> = {
   "sf12-eas": 3,
   "sueno-eas": 4,
   "cage-eas": 5,
+  auditc: 6,
+  "ipaq-eas": 7,
+  ghq12: 8,
+  phq9: 9,
+  psqi: 10,
+  fagerstrom: 11,
+  sbq: 12,
 };
 
 function sortWithinCategory(docs: MunicipalDocument[]): MunicipalDocument[] {

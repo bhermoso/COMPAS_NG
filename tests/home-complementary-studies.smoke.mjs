@@ -104,15 +104,15 @@ try {
     homeText?.normalize("NFD").replace(/\p{Diacritic}/gu, "") ?? "";
   assert(normalizedHomeText.includes("COMPAS NG"), "Home does not show COMPAS NG.");
 
-  const scopeButton = page.locator("button").filter({ hasText: "Cambiar ámbito" });
-  assert(await scopeButton.count() === 1, "Scope selector button 'Cambiar ámbito' not found.");
-
-  const repositoryButton = page.getByRole("button", { name: "2 Repositorio documental" });
-  assert(await repositoryButton.count() === 1, "Repository navigation button not found.");
+  const repositoryButton = page.getByRole("button", { name: /Diagn.stico territorial/i });
+  assert(await repositoryButton.count() === 1, "Repository navigation button ('Diagnóstico territorial') not found.");
   await repositoryButton.click();
 
   const repositoryText = await page.locator("body").textContent();
-  for (const label of ["IBSE", "DUKE-EAS", "PREDIMED-EAS", "SF-12 EAS", "Sueño EAS", "CAGE-EAS"]) {
+  for (const label of [
+    "IBSE", "DUKE-EAS", "PREDIMED-EAS", "SF-12 EAS", "Sueño EAS", "CAGE-EAS",
+    "AUDIT-C", "IPAQ-EAS", "GHQ-12", "PHQ-9", "PSQI", "Fagerström", "SBQ",
+  ]) {
     assert(repositoryText?.includes(label), `Complementary Studies panel does not show ${label}.`);
   }
 
@@ -122,6 +122,13 @@ try {
   await checkStudyRow(page, "SF-12 EAS", "#sf12-csv-input");
   await checkStudyRow(page, "Sueño EAS", "#sueno-csv-input");
   await checkStudyRow(page, "CAGE-EAS", "#cage-csv-input");
+  await checkStudyRow(page, "AUDIT-C", "#auditc-csv-input");
+  await checkStudyRow(page, "IPAQ-EAS", "#ipaq-csv-input");
+  await checkStudyRow(page, "GHQ-12", "#ghq12-csv-input");
+  await checkStudyRow(page, "PHQ-9", "#phq9-csv-input");
+  await checkStudyRow(page, "PSQI", "#psqi-csv-input");
+  await checkStudyRow(page, "Fagerström (FTND)", "#fagerstrom-csv-input");
+  await checkStudyRow(page, "SBQ", "#sbq-csv-input");
 
   assert(
     consoleErrors.length === 0,

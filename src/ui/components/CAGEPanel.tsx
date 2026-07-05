@@ -204,28 +204,6 @@ export function CAGEPanel({ cageStudy, municipalityName }: CAGEPanelProps) {
         )}
       </section>
 
-      {/* COMPARACIÓN TERRITORIAL */}
-      <section className="study-report__section">
-        <p className="study-report__section-title">Comparación territorial</p>
-        <dl className="study-report__evidence-dl">
-          <dt>{mun} — prevalencia de riesgo (CAGE_R)</dt>
-          <dd>{agg.pctRisk.toFixed(1)} % (sobre {agg.nValidCAGER} evaluados)</dd>
-          <dt>Provincia de Granada — EAS</dt>
-          <dd>Sin referencia disponible para este indicador en esta fuente</dd>
-          <dt>Andalucía — EAS</dt>
-          <dd>Sin referencia disponible para este indicador en esta fuente</dd>
-        </dl>
-        <p className="study-report__interpretation">
-          No se dispone de datos de referencia desagregados para Andalucía ni para la
-          provincia de Granada sobre el indicador CAGE_R. La comparación territorial directa
-          no es posible con la información actualmente disponible. La prevalencia del municipio
-          solo puede interpretarse en términos absolutos: valores superiores al 5–10 %
-          en la muestra evaluada se consideran, orientativamente, señales que merecen
-          atención en el diagnóstico. Cualquier uso comparativo de este resultado
-          requiere el contraste con fuentes externas no disponibles en el sistema.
-        </p>
-      </section>
-
       {/* INTERPRETACIÓN */}
       {note && (
         <section className="study-report__section">

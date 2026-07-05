@@ -309,8 +309,13 @@ describe("compileLocalHealthProfile — compilación correcta", () => {
     }
   });
 
-  it("baseDocumental: los seis flags de estudios complementarios reflejan el PSL origen", () => {
-    const psl = basePSL({ sf12Present: true, suenoPresent: true, cagePresent: true, complementaryStudyCount: 6 });
+  it("baseDocumental: los trece flags de estudios complementarios reflejan el PSL origen", () => {
+    const psl = basePSL({
+      sf12Present: true, suenoPresent: true, cagePresent: true,
+      auditcPresent: true, ipaqPresent: true, ghq12Present: true,
+      phq9Present: true, psqiPresent: true, fagerstromPresent: true, sbqPresent: true,
+      complementaryStudyCount: 13,
+    });
     const result = compileLocalHealthProfile({ ...INPUT_ATARFE, psl });
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -321,11 +326,18 @@ describe("compileLocalHealthProfile — compilación correcta", () => {
       expect(bd.sf12Present).toBe(true);
       expect(bd.suenoPresent).toBe(true);
       expect(bd.cagePresent).toBe(true);
-      expect(bd.complementaryStudyCount).toBe(6);
+      expect(bd.auditcPresent).toBe(true);
+      expect(bd.ipaqPresent).toBe(true);
+      expect(bd.ghq12Present).toBe(true);
+      expect(bd.phq9Present).toBe(true);
+      expect(bd.psqiPresent).toBe(true);
+      expect(bd.fagerstromPresent).toBe(true);
+      expect(bd.sbqPresent).toBe(true);
+      expect(bd.complementaryStudyCount).toBe(13);
     }
   });
 
-  it("baseDocumental: flags ausentes se propagan como false al artefacto", () => {
+  it("baseDocumental: flags ausentes se propagan como false/undefined al artefacto", () => {
     const result = compileLocalHealthProfile(INPUT_ATARFE);
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -333,6 +345,9 @@ describe("compileLocalHealthProfile — compilación correcta", () => {
       expect(bd.sf12Present).toBe(false);
       expect(bd.suenoPresent).toBe(false);
       expect(bd.cagePresent).toBe(false);
+      expect(bd.auditcPresent).toBeUndefined();
+      expect(bd.ghq12Present).toBeUndefined();
+      expect(bd.sbqPresent).toBeUndefined();
     }
   });
 

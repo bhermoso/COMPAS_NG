@@ -86,6 +86,13 @@ export function buildLocalHealthProfile(
     workspace.sf12Study,
     workspace.suenoStudy,
     workspace.cageStudy,
+    workspace.auditcStudy,
+    workspace.ipaqStudy,
+    workspace.ghq12Study,
+    workspace.phq9Study,
+    workspace.psqiStudy,
+    workspace.fagerstromStudy,
+    workspace.sbqStudy,
   ].filter(Boolean).length;
 
   // ── Capítulo VII: priorización scaffold ──────────────────────────────────
@@ -149,6 +156,13 @@ export function buildLocalHealthProfile(
     sf12Present: workspace.sf12Study !== undefined,
     suenoPresent: workspace.suenoStudy !== undefined,
     cagePresent: workspace.cageStudy !== undefined,
+    auditcPresent: workspace.auditcStudy !== undefined,
+    ipaqPresent: workspace.ipaqStudy !== undefined,
+    ghq12Present: workspace.ghq12Study !== undefined,
+    phq9Present: workspace.phq9Study !== undefined,
+    psqiPresent: workspace.psqiStudy !== undefined,
+    fagerstromPresent: workspace.fagerstromStudy !== undefined,
+    sbqPresent: workspace.sbqStudy !== undefined,
     thematicPrioritisationPresent: workspace.thematicPrioritisation !== undefined,
     complementaryStudyCount,
 

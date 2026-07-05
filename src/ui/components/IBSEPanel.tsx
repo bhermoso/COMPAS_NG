@@ -40,29 +40,6 @@ function getSampleQualityVerdict(
     note: `La muestra es reducida (${n} registros). Interpretar con extrema precaución.` };
 }
 
-// Valores de referencia histórico COMPÁS — pendientes de contraste con EAS oficial.
-const IBSE_REF_AND = 75.94;
-const IBSE_REF_GR  = 81.78;
-
-function ibseTerritorialNarrative(municipalValue: number): string {
-  const diffGR = municipalValue - IBSE_REF_GR;
-  const diffAND = municipalValue - IBSE_REF_AND;
-  let grPart: string;
-  if (Math.abs(diffGR) <= 3)
-    grPart = `es próximo a la referencia provincial de Granada (≈ ${IBSE_REF_GR})`;
-  else if (diffGR > 0)
-    grPart = `supera la referencia de Granada (≈ ${IBSE_REF_GR}) en ${diffGR.toFixed(1)} puntos`;
-  else
-    grPart = `se sitúa ${Math.abs(diffGR).toFixed(1)} puntos por debajo de la referencia de Granada (≈ ${IBSE_REF_GR})`;
-  let andPart: string;
-  if (Math.abs(diffAND) <= 3)
-    andPart = `y próximo a la referencia de Andalucía (≈ ${IBSE_REF_AND})`;
-  else if (diffAND > 0)
-    andPart = `y supera la referencia de Andalucía (≈ ${IBSE_REF_AND}) en ${diffAND.toFixed(1)} puntos`;
-  else
-    andPart = `y se sitúa ${Math.abs(diffAND).toFixed(1)} puntos por debajo de la referencia de Andalucía (≈ ${IBSE_REF_AND})`;
-  return `El índice IBSE del municipio (${municipalValue}/100) ${grPart} ${andPart}. Estos valores de referencia proceden del histórico COMPÁS y están pendientes de contraste con datos EAS oficiales: deben interpretarse con cautela.`;
-}
 
 const IBSE_FACTORS: Array<{
   label: string;
@@ -218,22 +195,6 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
           {agg.n > 0 && (
             <> · Incompletos: {(((agg.n - agg.nValid) / agg.n) * 100).toFixed(1)} %</>
           )}
-        </p>
-      </section>
-
-      {/* COMPARACIÓN TERRITORIAL */}
-      <section className="study-report__section">
-        <p className="study-report__section-title">Comparación territorial</p>
-        <dl className="study-report__evidence-dl">
-          <dt>{mun} (muestra analizada)</dt>
-          <dd>{agg.meanTotal}/100 — nivel {totalLevel}</dd>
-          <dt>Provincia de Granada</dt>
-          <dd>≈ {IBSE_REF_GR}/100 (histórico COMPÁS — pendiente contraste EAS oficial)</dd>
-          <dt>Andalucía</dt>
-          <dd>≈ {IBSE_REF_AND}/100 (histórico COMPÁS — pendiente contraste EAS oficial)</dd>
-        </dl>
-        <p className="study-report__interpretation">
-          {ibseTerritorialNarrative(agg.meanTotal)}
         </p>
       </section>
 
@@ -422,9 +383,11 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
             </div>
           ))}
           <p className="study-report__algo-note">
-            Los valores de referencia para Andalucía (≈ {IBSE_REF_AND}) y Granada (≈ {IBSE_REF_GR})
-            proceden del monitor histórico COMPÁS y están pendientes de contraste
-            con datos EAS oficiales.
+            El monitor histórico COMPÁS disponía de valores de referencia provinciales
+            para el IBSE, pero estos no son equivalentes a los datos de la Encuesta
+            Andaluza de Salud (EAS) y no constituyen referencia territorial operativa
+            para este instrumento. La comparación territorial se realiza únicamente
+            a través del componente de referencia EAS cuando está disponible.
           </p>
         </div>
       </details>

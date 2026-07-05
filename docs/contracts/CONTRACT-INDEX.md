@@ -1,7 +1,7 @@
 # CONTRACT-INDEX — Índice maestro de contratos arquitectónicos
 
 > COMPÁS NG — Referencia de arquitectura contractual
-> Última actualización: Sprint 2 recertificación — 2026-06-29
+> Última actualización: Sprint 2 — 2026-07-03
 
 Este documento es la puerta de entrada a la arquitectura contractual de COMPÁS NG.
 No duplica contenido de los contratos. Cada entrada contiene: propósito, alcance, estado y relaciones.
@@ -110,6 +110,19 @@ Contrato del Motor de Interpretación Territorial (MIT) y del Perfil de Salud Lo
 **Productores:** `TerritorialInterpretationEngine`, `buildLocalHealthProfile`.
 **Consumidores:** Priorización temática, Motor de Traducción Estratégica, Plan de Acción.
 **Relacionado con:** CONTRACT-EVIDENCE, CONTRACT-ACTION-PLAN, CONTRACT-STRATEGIC-TRANSLATION.
+
+---
+
+## Metodología del Perfil de Salud Local
+
+### CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY
+**Estado:** VIGENTE
+
+Contrato metodológico canónico del Perfil de Salud Local (PSL). Define qué debe ser metodológicamente un Perfil, qué puede afirmar y qué no puede afirmar, cómo se construye su evidencia y qué condiciones debe cumplir para ser aceptable como documento institucional. Establece los 19 artículos normativos del Perfil: naturaleza, finalidad, separación de etapas, singularidad territorial, explicación territorial, razonamiento multidisciplinar, familias de evidencia admisibles, siete tipos de afirmación, activos con rango equivalente a déficits, participación como evidencia, desigualdades, comparación territorial y temporal, incertidumbre situada, convergencia y divergencia de evidencias, compatibilidad con la ESCA (Art. 15: ESCA como marco SSPA, separación de responsabilidades, no tratar ESCA como instrumento de evaluación, no convertir líneas ESCA en objetivos municipales), no automatización de decisiones, autoría y responsabilidad técnica, flexibilidad metodológica, y criterios de aceptación del Perfil. Incluye 6 invariantes (I-LHPM-1 a I-LHPM-6) y 6 hipótesis metodológicas abiertas (H-LHPM-1 a H-LHPM-6).
+
+**Productores:** No tiene productor de código directo. Es un contrato normativo que condiciona todos los contratos y motores relacionados con el Perfil.
+**Consumidores:** CONTRACT-MIT-PSL, CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-NHS-HEALTH-PROFILE.
+**Relacionado con:** CONTRACT-INTERPRETATION, CONTRACT-STRATEGIC-REPOSITORY, METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING.
 
 ---
 
@@ -325,6 +338,7 @@ CONTRACT-COMPLEMENTARY-STUDIES → CONTRACT-SCALE-PANELS
                                  CONTRACT-EVIDENCE-QUALITY
     ↓
 CONTRACT-INTERPRETATION
+CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY  ← contrato normativo transversal
 CONTRACT-MIT-PSL
     ↓
 CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER → LocalHealthProfileArtifact (PSL-C)

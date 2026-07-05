@@ -298,7 +298,8 @@ export function EstudiosComplementariosPanel({
   repository,
   onDeleteDocument,
 }: EstudiosComplementariosPanelProps) {
-  const loadedCount = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study, phq9Study, psqiStudy, fagerstromStudy, sbqStudy].filter(Boolean).length;
+  const studySlots = [ibseStudy, dukeStudy, predimedStudy, sf12Study, suenoStudy, cageStudy, auditcStudy, ipaqStudy, ghq12Study, phq9Study, psqiStudy, fagerstromStudy, sbqStudy];
+  const loadedCount = studySlots.filter(Boolean).length;
   const [granadaReferences, setGranadaReferences] = useState<GranadaTerritorialReferences>();
 
   useEffect(() => {
@@ -401,7 +402,7 @@ export function EstudiosComplementariosPanel({
           Instrumentos de medición sobre bienestar, apoyo social, alimentación y
           conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de 13 disponibles en este espacio de trabajo.`
+            ? `${loadedCount} de ${studySlots.length} disponibles en este espacio de trabajo.`
             : "Ningún estudio cargado en este espacio de trabajo."}
         </p>
       </div>

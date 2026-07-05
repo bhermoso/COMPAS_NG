@@ -1,3 +1,13 @@
+// SAM cubre 6 estudios con evaluación implementada:
+// IBSE (2 evaluaciones), DUKE-EAS, PREDIMED-EAS, SF-12 EAS, Sueño EAS, CAGE-EAS.
+//
+// IPAQ-EAS también procede de la Encuesta Andaluza de Salud pero no tiene función
+// SAM implementada todavía (pendiente de definir la referencia poblacional adecuada).
+//
+// Los 6 estudios de administración propia vía REDCap municipal (AUDIT-C, GHQ-12,
+// PHQ-9, PSQI, Fagerström, SBQ) no tienen evaluación SAM: carecen de referencia
+// poblacional EAS metodológicamente equivalente.
+
 import type { IBSEStudy } from "../../domain/ibse";
 import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
