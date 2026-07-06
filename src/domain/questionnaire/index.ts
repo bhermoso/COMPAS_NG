@@ -17,3 +17,5 @@ export {
   getAllClassificationBlocks,
   getClassificationBlock,
 } from "./ClassificationBlockRegistry";
+
+export type { ProjectDatasetImport } from "./ProjectDatasetImport";

@@ -13,7 +13,7 @@ import type { LocalHealthProfile } from "../health-profile";
 import type { LocalHealthProfileArtifact } from "../health-profile-artifact";
 import type { NHSHealthProfileArtifact } from "../nhs-health-profile";
 import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
-import type { QuestionnaireProject } from "../questionnaire";
+import type { QuestionnaireProject, ProjectDatasetImport } from "../questionnaire";
 import type { AUDITCStudy } from "../auditc";
 import type { IPAQStudy } from "../ipaq";
 import type { GHQ12Study } from "../ghq12";
@@ -133,6 +133,12 @@ export interface MunicipalityWorkspace {
    * Aislados por municipio: workspaces distintos no comparten proyectos.
    */
   questionnaireProjects?: QuestionnaireProject[];
+  /**
+   * Historial de importaciones de datasets de proyectos REDCap.
+   * Solo metadata de trazabilidad — nunca el CSV bruto.
+   * Acumulativo: cada importación añade una entrada.
+   */
+  projectDatasetImports?: ProjectDatasetImport[];
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

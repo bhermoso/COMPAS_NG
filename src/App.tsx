@@ -9,6 +9,7 @@ import {
 } from "./domain/repository";
 import { type MunicipalityWorkspace } from "./domain/workspace";
 import { type QuestionnaireProject } from "./domain/questionnaire";
+import { importProjectDataset } from "./application/questionnaire";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import {
   createCompleteMunicipalityWorkspace,
@@ -350,6 +351,8 @@ export default function App() {
   );
   const [isImportingTP, setIsImportingTP] = useState(false);
   const [tpImportMessage, setTpImportMessage] = useState<string | null>(null);
+  const [isImportingProjectDataset, setIsImportingProjectDataset] = useState(false);
+  const [importProjectDatasetMessage, setImportProjectDatasetMessage] = useState<string | null>(null);
   const [persistenceMessage, setPersistenceMessage] = useState<string | null>(null);
 
   const [customMunicipalities, setCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(() => {
@@ -1781,6 +1784,52 @@ export default function App() {
     }));
   }
 
+  async function handleImportProjectDataset(
+    file: File,
+    project: QuestionnaireProject
+  ): Promise<void> {
+    setIsImportingProjectDataset(true);
+    try {
+      const csvText = await file.text();
+      const result = importProjectDataset(
+        csvText,
+        project.questionnaire.methodologicalModules,
+        workspace.municipality.identity.id,
+        file.name,
+        project.id,
+        project.name,
+      );
+      setWorkspace((prev) => {
+        let next = { ...prev };
+        for (const study of result.succeeded) {
+          next = study.applyStudy(next);
+        }
+        return {
+          ...next,
+          projectDatasetImports: [...(next.projectDatasetImports ?? []), result.metadata],
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      const { succeeded, skipped, failed, metadata } = result;
+      const parts: string[] = [];
+      if (succeeded.length > 0) {
+        parts.push(`${succeeded.length} módulo${succeeded.length !== 1 ? "s" : ""} importado${succeeded.length !== 1 ? "s" : ""}: ${succeeded.map((s) => s.moduleId).join(", ")}`);
+      }
+      if (skipped.length > 0) parts.push(`${skipped.length} omitido${skipped.length !== 1 ? "s" : ""}`);
+      if (failed.length > 0) parts.push(`${failed.length} fallido${failed.length !== 1 ? "s" : ""}`);
+      setImportProjectDatasetMessage(
+        parts.length > 0
+          ? `${metadata.rowCount} fila${metadata.rowCount !== 1 ? "s" : ""} · ${parts.join(" · ")}.`
+          : "CSV procesado sin módulos reconocidos."
+      );
+    } catch (err) {
+      console.error("[import-project-dataset-error]", err);
+      setImportProjectDatasetMessage("Error al procesar el CSV. Verifica que sea una exportación REDCap válida.");
+    } finally {
+      setIsImportingProjectDataset(false);
+    }
+  }
+
   function handleDeleteDocument(documentId: string) {
     const deletedDocument = workspace.repository.documents.find((d) => d.id === documentId);
 
@@ -2915,10 +2964,14 @@ export default function App() {
         {view === "ges" && (
           <GESPanel
             projects={workspace.questionnaireProjects ?? []}
+            projectDatasetImports={workspace.projectDatasetImports}
             municipalityName={municipality.name}
             onAddProject={handleAddQuestionnaireProject}
             onUpdateProject={handleUpdateQuestionnaireProject}
             onDeleteProject={handleDeleteQuestionnaireProject}
+            onImportProjectDataset={handleImportProjectDataset}
+            isImportingProjectDataset={isImportingProjectDataset}
+            importProjectDatasetMessage={importProjectDatasetMessage}
           />
         )}
 

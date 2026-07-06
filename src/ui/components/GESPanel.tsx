@@ -13,6 +13,7 @@ import type {
   QuestionnaireProject,
   QuestionnaireProjectStatus,
   ClassificationBlockId,
+  ProjectDatasetImport,
 } from "../../domain/questionnaire";
 import { getAllClassificationBlocks } from "../../domain/questionnaire";
 import { getAllMethodologicalModules } from "../../domain/methodology";
@@ -126,21 +127,29 @@ const EMPTY_FORM: FormState = { name: "", description: "", modules: [], blocks: 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface GESPanelProps {
-  projects:         QuestionnaireProject[];
-  municipalityName?: string;
-  onAddProject:     (project: QuestionnaireProject) => void;
-  onUpdateProject:  (project: QuestionnaireProject) => void;
-  onDeleteProject:  (projectId: string) => void;
+  projects:                      QuestionnaireProject[];
+  projectDatasetImports?:        ProjectDatasetImport[];
+  municipalityName?:             string;
+  onAddProject:                  (project: QuestionnaireProject) => void;
+  onUpdateProject:               (project: QuestionnaireProject) => void;
+  onDeleteProject:               (projectId: string) => void;
+  onImportProjectDataset?:       (file: File, project: QuestionnaireProject) => Promise<void>;
+  isImportingProjectDataset?:    boolean;
+  importProjectDatasetMessage?:  string | null;
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function GESPanel({
   projects,
+  projectDatasetImports,
   municipalityName,
   onAddProject,
   onUpdateProject,
   onDeleteProject,
+  onImportProjectDataset,
+  isImportingProjectDataset,
+  importProjectDatasetMessage,
 }: GESPanelProps) {
   const [section,    setSection]    = useState<GESSection>("projects");
   const [projView,   setProjView]   = useState<ProjectView>("list");
@@ -691,32 +700,67 @@ export function GESPanel({
                 </div>
               </section>
 
-              {/* Importaciones — Fase 5 (estado de parsers) */}
-              <section className="ges-detail__section">
-                <p className="ges-detail__section-title">Importación de datos</p>
-                <p className="ges-detail__note">
-                  Una vez recogidos los datos, importa los CSV de exportación REDCap en la sección
-                  <strong> Diagnóstico territorial → Estudios Complementarios</strong>.
-                  El sistema dispone de parser implementado para cada instrumento:
-                </p>
-                <ul className="ges-import-list">
-                  {selectedProject.questionnaire.methodologicalModules.map(modId => {
-                    const mod   = allModules.find(m => m.identity.id === modId);
-                    const isEAS = EAS_DERIVED.has(modId);
-                    return (
-                      <li key={modId} className="ges-import-item">
-                        <span className="ges-import-item__name">
-                          {mod?.identity.shortName ?? modId}
-                        </span>
-                        <span className={`ges-import-item__source${isEAS ? " ges-import-item__source--eas" : " ges-import-item__source--redcap"}`}>
-                          {isEAS ? "Microdatos EAS (CSV)" : "Exportación REDCap (CSV)"}
-                        </span>
-                        <span className="ges-import-item__status">Parser disponible ✓</span>
-                      </li>
+              {/* Importar resultados del proyecto */}
+              {onImportProjectDataset && (
+                <section className="ges-detail__section">
+                  <p className="ges-detail__section-title">Importar resultados del proyecto</p>
+                  <p className="ges-detail__note">
+                    Importa una exportación CSV de REDCap con los resultados del proyecto completo.
+                    El sistema detecta automáticamente los módulos presentes y aplica sus parsers.
+                    Los módulos EAS se omiten (sus datos provienen de microdatos EAS).
+                  </p>
+                  <div className="ges-import-project">
+                    <label className={`ges-btn ges-btn--primary ges-import-project__label${isImportingProjectDataset ? " ges-btn--disabled" : ""}`}>
+                      {isImportingProjectDataset ? "Procesando…" : "Seleccionar CSV REDCap del proyecto…"}
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="ges-import-project__input"
+                        disabled={!!isImportingProjectDataset}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          void onImportProjectDataset(file, selectedProject);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                    {importProjectDatasetMessage && (
+                      <p className="ges-import-project__msg">{importProjectDatasetMessage}</p>
+                    )}
+                  </div>
+
+                  {/* Historial de importaciones de este proyecto */}
+                  {(() => {
+                    const history = (projectDatasetImports ?? []).filter(
+                      (imp) => imp.projectId === selectedProject.id
                     );
-                  })}
-                </ul>
-              </section>
+                    if (history.length === 0) return null;
+                    return (
+                      <div className="ges-import-history">
+                        <p className="ges-lib-label">Historial de importaciones</p>
+                        <ul className="ges-import-history-list">
+                          {history.map((imp) => (
+                            <li key={imp.id} className="ges-import-history-item">
+                              <span className="ges-import-history-item__file">{imp.fileName}</span>
+                              <span className="ges-import-history-item__date">{formatDate(imp.importedAt)}</span>
+                              <span className="ges-import-history-item__stats">
+                                {imp.rowCount} fila{imp.rowCount !== 1 ? "s" : ""}
+                                {imp.processedModules.length > 0 && (
+                                  <> · {imp.processedModules.length} módulo{imp.processedModules.length !== 1 ? "s" : ""}: {imp.processedModules.join(", ")}</>
+                                )}
+                                {imp.skippedModules.length > 0 && (
+                                  <> · {imp.skippedModules.length} omitido{imp.skippedModules.length !== 1 ? "s" : ""}</>
+                                )}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })()}
+                </section>
+              )}
 
               {/* Acciones */}
               <div className="ges-detail__actions">

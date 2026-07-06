@@ -8,3 +8,5 @@ export type {
 
 export { generateRedcapDictionaryArtifact } from "./GenerateRedcapDictionaryArtifact";
 export { generateMethodologicalSpecArtifact } from "./GenerateMethodologicalSpecArtifact";
+export { importProjectDataset } from "./ImportProjectDataset";
+export type { ProjectImportResult, StudyImportSuccess, StudyImportSkip, StudyImportFailure, SkipReason } from "./ImportProjectDataset";
