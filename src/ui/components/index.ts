@@ -38,3 +38,4 @@ export * from "./GESPanel";
 export * from "./NHSHealthProfileView";
 export * from "./LecturaEstrategicaView";
 export * from "./PAIView";
+export * from "./PerfilLocalDeSaludPanel";

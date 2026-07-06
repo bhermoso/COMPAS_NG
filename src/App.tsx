@@ -95,6 +95,7 @@ import {
   LecturaEstrategicaView,
   PAIView,
   GESPanel,
+  PerfilLocalDeSaludPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -2746,19 +2747,25 @@ export default function App() {
 
         {/* ── ④ Perfil de Salud Local ──────────────────────── */}
         {view === "psl" && (
-          <LocalHealthProfileView
-            psl={runtime.psl}
-            pslIsStale={runtime.pslIsStale}
-            municipalityName={municipality.name}
-            compiledProfiles={workspace.compiledProfiles}
-            onValidate={handleValidatePSL}
-            onInvalidate={handleInvalidatePSL}
-            onEditConclusion={handleEditPSLConclusion}
-            onEditCierreInterpretativo={handleEditPSLCierreInterpretativo}
-            onDocumentarDeliberacion={handleDocumentarDeliberacion}
-            onCompile={handleCompilePSL}
-            onApprove={handleApprovePSL}
-          />
+          <>
+            <LocalHealthProfileView
+              psl={runtime.psl}
+              pslIsStale={runtime.pslIsStale}
+              municipalityName={municipality.name}
+              compiledProfiles={workspace.compiledProfiles}
+              onValidate={handleValidatePSL}
+              onInvalidate={handleInvalidatePSL}
+              onEditConclusion={handleEditPSLConclusion}
+              onEditCierreInterpretativo={handleEditPSLCierreInterpretativo}
+              onDocumentarDeliberacion={handleDocumentarDeliberacion}
+              onCompile={handleCompilePSL}
+              onApprove={handleApprovePSL}
+            />
+            <PerfilLocalDeSaludPanel
+              perfil={workspace.perfilLocalDeSalud}
+              municipalityName={municipality.name}
+            />
+          </>
         )}
 
         {/* ── ④b Panel de Salud Local ────────────────── */}
