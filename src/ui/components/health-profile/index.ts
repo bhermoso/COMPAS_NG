@@ -1,0 +1,1 @@
+export { PerfilLocalDeSaludPanel } from "./PerfilLocalDeSaludPanel";
