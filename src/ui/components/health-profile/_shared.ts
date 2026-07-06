@@ -1,7 +1,11 @@
 // Shared constants, helpers, and internal types.
 // Internal to src/ui/components/health-profile/ — not exported outside.
 
-import type { ProfileSpace, InterpretationCerteza } from "../../../domain/health-profile";
+import type {
+  ProfileSpace,
+  InterpretationCerteza,
+  HypothesisPlausibilidad,
+} from "../../../domain/health-profile";
 import type { PerfilEstadoNivel, PerfilSpaceCoverage } from "../../../application/health-profile";
 
 // ── Label maps ────────────────────────────────────────────────────────────────
@@ -37,6 +41,12 @@ export const CERTEZA_LABEL: Record<InterpretationCerteza, string> = {
   "provisional": "Provisional",
 };
 
+export const PLAUSIBILIDAD_LABEL: Record<HypothesisPlausibilidad, string> = {
+  "alta":         "Alta",
+  "moderada":     "Moderada",
+  "especulativa": "Especulativa",
+};
+
 export const SPACE_OPTIONS: Array<{ value: ProfileSpace; label: string }> = [
   { value: "contexto-territorial",     label: "Contexto territorial" },
   { value: "situacion-salud",          label: "Situación de salud" },
@@ -54,6 +64,11 @@ export function parseEvidenciaIds(raw: string): string[] {
   return raw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
 }
 
+// Indicios and preguntasResolutoras are free text — only split by newline.
+export function parseTextLines(raw: string): string[] {
+  return raw.split(/\n+/).map(s => s.trim()).filter(Boolean);
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-ES", {
     year: "numeric", month: "short", day: "numeric",
@@ -65,8 +80,14 @@ export function formatDate(iso: string): string {
 export type ActiveForm =
   | null
   | { type: "create" }
-  | { type: "edit";      id: string }
-  | { type: "supersede"; id: string };
+  | { type: "edit";        id: string }
+  | { type: "supersede";   id: string }
+  | { type: "create-hip" }
+  | { type: "edit-hip";    id: string }
+  | { type: "resolve-hip"; id: string }
+  | { type: "discard-hip"; id: string };
+
+// Interpretation form drafts
 
 export interface InterpretacionFormDraft {
   espacio:         ProfileSpace;
@@ -90,4 +111,31 @@ export const INIT_FORM_DRAFT: InterpretacionFormDraft = {
   autorNombre:     "",
   razonamiento:    "",
   evidenciaIdsRaw: "",
+};
+
+// Hypothesis form drafts
+
+export interface HipotesisFormDraft {
+  espacio:              ProfileSpace;
+  enunciado:            string;
+  plausibilidad:        HypothesisPlausibilidad;
+  indicios:             string;   // newline-separated free text
+  preguntasResolutoras: string;   // newline-separated free text
+  autorNombre:          string;
+}
+
+export interface EditHipotesisFormDraft {
+  enunciado:            string;
+  plausibilidad:        HypothesisPlausibilidad;
+  indicios:             string;
+  preguntasResolutoras: string;
+}
+
+export const INIT_HIPOTESIS_FORM_DRAFT: HipotesisFormDraft = {
+  espacio:              "determinantes",
+  enunciado:            "",
+  plausibilidad:        "moderada",
+  indicios:             "",
+  preguntasResolutoras: "",
+  autorNombre:          "",
 };

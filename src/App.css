@@ -8215,6 +8215,225 @@ h3 {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   HIPÓTESIS — espacio de trabajo interpretativo
+   Prefijo: ekc-hip-
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ekc-hip-section {
+  margin-bottom: 8px;
+}
+
+.ekc-hip-add-btn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #526070;
+  background: transparent;
+  border: 1px solid #c9d6e6;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ekc-hip-add-btn:hover {
+  background: #f8fbff;
+  color: #172033;
+}
+
+.ekc-hip-empty {
+  margin: 0;
+  padding: 16px 0;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.ekc-hip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Ítem ────────────────────────────────────────────────────────── */
+
+.ekc-hip-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+}
+
+.ekc-hip-item:last-child {
+  border-bottom: none;
+}
+
+.ekc-hip-item--activa {
+  border-left-color: #c9d6e6;
+}
+
+.ekc-hip-item--resuelta-como-interpretacion {
+  border-left-color: #e4eaf3;
+  opacity: 0.75;
+}
+
+.ekc-hip-item--descartada {
+  border-left-color: #e4eaf3;
+  opacity: 0.65;
+}
+
+.ekc-hip-item__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.ekc-hip-item__space {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #526070;
+}
+
+.ekc-hip-item__plausibilidad {
+  font-size: 0.78rem;
+  color: #64748b;
+  border: 1px solid #e4eaf3;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.ekc-hip-item__badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+.ekc-hip-item__badge--activa {
+  background: #f8fbff;
+  color: #526070;
+  border: 1px solid #c9d6e6;
+  font-style: italic;
+}
+
+.ekc-hip-item__badge--resuelta-como-interpretacion {
+  background: #f4f7fb;
+  color: #526070;
+  border: 1px solid #c9d6e6;
+}
+
+.ekc-hip-item__badge--descartada {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e4eaf3;
+}
+
+.ekc-hip-item__enunciado {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+  color: #172033;
+  line-height: 1.55;
+}
+
+.ekc-hip-item--descartada .ekc-hip-item__enunciado {
+  color: #64748b;
+}
+
+.ekc-hip-item__indicios,
+.ekc-hip-item__preguntas {
+  margin: 0 0 8px;
+}
+
+.ekc-hip-item__indicios-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.ekc-hip-item__indicios-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 0.82rem;
+  color: #526070;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ekc-hip-item__discarded-motivo {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.ekc-hip-item__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.ekc-hip-item__resolved-note {
+  font-style: italic;
+}
+
+/* ── Acciones ────────────────────────────────────────────────────── */
+
+.ekc-hip-item__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ekc-hip-item__btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #526070;
+  background: transparent;
+  border: 1px solid #c9d6e6;
+  border-radius: 4px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.ekc-hip-item__btn:hover {
+  background: #f8fbff;
+  color: #172033;
+  border-color: #526070;
+}
+
+.ekc-hip-item__btn--discard:hover {
+  border-color: #94a3b8;
+  color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .ekc-hip-item {
+    padding-left: 8px;
+  }
+  .ekc-hip-item__badge {
+    margin-left: 0;
+  }
+  .ekc-hip-item__actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    INTERPRETACIONES — espacio de trabajo interpretativo
    Prefijo: ekc-interp-
    ═══════════════════════════════════════════════════════════════════ */

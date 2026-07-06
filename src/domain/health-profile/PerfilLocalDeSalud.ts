@@ -53,8 +53,7 @@ export type HypothesisPlausibilidad = "alta" | "moderada" | "especulativa";
 export type HypothesisStatus =
   | "activa"
   | "resuelta-como-interpretacion"
-  | "descartada"
-  | "preservada";
+  | "descartada";
 
 export interface HealthProfileHypothesis {
   id:                   string;
@@ -81,7 +80,7 @@ export interface HealthProfileHypothesis {
 //   - Su existencia es información positiva, no un defecto del Perfil.
 
 export type OpenQuestionUrgencia = "alta" | "media" | "baja";
-export type OpenQuestionStatus   = "abierta" | "resuelta" | "preservada";
+export type OpenQuestionStatus   = "abierta" | "resuelta";
 
 export interface HealthProfileOpenQuestion {
   id:               string;
