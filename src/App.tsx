@@ -19,6 +19,7 @@ import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import { hasPSLHumanContent } from "./application/health-profile";
+import type { PerfilLocalDeSalud } from "./domain/health-profile";
 import {
   createHealthReportDocumentFromDocx,
   createHealthReportDocumentFromPdf,
@@ -551,6 +552,10 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
+  }, []);
+
+  const handleUpdatePerfilLocalDeSalud = useCallback((perfil: PerfilLocalDeSalud) => {
+    setWorkspace(prev => ({ ...prev, perfilLocalDeSalud: perfil }));
   }, []);
 
   const handleFormalValidation = useCallback((
@@ -2763,7 +2768,9 @@ export default function App() {
             />
             <PerfilLocalDeSaludPanel
               perfil={workspace.perfilLocalDeSalud}
+              municipalityId={municipality.id}
               municipalityName={municipality.name}
+              onUpdatePerfil={handleUpdatePerfilLocalDeSalud}
             />
           </>
         )}
