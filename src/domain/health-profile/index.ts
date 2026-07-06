@@ -12,3 +12,17 @@ export type {
   PSLPriorizacion,
   LocalHealthProfile,
 } from "./LocalHealthProfile";
+
+export type {
+  ProfileSpace,
+  InterpretationCerteza,
+  InterpretationStatus,
+  HealthProfileInterpretation,
+  HypothesisPlausibilidad,
+  HypothesisStatus,
+  HealthProfileHypothesis,
+  OpenQuestionUrgencia,
+  OpenQuestionStatus,
+  HealthProfileOpenQuestion,
+  PerfilLocalDeSalud,
+} from "./PerfilLocalDeSalud";

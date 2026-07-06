@@ -14,6 +14,7 @@ import type { LocalHealthProfileArtifact } from "../health-profile-artifact";
 import type { NHSHealthProfileArtifact } from "../nhs-health-profile";
 import type { PSLApprovalRecord, FormalValidationRecord } from "../institutional-lifecycle";
 import type { QuestionnaireProject, ProjectDatasetImport } from "../questionnaire";
+import type { PerfilLocalDeSalud } from "../health-profile";
 import type { AUDITCStudy } from "../auditc";
 import type { IPAQStudy } from "../ipaq";
 import type { GHQ12Study } from "../ghq12";
@@ -139,6 +140,14 @@ export interface MunicipalityWorkspace {
    * Acumulativo: cada importación añade una entrada.
    */
   projectDatasetImports?: ProjectDatasetImport[];
+  /**
+   * Espacio de trabajo interpretativo del Perfil Local de Salud.
+   * Construido progresivamente por el técnico: interpretaciones, hipótesis y
+   * preguntas abiertas sobre el territorio.
+   * Distinto del LocalHealthProfile (generado automáticamente por el pipeline).
+   * La ausencia de este campo es válida: workspaces anteriores no lo tienen.
+   */
+  perfilLocalDeSalud?: PerfilLocalDeSalud;
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

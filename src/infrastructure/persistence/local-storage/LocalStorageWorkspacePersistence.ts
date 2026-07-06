@@ -306,6 +306,21 @@ export function loadWorkspaceFromLocalStorage(
       }
     }
 
+    // Normalizar perfilLocalDeSalud: si existe pero le faltan arrays requeridos
+    // (workspace parcialmente migrado), reiniciar a undefined para evitar
+    // estado inconsistente. El campo se crea limpiamente cuando el técnico
+    // crea su primer elemento del Perfil.
+    if (parsed.perfilLocalDeSalud !== undefined) {
+      const p = parsed.perfilLocalDeSalud;
+      if (
+        !Array.isArray(p?.interpretaciones) ||
+        !Array.isArray(p?.hipotesis) ||
+        !Array.isArray(p?.preguntasAbiertas)
+      ) {
+        parsed.perfilLocalDeSalud = undefined;
+      }
+    }
+
     if (!hasCoreWorkspaceCollections(parsed)) return null;
 
     return normalizeCanonicalDocuments(parsed as MunicipalityWorkspace);
