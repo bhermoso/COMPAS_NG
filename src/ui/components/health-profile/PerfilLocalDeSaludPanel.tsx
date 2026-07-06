@@ -18,6 +18,7 @@ import {
   addOpenQuestion,
   updateOpenQuestion,
   resolveOpenQuestion,
+  updateSynthesis,
   type AddInterpretationInput,
   type UpdateInterpretationInput,
   type AddHypothesisInput,
@@ -43,6 +44,7 @@ import { EstadoConocimientoView } from "./EstadoConocimientoView";
 import { InterpretacionesSection } from "./InterpretacionesSection";
 import { HipotesisSection } from "./HipotesisSection";
 import { OpenQuestionSection } from "./OpenQuestionSection";
+import { SynthesisSection } from "./SynthesisSection";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -86,6 +88,9 @@ export function PerfilLocalDeSaludPanel({
   const [createQDraft,  setCreateQDraft]  = useState<OpenQuestionFormDraft>(INIT_OPEN_QUESTION_DRAFT);
   const [editQDraft,    setEditQDraft]    = useState<EditOpenQuestionFormDraft | null>(null);
   const [resolveNota,   setResolveNota]   = useState<string>("");
+
+  // Synthesis draft
+  const [synthesisDraft, setSynthesisDraft] = useState<string>("");
 
   // ── Shared cancel ──────────────────────────────────────────────────────────
   const handleCancelForm = () => { setActiveForm(null); setFormError(null); };
@@ -302,6 +307,24 @@ export function PerfilLocalDeSaludPanel({
     }
   };
 
+  // ── Synthesis handlers ──────────────────────────────────────────────────────
+
+  const handleOpenEditSynthesis = () => {
+    setActiveForm({ type: "edit-synthesis" });
+    setSynthesisDraft(perfil?.sintesisTexto ?? "");
+    setFormError(null);
+  };
+
+  const handleSubmitSynthesis = () => {
+    try {
+      const base = perfil ?? createPerfilLocalDeSalud(municipalityId);
+      onUpdatePerfil(updateSynthesis(base, synthesisDraft));
+      setActiveForm(null); setSynthesisDraft(""); setFormError(null);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "Error al guardar la síntesis.");
+    }
+  };
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -372,6 +395,20 @@ export function PerfilLocalDeSaludPanel({
         onOpenResolve={handleOpenResolveQ}
         onSubmitEdit={handleSubmitEditQ}
         onSubmitResolve={handleSubmitResolveQ}
+      />
+
+      <hr className="ekc-section-divider" />
+
+      <SynthesisSection
+        sintesisTexto={perfil?.sintesisTexto}
+        perfilUpdatedAt={perfil?.updatedAt}
+        isEditing={activeForm?.type === "edit-synthesis"}
+        draft={synthesisDraft}
+        formError={activeForm?.type === "edit-synthesis" ? formError : null}
+        onOpenEdit={handleOpenEditSynthesis}
+        onCancel={handleCancelForm}
+        onChange={setSynthesisDraft}
+        onSubmit={handleSubmitSynthesis}
       />
 
       {estado && <EstadoConocimientoView estado={estado} />}

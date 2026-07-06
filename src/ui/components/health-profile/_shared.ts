@@ -95,7 +95,8 @@ export type ActiveForm =
   | { type: "discard-hip"; id: string }
   | { type: "create-q" }
   | { type: "edit-q";      id: string }
-  | { type: "resolve-q";   id: string };
+  | { type: "resolve-q";   id: string }
+  | { type: "edit-synthesis" };
 
 // ── Interpretation drafts ─────────────────────────────────────────────────────
 

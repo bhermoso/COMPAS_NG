@@ -8987,3 +8987,47 @@ h3 {
     align-items: flex-start;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SÍNTESIS — espacio de trabajo interpretativo
+   Prefijo: ekc-syn-
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ekc-syn-section {
+  margin-bottom: 8px;
+}
+
+.ekc-syn-empty {
+  margin: 0;
+  padding: 16px 0;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.ekc-syn-content {
+  padding: 4px 0 8px;
+}
+
+.ekc-syn-text {
+  margin: 0 0 12px;
+  font-size: 0.92rem;
+  color: #172033;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.ekc-syn-meta {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.ekc-syn-meta__note {
+  font-style: italic;
+}
+
+.ekc-syn-textarea {
+  font-size: 0.90rem !important;
+  line-height: 1.7 !important;
+}
