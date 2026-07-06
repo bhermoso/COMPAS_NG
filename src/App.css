@@ -8780,3 +8780,210 @@ h3 {
     margin-left: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PREGUNTAS ABIERTAS — espacio de trabajo interpretativo
+   Prefijo: ekc-q-
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ekc-q-section {
+  margin-bottom: 8px;
+}
+
+.ekc-q-add-btn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #526070;
+  background: transparent;
+  border: 1px solid #c9d6e6;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ekc-q-add-btn:hover {
+  background: #f8fbff;
+  color: #172033;
+}
+
+.ekc-q-empty {
+  margin: 0;
+  padding: 16px 0;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.ekc-q-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Ítem ────────────────────────────────────────────────────────── */
+
+.ekc-q-item {
+  padding: 16px 0 16px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  border-left: 2px solid #e4eaf3;
+}
+
+.ekc-q-item:last-child {
+  border-bottom: none;
+}
+
+.ekc-q-item--urgencia-alta  { border-left-color: #c9d6e6; }
+.ekc-q-item--urgencia-media { border-left-color: #e4eaf3; }
+.ekc-q-item--urgencia-baja  { border-left-color: #f1f5f9; }
+
+.ekc-q-item--resuelta {
+  opacity: 0.72;
+}
+
+.ekc-q-item__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.ekc-q-item__space {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #526070;
+}
+
+.ekc-q-item__urgencia {
+  font-size: 0.78rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid #e4eaf3;
+}
+
+.ekc-q-item__urgencia--alta  { color: #1e3a5f; border-color: #c9d6e6; font-weight: 600; }
+.ekc-q-item__urgencia--media { color: #526070; }
+.ekc-q-item__urgencia--baja  { color: #94a3b8; }
+
+.ekc-q-item__badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+.ekc-q-item__badge--abierta {
+  background: #f8fbff;
+  color: #526070;
+  border: 1px solid #c9d6e6;
+  font-style: italic;
+}
+
+.ekc-q-item__badge--resuelta {
+  background: #f4f7fb;
+  color: #526070;
+  border: 1px solid #c9d6e6;
+}
+
+.ekc-q-item__formulacion {
+  margin: 0 0 6px;
+  font-size: 0.92rem;
+  color: #172033;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.ekc-q-item--resuelta .ekc-q-item__formulacion {
+  color: #64748b;
+}
+
+.ekc-q-item__relevancia {
+  margin: 0 0 8px;
+  font-size: 0.83rem;
+  color: #526070;
+  line-height: 1.5;
+}
+
+.ekc-q-item__vias,
+.ekc-q-item__resolucion {
+  margin: 0 0 8px;
+}
+
+.ekc-q-item__section-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.ekc-q-item__vias-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 0.82rem;
+  color: #526070;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ekc-q-item__resolucion-nota {
+  margin: 0;
+  font-size: 0.83rem;
+  color: #526070;
+  line-height: 1.5;
+}
+
+.ekc-q-item__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+/* ── Acciones ────────────────────────────────────────────────────── */
+
+.ekc-q-item__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ekc-q-item__btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #526070;
+  background: transparent;
+  border: 1px solid #c9d6e6;
+  border-radius: 4px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.ekc-q-item__btn:hover {
+  background: #f8fbff;
+  color: #172033;
+  border-color: #526070;
+}
+
+@media (max-width: 640px) {
+  .ekc-q-item {
+    padding-left: 8px;
+  }
+  .ekc-q-item__badge {
+    margin-left: 0;
+  }
+  .ekc-q-item__actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

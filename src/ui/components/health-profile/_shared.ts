@@ -5,6 +5,7 @@ import type {
   ProfileSpace,
   InterpretationCerteza,
   HypothesisPlausibilidad,
+  OpenQuestionUrgencia,
 } from "../../../domain/health-profile";
 import type { PerfilEstadoNivel, PerfilSpaceCoverage } from "../../../application/health-profile";
 
@@ -47,6 +48,12 @@ export const PLAUSIBILIDAD_LABEL: Record<HypothesisPlausibilidad, string> = {
   "especulativa": "Especulativa",
 };
 
+export const URGENCIA_LABEL: Record<OpenQuestionUrgencia, string> = {
+  "alta":  "Alta",
+  "media": "Media",
+  "baja":  "Baja",
+};
+
 export const SPACE_OPTIONS: Array<{ value: ProfileSpace; label: string }> = [
   { value: "contexto-territorial",     label: "Contexto territorial" },
   { value: "situacion-salud",          label: "Situación de salud" },
@@ -64,7 +71,7 @@ export function parseEvidenciaIds(raw: string): string[] {
   return raw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
 }
 
-// Indicios and preguntasResolutoras are free text — only split by newline.
+// Indicios, preguntasResolutoras, viasResolucion: free text — only split by newline.
 export function parseTextLines(raw: string): string[] {
   return raw.split(/\n+/).map(s => s.trim()).filter(Boolean);
 }
@@ -85,9 +92,12 @@ export type ActiveForm =
   | { type: "create-hip" }
   | { type: "edit-hip";    id: string }
   | { type: "resolve-hip"; id: string }
-  | { type: "discard-hip"; id: string };
+  | { type: "discard-hip"; id: string }
+  | { type: "create-q" }
+  | { type: "edit-q";      id: string }
+  | { type: "resolve-q";   id: string };
 
-// Interpretation form drafts
+// ── Interpretation drafts ─────────────────────────────────────────────────────
 
 export interface InterpretacionFormDraft {
   espacio:         ProfileSpace;
@@ -113,14 +123,14 @@ export const INIT_FORM_DRAFT: InterpretacionFormDraft = {
   evidenciaIdsRaw: "",
 };
 
-// Hypothesis form drafts
+// ── Hypothesis drafts ─────────────────────────────────────────────────────────
 
 export interface HipotesisFormDraft {
   espacio:              ProfileSpace;
   enunciado:            string;
   plausibilidad:        HypothesisPlausibilidad;
-  indicios:             string;   // newline-separated free text
-  preguntasResolutoras: string;   // newline-separated free text
+  indicios:             string;
+  preguntasResolutoras: string;
   autorNombre:          string;
 }
 
@@ -138,4 +148,29 @@ export const INIT_HIPOTESIS_FORM_DRAFT: HipotesisFormDraft = {
   indicios:             "",
   preguntasResolutoras: "",
   autorNombre:          "",
+};
+
+// ── Open question drafts ──────────────────────────────────────────────────────
+
+export interface OpenQuestionFormDraft {
+  espacio:        ProfileSpace;
+  formulacion:    string;
+  relevancia:     string;
+  urgencia:       OpenQuestionUrgencia;
+  viasResolucion: string;   // newline-separated free text
+}
+
+export interface EditOpenQuestionFormDraft {
+  formulacion:    string;
+  relevancia:     string;
+  urgencia:       OpenQuestionUrgencia;
+  viasResolucion: string;
+}
+
+export const INIT_OPEN_QUESTION_DRAFT: OpenQuestionFormDraft = {
+  espacio:        "preguntas-abiertas",
+  formulacion:    "",
+  relevancia:     "",
+  urgencia:       "media",
+  viasResolucion: "",
 };

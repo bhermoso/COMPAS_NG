@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import type { PerfilLocalDeSalud, HealthProfileInterpretation, HealthProfileHypothesis } from "../../../domain/health-profile";
+import type {
+  PerfilLocalDeSalud,
+  HealthProfileInterpretation,
+  HealthProfileHypothesis,
+  HealthProfileOpenQuestion,
+} from "../../../domain/health-profile";
 import {
   computeEstadoDelConocimiento,
   createPerfilLocalDeSalud,
@@ -10,14 +15,20 @@ import {
   updateHypothesis,
   resolveHypothesisAsInterpretation,
   discardHypothesis,
+  addOpenQuestion,
+  updateOpenQuestion,
+  resolveOpenQuestion,
   type AddInterpretationInput,
   type UpdateInterpretationInput,
   type AddHypothesisInput,
   type UpdateHypothesisInput,
+  type AddOpenQuestionInput,
+  type UpdateOpenQuestionInput,
 } from "../../../application/health-profile";
 import {
   INIT_FORM_DRAFT,
   INIT_HIPOTESIS_FORM_DRAFT,
+  INIT_OPEN_QUESTION_DRAFT,
   parseEvidenciaIds,
   parseTextLines,
   type ActiveForm,
@@ -25,10 +36,13 @@ import {
   type EditFormDraft,
   type HipotesisFormDraft,
   type EditHipotesisFormDraft,
+  type OpenQuestionFormDraft,
+  type EditOpenQuestionFormDraft,
 } from "./_shared";
 import { EstadoConocimientoView } from "./EstadoConocimientoView";
 import { InterpretacionesSection } from "./InterpretacionesSection";
 import { HipotesisSection } from "./HipotesisSection";
+import { OpenQuestionSection } from "./OpenQuestionSection";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -67,6 +81,11 @@ export function PerfilLocalDeSaludPanel({
   const [editHipDraft,    setEditHipDraft]    = useState<EditHipotesisFormDraft | null>(null);
   const [resolveHipDraft, setResolveHipDraft] = useState<InterpretacionFormDraft | null>(null);
   const [discardMotivo,   setDiscardMotivo]   = useState<string>("");
+
+  // Open question drafts
+  const [createQDraft,  setCreateQDraft]  = useState<OpenQuestionFormDraft>(INIT_OPEN_QUESTION_DRAFT);
+  const [editQDraft,    setEditQDraft]    = useState<EditOpenQuestionFormDraft | null>(null);
+  const [resolveNota,   setResolveNota]   = useState<string>("");
 
   // ── Shared cancel ──────────────────────────────────────────────────────────
   const handleCancelForm = () => { setActiveForm(null); setFormError(null); };
@@ -220,6 +239,69 @@ export function PerfilLocalDeSaludPanel({
     }
   };
 
+  // ── Open question handlers ──────────────────────────────────────────────────
+
+  const handleOpenCreateQ = () => {
+    setActiveForm({ type: "create-q" });
+    setCreateQDraft(INIT_OPEN_QUESTION_DRAFT);
+    setFormError(null);
+  };
+
+  const handleSubmitCreateQ = () => {
+    try {
+      const base = perfil ?? createPerfilLocalDeSalud(municipalityId);
+      const input: AddOpenQuestionInput = {
+        espacio:        createQDraft.espacio,
+        formulacion:    createQDraft.formulacion,
+        relevancia:     createQDraft.relevancia,
+        urgencia:       createQDraft.urgencia,
+        viasResolucion: parseTextLines(createQDraft.viasResolucion),
+      };
+      onUpdatePerfil(addOpenQuestion(base, input));
+      setActiveForm(null); setCreateQDraft(INIT_OPEN_QUESTION_DRAFT); setFormError(null);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "Error al añadir la pregunta.");
+    }
+  };
+
+  const handleOpenEditQ = (pq: HealthProfileOpenQuestion) => {
+    setActiveForm({ type: "edit-q", id: pq.id });
+    setEditQDraft({ formulacion: pq.formulacion, relevancia: pq.relevancia, urgencia: pq.urgencia, viasResolucion: pq.viasResolucion.join("\n") });
+    setFormError(null);
+  };
+
+  const handleSubmitEditQ = (id: string) => {
+    if (!perfil || !editQDraft) return;
+    try {
+      const changes: UpdateOpenQuestionInput = {
+        formulacion:    editQDraft.formulacion,
+        relevancia:     editQDraft.relevancia,
+        urgencia:       editQDraft.urgencia,
+        viasResolucion: parseTextLines(editQDraft.viasResolucion),
+      };
+      onUpdatePerfil(updateOpenQuestion(perfil, id, changes));
+      setActiveForm(null); setEditQDraft(null); setFormError(null);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "Error al actualizar la pregunta.");
+    }
+  };
+
+  const handleOpenResolveQ = (pq: HealthProfileOpenQuestion) => {
+    setActiveForm({ type: "resolve-q", id: pq.id });
+    setResolveNota("");
+    setFormError(null);
+  };
+
+  const handleSubmitResolveQ = (id: string) => {
+    if (!perfil) return;
+    try {
+      onUpdatePerfil(resolveOpenQuestion(perfil, id, resolveNota.trim()));
+      setActiveForm(null); setResolveNota(""); setFormError(null);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "Error al resolver la pregunta.");
+    }
+  };
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -269,6 +351,27 @@ export function PerfilLocalDeSaludPanel({
         onSubmitEdit={handleSubmitEditHip}
         onSubmitResolve={handleSubmitResolveHip}
         onSubmitDiscard={handleSubmitDiscardHip}
+      />
+
+      <hr className="ekc-section-divider" />
+
+      <OpenQuestionSection
+        preguntasAbiertas={perfil?.preguntasAbiertas ?? []}
+        activeForm={activeForm}
+        createDraft={createQDraft}
+        editDraft={editQDraft}
+        resolveNota={resolveNota}
+        formError={formError}
+        onOpenCreate={handleOpenCreateQ}
+        onCancelForm={handleCancelForm}
+        onChangeCreate={updates => setCreateQDraft(prev => ({ ...prev, ...updates }))}
+        onChangeEdit={updates => setEditQDraft(prev => prev ? { ...prev, ...updates } : null)}
+        onChangeResolve={setResolveNota}
+        onSubmitCreate={handleSubmitCreateQ}
+        onOpenEdit={handleOpenEditQ}
+        onOpenResolve={handleOpenResolveQ}
+        onSubmitEdit={handleSubmitEditQ}
+        onSubmitResolve={handleSubmitResolveQ}
       />
 
       {estado && <EstadoConocimientoView estado={estado} />}
