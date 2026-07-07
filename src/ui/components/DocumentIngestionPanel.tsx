@@ -54,6 +54,9 @@ export function DocumentIngestionPanel({
   const isComplementaryStudy = kind === "complementary-study";
   const isStrategicFramework = kind === "strategic-framework";
   const isLocalizaSalud = kind === "localiza-salud";
+  const isTerritorialDocumentation = kind === "territorial-documentation";
+  const isQualitativeMaterial = kind === "qualitative-material";
+  const isLongitudinalEvidence = kind === "longitudinal-evidence";
 
   return (
     <section className="workspace-panel">
@@ -138,6 +141,12 @@ export function DocumentIngestionPanel({
             Pega el texto del marco o guía (puede ser un extracto, un índice de objetivos
             estratégicos o las líneas de acción relevantes). Cada línea o párrafo se
             registrará como una prioridad estratégica de referencia trazable.
+          </p>
+          <p className="ingestion-hint">
+            Estos marcos orientan el diagnóstico y la planificación participativa, pero
+            no son datos poblacionales ni generan recomendaciones automáticas del Perfil.
+            Su función es proporcionar el contexto normativo y estratégico que el equipo
+            técnico debe tener presente al interpretar el territorio.
           </p>
           <textarea
             value={plainText}
@@ -291,6 +300,180 @@ export function DocumentIngestionPanel({
               <strong>{lastProcessedDocument.title}</strong>
               {atomsCreated !== undefined && atomsCreated > 0 && (
                 <> · <strong>{atomsCreated}</strong> activos comunitarios incorporados</>
+              )}
+            </p>
+          )}
+        </div>
+      ) : isTerritorialDocumentation ? (
+        /* ── Documentación Territorial de Contexto ── */
+        <div className="docx-upload">
+          <select
+            value={kind}
+            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+            className="docx-upload__kind"
+          >
+            {documentKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="ingestion-hint">
+            Registra documentación territorial de contexto: Informes Vigía de zona de salud,
+            diagnósticos de barrio o distrito, informes municipales socioeconómicos, datos
+            censales u cualquier fuente que contextualice el ámbito desde una perspectiva
+            territorial. Cada línea o párrafo se incorporará como unidad de evidencia territorial.
+          </p>
+          <p className="ingestion-hint">
+            Si la fuente cubre un ámbito más amplio que el municipio o distrito —provincial,
+            comarcal o de zona de salud—, indícalo en el título para mantener la trazabilidad
+            de escala. La fuente queda registrada como contexto territorial, no como dato
+            propio del ámbito.
+          </p>
+          <textarea
+            value={plainText}
+            onChange={(event) => onPlainTextChange(event.target.value)}
+            placeholder={"Pega aquí el contenido del Informe Vigía, diagnóstico de barrio u otra fuente territorial.\nEjemplo: La zona básica de salud presenta una tasa de envejecimiento del 22 %, superior a la media provincial."}
+            rows={8}
+          />
+          <div className="document-form">
+            <input
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              placeholder="Título y fuente (ej. Informe Vigía Zaidín Centro Este — 2023)"
+            />
+            <button
+              type="button"
+              onClick={onProcessDocument}
+              disabled={!canSubmit}
+              title={canSubmit ? undefined : hint}
+            >
+              Registrar documentación
+            </button>
+          </div>
+          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {lastProcessedDocument && lastProcessedDocument.kind === "territorial-documentation" && (
+            <p className="panel-note">
+              Último documento registrado:{" "}
+              <strong>{lastProcessedDocument.title}</strong>
+              {atomsCreated !== undefined && atomsCreated > 0 && (
+                <> · <strong>{atomsCreated}</strong> unidades de contexto territorial incorporadas</>
+              )}
+            </p>
+          )}
+        </div>
+      ) : isQualitativeMaterial ? (
+        /* ── Material Cualitativo y Participativo ── */
+        <div className="docx-upload">
+          <select
+            value={kind}
+            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+            className="docx-upload__kind"
+          >
+            {documentKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="ingestion-hint">
+            Registra material cualitativo o participativo: actas del Grupo Motor, resultados
+            de grupos focales, resúmenes de entrevistas comunitarias, formularios de necesidades
+            sentidas u otros materiales de proceso que recogen la perspectiva ciudadana sobre
+            el territorio y la salud.
+          </p>
+          <p className="ingestion-hint">
+            Este material aporta un conocimiento del territorio que los datos estadísticos
+            no pueden capturar. Antes de trasladarlo a prioridades o acciones, el equipo
+            técnico debe establecer el alcance de representatividad y el grado de consenso
+            del grupo participante.
+          </p>
+          <textarea
+            value={plainText}
+            onChange={(event) => onPlainTextChange(event.target.value)}
+            placeholder={"Pega aquí el contenido del acta, formulario de necesidades sentidas, resumen de grupo focal…\nEjemplo: El grupo identificó el aislamiento de personas mayores como problema principal de salud en el barrio."}
+            rows={8}
+          />
+          <div className="document-form">
+            <input
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              placeholder="Título y fuente (ej. Acta 1 Grupo Motor Granada-Zaidín — marzo 2024)"
+            />
+            <button
+              type="button"
+              onClick={onProcessDocument}
+              disabled={!canSubmit}
+              title={canSubmit ? undefined : hint}
+            >
+              Registrar material cualitativo
+            </button>
+          </div>
+          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {lastProcessedDocument && lastProcessedDocument.kind === "qualitative-material" && (
+            <p className="panel-note">
+              Último material registrado:{" "}
+              <strong>{lastProcessedDocument.title}</strong>
+              {atomsCreated !== undefined && atomsCreated > 0 && (
+                <> · <strong>{atomsCreated}</strong> hallazgos cualitativos incorporados</>
+              )}
+            </p>
+          )}
+        </div>
+      ) : isLongitudinalEvidence ? (
+        /* ── Evidencia longitudinal o comparativa entre ciclos ── */
+        <div className="docx-upload">
+          <select
+            value={kind}
+            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+            className="docx-upload__kind"
+          >
+            {documentKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="ingestion-hint">
+            Registra evidencia comparativa entre ciclos de planificación: datos de series
+            históricas, evolución de indicadores de salud en años anteriores, resultados de
+            evaluaciones de planes previos u otra evidencia que permita trazar la evolución
+            del territorio en el tiempo.
+          </p>
+          <p className="ingestion-hint">
+            Esta categoría es especialmente útil en ciclos de actualización del Perfil,
+            cuando existe un diagnóstico anterior con el que contrastar. En un primer ciclo
+            sin datos previos, puede dejarse sin contenido o incorporarse solo si hay series
+            históricas disponibles externas al proceso actual.
+          </p>
+          <textarea
+            value={plainText}
+            onChange={(event) => onPlainTextChange(event.target.value)}
+            placeholder={"Pega aquí la evidencia comparativa o la serie histórica relevante.\nEjemplo: Tasa de mortalidad evitable 2018–2023 — Zona básica Zaidín Sur: evolución descendente del 12 % al 9 %."}
+            rows={8}
+          />
+          <div className="document-form">
+            <input
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              placeholder="Título y período (ej. Evolución indicadores salud Zaidín 2018–2023)"
+            />
+            <button
+              type="button"
+              onClick={onProcessDocument}
+              disabled={!canSubmit}
+              title={canSubmit ? undefined : hint}
+            >
+              Registrar evidencia longitudinal
+            </button>
+          </div>
+          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {lastProcessedDocument && lastProcessedDocument.kind === "longitudinal-evidence" && (
+            <p className="panel-note">
+              Última evidencia registrada:{" "}
+              <strong>{lastProcessedDocument.title}</strong>
+              {atomsCreated !== undefined && atomsCreated > 0 && (
+                <> · <strong>{atomsCreated}</strong> snapshots longitudinales incorporados</>
               )}
             </p>
           )}

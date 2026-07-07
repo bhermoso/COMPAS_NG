@@ -320,6 +320,11 @@ function classifyEvidenceKind(
     return "participation";
   }
 
+  // Evidencia longitudinal: siempre produce snapshots comparativos
+  if (documentKind === "longitudinal-evidence") {
+    return "longitudinal-snapshot";
+  }
+
   return "qualitative-observation";
 }
 
