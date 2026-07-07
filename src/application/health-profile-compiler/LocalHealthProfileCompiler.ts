@@ -304,6 +304,7 @@ export function compileLocalHealthProfile(
       longitudinalEvidenceCount: psl.longitudinalEvidenceCount,
       marcosAplicados: psl.marcosAplicados.map((m) => ({ ...m })),
       tensionesEstructurales: [...psl.tensionesEstructurales],
+      limitacionesDiagnosticas: [...(psl.limitacionesDiagnosticas ?? [])],
       tensionesEscaladasCount: psl.tensionesEscaladas.length,
       tensionesNoEscaladasCount: psl.tensionesNoEscaladas.length,
       ruidoEstructuralCount: psl.ruidoEstructural.length,

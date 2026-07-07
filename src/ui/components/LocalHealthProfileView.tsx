@@ -21,7 +21,7 @@ interface LocalHealthProfileViewProps {
 // ── Status label ──────────────────────────────────────────────────────────────
 
 const STATUS_LABEL: Record<LocalHealthProfile["status"], string> = {
-  generated: "Borrador generado",
+  generated: "Documento de trabajo",
   review:    "En revisión técnica",
   validated: "Validado",
   approved:  "Aprobado",
@@ -89,7 +89,7 @@ const CHAPTERS = [
   { href: "#psl-cap-iii", label: "III · Diagnóstico" },
   { href: "#psl-cap-iv",  label: "IV · Interpretación" },
   { href: "#psl-cap-v",   label: "V · Conclusiones" },
-  { href: "#psl-cap-vi",  label: "VI · Recomendaciones" },
+  { href: "#psl-cap-vi",  label: "VI · Cierre interpretativo" },
   { href: "#psl-cap-vii", label: "VII · Priorización" },
 ] as const;
 
@@ -557,9 +557,9 @@ export function LocalHealthProfileView({
               {STATUS_LABEL[psl.status]}
             </span>
             <span className="psl-doc-header__date">Generado el {generatedDate}</span>
-            {psl.totalEvidenceAtoms > 0 && (
+            {psl.originsSummary.length > 0 && (
               <span className="psl-doc-header__atoms">
-                {psl.totalEvidenceAtoms} evidencias · {psl.originsSummary.length} fuente(s)
+                {psl.originsSummary.length} fuente(s) de diagnóstico incorporada(s)
               </span>
             )}
           </div>
@@ -569,11 +569,9 @@ export function LocalHealthProfileView({
       {/* ── Estado: borrador / validado / validado obsoleto ───────────────── */}
       {psl.status === "generated" && (
         <div className="psl-doc-draft-notice">
-          <span className="psl-doc-draft-notice__label">Borrador</span>
-          Este Perfil de Salud Local ha sido generado automáticamente por{" "}
-          <span className="psl-doc-compas-brand">COMPÁS NG</span> a partir de
-          la evidencia disponible. Requiere revisión y validación técnica antes
-          de su uso oficial.
+          <span className="psl-doc-draft-notice__label">Documento de trabajo</span>
+          Base diagnóstica en elaboración. Requiere revisión técnica y validación
+          por el equipo local antes de su uso institucional.
         </div>
       )}
 
@@ -644,7 +642,7 @@ export function LocalHealthProfileView({
             <div className="psl-doc-kpi-grid">
               <div className="psl-doc-kpi psl-doc-kpi--total">
                 <span className="psl-doc-kpi__value">{psl.totalEvidenceAtoms}</span>
-                <span className="psl-doc-kpi__label">Evidencias estructuradas</span>
+                <span className="psl-doc-kpi__label">Elementos de diagnóstico</span>
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--determinant">
                 <span className="psl-doc-kpi__value">{psl.determinantCount}</span>
@@ -679,8 +677,7 @@ export function LocalHealthProfileView({
                 </p>
                 {psl.healthReportTitle && (
                   <p className="psl-doc-primary-source__meta">
-                    {psl.healthReportSectionCount} sección(es) analizadas ·{" "}
-                    {psl.healthReportAtomCount} evidencia(s) estructurada(s)
+                    Fuente primaria · Preservado íntegramente en el Repositorio documental
                   </p>
                 )}
               </div>
@@ -755,34 +752,25 @@ export function LocalHealthProfileView({
               <div className="psl-doc-health-report__identity">
                 <h3 className="psl-doc-health-report__title">{psl.healthReportTitle}</h3>
                 <p className="psl-doc-health-report__caption">
-                  Documento fuente primario. Preservado íntegramente en el Repositorio
-                  documental. COMPÁS NG no lo sustituye: lo reinterpreta y enriquece.
+                  Fuente epidemiológica oficial del municipio. Preservado íntegramente
+                  en el Repositorio documental. El Perfil lo referencia y lo contextualiza
+                  con otras fuentes territoriales; no lo sustituye ni lo modifica.
                 </p>
-                <div className="psl-doc-health-report__stats">
-                  <div className="psl-doc-mini-kpi">
-                    <span className="psl-doc-mini-kpi__value">{psl.healthReportSectionCount}</span>
-                    <span className="psl-doc-mini-kpi__label">Secciones analizadas</span>
-                  </div>
-                  <div className="psl-doc-mini-kpi">
-                    <span className="psl-doc-mini-kpi__value">{psl.healthReportAtomCount}</span>
-                    <span className="psl-doc-mini-kpi__label">Evidencias estructuradas</span>
-                  </div>
-                </div>
               </div>
             </div>
-            <InterpretationBox label="¿Qué aporta COMPÁS NG al Informe de Salud?">
+            <InterpretationBox label="Rol del Informe de Salud en el Perfil">
               <p>
-                COMPÁS NG extrae el contenido diagnóstico del Informe de Salud, lo clasifica
-                por tipo de evidencia (indicadores epidemiológicos, determinantes sociales,
-                activos comunitarios, hallazgos cualitativos y cautelas metodológicas) y lo
-                integra con el resto de fuentes del municipio.
+                El Informe de Salud es la base epidemiológica oficial del Perfil.
+                COMPÁS NG lo referencia íntegramente y lo contextualiza con el
+                diagnóstico participativo, los determinantes sociales y los activos
+                comunitarios del territorio.
               </p>
               <p>
-                La lectura resultante trasciende la descripción epidemiológica clásica:
-                incorpora determinantes sociales, recursos comunitarios y perspectiva
-                salutogénica, respondiendo no solo a <em>«qué ocurre»</em> sino a{" "}
-                <em>«por qué ocurre»</em>, <em>«con qué capacidades cuenta el municipio»</em>{" "}
-                y <em>«qué oportunidades de acción existen»</em>.
+                El Perfil no sustituye ni modifica el Informe de Salud. Lo que aporta
+                es la lectura integrada: incorpora la perspectiva ciudadana, los
+                recursos del territorio y el enfoque salutogénico, respondiendo no
+                solo a <em>«qué ocurre»</em> sino a <em>«por qué ocurre»</em>{" "}
+                y <em>«con qué capacidades cuenta el municipio»</em>.
               </p>
             </InterpretationBox>
           </>
@@ -923,13 +911,28 @@ export function LocalHealthProfileView({
               </div>
             )}
 
+            {(psl.limitacionesDiagnosticas?.length ?? 0) > 0 && (
+              <div className="psl-doc-limitations">
+                <p className="psl-doc-limitations__label">Limitaciones del diagnóstico</p>
+                <p className="psl-doc-limitations__note">
+                  Observaciones sobre la base documental disponible. No son áreas de intervención.
+                  Deben considerarse antes de avanzar hacia priorización.
+                </p>
+                <ul className="psl-doc-limitation-list">
+                  {(psl.limitacionesDiagnosticas ?? []).map((l, i) => (
+                    <li key={i} className="psl-doc-limitation-item">{l}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {psl.conflictos.length > 0 && (
               <div className="psl-doc-conflicts">
                 <p className="psl-doc-conflicts__label">
                   Conflictos interpretativos detectados ({psl.conflictos.length})
                 </p>
                 <p className="psl-doc-conflicts__note">
-                  Ningún conflicto ha sido resuelto por el sistema. Requieren deliberación técnica.
+                  Los conflictos interpretativos detectados requieren contraste con el equipo técnico y el Grupo Motor. La resolución es competencia humana.
                 </p>
                 <div className="psl-doc-conflict-list">
                   {psl.conflictos.map((c) => (
@@ -957,37 +960,72 @@ export function LocalHealthProfileView({
               </div>
             )}
 
-            {psl.areasDeIntervencion.length > 0 && (
-              <div className="psl-doc-areas">
-                <p className="psl-doc-areas__label">
-                  Áreas de intervención territorial ({psl.areasDeIntervencion.length})
-                </p>
-                <p className="psl-doc-areas-intro">
-                  Áreas identificadas a partir de la evidencia disponible.
-                  Son candidaturas técnicas del sistema; requieren validación y deliberación
-                  antes de traducirse en objetivos del Plan de Acción.
-                </p>
-                <div className="psl-doc-area-list">
-                  {psl.areasDeIntervencion.map((area, i) => (
-                    <div key={area.id} className="psl-doc-area-card">
-                      <div className="psl-doc-area-card__num">{i + 1}</div>
-                      <div className="psl-doc-area-card__body">
-                        <h3 className="psl-doc-area-card__title">{area.title}</h3>
-                        <p className="psl-doc-area-card__rationale">{area.rationale}</p>
-                        <p className="psl-doc-area-card__meta">
-                          {area.relatedEvidenceIds.length} evidencia(s) relacionada(s)
-                        </p>
-                        {area.cautions.length > 0 && (
-                          <ul className="psl-doc-area-card__cautions">
-                            {area.cautions.map((c) => <li key={c}>{c}</li>)}
-                          </ul>
-                        )}
+            {(() => {
+              const realAreas = psl.areasDeIntervencion.filter((a) => !a.isAnalyticalGap);
+              const analyticalGaps = psl.areasDeIntervencion.filter((a) => a.isAnalyticalGap);
+              return (
+                <>
+                  {realAreas.length > 0 ? (
+                    <div className="psl-doc-areas">
+                      <p className="psl-doc-areas__label">
+                        Áreas de intervención territorial ({realAreas.length})
+                      </p>
+                      <p className="psl-doc-areas-intro">
+                        Áreas identificadas a partir de la evidencia disponible.
+                        Son candidaturas para la deliberación técnica y comunitaria;
+                        requieren validación antes de traducirse en objetivos del Plan de Acción.
+                      </p>
+                      <div className="psl-doc-area-list">
+                        {realAreas.map((area, i) => (
+                          <div key={area.id} className="psl-doc-area-card">
+                            <div className="psl-doc-area-card__num">{i + 1}</div>
+                            <div className="psl-doc-area-card__body">
+                              <h3 className="psl-doc-area-card__title">{area.title}</h3>
+                              <p className="psl-doc-area-card__rationale">{area.rationale}</p>
+                              {area.relatedEvidenceIds.length > 0 && (
+                                <p className="psl-doc-area-card__meta">
+                                  {area.relatedEvidenceIds.length} referencia(s) de evidencia
+                                </p>
+                              )}
+                              {area.cautions.length > 0 && (
+                                <ul className="psl-doc-area-card__cautions">
+                                  {area.cautions.map((c) => <li key={c}>{c}</li>)}
+                                </ul>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  ) : (
+                    <div className="psl-doc-notice psl-doc-notice--info">
+                      El Perfil no identifica todavía áreas territoriales sustantivas para
+                      priorización. Antes de formular candidaturas, es necesario completar
+                      la lectura diagnóstica con determinantes, contexto territorial,
+                      participación y validación técnica.
+                    </div>
+                  )}
+                  {analyticalGaps.length > 0 && (
+                    <div className="psl-doc-gaps">
+                      <p className="psl-doc-gaps__label">Aspectos pendientes de contraste</p>
+                      <p className="psl-doc-gaps__intro">
+                        El diagnóstico señala cuestiones que requieren atención metodológica
+                        o ampliación de evidencia antes de avanzar hacia la priorización.
+                        No son áreas de intervención territorial.
+                      </p>
+                      <div className="psl-doc-gap-list">
+                        {analyticalGaps.map((gap) => (
+                          <div key={gap.id} className="psl-doc-gap-card">
+                            <h3 className="psl-doc-gap-card__title">{gap.title}</h3>
+                            <p className="psl-doc-gap-card__rationale">{gap.rationale}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
       </section>
@@ -1049,9 +1087,9 @@ export function LocalHealthProfileView({
           <div className="psl-doc-prio-block">
             <p className="psl-doc-prio-block__label">Candidaturas técnicas</p>
             <p className="psl-doc-prio-block__caption">
-              Áreas de intervención con suficiente evidencia para ser consideradas
-              en la priorización. Son propuestas del sistema; no ordenan prioridades
-              sin deliberación.
+              Áreas identificadas a partir de la evidencia disponible para ser
+              consideradas en la deliberación con el Grupo Motor.
+              No ordenan prioridades sin contraste técnico y comunitario.
             </p>
             <div className="psl-doc-candidature-list">
               {psl.priorizacion.candidaturasTecnicas.map((c, i) => (
@@ -1141,7 +1179,7 @@ export function LocalHealthProfileView({
             </>
           ) : (
             <p className="panel-note">
-              Para compilar el PSL-C, complete los capítulos V (Conclusiones) y VI (Recomendaciones)
+              Para compilar el PSL-C, complete los capítulos V (Conclusiones) y VI (Cierre interpretativo)
               con autoría humana, y documente el consenso del Grupo Motor en el capítulo VII.
             </p>
           )}

@@ -7,6 +7,7 @@ export interface OITOpportunity {
   rationale: string;
   relatedEvidenceIds: string[];
   cautions: string[];
+  isAnalyticalGap?: boolean;
   requiresHumanValidation: true;
 }
 
@@ -57,12 +58,13 @@ export function generateOIT(lt1: LT1Result): OITResult {
         id: "oit-methodological-review",
         title: "Revisar cautelas metodológicas antes de priorizar",
         rationale:
-          "La lectura LT1 incorpora cautelas metodológicas. La oportunidad consiste en separar evidencia utilizable, evidencia débil y aspectos que requieren validación antes de avanzar hacia priorización.",
+          "El diagnóstico incorpora cautelas metodológicas que deben separarse de la evidencia utilizable antes de avanzar hacia priorización. Conviene documentar límites, sesgos y aspectos que requieren validación técnica.",
         relatedEvidence: lt1.methodologicalCautions,
         cautions: [
           "No usar evidencia metodológicamente débil como base única de una línea de acción.",
           "Documentar límites, sesgos y necesidades de revisión técnica.",
         ],
+        isAnalyticalGap: true,
       })
     );
   }
@@ -72,12 +74,13 @@ export function generateOIT(lt1: LT1Result): OITResult {
       id: "oit-expand-evidence-base",
       title: "Ampliar la base municipal de evidencia",
       rationale:
-        "La evidencia disponible aún no permite formular oportunidades territoriales robustas. Conviene incorporar determinantes, activos, indicadores y participación antes de priorizar.",
+        "La información disponible aún no permite formular candidaturas territoriales sustantivas. Conviene incorporar determinantes, activos, indicadores y participación antes de avanzar hacia priorización.",
       relatedEvidenceIds: lt1.supportingEvidenceIds,
       cautions: [
         "No iniciar priorización estratégica con base documental insuficiente.",
         "Registrar fuentes mínimas antes de traducir a EPVSA o Plan de Acción.",
       ],
+      isAnalyticalGap: true,
       requiresHumanValidation: true,
     });
   }
@@ -95,6 +98,7 @@ function buildOpportunity(input: {
   rationale: string;
   relatedEvidence: EvidenceAtom[];
   cautions: string[];
+  isAnalyticalGap?: boolean;
 }): OITOpportunity {
   return {
     id: input.id,
@@ -102,6 +106,7 @@ function buildOpportunity(input: {
     rationale: input.rationale,
     relatedEvidenceIds: input.relatedEvidence.map((atom) => atom.id),
     cautions: input.cautions,
+    isAnalyticalGap: input.isAnalyticalGap,
     requiresHumanValidation: true,
   };
 }

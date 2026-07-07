@@ -118,6 +118,7 @@ export interface PSLCArtifactLecturaTerritorial {
   longitudinalEvidenceCount: number;
   marcosAplicados: ReadonlyArray<{ framework: string; elementCount: number }>;
   tensionesEstructurales: string[];
+  limitacionesDiagnosticas?: string[];
   tensionesEscaladasCount: number;
   tensionesNoEscaladasCount: number;
   ruidoEstructuralCount: number;

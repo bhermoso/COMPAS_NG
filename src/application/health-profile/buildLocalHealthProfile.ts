@@ -99,12 +99,13 @@ export function buildLocalHealthProfile(
   const topicMap = new Map(THEMATIC_TOPICS.map((t) => [t.id, t.label]));
   const selectedIds = workspace.thematicPrioritisation?.selectedTopicIds ?? [];
 
-  const hasTechnical =
-    oitParaDecision.opportunities.length > 0 &&
-    oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
+  const realOpportunities = oitParaDecision.opportunities.filter(
+    (o) => !o.isAnalyticalGap
+  );
+  const hasTechnical = realOpportunities.length > 0;
 
   const priorizacion: PSLPriorizacion = {
-    candidaturasTecnicas: oitParaDecision.opportunities.map((o) => ({
+    candidaturasTecnicas: realOpportunities.map((o) => ({
       id: o.id,
       title: o.title,
       rationale: o.rationale,
@@ -179,6 +180,7 @@ export function buildLocalHealthProfile(
     longitudinalEvidenceCount: mit.dimensionLongitudinal.evidenciasLongitudinales,
     marcosAplicados: [...mit.marcosAplicados],
     tensionesEstructurales: [...mit.tensionesEstructurales],
+    limitacionesDiagnosticas: [...(mit.limitacionesDiagnosticas ?? [])],
     conflictos: reconciliacion.conflictos.map(mapConflicto),
     tensionesEscaladas: reconciliacion.tensionesEscaladas.map(mapTension),
     tensionesNoEscaladas: reconciliacion.tensionesNoEscaladas.map(mapTension),
@@ -187,7 +189,7 @@ export function buildLocalHealthProfile(
 
     // ── V: Conclusiones (scaffold) ─────────────────────────────────────────
     conclusiones: {
-      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, originsSummary, hr?.title, workspace.ibseStudy),
+      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hr?.title, workspace.ibseStudy),
       status: "scaffold",
       authorshipNote:
         "Requiere autoría humana. El equipo técnico debe redactar la síntesis " +
@@ -255,6 +257,7 @@ function mapAreaIntervencion(o: OITOpportunity): PSLAreaIntervencion {
     rationale: o.rationale,
     relatedEvidenceIds: [...o.relatedEvidenceIds],
     cautions: [...o.cautions],
+    isAnalyticalGap: o.isAnalyticalGap,
   };
 }
 
@@ -264,82 +267,80 @@ function buildConclusionesScaffold(
   mit: EstadoTerritorialEvolutivo,
   reconciliacion: ReconciliacionResult,
   oitParaDecision: OITResult,
-  originsSummary: string[],
   healthReportTitle: string | undefined,
   ibseStudy: IBSEStudy | undefined,
 ): string {
   const lt1 = mit.dimensionDiagnostica;
-  const hasReal =
-    oitParaDecision.opportunities.length > 0 &&
-    oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
+  const hasReal = oitParaDecision.opportunities.some((o) => !o.isAnalyticalGap);
 
   if (mit.totalEvidencias === 0) {
     return (
-      "Base documental insuficiente para construir una lectura territorial. " +
-      "Incorpora documentos al repositorio antes de redactar las conclusiones."
+      "El Perfil aún no dispone de información territorial suficiente para formular " +
+      "conclusiones sustantivas. Incorpora fuentes diagnósticas al repositorio " +
+      "antes de redactar este capítulo."
     );
   }
 
   const parts: string[] = [];
 
-  // ── Bloque 1: fuentes y base documental ──────────────────────────────────
-  const sourceLine =
-    `La lectura territorial se ha construido a partir de ${mit.totalEvidencias} ` +
-    `evidencias estructuradas procedentes de: ${originsSummary.join(", ")}.`;
-  const reportLine = healthReportTitle
-    ? ` «${healthReportTitle}» es la fuente diagnóstica primaria.`
-    : "";
-  parts.push(sourceLine + reportLine);
-
-  // ── Bloque 2: síntesis diagnóstica del MIT ────────────────────────────────
-  // lt1.summary es ya un párrafo narrativo correcto generado por LT1Engine.
+  // ── Bloque 1: lectura territorial (territorial, no pipeline) ─────────────
+  // lt1.summary es la síntesis diagnóstica generada por LT1Engine.
+  // Con la nueva redacción habla del territorio, no del sistema.
   parts.push(lt1.summary);
 
-  // ── Bloque 3: áreas de intervención detectadas ────────────────────────────
+  // ── Bloque 2: referencia al Informe de Salud (si existe) ──────────────────
+  if (healthReportTitle) {
+    parts.push(
+      `«${healthReportTitle}» actúa como fuente diagnóstica primaria del territorio.`
+    );
+  }
+
+  // ── Bloque 3: áreas territoriales detectadas ──────────────────────────────
   if (hasReal) {
     const areaTitles = oitParaDecision.opportunities
       .map((a, i) => `${i + 1}. ${a.title}`)
       .join("; ");
     parts.push(
-      `El análisis identifica ${oitParaDecision.opportunities.length} ` +
-      `área(s) de intervención territorial: ${areaTitles}.`
+      `La información disponible apunta a ${oitParaDecision.opportunities.length} ` +
+      `área(s) territorial(es) que merecen atención preferente: ${areaTitles}. ` +
+      `Estas áreas son candidaturas para la deliberación con el Grupo Motor, ` +
+      `no decisiones definitivas.`
     );
   }
 
-  // ── Bloque 4: tensiones y conflictos ─────────────────────────────────────
-  if (reconciliacion.tensionesEscaladas.length > 0) {
-    parts.push(
-      `Se detectan ${reconciliacion.tensionesEscaladas.length} tensión(es) ` +
-      `estructural(es) con impacto en la planificación territorial.`
-    );
-  }
-  if (reconciliacion.conflictos.length > 0) {
-    parts.push(
-      `${reconciliacion.conflictos.length} conflicto(s) interpretativo(s) ` +
-      `permanecen sin resolver y condicionan la lectura.`
-    );
-  }
-
-  // ── Bloque 5: IBSE ────────────────────────────────────────────────────────
+  // ── Bloque 4: bienestar socioemocional escolar ────────────────────────────
   if (ibseStudy && Number.isFinite(ibseStudy.aggregates.meanTotal)) {
     const agg = ibseStudy.aggregates;
     parts.push(
-      `El estudio IBSE registra un índice total de bienestar socioemocional ` +
-      `escolar de ${agg.meanTotal.toFixed(1)} sobre 100 ` +
-      `(${agg.nValid} registros válidos).`
+      `El bienestar socioemocional escolar (IBSE) se sitúa en ` +
+      `${agg.meanTotal.toFixed(1)} sobre 100 en una muestra de ${agg.nValid} escolares. ` +
+      `Este dato debe interpretarse en relación con el contexto socioeconómico ` +
+      `y los determinantes familiares y comunitarios del territorio.`
     );
   }
 
-  // ── Bloque 6: dimensión longitudinal ─────────────────────────────────────
+  // ── Bloque 5: dimensión longitudinal ─────────────────────────────────────
   if (mit.dimensionLongitudinal.activa) {
     parts.push(mit.dimensionLongitudinal.nota);
   }
 
-  // ── Bloque 7: cautela de autoría ─────────────────────────────────────────
+  // ── Bloque 6: aspectos que requieren contraste con Grupo Motor ────────────
+  if (reconciliacion.tensionesEscaladas.length > 0) {
+    parts.push(
+      "El diagnóstico identifica aspectos del territorio donde las fuentes " +
+      "disponibles ofrecen lecturas que conviene contrastar con el Grupo Motor " +
+      "antes de trasladarlas a prioridades de planificación."
+    );
+  }
+
+  // ── Bloque 7: orientación para el equipo técnico ──────────────────────────
   parts.push(
-    "Esta síntesis es una propuesta asistida por COMPÁS NG. " +
-    "El equipo técnico debe revisar, contextualizar y completar las conclusiones " +
-    "con el criterio profesional del municipio."
+    "El equipo técnico debe redactar aquí la síntesis diagnóstica del municipio. " +
+    "Las conclusiones deben responder a: ¿cuál es el estado de salud del territorio " +
+    "y qué lo caracteriza?, ¿qué determinantes parecen estar operando?, " +
+    "¿con qué activos y capacidades cuenta el municipio?, " +
+    "¿qué aporta la perspectiva ciudadana que los datos no capturan?, " +
+    "¿qué incertidumbres críticas permanecen abiertas?"
   );
 
   return parts.join("\n\n");
@@ -352,63 +353,76 @@ function buildCierreInterpretativoScaffold(
 ): string {
   if (mit.totalEvidencias === 0) {
     return (
-      "Base documental insuficiente para formular un cierre interpretativo. " +
-      "Incorpora documentos al repositorio antes de redactar este capítulo."
+      "El Perfil aún no dispone de información suficiente para formular un cierre " +
+      "interpretativo. Incorpora fuentes diagnósticas al repositorio antes de " +
+      "redactar este capítulo."
     );
   }
 
   const parts: string[] = [];
 
-  // ── Alcance del diagnóstico ───────────────────────────────────────────────
+  // ── Propósito del cierre: comprensión del territorio ─────────────────────
   parts.push(
-    `El diagnóstico se ha construido a partir de ${mit.totalEvidencias} evidencias ` +
-    `estructuradas. El alcance del análisis está delimitado por las fuentes disponibles ` +
-    `en el repositorio municipal en el momento de la generación del perfil.`
+    "El cierre interpretativo es la lectura integrada del territorio que emerge " +
+    "del conjunto del diagnóstico. No formula actuaciones ni recomendaciones: " +
+    "establece qué comprensión del municipio queda disponible para orientar " +
+    "la priorización y el proceso comunitario."
   );
 
-  // ── Limitaciones metodológicas ────────────────────────────────────────────
+  // ── Tensiones que señalan donde el conocimiento es más incierto ───────────
   const hasConflictos = reconciliacion.conflictos.length > 0;
   const hasTensionesNoEscaladas = reconciliacion.tensionesNoEscaladas.length > 0;
 
   if (hasConflictos || hasTensionesNoEscaladas) {
-    const items: string[] = [];
-    if (hasConflictos) {
-      items.push(
-        `${reconciliacion.conflictos.length} conflicto(s) interpretativo(s) sin resolver ` +
-        `que condicionan la lectura territorial`
-      );
-    }
-    if (hasTensionesNoEscaladas) {
-      items.push(
-        `${reconciliacion.tensionesNoEscaladas.length} tensión(es) identificada(s) ` +
-        `que no han derivado en área de intervención pero permanecen activas`
-      );
-    }
     parts.push(
-      `El diagnóstico presenta las siguientes limitaciones a considerar: ` +
-      items.join("; ") + "."
+      "El proceso diagnóstico ha identificado aspectos del territorio donde " +
+      "las distintas fuentes ofrecen lecturas que no convergen plenamente. " +
+      "Estas tensiones no son un defecto del diagnóstico: señalan dónde el " +
+      "conocimiento disponible es más incierto y donde la deliberación con " +
+      "el Grupo Motor resulta más necesaria."
     );
   }
 
-  // ── Áreas identificadas (sin prescripción) ────────────────────────────────
-  const hasReal =
-    oitParaDecision.opportunities.length > 0 &&
-    oitParaDecision.opportunities[0].id !== "oit-expand-evidence-base";
-
-  if (hasReal) {
+  // ── Activos: capacidades que sostienen el proceso ─────────────────────────
+  if (mit.dimensionDiagnostica.assets.length > 0) {
     parts.push(
-      `El análisis ha identificado ${oitParaDecision.opportunities.length} ` +
-      `área(s) territorial(es) con evidencia suficiente para ser consideradas ` +
-      `en el proceso de priorización (Capítulo VII). Su validación y priorización ` +
-      `corresponde al equipo técnico y a la ciudadanía.`
+      "El territorio dispone de activos y capacidades comunitarias que pueden " +
+      "sostener el proceso de planificación participativa. " +
+      "La fortaleza del tejido comunitario es un factor de viabilidad de cualquier " +
+      "plan que se adopte."
     );
   }
 
-  // ── Cautela de cierre ─────────────────────────────────────────────────────
+  // ── Incertidumbres: hacerlas explícitas, no ocultarlas ────────────────────
+  if (mit.dimensionDiagnostica.methodologicalCautions.length > 0) {
+    parts.push(
+      "El diagnóstico tiene límites que deben hacerse explícitos antes de la " +
+      "priorización. No toda la información relevante está disponible a escala " +
+      "municipal. Las decisiones de planificación deben considerar estas " +
+      "incertidumbres, no ignorarlas."
+    );
+  }
+
+  // ── Transición a la priorización ──────────────────────────────────────────
+  const realCount = oitParaDecision.opportunities.filter(
+    (o) => !o.isAnalyticalGap
+  ).length;
+
+  if (realCount > 0) {
+    parts.push(
+      `El Perfil deja preparadas ${realCount} área(s) ` +
+      `territorial(es) para el proceso de priorización con el Grupo Motor. ` +
+      `La priorización es el paso siguiente: no la conclusión del diagnóstico, ` +
+      `sino su traducción en decisión comunitaria.`
+    );
+  }
+
+  // ── Orientación para el equipo técnico ────────────────────────────────────
   parts.push(
-    "Este capítulo cierra la lectura interpretativa del territorio. " +
-    "El diagnóstico concluye aquí; las decisiones de planificación y las " +
-    "orientaciones estratégicas se desarrollan en productos posteriores."
+    "El equipo técnico debe redactar aquí el cierre interpretativo del territorio: " +
+    "qué comprensión global emerge del diagnóstico, qué tensiones o patrones " +
+    "deben contrastarse con el Grupo Motor, qué capacidades pueden sostener " +
+    "el proceso comunitario, qué incertidumbres deben quedar explícitas."
   );
 
   return parts.join("\n\n");

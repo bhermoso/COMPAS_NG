@@ -47,6 +47,7 @@ export interface TerritorialStateRecord {
   longitudinalNota: string;
   longitudinalEvidencias: number;
   tensionesEstructurales: string[];
+  limitacionesDiagnosticas?: string[];  // observaciones metodológicas; no escalan a áreas
   marcosAplicados: Array<{ framework: string; elementCount: number }>;
   totalAreasIntervencion: number;
 }

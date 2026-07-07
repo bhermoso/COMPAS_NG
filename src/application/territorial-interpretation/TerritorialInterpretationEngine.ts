@@ -55,8 +55,14 @@ export interface EstadoTerritorialEvolutivo {
   // Dimensión longitudinal — contexto de evolución temporal del municipio
   dimensionLongitudinal: DimensionLongitudinal;
 
-  // Tensiones estructurales detectadas entre fuentes de evidencia
+  // Tensiones estructurales detectadas entre fuentes de evidencia (territoriales reales).
+  // Solo tensiones con significado territorial entran aquí; las observaciones sobre
+  // calidad de la base documental van a limitacionesDiagnosticas.
   tensionesEstructurales: string[];
+
+  // Limitaciones y observaciones metodológicas sobre la base documental.
+  // No representan tensiones territoriales: no pueden escalar a áreas de intervención.
+  limitacionesDiagnosticas: string[];
 
   // Marcos interpretativos aplicados (EPVSA, ESCA, RELAS…)
   // Son guías de lectura, no módulos computacionales.
@@ -88,7 +94,7 @@ export function createEstadoTerritorialEvolutivo(
   const oit = generateOIT(lt1);
 
   const dimensionLongitudinal = buildDimensionLongitudinal(evidenceStore);
-  const tensiones = detectTensionesEstructurales(lt1, oit);
+  const limitaciones = detectLimitacionesDiagnosticas(lt1, oit);
   const marcos = buildMarcosAplicados(strategicFrameworks);
   const origenesPresentes = [...new Set(
     evidenceStore.atoms.map((a) => a.provenance.origin)
@@ -102,7 +108,8 @@ export function createEstadoTerritorialEvolutivo(
     dimensionDiagnostica: lt1,
     areasDeIntervencion: oit,
     dimensionLongitudinal,
-    tensionesEstructurales: tensiones,
+    tensionesEstructurales: [],       // tensiones territoriales reales (ninguna detectada aún)
+    limitacionesDiagnosticas: limitaciones,
     marcosAplicados: marcos,
     totalEvidencias: evidenceStore.atoms.length,
     origenesPresentes,
@@ -138,9 +145,11 @@ function buildDimensionLongitudinal(
   };
 }
 
-// ── Detección de tensiones estructurales ──────────────────────────────────
+// ── Detección de limitaciones diagnósticas ────────────────────────────────
+// Observaciones sobre la calidad de la base documental.
+// NO son tensiones territoriales: nunca pueden escalar a áreas de intervención.
 
-function detectTensionesEstructurales(
+function detectLimitacionesDiagnosticas(
   lt1: LT1Result,
   oit: OITResult
 ): string[] {
@@ -224,6 +233,7 @@ export function buildEstadoResumen(
     longitudinalNota: mit.dimensionLongitudinal.nota,
     longitudinalEvidencias: mit.dimensionLongitudinal.evidenciasLongitudinales,
     tensionesEstructurales: mit.tensionesEstructurales,
+    limitacionesDiagnosticas: mit.limitacionesDiagnosticas,
     marcosAplicados: [...mit.marcosAplicados],
     totalAreasIntervencion: mit.areasDeIntervencion.opportunities.length,
   };

@@ -250,7 +250,7 @@ function buildPipelineTrace(
 
   const mitStatus: PipelineStatus =
     hasAtoms
-      ? mit.tensionesEstructurales.length > 0
+      ? mit.tensionesEstructurales.length > 0 || mit.limitacionesDiagnosticas.length > 0
         ? "partial"
         : "ready"
       : "empty";
@@ -361,6 +361,9 @@ function buildMITMessage(mit: EstadoTerritorialEvolutivo): string {
     longiStr +
     ` · ${areas} área(s) de intervención territorial` +
     (tensiones > 0 ? ` · ${tensiones} tensión(es) estructural(es)` : "") +
+    (mit.limitacionesDiagnosticas.length > 0
+      ? ` · ${mit.limitacionesDiagnosticas.length} limitación(es) diagnóstica(s)`
+      : "") +
     (marcosStr ? ` · Marcos: ${marcosStr}` : "")
   );
 }

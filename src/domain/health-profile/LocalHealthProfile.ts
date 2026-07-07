@@ -46,6 +46,7 @@ export interface PSLAreaIntervencion {
   rationale: string;
   relatedEvidenceIds: string[];
   cautions: string[];
+  isAnalyticalGap?: boolean;  // true = vacío o cautela metodológica, no área territorial real
 }
 
 // ── Capítulo scaffold (V) y cierre interpretativo (VI) ───────────────────────
@@ -151,6 +152,7 @@ export interface LocalHealthProfile {
   longitudinalEvidenceCount: number;
   marcosAplicados: ReadonlyArray<{ framework: string; elementCount: number }>;
   tensionesEstructurales: string[];
+  limitacionesDiagnosticas?: string[];  // observaciones metodológicas (no áreas de intervención)
   conflictos: PSLConflicto[];
   tensionesEscaladas: PSLTension[];
   tensionesNoEscaladas: PSLTension[];

@@ -64,50 +64,61 @@ function buildSummary(input: {
 
   if (total === 0) {
     return (
-      "El repositorio no contiene EvidenceAtom. No es posible construir una lectura territorial " +
-      "basada en evidencia documental. Incorpora documentos al repositorio, conviértelos en " +
-      "EvidenceAtom mediante el pipeline de ingesta y vuelve a ejecutar el análisis."
+      "El Perfil aún no dispone de información territorial suficiente para construir " +
+      "una lectura diagnóstica sustantiva. La incorporación de fuentes epidemiológicas, " +
+      "documentación territorial, activos comunitarios y materiales participativos " +
+      "permitirá identificar patrones, capacidades e incertidumbres relevantes para " +
+      "la priorización."
     );
   }
 
   const parts: string[] = [];
 
-  parts.push(
-    `Lectura territorial construida a partir de ${total} evidencias estructuradas.`
-  );
+  // ── Apertura: dimensiones de conocimiento presentes ───────────────────────
+  const dimensiones: string[] = [];
+  if (input.indicators.length > 0)          dimensiones.push("indicadores epidemiológicos");
+  if (input.determinants.length > 0)        dimensiones.push("determinantes sociales de la salud");
+  if (input.assets.length > 0)              dimensiones.push("activos comunitarios");
+  if (input.qualitativeFindings.length > 0) dimensiones.push("perspectiva ciudadana y cualitativa");
 
+  if (dimensiones.length > 0) {
+    parts.push(`La lectura territorial integra ${dimensiones.join(", ")}.`);
+  }
+
+  // ── Determinantes: lenguaje de territorio, no de conteo ───────────────────
   if (input.determinants.length > 0) {
     parts.push(
-      `Se identifican ${input.determinants.length} determinantes relevantes para la planificación local.`
+      "El territorio muestra factores estructurales que condicionan la salud " +
+      "de la población: condiciones socioeconómicas, entorno, acceso a recursos " +
+      "y otros determinantes que el Grupo Motor deberá interpretar en su contexto local."
     );
   }
 
+  // ── Activos: palancas para la acción ──────────────────────────────────────
   if (input.assets.length > 0) {
     parts.push(
-      `Se registran ${input.assets.length} activos comunitarios que pueden apoyar estrategias salutogénicas.`
+      "El municipio cuenta con activos y capacidades comunitarias que pueden " +
+      "actuar como palancas para la acción en salud. " +
+      "La lectura salutogénica del territorio no se agota en sus déficits: " +
+      "las fortalezas existentes son punto de partida para la planificación."
     );
   }
 
-  if (input.indicators.length > 0) {
-    parts.push(
-      `Hay ${input.indicators.length} indicadores disponibles para contextualizar el diagnóstico.`
-    );
-  }
-
+  // ── Participación: conocimiento situado ───────────────────────────────────
   if (input.qualitativeFindings.length > 0) {
     parts.push(
-      `La lectura incorpora ${input.qualitativeFindings.length} hallazgos cualitativos o participativos.`
+      "La perspectiva ciudadana y cualitativa aporta un conocimiento del territorio " +
+      "que los datos estadísticos no pueden capturar. " +
+      "El patrón observado debe contrastarse con el Grupo Motor para identificar " +
+      "convergencias y divergencias entre la lectura técnica y la comunitaria."
     );
   }
 
-  if (input.methodologicalCautions.length > 0) {
-    parts.push(
-      `Existen ${input.methodologicalCautions.length} cautelas metodológicas que deben considerarse antes de tomar decisiones.`
-    );
-  }
-
+  // ── Cierre: prudencia territorial, no disclaimer del sistema ──────────────
   parts.push(
-    "Esta lectura no establece causalidad ni priorización automática; requiere validación técnica y comunitaria."
+    "Esta lectura es una propuesta interpretativa inicial " +
+    "que el equipo técnico debe validar, contextualizar y completar " +
+    "con su conocimiento del territorio y con la deliberación comunitaria."
   );
 
   return parts.join(" ");

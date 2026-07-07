@@ -425,14 +425,14 @@ function buildAreaEscalada(tension: string, index: number): OITOpportunity {
     id: `oit-escalada-${index + 1}`,
     title: `Área de intervención territorial escalada: ${label}`,
     rationale:
-      `Tensión escalada tras superar el Filtro de Relevancia (≥2 criterios cumplidos) ` +
-      `y los Criterios de Escalado (persistencia temporal, convergencia de fuentes, ` +
-      `coherencia estructural). Tensión de origen: «${tension}»`,
+      `Aspecto territorial con convergencia de evidencia entre múltiples fuentes disponibles. ` +
+      `Requiere contraste con el equipo técnico y el Grupo Motor. ` +
+      `Tensión de origen: «${tension}»`,
     relatedEvidenceIds: [],
     cautions: [
-      "Área escalada heurísticamente. Requiere validación técnica antes de traducirse a actuaciones.",
-      "El escalado refleja persistencia y convergencia de evidencia, no causalidad ni prioridad.",
-      "La resolución del conflicto subyacente es competencia del equipo técnico y la ciudadanía.",
+      "Requiere validación técnica antes de traducirse a actuaciones.",
+      "La convergencia de evidencia no implica causalidad ni establece prioridad.",
+      "La resolución es competencia del equipo técnico y la ciudadanía.",
     ],
     requiresHumanValidation: true,
   };
