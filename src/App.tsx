@@ -2678,7 +2678,10 @@ export default function App() {
               );
               const assetCount = assetNames.length;
 
-              // Capa 4: Otras fuentes documentales (excluye capas 1–3)
+              // Capa 4: Otras fuentes documentales (excluye capas 1–3).
+              // Los marcos estratégicos y normativos (strategic-framework) se
+              // excluyen también: son insumo del Plan de Acción / Plan Local de
+              // Salud, no fuente diagnóstica del Perfil.
               const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi", "fagerstrom", "sbq"];
               const otherDocCount = docs.filter(
                 (d) =>
@@ -2686,6 +2689,7 @@ export default function App() {
                   d.kind !== "community-asset" &&
                   d.kind !== "localiza-salud" &&
                   d.kind !== "complementary-study" &&
+                  d.kind !== "strategic-framework" &&
                   !(d.kind === "redcap-export" && d.tags.some((t) => STUDY_TAGS.includes(t)))
               ).length;
 

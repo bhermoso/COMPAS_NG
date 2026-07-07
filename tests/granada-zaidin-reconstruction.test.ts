@@ -319,3 +319,75 @@ describe("Granada-Zaidín reconstruido — marcos estratégicos y normativos", (
     ).toBe(false);
   });
 });
+
+// ── Separación producto: marcos estratégicos ≠ evidencia diagnóstica ─────────
+// Los marcos (EPVSA, ESCA, Plan de Mayores) están cargados y trazados como
+// strategic-framework, pero son insumo del Plan de Acción: no computan como
+// fuente diagnóstica del Perfil, no generan átomos y no alimentan conclusiones.
+
+import { getCategory } from "../src/ui/components/DocumentRepositoryPanel";
+import { generateLT1 } from "../src/application/lt1";
+import { createEvidenceStore, createEvidenceAtom } from "../src/domain/evidence";
+
+describe("Granada-Zaidín — los marcos estratégicos no son evidencia diagnóstica", () => {
+  it("los tres marcos clasifican como insumo estratégico, no como fuente diagnóstica", () => {
+    const marcos = ws.repository.documents.filter((d) => d.kind === "strategic-framework");
+    expect(marcos.length).toBe(3);
+    for (const doc of marcos) {
+      expect(getCategory(doc), doc.title).toBe("strategic-input");
+    }
+  });
+
+  it("el listado diagnóstico (other-source) contiene solo los dos Vigía", () => {
+    const diagnosticos = ws.repository.documents.filter(
+      (d) => getCategory(d) === "other-source"
+    );
+    expect(diagnosticos.length).toBe(2);
+    const titles = diagnosticos.map((d) => d.title).join(" ");
+    expect(titles).toContain("Informe Zaidin Centro Este");
+    expect(titles).toContain("Informe Zaidin Sur");
+    expect(titles).not.toContain("EPVSA");
+    expect(titles).not.toContain("ESCA");
+    expect(titles).not.toContain("Mayores");
+  });
+
+  it("el motor LT1 no clasifica átomos strategic-priority en ningún grupo diagnóstico", () => {
+    // Garantía de motor: aunque un marco llegara a atomizarse (vía texto pegado),
+    // sus átomos strategic-priority no alimentan determinantes, activos,
+    // indicadores, hallazgos ni cautelas — no pueden formular conclusiones.
+    let store = createEvidenceStore({ municipalityId: "granada-zaidin" });
+    store = {
+      ...store,
+      atoms: [
+        createEvidenceAtom({
+          id: "sp-1",
+          municipalityId: "granada-zaidin",
+          kind: "strategic-priority",
+          title: "Línea EPVSA de prueba",
+          content: "LE1 — Alimentación saludable y vida activa.",
+          provenance: { origin: "strategic-framework", extractedAt: "2026-07-07T00:00:00.000Z" },
+          tags: ["strategic-framework"],
+        }),
+      ],
+    };
+    const lt1 = generateLT1(store);
+    expect(lt1.determinants).toHaveLength(0);
+    expect(lt1.assets).toHaveLength(0);
+    expect(lt1.indicators).toHaveLength(0);
+    expect(lt1.qualitativeFindings).toHaveLength(0);
+    expect(lt1.methodologicalCautions).toHaveLength(0);
+  });
+
+  it("las conclusiones y el cierre del Perfil no citan EPVSA, ESCA ni el Plan de Mayores", () => {
+    const runtime = createMunicipalityRuntime({ workspace: ws });
+    const texto =
+      runtime.psl.conclusiones.content + "\n" + runtime.psl.cierreInterpretativo.content;
+    expect(texto).not.toContain("EPVSA");
+    expect(texto).not.toContain("ESCA");
+    expect(texto).not.toContain("Personas Mayores");
+    // El Perfil no tiene capítulo de recomendaciones: el cierre lo declara.
+    expect(runtime.psl.cierreInterpretativo.content).toContain(
+      "No formula actuaciones ni recomendaciones"
+    );
+  });
+});
