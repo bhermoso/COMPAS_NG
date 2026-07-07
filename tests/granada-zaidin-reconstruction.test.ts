@@ -186,3 +186,53 @@ describe("Granada-Zaidín reconstruido — totales y persistencia", () => {
     expect(loaded!.repository.documents.length).toBe(result.counts.documents);
   });
 });
+
+// ── Codificación de los artefactos exportados (incidente mojibake 2026-07-07) ──
+// Los ficheros de municipalities/granada-zaidin/exports/ deben ser 100 % ASCII
+// (acentos como escapes JSON) para sobrevivir a cualquier canal de copia
+// (cmd CP850, PowerShell 5.1 CP1252), y su contenido parseado debe conservar
+// las tildes correctas.
+
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const exportsDir = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../municipalities/granada-zaidin/exports"
+);
+
+describe("Granada-Zaidín — codificación de los artefactos exportados", () => {
+  const jsonPath = resolve(exportsDir, "compas-ng-workspace-granada-zaidin.json");
+  const consolePath = resolve(exportsDir, "restore-granada-zaidin.console.js");
+
+  it("el JSON exportado es 100 % ASCII (inmune a CP850/CP1252)", () => {
+    const raw = readFileSync(jsonPath, "utf8");
+    const nonAscii = raw.match(/[^\x20-\x7E\r\n\t]/g) ?? [];
+    expect(nonAscii, `caracteres no ASCII: ${nonAscii.slice(0, 5).join(" ")}`).toHaveLength(0);
+  });
+
+  it("el fragmento de consola es 100 % ASCII", () => {
+    const raw = readFileSync(consolePath, "utf8");
+    const nonAscii = raw.match(/[^\x20-\x7E\r\n\t]/g) ?? [];
+    expect(nonAscii).toHaveLength(0);
+  });
+
+  it("el contenido parseado conserva los acentos correctos, sin mojibake", () => {
+    const raw = readFileSync(jsonPath, "utf8");
+    const parsed = JSON.stringify(JSON.parse(raw));
+    for (const literal of [
+      "Granada-Zaidín",
+      "Andalucía",
+      "COMPÁS",
+      "reconstrucción",
+      "ámbito",
+      "—",
+    ]) {
+      expect(parsed, `debe contener «${literal}»`).toContain(literal);
+    }
+    for (const mojibake of ["├¡", "Ã­", "ÔÇö"]) {
+      expect(parsed, `no debe contener «${mojibake}»`).not.toContain(mojibake);
+    }
+  });
+});
