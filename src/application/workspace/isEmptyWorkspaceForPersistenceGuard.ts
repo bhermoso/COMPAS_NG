@@ -13,6 +13,11 @@ import type { MunicipalityWorkspace } from "../../domain/workspace";
  *
  * Última revisión: Intervención GES (2026-07-02) — añadido questionnaireProjects;
  *   auditoría de cierre — añadido compiledProfiles, nhsArtifact, pslApproval, formalValidations.
+ *   Incidente de persistencia (2026-07-07) — añadidos los siete estudios incorporados
+ *   después de la revisión anterior (AUDIT-C, IPAQ, GHQ-12, PHQ-9, PSQI, Fagerström, SBQ),
+ *   projectDatasetImports y perfilLocalDeSalud. La omisión reproducía la causa raíz de
+ *   la Intervención 3: un workspace con SOLO esas colecciones se consideraba "vacío"
+ *   y el guard bloqueaba su guardado, con pérdida silenciosa.
  */
 export function isEmptyWorkspaceForPersistenceGuard(
   workspace: MunicipalityWorkspace
@@ -27,6 +32,13 @@ export function isEmptyWorkspaceForPersistenceGuard(
     workspace.sf12Study === undefined &&
     workspace.suenoStudy === undefined &&
     workspace.cageStudy === undefined &&
+    workspace.auditcStudy === undefined &&
+    workspace.ipaqStudy === undefined &&
+    workspace.ghq12Study === undefined &&
+    workspace.phq9Study === undefined &&
+    workspace.psqiStudy === undefined &&
+    workspace.fagerstromStudy === undefined &&
+    workspace.sbqStudy === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
@@ -36,6 +48,11 @@ export function isEmptyWorkspaceForPersistenceGuard(
     workspace.pslApproval === undefined &&
     (workspace.formalValidations?.length ?? 0) === 0 &&
     // Proyectos GES — omitido en Intervención 3, causa raíz de la regresión de persistencia
-    (workspace.questionnaireProjects?.length ?? 0) === 0
+    (workspace.questionnaireProjects?.length ?? 0) === 0 &&
+    (workspace.projectDatasetImports?.length ?? 0) === 0 &&
+    // Perfil interpretativo: cuenta como contenido cuando tiene algún elemento
+    ((workspace.perfilLocalDeSalud?.interpretaciones.length ?? 0) +
+      (workspace.perfilLocalDeSalud?.hipotesis.length ?? 0) +
+      (workspace.perfilLocalDeSalud?.preguntasAbiertas.length ?? 0)) === 0
   );
 }
