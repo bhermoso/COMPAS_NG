@@ -96,11 +96,20 @@ function buildSummary(input: {
 
   // ── Activos: palancas para la acción ──────────────────────────────────────
   if (input.assets.length > 0) {
+    const fromLocalizaSalud = input.assets.some(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
     parts.push(
-      "El municipio cuenta con activos y capacidades comunitarias que pueden " +
-      "actuar como palancas para la acción en salud. " +
-      "La lectura salutogénica del territorio no se agota en sus déficits: " +
-      "las fortalezas existentes son punto de partida para la planificación."
+      fromLocalizaSalud
+        ? "Se han identificado recursos y activos en el entorno territorial " +
+          "mediante consulta de Localiza Salud, incorporados como base de trabajo. " +
+          "Requieren validación territorial antes de ser interpretados como activos " +
+          "propios del ámbito. La lectura salutogénica del territorio debe apoyarse " +
+          "en el contraste comunitario."
+        : "El municipio cuenta con activos y capacidades comunitarias que pueden " +
+          "actuar como palancas para la acción en salud. " +
+          "La lectura salutogénica del territorio no se agota en sus déficits: " +
+          "las fortalezas existentes son punto de partida para la planificación."
     );
   }
 
@@ -133,8 +142,13 @@ function buildPreliminaryOpportunities(input: {
   const opportunities: string[] = [];
 
   if (input.determinants.length > 0 && input.assets.length > 0) {
+    const fromLocalizaSalud = input.assets.some(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
     opportunities.push(
-      "Cruzar determinantes detectados con activos comunitarios disponibles para formular oportunidades de intervención salutogénica."
+      fromLocalizaSalud
+        ? "Contrastar los recursos identificados mediante Localiza Salud con los determinantes detectados, priorizando los validados territorialmente como activos del ámbito."
+        : "Cruzar determinantes detectados con activos comunitarios disponibles para formular oportunidades de intervención salutogénica."
     );
   }
 

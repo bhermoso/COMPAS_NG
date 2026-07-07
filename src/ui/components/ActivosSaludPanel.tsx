@@ -29,6 +29,14 @@ export function ActivosSaludPanel({ repository, onDeleteDocument }: ActivosSalud
         </p>
       </div>
 
+      {assetDocs.some((d) => d.kind === "localiza-salud") && (
+        <p className="study-institutional-note">
+          Los activos incorporados desde Localiza Salud se añaden como base de trabajo para el equipo técnico.
+          En ámbitos inframunicipales —distritos o barrios—, los recursos identificados pueden pertenecer
+          al municipio o a su entorno funcional y requieren validación territorial antes de ser
+          interpretados como activos propios del ámbito.
+        </p>
+      )}
       {assetNames.length === 0 ? (
         <p className="empty-state">
           No se han incorporado activos comunitarios para la salud.

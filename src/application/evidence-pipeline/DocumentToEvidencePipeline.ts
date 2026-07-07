@@ -38,6 +38,26 @@ const FIELD_LABEL_ONLY_RE = /^\*\*[^*]+\*\*\s*:?\s*$/;
 // Separador de bloque
 const SEPARATOR_RE = /^-{3,}$/;
 
+// Palabras que indican que una línea es cabecera de exportación de Localiza Salud
+// (primera columna, normalizada: sin tildes, minúsculas, sin guiones bajos).
+const LOCALIZA_HEADER_FIRST_FIELDS = new Set([
+  "orden", "nombre", "recurso", "nombredelrecurso",
+  "municipio", "localidad", "titodvia", "tipodvia", "tipodeva", "tipodev",
+  "direccion", "codigopostal", "titular", "telefono", "email", "web",
+  "descripcion", "actividades", "requisito", "razonseleccion",
+]);
+
+function normalizeForHeaderCheck(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[_\s]/g, "");
+}
+
+function isLocalizaSaludHeaderLine(line: string): boolean {
+  const sep = line.includes("\t") ? "\t" : line.includes("|") ? "|" : null;
+  if (!sep) return false;
+  const firstField = normalizeForHeaderCheck(line.split(sep)[0].trim());
+  return LOCALIZA_HEADER_FIRST_FIELDS.has(firstField);
+}
+
 interface AssetBlock {
   name: string;
   content: string;
@@ -163,10 +183,14 @@ export function transformDocumentToEvidence(
     return transformCommunityAssets(input);
   }
 
-  const lines = input.plainText
+  const rawLines = input.plainText
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+  const lines = input.document.kind === "localiza-salud"
+    ? rawLines.filter((line) => !isLocalizaSaludHeaderLine(line))
+    : rawLines;
 
   let store = input.store;
   const atomsCreated: EvidenceAtom[] = [];
@@ -318,8 +342,14 @@ function extractLocalizaSaludTitle(content: string, index: number): string {
   }
 
   if (content.includes("\t")) {
-    const first = content.split("\t")[0].trim();
-    if (first.length > 0) return first;
+    const tabFields = content.split("\t");
+    const firstField = tabFields[0].trim();
+    // Si el primer campo es un número (columna Orden de Localiza Salud), usar el segundo
+    if (/^\d+$/.test(firstField) && tabFields.length > 1) {
+      const secondField = tabFields[1].trim();
+      if (secondField.length > 0) return secondField;
+    }
+    if (firstField.length > 0) return firstField;
   }
 
   // Patrones que inician la descripción en Localiza Salud (no son nombres de activo)

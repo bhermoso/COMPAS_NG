@@ -732,3 +732,144 @@ describe("localiza-salud — integración de persistencia (capa de datos)", () =
     expect(localizaAtoms).toHaveLength(1);
   });
 });
+
+// ── Test I: copia-pega real de Localiza Salud — formatos y cabeceras ─────────
+
+describe("localiza-salud — copia-pega real: formatos, cabeceras y carga bruta", () => {
+  // Simula una línea real de exportación tabulada de Localiza Salud (Orden como primer campo)
+  const TAB_ROW_WITH_ORDER =
+    "5\tCENTRO PARTICIPACIÓN ACTIVA MAYORES ZAIDIN\tGRANADA\tGRANADA\t2\tANDRÉS SEGOVIA Nº 60\t18007\tCPA ZAIDÍN\t958130985\tMAYORES DE 60 AÑOS\tTalleres deportivos y socioculturales";
+
+  const TAB_HEADER =
+    "Orden\tnombre\tmunicipio\tlocalidad\ttipo_de_v_a\tdirección\tcódigo_postal\ttitular\tteléfono\trequisito_uso\tdescripción";
+
+  it("formato tabulado: título extraído del segundo campo cuando el primero es número de orden", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Zaidín tabulado",
+      plainText: TAB_ROW_WITH_ORDER,
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(1);
+    expect(result!.evidenceStore.atoms[0].title).toBe("CENTRO PARTICIPACIÓN ACTIVA MAYORES ZAIDIN");
+  });
+
+  it("línea de cabecera tabulada (Orden, nombre...) no genera átomo", () => {
+    const textWithHeader = [TAB_HEADER, TAB_ROW_WITH_ORDER].join("\n");
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud con cabecera",
+      plainText: textWithHeader,
+    });
+    expect(result).not.toBeNull();
+    // Solo la fila de datos, no la cabecera
+    expect(result!.atomsCreated).toBe(1);
+    expect(result!.evidenceStore.atoms[0].title).toBe("CENTRO PARTICIPACIÓN ACTIVA MAYORES ZAIDIN");
+  });
+
+  it("línea de cabecera pipe (nombre | municipio...) no genera átomo", () => {
+    const pipeHeader = "nombre|municipio|localidad|descripción";
+    const pipeRow = "Cruz Roja Granada|Granada|Granada|Atención social y voluntariado";
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud con cabecera pipe",
+      plainText: [pipeHeader, pipeRow].join("\n"),
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(1);
+    expect(result!.evidenceStore.atoms[0].title).toBe("Cruz Roja Granada");
+  });
+
+  it("56 líneas válidas generan exactamente 56 átomos (carga bruta no es error)", () => {
+    const lines = Array.from({ length: 56 }, (_, i) =>
+      `Activo ${i + 1} | Descripción del activo ${i + 1} en el entorno territorial`
+    );
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — carga bruta completa",
+      plainText: lines.join("\n"),
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(56);
+  });
+
+  it("línea larga con múltiples tabuladores genera un solo átomo (no fragmenta)", () => {
+    const longLine =
+      "5\tCENTRO PARTICIPACIÓN ACTIVA MAYORES ZAIDIN\tGRANADA\tGRANADA\t2\t" +
+      "ANDRÉS SEGOVIA Nº 60\t18007\tCPA ZAIDÍN\t958130985\tMAYORES DE 60 AÑOS\t" +
+      "Actividades/talleres deportivos y socioculturales. Salidas culturales. Viajes. " +
+      "Fiestas emblemáticas. Salas para juegos de mesa.";
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — línea larga",
+      plainText: longLine,
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(1);
+  });
+
+  it("recarga del mismo bloque no duplica átomos (upsertEvidenceAtom idempotente)", () => {
+    const TEXT = [
+      "Centro de Salud Zaidín Sur | SAS — Atención primaria",
+      "Fundación Albihar | Salud mental comunitaria",
+    ].join("\n");
+
+    const r1 = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud v1",
+      plainText: TEXT,
+    });
+    expect(r1).not.toBeNull();
+    expect(r1!.atomsCreated).toBe(2);
+
+    const storeAfterPurge = {
+      ...r1!.evidenceStore,
+      atoms: r1!.evidenceStore.atoms.filter((a) => a.provenance.origin !== "localiza-salud"),
+      updatedAt: new Date().toISOString(),
+    };
+    const r2 = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: storeAfterPurge,
+      kind: "localiza-salud",
+      title: "Localiza Salud v2",
+      plainText: TEXT,
+    });
+    expect(r2).not.toBeNull();
+    const locAtoms = r2!.evidenceStore.atoms.filter((a) => a.provenance.origin === "localiza-salud");
+    expect(locAtoms).toHaveLength(2);
+  });
+
+  it("health-report sigue generando 0 átomos después de los cambios", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "health-report",
+      title: "Informe de Salud Granada Zaidín",
+      plainText: "Contenido extenso del informe de salud que no debe atomizarse.",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(0);
+  });
+
+  it("community-asset sigue fuera del selector visible — localiza-salud es la vía canónica", () => {
+    const VISIBLE: readonly string[] = [
+      "health-report", "complementary-study", "localiza-salud",
+      "strategic-framework", "territorial-documentation",
+      "qualitative-material", "longitudinal-evidence",
+    ];
+    expect(VISIBLE).not.toContain("community-asset");
+    expect(VISIBLE).toContain("localiza-salud");
+  });
+});

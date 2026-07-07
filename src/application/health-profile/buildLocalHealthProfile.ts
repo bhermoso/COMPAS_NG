@@ -199,7 +199,10 @@ export function buildLocalHealthProfile(
 
     // ── VI: Cierre interpretativo (scaffold) ──────────────────────────────
     cierreInterpretativo: {
-      content: buildCierreInterpretativoScaffold(mit, reconciliacion, oitParaDecision),
+      content: buildCierreInterpretativoScaffold(mit, reconciliacion, oitParaDecision, {
+        hasLocalizaSaludAssets: lt1.assets.some((a) => a.provenance.origin === "localiza-salud"),
+        isDistrict: workspace.municipality.identity.territorialType === "distrito",
+      }),
       status: "scaffold",
       authorshipNote:
         "Requiere autoría humana. El equipo técnico debe documentar el alcance " +
@@ -350,6 +353,7 @@ function buildCierreInterpretativoScaffold(
   mit: EstadoTerritorialEvolutivo,
   reconciliacion: ReconciliacionResult,
   oitParaDecision: OITResult,
+  options: { hasLocalizaSaludAssets: boolean; isDistrict: boolean } = { hasLocalizaSaludAssets: false, isDistrict: false },
 ): string {
   if (mit.totalEvidencias === 0) {
     return (
@@ -385,12 +389,26 @@ function buildCierreInterpretativoScaffold(
 
   // ── Activos: capacidades que sostienen el proceso ─────────────────────────
   if (mit.dimensionDiagnostica.assets.length > 0) {
-    parts.push(
-      "El territorio dispone de activos y capacidades comunitarias que pueden " +
-      "sostener el proceso de planificación participativa. " +
-      "La fortaleza del tejido comunitario es un factor de viabilidad de cualquier " +
-      "plan que se adopte."
-    );
+    if (options.hasLocalizaSaludAssets) {
+      parts.push(
+        "Se han identificado recursos y activos en el entorno territorial " +
+        "mediante consulta de Localiza Salud. " +
+        (options.isDistrict
+          ? "En este ámbito inframunicipal, los activos incorporados pueden " +
+            "incluir recursos del municipio o del entorno funcional más amplio. " +
+            "Requieren validación territorial fina antes de ser interpretados " +
+            "como activos propios del ámbito y antes de respaldar decisiones de planificación."
+          : "Requieren validación territorial antes de ser incorporados " +
+            "como activos propios del proceso de planificación participativa.")
+      );
+    } else {
+      parts.push(
+        "El territorio dispone de activos y capacidades comunitarias que pueden " +
+        "sostener el proceso de planificación participativa. " +
+        "La fortaleza del tejido comunitario es un factor de viabilidad de cualquier " +
+        "plan que se adopte."
+      );
+    }
   }
 
   // ── Incertidumbres: hacerlas explícitas, no ocultarlas ────────────────────

@@ -242,16 +242,22 @@ export function DocumentIngestionPanel({
             ))}
           </select>
           <p className="ingestion-hint">
-            Pega el listado de activos exportado o copiado desde Localiza Salud.
-            Usa el formato <strong>Nombre del activo | Descripción funcional</strong> —
-            una línea por activo. Cada línea se registrará como un activo comunitario trazable.
-            Si ya existe un listado previo para este ámbito, será sustituido.
+            Pega el listado de activos copiado desde Localiza Salud.
+            Formatos admitidos: <strong>Nombre | Descripción</strong> (recomendado)
+            o copia directa tabulada desde la aplicación.
+            Una línea por activo. Si ya existe un listado previo para este ámbito, será sustituido.
           </p>
           <p className="ingestion-hint">
             Ejemplo:{" "}
             <code>
               Centro de Salud Zaidín Sur | Atención primaria SAS — Distrito AP Granada-Metropolitano
             </code>
+          </p>
+          <p className="ingestion-hint">
+            Los activos se incorporan como base de trabajo territorial.
+            En ámbitos inframunicipales —distritos o barrios—, el copia-pega puede incluir
+            recursos del municipio o del entorno funcional más amplio.
+            Requieren validación territorial antes de ser interpretados como activos propios del ámbito.
           </p>
           <textarea
             value={plainText}
