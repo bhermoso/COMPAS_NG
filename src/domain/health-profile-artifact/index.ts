@@ -1,4 +1,7 @@
 export type {
+  EKCSnapshot,
+  PSLCArtifactHipotesis,
+  PSLCArtifactPreguntaAbierta,
   PSLCArtifactPortada,
   PSLCArtifactIdentificacion,
   PSLCArtifactMarcoEstrategico,

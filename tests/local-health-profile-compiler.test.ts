@@ -4,7 +4,7 @@ import {
   validateCompilationPreconditions,
   computePSLHash,
 } from "../src/application/health-profile-compiler";
-import type { LocalHealthProfile } from "../src/domain/health-profile";
+import type { LocalHealthProfile, PerfilLocalDeSalud } from "../src/domain/health-profile";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -525,5 +525,155 @@ describe("trazabilidad completa", () => {
     if (r1.ok && r2.ok) {
       expect(r1.artifact.sourceHash).not.toBe(r2.artifact.sourceHash);
     }
+  });
+});
+
+// ── Tests: puente PerfilLocalDeSalud → PSL-C ─────────────────────────────────
+
+function basePerfil(overrides: Partial<PerfilLocalDeSalud> = {}): PerfilLocalDeSalud {
+  return {
+    id: "perfil-atarfe-001",
+    municipalityId: "atarfe",
+    interpretaciones: [],
+    hipotesis: [],
+    preguntasAbiertas: [],
+    createdAt: "2026-07-07T08:00:00.000Z",
+    updatedAt: "2026-07-07T08:00:00.000Z",
+    ...overrides,
+  };
+}
+
+describe("compileLocalHealthProfile — con PerfilLocalDeSalud", () => {
+  it("con perfil: el artefacto contiene ekcSnapshot no nulo", () => {
+    const result = compileLocalHealthProfile({ ...INPUT_ATARFE, perfil: basePerfil() });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.ekcSnapshot).not.toBeNull();
+  });
+
+  it("con perfil: ekcSnapshot refleja las hipótesis activas del perfil", () => {
+    const perfil = basePerfil({
+      hipotesis: [
+        {
+          id: "hip-1",
+          municipalityId: "atarfe",
+          espacio: "situacion-salud",
+          enunciado: "Hipótesis de prueba.",
+          plausibilidad: "alta",
+          indicios: ["indicio-1"],
+          preguntasResolutoras: [],
+          autorNombre: "Técnica X",
+          formuladaEn: "2026-07-07T08:00:00.000Z",
+          status: "activa",
+        },
+      ],
+    });
+    const result = compileLocalHealthProfile({ ...INPUT_ATARFE, perfil });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.ekcSnapshot?.hipotesisActivas).toBe(1);
+  });
+
+  it("con perfil: hipotesisActivas contiene sólo hipótesis con status activa", () => {
+    const perfil = basePerfil({
+      hipotesis: [
+        {
+          id: "hip-1",
+          municipalityId: "atarfe",
+          espacio: "determinantes",
+          enunciado: "Hipótesis activa.",
+          plausibilidad: "moderada",
+          indicios: [],
+          preguntasResolutoras: [],
+          autorNombre: "Técnica X",
+          formuladaEn: "2026-07-07T08:00:00.000Z",
+          status: "activa",
+        },
+        {
+          id: "hip-2",
+          municipalityId: "atarfe",
+          espacio: "determinantes",
+          enunciado: "Hipótesis descartada.",
+          plausibilidad: "especulativa",
+          indicios: [],
+          preguntasResolutoras: [],
+          autorNombre: "Técnica X",
+          formuladaEn: "2026-07-07T08:00:00.000Z",
+          status: "descartada",
+          discardedMotivo: "Sin evidencia.",
+        },
+      ],
+    });
+    const result = compileLocalHealthProfile({ ...INPUT_ATARFE, perfil });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.artifact.hipotesisActivas).toHaveLength(1);
+      expect(result.artifact.hipotesisActivas[0].enunciado).toBe("Hipótesis activa.");
+    }
+  });
+
+  it("con perfil: preguntasAbiertas contiene sólo preguntas con status abierta", () => {
+    const perfil = basePerfil({
+      preguntasAbiertas: [
+        {
+          id: "pq-1",
+          municipalityId: "atarfe",
+          espacio: "desigualdades",
+          formulacion: "¿Cuál es la prevalencia real?",
+          relevancia: "Determina la prioridad de intervención.",
+          urgencia: "alta",
+          viasResolucion: ["encuesta"],
+          creadaEn: "2026-07-07T08:00:00.000Z",
+          status: "abierta",
+        },
+        {
+          id: "pq-2",
+          municipalityId: "atarfe",
+          espacio: "activos",
+          formulacion: "Pregunta ya resuelta.",
+          relevancia: "Relevancia resuelta.",
+          urgencia: "baja",
+          viasResolucion: [],
+          creadaEn: "2026-07-07T08:00:00.000Z",
+          status: "resuelta",
+          resolucionNota: "Se respondió con datos IBSE.",
+        },
+      ],
+    });
+    const result = compileLocalHealthProfile({ ...INPUT_ATARFE, perfil });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.artifact.preguntasAbiertas).toHaveLength(1);
+      expect(result.artifact.preguntasAbiertas[0].formulacion).toBe("¿Cuál es la prevalencia real?");
+    }
+  });
+
+  it("con perfil: generatedFromPerfilId coincide con perfil.id", () => {
+    const perfil = basePerfil();
+    const result = compileLocalHealthProfile({ ...INPUT_ATARFE, perfil });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.generatedFromPerfilId).toBe(perfil.id);
+  });
+
+  it("sin perfil: ekcSnapshot es null", () => {
+    const result = compileLocalHealthProfile(INPUT_ATARFE);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.ekcSnapshot).toBeNull();
+  });
+
+  it("sin perfil: hipotesisActivas es array vacío", () => {
+    const result = compileLocalHealthProfile(INPUT_ATARFE);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.hipotesisActivas).toHaveLength(0);
+  });
+
+  it("sin perfil: preguntasAbiertas es array vacío", () => {
+    const result = compileLocalHealthProfile(INPUT_ATARFE);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.preguntasAbiertas).toHaveLength(0);
+  });
+
+  it("sin perfil: generatedFromPerfilId es null", () => {
+    const result = compileLocalHealthProfile(INPUT_ATARFE);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.artifact.generatedFromPerfilId).toBeNull();
   });
 });

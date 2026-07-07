@@ -1,6 +1,8 @@
 export type { BuildLocalHealthProfileInput } from "./buildLocalHealthProfile";
 export { buildLocalHealthProfile, hasPSLHumanContent } from "./buildLocalHealthProfile";
 
+export { populatePSLFromPerfil } from "./populatePSLFromPerfil";
+
 export type {
   AddInterpretationInput,
   UpdateInterpretationInput,

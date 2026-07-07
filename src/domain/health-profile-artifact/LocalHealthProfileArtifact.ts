@@ -1,4 +1,46 @@
 import type { MunicipalityId } from "../municipality";
+import type {
+  HypothesisPlausibilidad,
+  OpenQuestionUrgencia,
+  ProfileSpace,
+} from "../health-profile";
+
+// ── EKC Snapshot ──────────────────────────────────────────────────────────────
+// Fotografía estable del Estado del Conocimiento en el momento de compilación.
+// Derivada de computePerfilEstadoGlobal(perfil) — no duplica lógica de cálculo.
+
+export interface EKCSnapshot {
+  capturedAt: string;
+  interpretacionesActivas: number;
+  interpretacionesSuperadas: number;
+  hipotesisActivas: number;
+  hipotesisResueltas: number;
+  hipotesisDescartadas: number;
+  preguntasAbiertas: number;
+  preguntasResueltas: number;
+  tieneSintesis: boolean;
+  alertasGlobalesCount: number;
+  ultimaActualizacion: string;
+}
+
+// ── Proyecciones del PerfilLocalDeSalud ───────────────────────────────────────
+// Representación institucional mínima. Sin IDs internos ni arrays de trabajo.
+
+export interface PSLCArtifactHipotesis {
+  enunciado: string;
+  plausibilidad: HypothesisPlausibilidad;
+  espacio: ProfileSpace;
+  formuladaEn: string;
+  autorNombre: string;
+}
+
+export interface PSLCArtifactPreguntaAbierta {
+  formulacion: string;
+  relevancia: string;
+  urgencia: OpenQuestionUrgencia;
+  espacio: ProfileSpace;
+  creadaEn: string;
+}
 
 // ── Secciones del PSL-C ───────────────────────────────────────────────────────
 // Cada sección mapea campos del LocalHealthProfile a su representación
@@ -153,6 +195,13 @@ export interface LocalHealthProfileArtifact {
   priorizacion: PSLCArtifactPriorizacion;
   notaValidacion: PSLCArtifactNotaValidacion;
   cautelasMetodologicas: PSLCArtifactCautelas;
+
+  // ── Puente PerfilLocalDeSalud → PSL-C ────────────────────────────────────
+  // Campos opcionales según si se pasó un PerfilLocalDeSalud en la compilación.
+  ekcSnapshot: EKCSnapshot | null;
+  hipotesisActivas: PSLCArtifactHipotesis[];
+  preguntasAbiertas: PSLCArtifactPreguntaAbierta[];
+  generatedFromPerfilId: string | null;
 
   // ── Invariante de congelación ─────────────────────────────────────────────
   isCongealed: true;

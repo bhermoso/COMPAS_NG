@@ -14,13 +14,17 @@
  *  - Toda la información proviene del LocalHealthProfile.
  */
 
-import type { LocalHealthProfile } from "../../domain/health-profile";
+import type { LocalHealthProfile, PerfilLocalDeSalud } from "../../domain/health-profile";
 import type {
+  EKCSnapshot,
   LocalHealthProfileArtifact,
   PSLCArtifactAreaIntervencion,
   PSLCArtifactCandidatura,
   PSLCArtifactCierreInterpretativo,
+  PSLCArtifactHipotesis,
+  PSLCArtifactPreguntaAbierta,
 } from "../../domain/health-profile-artifact";
+import { computePerfilEstadoGlobal } from "../health-profile";
 
 // ── Tipos públicos ─────────────────────────────────────────────────────────────
 
@@ -31,6 +35,9 @@ export interface CompileLocalHealthProfileInput {
   municipalityProvince: string;
   /** Número de artefactos ya compilados para este municipio (para el versioning). */
   existingArtifactCount: number;
+  /** PerfilLocalDeSalud opcional. Si se pasa, el artefacto incluye EKC snapshot,
+   *  hipótesis activas y preguntas abiertas congeladas desde el perfil. */
+  perfil?: PerfilLocalDeSalud;
 }
 
 export interface CompilationViolation {
@@ -150,6 +157,53 @@ export function compileLocalHealthProfile(
   const compiledAt = new Date().toISOString();
   const artifactVersion = `PSL-C/v${existingArtifactCount + 1}`;
   const sourceHash = computePSLHash(psl);
+
+  // ── Puente PerfilLocalDeSalud ──────────────────────────────────────────────
+  let ekcSnapshot: EKCSnapshot | null = null;
+  let hipotesisActivas: PSLCArtifactHipotesis[] = [];
+  let preguntasAbiertasPerfil: PSLCArtifactPreguntaAbierta[] = [];
+  let generatedFromPerfilId: string | null = null;
+
+  if (input.perfil) {
+    const perfil = input.perfil;
+    const estado = computePerfilEstadoGlobal(perfil);
+
+    ekcSnapshot = {
+      capturedAt: compiledAt,
+      interpretacionesActivas: estado.interpretacionesActivas,
+      interpretacionesSuperadas: estado.interpretacionesSuperadas,
+      hipotesisActivas: estado.hipotesisActivas,
+      hipotesisResueltas: estado.hipotesisResueltas,
+      hipotesisDescartadas: estado.hipotesisDescartadas,
+      preguntasAbiertas: estado.preguntasAbiertas,
+      preguntasResueltas: estado.preguntasResueltas,
+      tieneSintesis: estado.tieneSintesis,
+      alertasGlobalesCount: estado.alertasGlobales.length,
+      ultimaActualizacion: estado.ultimaActualizacion,
+    };
+
+    hipotesisActivas = perfil.hipotesis
+      .filter(h => h.status === "activa")
+      .map(h => ({
+        enunciado: h.enunciado,
+        plausibilidad: h.plausibilidad,
+        espacio: h.espacio,
+        formuladaEn: h.formuladaEn,
+        autorNombre: h.autorNombre,
+      }));
+
+    preguntasAbiertasPerfil = perfil.preguntasAbiertas
+      .filter(pq => pq.status === "abierta")
+      .map(pq => ({
+        formulacion: pq.formulacion,
+        relevancia: pq.relevancia,
+        urgencia: pq.urgencia,
+        espacio: pq.espacio,
+        creadaEn: pq.creadaEn,
+      }));
+
+    generatedFromPerfilId = perfil.id;
+  }
 
   const areasDeIntervencion: PSLCArtifactAreaIntervencion[] = psl.areasDeIntervencion.map(
     (area) => ({
@@ -300,6 +354,12 @@ export function compileLocalHealthProfile(
         "que requieren validación institucional. COMPÁS NG no adopta decisiones " +
         "de planificación; facilita su fundamentación.",
     },
+
+    // ── Puente PerfilLocalDeSalud → PSL-C ─────────────────────────────────
+    ekcSnapshot,
+    hipotesisActivas,
+    preguntasAbiertas: preguntasAbiertasPerfil,
+    generatedFromPerfilId,
 
     // ── Invariante ────────────────────────────────────────────────────────
     isCongealed: true,
