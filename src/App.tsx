@@ -159,15 +159,11 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "health-report",             label: "Informe de Salud" },
   { value: "complementary-study",       label: "Estudio complementario" },
-  { value: "eas-variable",              label: "Variables EAS" },
-  { value: "cmi-indicator",             label: "CMI / Indicadores" },
   { value: "community-asset",           label: "Activos comunitarios" },
   { value: "localiza-salud",            label: "Localiza Salud" },
-  { value: "redcap-export",             label: "REDCap" },
-  { value: "territorial-documentation", label: "Documentación territorial" },
-  { value: "qualitative-material",      label: "Material cualitativo" },
+  { value: "territorial-documentation", label: "Documentación Territorial de Contexto" },
+  { value: "qualitative-material",      label: "Material Cualitativo y Participativo" },
   { value: "longitudinal-evidence",     label: "Evidencia longitudinal" },
-  { value: "other",                     label: "Otro" },
 ];
 
 const IBSE_DOCUMENT_TAG = "ibse";

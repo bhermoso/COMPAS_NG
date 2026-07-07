@@ -390,6 +390,10 @@ function mapDocumentKindToEvidenceOrigin(
       return "redcap";
     case "longitudinal-evidence":
       return "longi";
+    case "territorial-documentation":
+      return "territorial-documentation";
+    case "qualitative-material":
+      return "qualitative-material";
     default:
       return "other";
   }

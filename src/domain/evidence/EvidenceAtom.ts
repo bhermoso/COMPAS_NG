@@ -30,6 +30,8 @@ export type EvidenceOrigin =
   | "longi"
   | "manual-entry"
   | "legacy-compas"
+  | "territorial-documentation"
+  | "qualitative-material"
   | "other";
 
 export type EvidenceConfidence =
