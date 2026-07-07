@@ -13,6 +13,10 @@ export interface IngestManualDocumentInput {
   kind: DocumentKind;
   title: string;
   plainText: string;
+  /** Nombre del fichero original cargado (opcional, para trazabilidad documental). */
+  sourceFileName?: string;
+  /** Descripción del sistema de origen. Por defecto "Entrada manual inicial". */
+  sourceSystem?: string;
 }
 
 export interface IngestManualDocumentResult {
@@ -39,9 +43,10 @@ export function ingestManualDocument(
     kind: input.kind,
     title: cleanTitle,
     source: {
-      system: "Entrada manual inicial",
+      system: input.sourceSystem ?? "Entrada manual inicial",
       collectedAt: new Date().toISOString(),
     },
+    sourceFileName: input.sourceFileName,
     sourceText: cleanText,
     tags: [input.kind],
   });

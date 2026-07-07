@@ -22,6 +22,10 @@ interface DocumentIngestionPanelProps {
   onPlainTextChange: (plainText: string) => void;
   onProcessDocument: () => void;
   onLoadHealthReport?: (file: File) => void;
+  /** Carga de archivo DOCX/PDF para tipos documentales no-IS (strategic-framework, territorial-documentation, qualitative-material). */
+  onLoadDocumentFile?: (file: File) => void;
+  isLoadingDocumentFile?: boolean;
+  documentFileMessage?: string | null;
 }
 
 export function DocumentIngestionPanel({
@@ -38,6 +42,9 @@ export function DocumentIngestionPanel({
   onPlainTextChange,
   onProcessDocument,
   onLoadHealthReport,
+  onLoadDocumentFile,
+  isLoadingDocumentFile,
+  documentFileMessage,
 }: DocumentIngestionPanelProps) {
   const hasTitle = title.trim().length > 0;
   const hasText = plainText.trim().length > 0;
@@ -138,21 +145,51 @@ export function DocumentIngestionPanel({
             Guías RELAS, En Buena Edad u otros marcos programáticos autonómicos o estatales.
           </p>
           <p className="ingestion-hint">
-            Pega el texto del marco o guía (puede ser un extracto, un índice de objetivos
-            estratégicos o las líneas de acción relevantes). Cada línea o párrafo se
-            registrará como una prioridad estratégica de referencia trazable.
-          </p>
-          <p className="ingestion-hint">
             Estos marcos orientan el diagnóstico y la planificación participativa, pero
             no son datos poblacionales ni generan recomendaciones automáticas del Perfil.
             Su función es proporcionar el contexto normativo y estratégico que el equipo
             técnico debe tener presente al interpretar el territorio.
           </p>
+
+          {/* Vía A: subir documento completo (DOCX → extrae texto; PDF → referencia) */}
+          <div className="docx-upload__zone">
+            <label htmlFor="sf-file-input" className="docx-upload__label">
+              Subir documento (.docx o .pdf)
+            </label>
+            <input
+              id="sf-file-input"
+              type="file"
+              accept=".docx,.pdf"
+              disabled={isLoadingDocumentFile === true}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file !== undefined && onLoadDocumentFile !== undefined) {
+                  onLoadDocumentFile(file);
+                }
+                e.target.value = "";
+              }}
+              className="docx-upload__input"
+            />
+          </div>
+          {isLoadingDocumentFile === true && (
+            <p className="ingestion-hint">Procesando documento…</p>
+          )}
+          {documentFileMessage !== undefined &&
+            documentFileMessage !== null &&
+            isLoadingDocumentFile !== true && (
+              <p className="panel-note">{documentFileMessage}</p>
+            )}
+
+          {/* Vía B: pegar extracto analítico (genera prioridades estratégicas) */}
+          <p className="ingestion-hint">
+            — O bien, pega un extracto analítico (líneas de actuación, objetivos, principios rectores).
+            Cada línea se registrará como prioridad estratégica de referencia trazable.
+          </p>
           <textarea
             value={plainText}
             onChange={(event) => onPlainTextChange(event.target.value)}
-            placeholder="Pega aquí el contenido del marco estratégico (líneas de actuación, objetivos, principios rectores…). Ejemplo: Línea 1 EPVSA — Alimentación saludable y actividad física."
-            rows={7}
+            placeholder="Pega aquí el extracto del marco estratégico. Ejemplo: Línea 1 EPVSA — Alimentación saludable y actividad física."
+            rows={6}
           />
           <div className="document-form">
             <input
@@ -166,7 +203,7 @@ export function DocumentIngestionPanel({
               disabled={!canSubmit}
               title={canSubmit ? undefined : hint}
             >
-              Registrar marco
+              Registrar extracto
             </button>
           </div>
           {!canSubmit && <p className="ingestion-hint">{hint}</p>}
@@ -327,14 +364,45 @@ export function DocumentIngestionPanel({
           <p className="ingestion-hint">
             Si la fuente cubre un ámbito más amplio que el municipio o distrito —provincial,
             comarcal o de zona de salud—, indícalo en el título para mantener la trazabilidad
-            de escala. La fuente queda registrada como contexto territorial, no como dato
-            propio del ámbito.
+            de escala.
           </p>
+
+          {/* Vía A: subir documento DOCX/PDF */}
+          <div className="docx-upload__zone">
+            <label htmlFor="td-file-input" className="docx-upload__label">
+              Subir documento (.docx o .pdf)
+            </label>
+            <input
+              id="td-file-input"
+              type="file"
+              accept=".docx,.pdf"
+              disabled={isLoadingDocumentFile === true}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file !== undefined && onLoadDocumentFile !== undefined) {
+                  onLoadDocumentFile(file);
+                }
+                e.target.value = "";
+              }}
+              className="docx-upload__input"
+            />
+          </div>
+          {isLoadingDocumentFile === true && (
+            <p className="ingestion-hint">Procesando documento…</p>
+          )}
+          {documentFileMessage !== undefined &&
+            documentFileMessage !== null &&
+            isLoadingDocumentFile !== true && (
+              <p className="panel-note">{documentFileMessage}</p>
+            )}
+
+          {/* Vía B: pegar texto */}
+          <p className="ingestion-hint">— O bien, pega el contenido directamente:</p>
           <textarea
             value={plainText}
             onChange={(event) => onPlainTextChange(event.target.value)}
             placeholder={"Pega aquí el contenido del Informe Vigía, diagnóstico de barrio u otra fuente territorial.\nEjemplo: La zona básica de salud presenta una tasa de envejecimiento del 22 %, superior a la media provincial."}
-            rows={8}
+            rows={7}
           />
           <div className="document-form">
             <input
@@ -388,11 +456,43 @@ export function DocumentIngestionPanel({
             técnico debe establecer el alcance de representatividad y el grado de consenso
             del grupo participante.
           </p>
+
+          {/* Vía A: subir documento DOCX/PDF */}
+          <div className="docx-upload__zone">
+            <label htmlFor="qm-file-input" className="docx-upload__label">
+              Subir acta o documento (.docx o .pdf)
+            </label>
+            <input
+              id="qm-file-input"
+              type="file"
+              accept=".docx,.pdf"
+              disabled={isLoadingDocumentFile === true}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file !== undefined && onLoadDocumentFile !== undefined) {
+                  onLoadDocumentFile(file);
+                }
+                e.target.value = "";
+              }}
+              className="docx-upload__input"
+            />
+          </div>
+          {isLoadingDocumentFile === true && (
+            <p className="ingestion-hint">Procesando documento…</p>
+          )}
+          {documentFileMessage !== undefined &&
+            documentFileMessage !== null &&
+            isLoadingDocumentFile !== true && (
+              <p className="panel-note">{documentFileMessage}</p>
+            )}
+
+          {/* Vía B: pegar texto */}
+          <p className="ingestion-hint">— O bien, pega el contenido directamente:</p>
           <textarea
             value={plainText}
             onChange={(event) => onPlainTextChange(event.target.value)}
             placeholder={"Pega aquí el contenido del acta, formulario de necesidades sentidas, resumen de grupo focal…\nEjemplo: El grupo identificó el aislamiento de personas mayores como problema principal de salud en el barrio."}
-            rows={8}
+            rows={7}
           />
           <div className="document-form">
             <input

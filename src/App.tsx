@@ -16,7 +16,7 @@ import {
   isEmptyWorkspaceForPersistenceGuard,
 } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
-import { ingestManualDocument } from "./application/document-ingestion";
+import { ingestManualDocument, extractDocxText } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import { hasPSLHumanContent } from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
@@ -319,6 +319,8 @@ export default function App() {
   const [lastAtomCount, setLastAtomCount] = useState<number>(0);
   const [isLoadingHealthReport, setIsLoadingHealthReport] = useState(false);
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
+  const [isLoadingDocumentFile, setIsLoadingDocumentFile] = useState(false);
+  const [documentFileMessage, setDocumentFileMessage] = useState<string | null>(null);
   const [isLoadingIBSE, setIsLoadingIBSE] = useState(false);
   const [ibseMessage, setIbseMessage] = useState<string | null>(null);
   const [isLoadingDUKE, setIsLoadingDUKE] = useState(false);
@@ -746,6 +748,127 @@ export default function App() {
       );
     } finally {
       setIsLoadingHealthReport(false);
+    }
+  }
+
+  // ── Carga de archivo para tipos documentales con extracción de texto ─────────
+  // Aplica a: strategic-framework, territorial-documentation, qualitative-material.
+  // DOCX → extrae texto vía mammoth → genera EvidenceAtoms del tipo correspondiente.
+  // PDF  → registra como referencia documental sin texto; usuario pega extractos por textarea.
+  // D-HR-01 no aplica aquí: estos tipos SÍ pueden generar EvidenceAtoms.
+  async function handleLoadDocumentFile(file: File): Promise<void> {
+    const isLegacyDoc = /\.doc$/i.test(file.name) && !/\.docx$/i.test(file.name);
+    if (isLegacyDoc) {
+      setDocumentFileMessage(
+        "El formato .doc (binario) no puede procesarse. Convierte el fichero a .docx y vuelve a cargarlo."
+      );
+      return;
+    }
+
+    const isDocx = /\.docx$/i.test(file.name);
+    const isPdf = /\.pdf$/i.test(file.name);
+
+    if (!isDocx && !isPdf) {
+      setDocumentFileMessage(
+        "Formato no admitido. Sube un fichero .docx o .pdf."
+      );
+      return;
+    }
+
+    const rawName = file.name
+      .replace(/\.(docx?|pdf)$/i, "")
+      .replace(/[-_]/g, " ");
+    const docTitle = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+    setIsLoadingDocumentFile(true);
+    setDocumentFileMessage(null);
+    try {
+      if (isDocx) {
+        const arrayBuffer = await file.arrayBuffer();
+        const plainText = await extractDocxText(arrayBuffer);
+
+        if (plainText.trim().length === 0) {
+          setDocumentFileMessage(
+            "El fichero DOCX no contiene texto extraíble. Pega el contenido manualmente en el área de texto."
+          );
+          return;
+        }
+
+        // La ingesta se calcula DENTRO del actualizador funcional, sobre prev:
+        // tras los await, el workspace capturado por cierre puede estar obsoleto
+        // y fusionarlo pisaría cambios intermedios de repositorio/evidencia.
+        setWorkspace((prev) => {
+          const result = ingestManualDocument({
+            repository: prev.repository,
+            evidenceStore: prev.evidenceStore,
+            kind,
+            title: docTitle,
+            plainText,
+            sourceFileName: file.name,
+            sourceSystem: "Archivo DOCX cargado",
+          });
+
+          if (result === null) return prev;
+
+          queueMicrotask(() => {
+            setLastProcessedDocument(result.document);
+            setLastAtomCount(result.atomsCreated);
+            setDocumentFileMessage(
+              `«${docTitle}» registrado. ${result.atomsCreated} unidades de evidencia extraídas del texto.`
+            );
+          });
+
+          return {
+            ...prev,
+            repository: result.repository,
+            evidenceStore: result.evidenceStore,
+            updatedAt: new Date().toISOString(),
+          };
+        });
+      } else {
+        // PDF: registrar como referencia sin extracción de texto.
+        // El id se genera fuera para que sea estable; el repositorio se
+        // deriva de prev dentro del actualizador (mismo motivo que en DOCX).
+        const documentId = crypto.randomUUID();
+        setWorkspace((prev) => {
+          const nextRepository = addMunicipalDocument(prev.repository, {
+            id: documentId,
+            kind: kind as DocumentKind,
+            title: docTitle,
+            source: {
+              system: "Archivo PDF — referencia documental",
+              collectedAt: new Date().toISOString(),
+            },
+            sourceFileName: file.name,
+            canGenerateEvidence: false,
+            tags: [kind],
+          });
+          const registeredDoc = nextRepository.documents.find((d) => d.id === documentId);
+          if (registeredDoc === undefined) return prev;
+
+          queueMicrotask(() => {
+            setLastProcessedDocument(registeredDoc);
+            setLastAtomCount(0);
+            setDocumentFileMessage(
+              `«${docTitle}» registrado como documento de referencia (PDF sin extracción de texto). ` +
+              "Pega un extracto analítico en el área de texto inferior si deseas generar evidencias trazables."
+            );
+          });
+
+          return {
+            ...prev,
+            repository: nextRepository,
+            updatedAt: new Date().toISOString(),
+          };
+        });
+      }
+    } catch (err) {
+      console.error("[document-file-load-error]", err);
+      setDocumentFileMessage(
+        "Error al procesar el archivo. Verifica que sea un .docx válido y no esté dañado."
+      );
+    } finally {
+      setIsLoadingDocumentFile(false);
     }
   }
 
@@ -2714,6 +2837,9 @@ export default function App() {
               onPlainTextChange={setPlainText}
               onProcessDocument={handleProcessDocument}
               onLoadHealthReport={handleLoadHealthReport}
+              onLoadDocumentFile={handleLoadDocumentFile}
+              isLoadingDocumentFile={isLoadingDocumentFile}
+              documentFileMessage={documentFileMessage}
             />
 
             {/* ── BLOQUE 5: Evidencias incorporadas al análisis ── */}
