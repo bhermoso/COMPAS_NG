@@ -21,6 +21,8 @@ _archive/
 *.xlsx
 *.csv
 *.png
+*.odt
+*.ods
 
 # Fixtures de referencia versionados — reproducibles desde microdatos EAS
 !fixtures/duke-eas-granada.csv
