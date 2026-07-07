@@ -31,9 +31,20 @@ function stripDataUris(html: string): string {
 export async function createHealthReportDocumentFromDocx(
   input: CreateHealthReportDocumentInput
 ): Promise<HealthReportDocument> {
+  // La API node de mammoth acepta { buffer }; la de navegador, { arrayBuffer }.
+  // Se elige según el entorno para que el mismo servicio funcione en la app y
+  // en el generador de expedientes demo (scripts/demo). El acceso a Buffer se
+  // hace vía globalThis para no requerir tipos de Node en el build del navegador.
+  const nodeBuffer = (globalThis as {
+    Buffer?: { from(data: ArrayBuffer): unknown };
+  }).Buffer;
+  const mammothInput = (nodeBuffer !== undefined
+    ? { buffer: nodeBuffer.from(input.arrayBuffer) }
+    : { arrayBuffer: input.arrayBuffer }) as { arrayBuffer: ArrayBuffer };
+
   // Text extraction always runs first. It is the authoritative content path
   // and must succeed for the load to proceed.
-  const textResult = await extractRawText({ arrayBuffer: input.arrayBuffer });
+  const textResult = await extractRawText(mammothInput);
   const originalText = textResult.value;
 
   // HTML conversion is best-effort. DOCX files converted from ODT or containing
@@ -41,7 +52,7 @@ export async function createHealthReportDocumentFromDocx(
   // recoverable: the document is still stored and its text is usable.
   let originalHtml: string | undefined;
   try {
-    const htmlResult = await convertToHtml({ arrayBuffer: input.arrayBuffer });
+    const htmlResult = await convertToHtml(mammothInput);
     const stripped = stripDataUris(htmlResult.value);
     if (stripped.length <= HTML_SIZE_LIMIT_BYTES) {
       originalHtml = stripped;

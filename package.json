@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:smoke": "node tests/home-complementary-studies.smoke.mjs",
-    "test:atarfe": "node tests/load-atarfe-complete.mjs"
+    "test:atarfe": "node tests/load-atarfe-complete.mjs",
+    "rebuild:zaidin": "vitest run --config vitest.rebuild.config.ts"
   },
   "dependencies": {
     "mammoth": "^1.12.0",
