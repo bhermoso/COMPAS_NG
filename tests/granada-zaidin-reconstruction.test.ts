@@ -236,3 +236,86 @@ describe("Granada-Zaidín — codificación de los artefactos exportados", () =>
     }
   });
 });
+
+// ── Marcos estratégicos y normativos (EPVSA, ESCA, Plan de Mayores) ──────────
+
+import {
+  STRATEGIC_FRAMEWORK_KEYS,
+  strategicFrameworkDocumentId,
+  buildStrategicFrameworkSpecs,
+  upsertStrategicFrameworkDocuments,
+} from "../scripts/demo/buildGranadaZaidinWorkspace";
+
+describe("Granada-Zaidín reconstruido — marcos estratégicos y normativos", () => {
+  it("contiene exactamente tres documentos strategic-framework, con las claves esperadas", () => {
+    const marcos = ws.repository.documents.filter((d) => d.kind === "strategic-framework");
+    expect(marcos.length).toBe(3);
+    for (const key of STRATEGIC_FRAMEWORK_KEYS) {
+      const withKey = marcos.filter((d) => d.tags.includes(`framework:${key}`));
+      expect(withKey.length, key).toBe(1);
+      expect(withKey[0].id).toBe(strategicFrameworkDocumentId("granada-zaidin", key));
+      expect(withKey[0].canGenerateEvidence).toBe(false);
+    }
+  });
+
+  it("no hay duplicados por municipalityId + kind + frameworkKey", () => {
+    const marcos = ws.repository.documents.filter((d) => d.kind === "strategic-framework");
+    const keys = marcos.map((d) => d.id);
+    expect(new Set(keys).size).toBe(keys.length);
+    const titles = marcos.map((d) => d.title);
+    expect(titles.join(" ")).toContain("EPVSA");
+    expect(titles.join(" ")).toContain("ESCA");
+    expect(titles.join(" ")).toContain("Personas Mayores en Andalucía 2020-2023");
+  });
+
+  it("aplicar la carga dos veces no duplica ningún marco (idempotencia)", () => {
+    const specs = buildStrategicFrameworkSpecs(process.cwd());
+    const once = upsertStrategicFrameworkDocuments(ws.repository, "granada-zaidin", specs);
+    const twice = upsertStrategicFrameworkDocuments(once, "granada-zaidin", specs);
+    const count = (r: typeof ws.repository) =>
+      r.documents.filter((d) => d.kind === "strategic-framework").length;
+    expect(count(once)).toBe(3);
+    expect(count(twice)).toBe(3);
+    expect(twice.documents.length).toBe(once.documents.length);
+  });
+
+  it("un duplicado previo del mismo marco se normaliza a una sola entrada", () => {
+    const specs = buildStrategicFrameworkSpecs(process.cwd());
+    // Simula el duplicado observado en la UI: dos cargas manuales del Plan de Mayores
+    let repo = ws.repository;
+    repo = {
+      ...repo,
+      documents: [
+        ...repo.documents,
+        {
+          ...repo.documents.find((d) => d.tags.includes("framework:plan-mayores-andalucia-2020-2023"))!,
+          id: "uuid-duplicado-manual",
+          tags: ["strategic-framework", "framework:plan-mayores-andalucia-2020-2023"],
+        },
+      ],
+    };
+    const normalized = upsertStrategicFrameworkDocuments(repo, "granada-zaidin", specs);
+    const planDocs = normalized.documents.filter((d) =>
+      d.tags.includes("framework:plan-mayores-andalucia-2020-2023")
+    );
+    expect(planDocs.length).toBe(1);
+    expect(planDocs[0].id).toBe(
+      strategicFrameworkDocumentId("granada-zaidin", "plan-mayores-andalucia-2020-2023")
+    );
+  });
+
+  it("si falta una fuente obligatoria, la carga falla explícitamente", () => {
+    expect(() => buildStrategicFrameworkSpecs("C:/ruta/inexistente")).toThrow(
+      /Fuente obligatoria ausente/
+    );
+  });
+
+  it("los marcos no generan evidencias: los totales auditados no cambian", () => {
+    expect(result.counts.studyAtoms).toBe(36);
+    expect(result.counts.localizaAtoms).toBe(15);
+    expect(result.counts.totalAtoms).toBe(51);
+    expect(
+      ws.evidenceStore.atoms.some((a) => a.provenance.origin === "strategic-framework")
+    ).toBe(false);
+  });
+});

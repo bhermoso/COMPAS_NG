@@ -22,7 +22,7 @@
  *   - Granada-Zaidín es distrito, sin código INE propio.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -61,7 +61,9 @@ import { createSBQStudy } from "../../src/domain/sbq";
 import {
   addMunicipalDocument,
   type AddMunicipalDocumentInput,
+  type MunicipalDocumentRepository,
 } from "../../src/domain/repository";
+import { getElementsByFramework } from "../../src/domain/strategy";
 import {
   stableAssetKey,
   upsertEvidenceAtom,
@@ -120,6 +122,137 @@ export const LOCALIZA_SALUD_ZAIDIN_TEXT = [
 ].join("\n");
 
 export const LOCALIZA_ASSET_COUNT = 15;
+
+// ── Marcos estratégicos y normativos ─────────────────────────────────────────
+
+export const STRATEGIC_FRAMEWORK_KEYS = [
+  "epvsa",
+  "esca",
+  "plan-mayores-andalucia-2020-2023",
+] as const;
+
+export type StrategicFrameworkKey = (typeof STRATEGIC_FRAMEWORK_KEYS)[number];
+
+export interface StrategicFrameworkSpec {
+  frameworkKey: StrategicFrameworkKey;
+  title: string;
+  sourceText?: string;
+  sourceFileName?: string;
+  sourceSystem: string;
+}
+
+/**
+ * Identificador documental estable de un marco: depende de municipalityId,
+ * del kind "strategic-framework" y de la clave del marco. Nunca es un UUID
+ * nuevo por ejecución — es la base de la idempotencia.
+ */
+export function strategicFrameworkDocumentId(
+  municipalityId: string,
+  frameworkKey: StrategicFrameworkKey
+): string {
+  return `strategic-framework:${municipalityId}:${frameworkKey}`;
+}
+
+/**
+ * Resuelve las tres fuentes obligatorias de marcos. Falla explícitamente si
+ * alguna no está disponible: EPVSA y ESCA proceden del registro estratégico
+ * canónico del repositorio (StrategicFrameworkRegistry); el Plan de Mayores,
+ * de su PDF preservado en docs/source-material/strategic-frameworks/.
+ * Nunca carga un subconjunto en silencio.
+ */
+export function buildStrategicFrameworkSpecs(rootDir: string): StrategicFrameworkSpec[] {
+  const registryText = (framework: "EPVSA" | "ESCA"): string => {
+    const elements = getElementsByFramework(framework);
+    if (elements.length === 0) {
+      throw new Error(
+        `Fuente obligatoria ausente: el registro estratégico canónico no aporta ` +
+        `ningún elemento para ${framework}. No se carga ningún marco.`
+      );
+    }
+    return elements
+      .map((e) => {
+        const desc = e.description ? ` ${e.description}` : "";
+        return `${e.id} — ${e.label}.${desc} [Fuente: ${e.sourceTrace}]`;
+      })
+      .join("\n");
+  };
+
+  const planMayoresPdf = resolve(
+    rootDir,
+    "docs/source-material/strategic-frameworks/Plan de mayores 2020-23.pdf"
+  );
+  if (!existsSync(planMayoresPdf)) {
+    throw new Error(
+      `Fuente obligatoria ausente: no existe el PDF del Plan de Mayores en ` +
+      `${planMayoresPdf}. No se carga ningún marco.`
+    );
+  }
+
+  return [
+    {
+      frameworkKey: "epvsa",
+      title: "EPVSA — Estrategia de Promoción de la Vida Saludable en Andalucía 2024–2030",
+      sourceText: registryText("EPVSA"),
+      sourceSystem:
+        "Registro estratégico canónico de COMPÁS NG (StrategicFrameworkRegistry)",
+    },
+    {
+      frameworkKey: "esca",
+      title: "ESCA — Estrategia de Salud Comunitaria de Andalucía",
+      sourceText: registryText("ESCA"),
+      sourceSystem:
+        "Registro estratégico canónico de COMPÁS NG (StrategicFrameworkRegistry)",
+    },
+    {
+      frameworkKey: "plan-mayores-andalucia-2020-2023",
+      title: "Plan Estratégico Integral para Personas Mayores en Andalucía 2020-2023",
+      sourceFileName: "Plan de mayores 2020-23.pdf",
+      sourceSystem: "Archivo PDF — referencia documental",
+    },
+  ];
+}
+
+/**
+ * Registra los marcos de forma idempotente: elimina cualquier documento previo
+ * del mismo marco (mismo id estable o tag framework:{clave}) y añade uno solo
+ * por marco, como referencia documental sin generación de evidencias
+ * (canGenerateEvidence: false — no altera los totales auditados del expediente).
+ */
+export function upsertStrategicFrameworkDocuments(
+  repository: MunicipalDocumentRepository,
+  municipalityId: string,
+  specs: StrategicFrameworkSpec[]
+): MunicipalDocumentRepository {
+  let next = repository;
+  for (const spec of specs) {
+    const stableId = strategicFrameworkDocumentId(municipalityId, spec.frameworkKey);
+    const frameworkTag = `framework:${spec.frameworkKey}`;
+    next = {
+      ...next,
+      documents: next.documents.filter(
+        (d) =>
+          !(
+            d.kind === "strategic-framework" &&
+            (d.id === stableId || d.tags.includes(frameworkTag))
+          )
+      ),
+    };
+    next = addMunicipalDocument(next, {
+      id: stableId,
+      kind: "strategic-framework",
+      title: spec.title,
+      source: {
+        system: spec.sourceSystem,
+        collectedAt: new Date().toISOString(),
+      },
+      sourceFileName: spec.sourceFileName,
+      sourceText: spec.sourceText,
+      canGenerateEvidence: false,
+      tags: ["strategic-framework", frameworkTag],
+    });
+  }
+  return next;
+}
 
 export interface GranadaZaidinBuildResult {
   workspace: MunicipalityWorkspace;
@@ -302,6 +435,19 @@ export async function buildGranadaZaidinWorkspace(): Promise<GranadaZaidinBuildR
       updatedAt: new Date().toISOString(),
     };
   }
+
+  // ── 5. Marcos estratégicos y normativos (EPVSA, ESCA, Plan de Mayores) ────
+  // Carga idempotente por clave estable; falla explícitamente si falta alguna
+  // fuente obligatoria; sin generación de evidencias (totales intactos).
+  ws = {
+    ...ws,
+    repository: upsertStrategicFrameworkDocuments(
+      ws.repository,
+      municipalityId,
+      buildStrategicFrameworkSpecs(repoRoot)
+    ),
+    updatedAt: new Date().toISOString(),
+  };
 
   const totalAtoms = ws.evidenceStore.atoms.length;
   const localizaAtoms = ws.evidenceStore.atoms.filter(
