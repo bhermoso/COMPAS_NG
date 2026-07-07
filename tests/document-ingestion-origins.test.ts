@@ -1,11 +1,15 @@
 /**
  * tests/document-ingestion-origins.test.ts
  *
- * Verifica que los DocumentKind territorial-documentation y qualitative-material
- * producen EvidenceAtom con el EvidenceOrigin semántico correcto (no "other"),
- * y que el EvidenceStoreIntegrityGuard acepta ambos nuevos orígenes.
+ * Verifica que los DocumentKind territorial-documentation, qualitative-material
+ * y strategic-framework producen EvidenceAtom con el EvidenceOrigin semántico
+ * correcto (no "other"), y que el EvidenceStoreIntegrityGuard acepta los orígenes.
  *
- * Cubre los tests A, B y C del incremento mínimo del selector documental.
+ * También verifica el contrato del selector documental visible:
+ *  - "community-asset" no es una opción visible (usa Localiza Salud en su lugar).
+ *  - "localiza-salud" sí es una opción visible y genera origin correcto.
+ *  - "strategic-framework" sí es una opción visible y genera origin correcto.
+ *  - La ingesta de localiza-salud y community-asset no se rompe.
  */
 
 import { describe, it, expect } from "vitest";
@@ -136,13 +140,122 @@ describe('ingestManualDocument — kind "qualitative-material"', () => {
   });
 });
 
-// ── Test C: IntegrityGuard acepta los dos nuevos orígenes ────────────────────
+// ── Test C: strategic-framework → origin "strategic-framework" ───────────────
 
-describe('EvidenceStoreIntegrityGuard — nuevos orígenes', () => {
-  function makeAtomWithOrigin(
-    origin: "territorial-documentation" | "qualitative-material",
-    id: string
-  ) {
+describe('ingestManualDocument — kind "strategic-framework"', () => {
+  const EPVSA_TEXT = [
+    "Línea 1 EPVSA — Alimentación saludable y actividad física.",
+    "Línea 2 EPVSA — Bienestar emocional y salud mental.",
+    "Línea 3 EPVSA — Prevención de consumos perjudiciales.",
+    "Línea 4 EPVSA — Entornos y entornos saludables.",
+  ].join("\n");
+
+  it('produce átomos con provenance.origin === "strategic-framework"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "strategic-framework",
+      title: "EPVSA 2024–2030 — Líneas estratégicas",
+      plainText: EPVSA_TEXT,
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBeGreaterThan(0);
+
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).toBe("strategic-framework");
+      expect(atom.provenance.origin).not.toBe("other");
+    }
+  });
+
+  it('produce átomos de kind "strategic-priority"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "strategic-framework",
+      title: "ESCA — Principios rectores",
+      plainText: [
+        "Equidad en salud como principio rector de la planificación.",
+        "Intersectorialidad en la acción sobre determinantes sociales.",
+      ].join("\n"),
+    });
+
+    expect(result).not.toBeNull();
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.kind).toBe("strategic-priority");
+    }
+  });
+
+  it("el documento registrado tiene kind strategic-framework", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "strategic-framework",
+      title: "Guías RELAS",
+      plainText: "Marco metodológico RELAS — diagnóstico participativo territorial.",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.document.kind).toBe("strategic-framework");
+  });
+
+  it("provenance.documentId está fijado en todos los átomos", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "strategic-framework",
+      title: "En Buena Edad — objetivos municipales",
+      plainText: [
+        "Objetivo 1: Promover el envejecimiento activo en entornos comunitarios.",
+        "Objetivo 2: Reducir el aislamiento de personas mayores.",
+      ].join("\n"),
+    });
+
+    expect(result).not.toBeNull();
+    const docId = result!.document.id;
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.documentId).toBe(docId);
+    }
+  });
+
+  it("múltiples marcos en el mismo store no generan conflictos", () => {
+    const store = makeStore();
+    const repo = makeRepository();
+
+    const r1 = ingestManualDocument({
+      repository: repo,
+      evidenceStore: store,
+      kind: "strategic-framework",
+      title: "EPVSA 2024–2030",
+      plainText: "Línea 1 EPVSA — Alimentación saludable.",
+    });
+
+    const r2 = ingestManualDocument({
+      repository: r1!.repository,
+      evidenceStore: r1!.evidenceStore,
+      kind: "strategic-framework",
+      title: "ESCA Andalucía",
+      plainText: "Objetivo ESCA — Equidad en salud.",
+    });
+
+    expect(r2).not.toBeNull();
+    expect(r2!.evidenceStore.atoms.length).toBe(2);
+
+    for (const atom of r2!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).toBe("strategic-framework");
+    }
+  });
+});
+
+// ── Test D: IntegrityGuard acepta los tres orígenes ──────────────────────────
+
+describe("EvidenceStoreIntegrityGuard — orígenes del selector documental", () => {
+  type TestedOrigin =
+    | "territorial-documentation"
+    | "qualitative-material"
+    | "strategic-framework";
+
+  function makeAtomWithOrigin(origin: TestedOrigin, id: string) {
     return createEvidenceAtom({
       id,
       municipalityId: MUN_ID,
@@ -163,13 +276,9 @@ describe('EvidenceStoreIntegrityGuard — nuevos orígenes', () => {
       atoms: [makeAtomWithOrigin("territorial-documentation", "td-atom-01")],
     };
     const result = runEvidenceStoreIntegrityGuard(store);
-
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
-    expect(result.sanitizedStore.atoms).toHaveLength(1);
-    expect(result.sanitizedStore.atoms[0].provenance.origin).toBe(
-      "territorial-documentation"
-    );
+    expect(result.sanitizedStore.atoms[0].provenance.origin).toBe("territorial-documentation");
   });
 
   it('acepta origin "qualitative-material" sin errores', () => {
@@ -178,49 +287,44 @@ describe('EvidenceStoreIntegrityGuard — nuevos orígenes', () => {
       atoms: [makeAtomWithOrigin("qualitative-material", "qm-atom-01")],
     };
     const result = runEvidenceStoreIntegrityGuard(store);
-
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
-    expect(result.sanitizedStore.atoms).toHaveLength(1);
-    expect(result.sanitizedStore.atoms[0].provenance.origin).toBe(
-      "qualitative-material"
-    );
+    expect(result.sanitizedStore.atoms[0].provenance.origin).toBe("qualitative-material");
   });
 
-  it("acepta ambos orígenes en el mismo store sin errores", () => {
+  it('acepta origin "strategic-framework" sin errores', () => {
+    const atom = createEvidenceAtom({
+      id: "sf-atom-01",
+      municipalityId: MUN_ID,
+      kind: "strategic-priority",
+      title: "Línea 1 EPVSA",
+      content: "Alimentación saludable y actividad física como eje prioritario.",
+      provenance: {
+        origin: "strategic-framework",
+        documentId: "doc-epvsa-01",
+        extractedAt: new Date().toISOString(),
+      },
+    });
+    const store = { ...makeStore(), atoms: [atom] };
+    const result = runEvidenceStoreIntegrityGuard(store);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.sanitizedStore.atoms[0].provenance.origin).toBe("strategic-framework");
+  });
+
+  it("acepta los tres orígenes en el mismo store sin errores", () => {
     const store = {
       ...makeStore(),
       atoms: [
         makeAtomWithOrigin("territorial-documentation", "td-atom-02"),
         makeAtomWithOrigin("qualitative-material", "qm-atom-02"),
+        makeAtomWithOrigin("strategic-framework", "sf-atom-02"),
       ],
     };
     const result = runEvidenceStoreIntegrityGuard(store);
-
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
-    expect(result.sanitizedStore.atoms).toHaveLength(2);
-  });
-
-  it('los nuevos orígenes son no gobernados: admiten cualquier kind válido', () => {
-    const atom = createEvidenceAtom({
-      id: "td-indicator-01",
-      municipalityId: MUN_ID,
-      kind: "indicator",
-      title: "Tasa de pobreza relativa",
-      content: "28,3 % de la población bajo el umbral de pobreza relativa.",
-      provenance: {
-        origin: "territorial-documentation",
-        documentId: "doc-td-01",
-        extractedAt: new Date().toISOString(),
-      },
-    });
-
-    const store = { ...makeStore(), atoms: [atom] };
-    const result = runEvidenceStoreIntegrityGuard(store);
-
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    expect(result.sanitizedStore.atoms).toHaveLength(3);
   });
 
   it('origin "other" sigue siendo válido (fallback interno preservado)', () => {
@@ -236,16 +340,98 @@ describe('EvidenceStoreIntegrityGuard — nuevos orígenes', () => {
         extractedAt: new Date().toISOString(),
       },
     });
-
     const store = { ...makeStore(), atoms: [atom] };
     const result = runEvidenceStoreIntegrityGuard(store);
-
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
 });
 
-// ── Regresión: los cambios no afectan al flujo de community-asset ─────────────
+// ── Test E: contrato del selector visible ─────────────────────────────────────
+// Verifica invariantes del selector via pipeline (no via UI React).
+
+describe("contrato del selector documental visible — invariantes de ingesta", () => {
+  it('localiza-salud genera origin "localiza-salud", no "other" ni "community-assets"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Atarfe",
+      plainText: [
+        "Centro Cívico Municipal | Espacio cultural y deportivo | C/ Mayor 1",
+        "Polideportivo Municipal | Instalación deportiva | Av. Deportes s/n",
+      ].join("\n"),
+    });
+    expect(result).not.toBeNull();
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).toBe("localiza-salud");
+      expect(atom.provenance.origin).not.toBe("other");
+      expect(atom.provenance.origin).not.toBe("community-assets");
+    }
+  });
+
+  it('localiza-salud genera atoms de kind "asset"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Activos municipales",
+      plainText: "Asociación de Vecinos La Vega | Actividades comunitarias | C/ Real 5",
+    });
+    expect(result).not.toBeNull();
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.kind).toBe("asset");
+    }
+  });
+
+  it('strategic-framework nunca genera origin "other"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "strategic-framework",
+      title: "Plan Estratégico de Mayores de Andalucía",
+      plainText: [
+        "Eje 1 — Envejecimiento activo y participación social.",
+        "Eje 2 — Atención sociosanitaria integrada.",
+        "Eje 3 — Entornos favorables para las personas mayores.",
+      ].join("\n"),
+    });
+    expect(result).not.toBeNull();
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).not.toBe("other");
+    }
+  });
+
+  it('territorial-documentation no genera origin "other"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "territorial-documentation",
+      title: "Análisis socioeconómico",
+      plainText: "El municipio tiene una tasa de paro del 18 % en 2024.",
+    });
+    expect(result).not.toBeNull();
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).not.toBe("other");
+    }
+  });
+
+  it('qualitative-material no genera origin "other"', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "qualitative-material",
+      title: "Entrevistas comunitarias",
+      plainText: "Los vecinos señalan la falta de transporte como barrera para la salud.",
+    });
+    expect(result).not.toBeNull();
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).not.toBe("other");
+    }
+  });
+});
+
+// ── Test F: regresión — flujos existentes no se rompen ───────────────────────
 
 describe("regresión — community-asset sigue produciendo origin community-assets", () => {
   it('kind "community-asset" → origin "community-assets" (sin cambio)', () => {
@@ -267,6 +453,26 @@ describe("regresión — community-asset sigue produciendo origin community-asse
 
     for (const atom of result!.evidenceStore.atoms) {
       expect(atom.provenance.origin).toBe("community-assets");
+    }
+  });
+
+  it('localiza-salud sigue siendo la ruta principal de activos comunitarios visibles', () => {
+    const locResult = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud Atarfe — completo",
+      plainText: [
+        "Centro de Salud Atarfe | Atención primaria | C/ Salud 1",
+        "Polideportivo | Deporte | Av. Deportes",
+      ].join("\n"),
+    });
+    expect(locResult).not.toBeNull();
+    expect(locResult!.atomsCreated).toBeGreaterThan(0);
+
+    for (const atom of locResult!.evidenceStore.atoms) {
+      expect(atom.kind).toBe("asset");
+      expect(atom.provenance.origin).toBe("localiza-salud");
     }
   });
 });

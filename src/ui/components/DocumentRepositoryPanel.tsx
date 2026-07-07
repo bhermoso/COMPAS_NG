@@ -7,6 +7,7 @@ import type {
 const KIND_LABEL: Record<DocumentKind, string> = {
   "health-report": "Informe de Salud",
   "localiza-salud": "Localiza Salud",
+  "strategic-framework": "Marco estratégico y normativo",
   "complementary-study": "Estudio complementario",
   "eas-variable": "Variable EAS",
   "cmi-indicator": "Indicador CMI",

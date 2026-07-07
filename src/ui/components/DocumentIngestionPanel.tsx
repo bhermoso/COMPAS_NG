@@ -52,6 +52,7 @@ export function DocumentIngestionPanel({
 
   const isHealthReport = kind === "health-report";
   const isComplementaryStudy = kind === "complementary-study";
+  const isStrategicFramework = kind === "strategic-framework";
 
   return (
     <section className="workspace-panel">
@@ -111,6 +112,63 @@ export function DocumentIngestionPanel({
             isLoadingHealthReport !== true && (
               <p className="panel-note">{healthReportMessage}</p>
             )}
+        </div>
+      ) : isStrategicFramework ? (
+        /* ── Carga de marcos estratégicos y normativos ── */
+        <div className="docx-upload">
+          <select
+            value={kind}
+            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+            className="docx-upload__kind"
+          >
+            {documentKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="ingestion-hint">
+            Registra marcos estratégicos, planes normativos o guías metodológicas que
+            orientan el diagnóstico y la planificación local de salud: EPVSA, ESCA,
+            Plan Estratégico de Mayores de Andalucía, Estrategia Estatal de Personas Mayores,
+            Guías RELAS, En Buena Edad u otros marcos programáticos autonómicos o estatales.
+          </p>
+          <p className="ingestion-hint">
+            Pega el texto del marco o guía (puede ser un extracto, un índice de objetivos
+            estratégicos o las líneas de acción relevantes). Cada línea o párrafo se
+            registrará como una prioridad estratégica de referencia trazable.
+          </p>
+          <textarea
+            value={plainText}
+            onChange={(event) => onPlainTextChange(event.target.value)}
+            placeholder="Pega aquí el contenido del marco estratégico (líneas de actuación, objetivos, principios rectores…). Ejemplo: Línea 1 EPVSA — Alimentación saludable y actividad física."
+            rows={7}
+          />
+          <div className="document-form">
+            <input
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              placeholder="Título del marco (ej. EPVSA 2024–2030, Guías RELAS, En Buena Edad…)"
+            />
+            <button
+              type="button"
+              onClick={onProcessDocument}
+              disabled={!canSubmit}
+              title={canSubmit ? undefined : hint}
+            >
+              Registrar marco
+            </button>
+          </div>
+          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {lastProcessedDocument && lastProcessedDocument.kind === "strategic-framework" && (
+            <p className="panel-note">
+              Último marco registrado:{" "}
+              <strong>{lastProcessedDocument.title}</strong>
+              {atomsCreated !== undefined && atomsCreated > 0 && (
+                <> · <strong>{atomsCreated}</strong> prioridades estratégicas incorporadas</>
+              )}
+            </p>
+          )}
         </div>
       ) : isComplementaryStudy ? (
         /* ── Orientación para Estudios Complementarios tipificados ── */

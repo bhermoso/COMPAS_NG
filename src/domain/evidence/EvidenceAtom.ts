@@ -32,6 +32,7 @@ export type EvidenceOrigin =
   | "legacy-compas"
   | "territorial-documentation"
   | "qualitative-material"
+  | "strategic-framework"
   | "other";
 
 export type EvidenceConfidence =

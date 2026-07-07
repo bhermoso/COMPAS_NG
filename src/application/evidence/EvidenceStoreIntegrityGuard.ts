@@ -38,6 +38,7 @@ const ALL_VALID_ORIGINS: ReadonlySet<string> = new Set<EvidenceOrigin>([
   "legacy-compas",
   "territorial-documentation",
   "qualitative-material",
+  "strategic-framework",
   "other",
 ]);
 

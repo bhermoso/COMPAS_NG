@@ -159,8 +159,8 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "health-report",             label: "Informe de Salud" },
   { value: "complementary-study",       label: "Estudio complementario" },
-  { value: "community-asset",           label: "Activos comunitarios" },
   { value: "localiza-salud",            label: "Localiza Salud" },
+  { value: "strategic-framework",       label: "Marco estratégico y normativo" },
   { value: "territorial-documentation", label: "Documentación Territorial de Contexto" },
   { value: "qualitative-material",      label: "Material Cualitativo y Participativo" },
   { value: "longitudinal-evidence",     label: "Evidencia longitudinal" },

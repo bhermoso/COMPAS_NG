@@ -9,6 +9,7 @@ export type DocumentKind =
   | "cmi-indicator"
   | "community-asset"
   | "localiza-salud"
+  | "strategic-framework"
   | "redcap-export"
   | "territorial-documentation"
   | "qualitative-material"

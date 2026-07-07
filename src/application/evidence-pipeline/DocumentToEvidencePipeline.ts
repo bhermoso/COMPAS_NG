@@ -225,6 +225,11 @@ function classifyEvidenceKind(
     return "asset";
   }
 
+  // Los marcos estratégicos y normativos generan prioridades estratégicas.
+  if (documentKind === "strategic-framework") {
+    return "strategic-priority";
+  }
+
   const normalized = text.toLowerCase();
 
   // Heurística textual — tiene prioridad sobre el tipo de documento
@@ -386,6 +391,8 @@ function mapDocumentKindToEvidenceOrigin(
       return "community-assets";
     case "localiza-salud":
       return "localiza-salud";
+    case "strategic-framework":
+      return "strategic-framework";
     case "redcap-export":
       return "redcap";
     case "longitudinal-evidence":
