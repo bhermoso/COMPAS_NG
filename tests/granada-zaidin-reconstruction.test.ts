@@ -391,3 +391,75 @@ describe("Granada-Zaidín — los marcos estratégicos no son evidencia diagnós
     );
   });
 });
+
+// ── Marcos estratégicos desde PDF reales (corrección 2026-07-07 noche) ───────
+
+import { existsSync } from "node:fs";
+import { resolve as resolvePath } from "node:path";
+
+describe("Granada-Zaidín — marcos estratégicos cargados desde PDF reales", () => {
+  it("los tres PDF fuente existen en el repositorio activo", () => {
+    const specs = buildStrategicFrameworkSpecs(process.cwd());
+    expect(specs.length).toBe(3);
+    for (const spec of specs) {
+      expect(
+        existsSync(resolvePath(process.cwd(), spec.pdfRepoPath)),
+        spec.pdfRepoPath
+      ).toBe(true);
+      expect(spec.pdfFileName.toLowerCase().endsWith(".pdf")).toBe(true);
+    }
+  });
+
+  it("los tres marcos del workspace referencian su PDF real y no generan evidencias", () => {
+    const marcos = ws.repository.documents.filter((d) => d.kind === "strategic-framework");
+    expect(marcos.length).toBe(3);
+    for (const doc of marcos) {
+      expect(doc.sourceFileName, doc.title).toMatch(/\.pdf$/i);
+      expect(doc.source.url, doc.title).toBeDefined();
+      expect(
+        existsSync(resolvePath(process.cwd(), doc.source.url!)),
+        `${doc.title} → ${doc.source.url}`
+      ).toBe(true);
+      expect(doc.canGenerateEvidence).toBe(false);
+    }
+  });
+
+  it("dedup por título/fichero: un duplicado manual heredado del Plan de Mayores se normaliza", () => {
+    const specs = buildStrategicFrameworkSpecs(process.cwd());
+    // Duplicado tal como lo creaba la UI: UUID propio, sin clave de marco,
+    // título derivado del nombre del fichero y sourceFileName del PDF.
+    const conBasura = {
+      ...ws.repository,
+      documents: [
+        ...ws.repository.documents,
+        {
+          id: "uuid-manual-1",
+          municipalityId: "granada-zaidin",
+          kind: "strategic-framework" as const,
+          title: "Plan de mayores 2020 23",
+          status: "uploaded" as const,
+          source: { system: "Archivo PDF — referencia documental" },
+          sourceFileName: "Plan de mayores 2020-23.pdf",
+          canGenerateEvidence: false,
+          tags: ["strategic-framework"],
+          createdAt: "2026-07-07T19:00:00.000Z",
+          updatedAt: "2026-07-07T19:00:00.000Z",
+        },
+      ],
+    };
+    const normalizado = upsertStrategicFrameworkDocuments(conBasura, "granada-zaidin", specs);
+    const planes = normalizado.documents.filter(
+      (d) =>
+        d.kind === "strategic-framework" &&
+        (d.sourceFileName ?? "").toLowerCase().includes("mayores")
+    );
+    expect(planes.length).toBe(1);
+    expect(planes[0].id).toBe(
+      strategicFrameworkDocumentId("granada-zaidin", "plan-mayores-andalucia-2020-2023")
+    );
+    // Y el conjunto sigue siendo exactamente de tres marcos
+    expect(
+      normalizado.documents.filter((d) => d.kind === "strategic-framework").length
+    ).toBe(3);
+  });
+});

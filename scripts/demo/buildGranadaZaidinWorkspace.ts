@@ -63,7 +63,6 @@ import {
   type AddMunicipalDocumentInput,
   type MunicipalDocumentRepository,
 } from "../../src/domain/repository";
-import { getElementsByFramework } from "../../src/domain/strategy";
 import {
   stableAssetKey,
   upsertEvidenceAtom,
@@ -136,9 +135,10 @@ export type StrategicFrameworkKey = (typeof STRATEGIC_FRAMEWORK_KEYS)[number];
 export interface StrategicFrameworkSpec {
   frameworkKey: StrategicFrameworkKey;
   title: string;
-  sourceText?: string;
-  sourceFileName?: string;
-  sourceSystem: string;
+  /** Nombre del fichero PDF fuente. */
+  pdfFileName: string;
+  /** Ruta del PDF relativa a la raíz del repositorio (trazabilidad). */
+  pdfRepoPath: string;
 }
 
 /**
@@ -153,70 +153,73 @@ export function strategicFrameworkDocumentId(
   return `strategic-framework:${municipalityId}:${frameworkKey}`;
 }
 
+const STRATEGIC_FRAMEWORK_PDFS: Array<{
+  frameworkKey: StrategicFrameworkKey;
+  title: string;
+  pdfFileName: string;
+}> = [
+  {
+    frameworkKey: "epvsa",
+    title: "EPVSA — Estrategia de Promoción de la Vida Saludable en Andalucía 2024–2030",
+    pdfFileName: "08_Lineas_EPVSA_02abril24.pdf",
+  },
+  {
+    frameworkKey: "esca",
+    title: "ESCA — Estrategia de Salud Comunitaria de Andalucía 2026-2030",
+    pdfFileName: "Estrategia de Salud Comunitaria de Andalucia 2026-2030-ESCA.pdf",
+  },
+  {
+    frameworkKey: "plan-mayores-andalucia-2020-2023",
+    title: "Plan Estratégico Integral para Personas Mayores en Andalucía 2020-2023",
+    pdfFileName: "Plan de mayores 2020-23.pdf",
+  },
+];
+
 /**
- * Resuelve las tres fuentes obligatorias de marcos. Falla explícitamente si
- * alguna no está disponible: EPVSA y ESCA proceden del registro estratégico
- * canónico del repositorio (StrategicFrameworkRegistry); el Plan de Mayores,
- * de su PDF preservado en docs/source-material/strategic-frameworks/.
- * Nunca carga un subconjunto en silencio.
+ * Resuelve las tres fuentes obligatorias de marcos desde sus PDF reales,
+ * preservados en docs/source-material/strategic-frameworks/. Falla
+ * explícitamente si falta cualquiera de los tres: nunca carga un subconjunto
+ * en silencio. El StrategicFrameworkRegistry queda como metadato auxiliar del
+ * dominio; no sustituye al documento cuando el PDF existe.
  */
 export function buildStrategicFrameworkSpecs(rootDir: string): StrategicFrameworkSpec[] {
-  const registryText = (framework: "EPVSA" | "ESCA"): string => {
-    const elements = getElementsByFramework(framework);
-    if (elements.length === 0) {
-      throw new Error(
-        `Fuente obligatoria ausente: el registro estratégico canónico no aporta ` +
-        `ningún elemento para ${framework}. No se carga ningún marco.`
-      );
+  const dir = "docs/source-material/strategic-frameworks";
+  const specs: StrategicFrameworkSpec[] = [];
+  const missing: string[] = [];
+  for (const marco of STRATEGIC_FRAMEWORK_PDFS) {
+    const pdfRepoPath = `${dir}/${marco.pdfFileName}`;
+    if (!existsSync(resolve(rootDir, pdfRepoPath))) {
+      missing.push(`${marco.frameworkKey} → ${pdfRepoPath}`);
+      continue;
     }
-    return elements
-      .map((e) => {
-        const desc = e.description ? ` ${e.description}` : "";
-        return `${e.id} — ${e.label}.${desc} [Fuente: ${e.sourceTrace}]`;
-      })
-      .join("\n");
-  };
-
-  const planMayoresPdf = resolve(
-    rootDir,
-    "docs/source-material/strategic-frameworks/Plan de mayores 2020-23.pdf"
-  );
-  if (!existsSync(planMayoresPdf)) {
+    specs.push({ ...marco, pdfRepoPath });
+  }
+  if (missing.length > 0) {
     throw new Error(
-      `Fuente obligatoria ausente: no existe el PDF del Plan de Mayores en ` +
-      `${planMayoresPdf}. No se carga ningún marco.`
+      `Fuente obligatoria ausente: no existe el PDF de ${missing.join("; ")}. ` +
+      `No se carga ningún marco.`
     );
   }
+  return specs;
+}
 
-  return [
-    {
-      frameworkKey: "epvsa",
-      title: "EPVSA — Estrategia de Promoción de la Vida Saludable en Andalucía 2024–2030",
-      sourceText: registryText("EPVSA"),
-      sourceSystem:
-        "Registro estratégico canónico de COMPÁS NG (StrategicFrameworkRegistry)",
-    },
-    {
-      frameworkKey: "esca",
-      title: "ESCA — Estrategia de Salud Comunitaria de Andalucía",
-      sourceText: registryText("ESCA"),
-      sourceSystem:
-        "Registro estratégico canónico de COMPÁS NG (StrategicFrameworkRegistry)",
-    },
-    {
-      frameworkKey: "plan-mayores-andalucia-2020-2023",
-      title: "Plan Estratégico Integral para Personas Mayores en Andalucía 2020-2023",
-      sourceFileName: "Plan de mayores 2020-23.pdf",
-      sourceSystem: "Archivo PDF — referencia documental",
-    },
-  ];
+/** Normalización para deduplicar títulos y nombres de fichero equivalentes. */
+function normalizeForDedup(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 /**
- * Registra los marcos de forma idempotente: elimina cualquier documento previo
- * del mismo marco (mismo id estable o tag framework:{clave}) y añade uno solo
- * por marco, como referencia documental sin generación de evidencias
- * (canGenerateEvidence: false — no altera los totales auditados del expediente).
+ * Registra los marcos de forma idempotente: antes de añadir cada marco elimina
+ * cualquier documento strategic-framework previo equivalente — mismo id
+ * estable, misma etiqueta framework:{clave}, mismo título normalizado o mismo
+ * fichero fuente normalizado (esto último neutraliza duplicados heredados de
+ * cargas manuales por la UI, que usaban UUID y carecían de clave de marco).
+ * Los marcos se registran como referencia documental sin generación de
+ * evidencias (canGenerateEvidence: false — totales auditados intactos).
  */
 export function upsertStrategicFrameworkDocuments(
   repository: MunicipalDocumentRepository,
@@ -227,26 +230,29 @@ export function upsertStrategicFrameworkDocuments(
   for (const spec of specs) {
     const stableId = strategicFrameworkDocumentId(municipalityId, spec.frameworkKey);
     const frameworkTag = `framework:${spec.frameworkKey}`;
+    const normTitle = normalizeForDedup(spec.title);
+    const normPdf = normalizeForDedup(spec.pdfFileName);
     next = {
       ...next,
-      documents: next.documents.filter(
-        (d) =>
-          !(
-            d.kind === "strategic-framework" &&
-            (d.id === stableId || d.tags.includes(frameworkTag))
-          )
-      ),
+      documents: next.documents.filter((d) => {
+        if (d.kind !== "strategic-framework") return true;
+        if (d.id === stableId || d.tags.includes(frameworkTag)) return false;
+        if (normalizeForDedup(d.title) === normTitle) return false;
+        if (d.sourceFileName && normalizeForDedup(d.sourceFileName) === normPdf) return false;
+        return true;
+      }),
     };
     next = addMunicipalDocument(next, {
       id: stableId,
       kind: "strategic-framework",
       title: spec.title,
       source: {
-        system: spec.sourceSystem,
+        organization: "Junta de Andalucía",
+        system: "Archivo PDF — referencia documental",
+        url: spec.pdfRepoPath,
         collectedAt: new Date().toISOString(),
       },
-      sourceFileName: spec.sourceFileName,
-      sourceText: spec.sourceText,
+      sourceFileName: spec.pdfFileName,
       canGenerateEvidence: false,
       tags: ["strategic-framework", frameworkTag],
     });
