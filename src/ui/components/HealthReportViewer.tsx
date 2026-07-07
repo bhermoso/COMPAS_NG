@@ -67,7 +67,7 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
           {/* Encabezado institucional */}
           <div className="hr-viewer__header">
             <div>
-              <p className="eyebrow">Informe de Salud · Fuente primaria literal</p>
+              <p className="eyebrow">Informe de Salud · Fuente primaria</p>
               <h2 className="hr-viewer__title">{healthReport.title}</h2>
             </div>
             <div className="hr-viewer__meta">
@@ -79,17 +79,19 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
                   Período: <strong>{healthReport.reportingPeriod}</strong>
                 </span>
               )}
-              <span className="panel-note">
-                {healthReport.sections.length} sección(es)
-                {" · "}
-                {healthReport.body.charCount.toLocaleString("es-ES")} caracteres
-                {healthReport.body.tableCount !== undefined &&
-                  ` · ${healthReport.body.tableCount} tabla(s)`}
-              </span>
+              {healthReport.body.format === "html" && (
+                <span className="panel-note">
+                  {healthReport.sections.length} sección(es)
+                  {" · "}
+                  {healthReport.body.charCount.toLocaleString("es-ES")} caracteres
+                  {healthReport.body.tableCount !== undefined &&
+                    ` · ${healthReport.body.tableCount} tabla(s)`}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Autoría institucional */}
+          {/* Autoría institucional — solo para DOCX con autoría registrada */}
           {authors.length > 0 && (
             <div className="hr-viewer__authors">
               <p className="hr-viewer__section-label">Autoría</p>
@@ -105,19 +107,21 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
             </div>
           )}
 
-          {/* Índice de secciones */}
-          <nav className="hr-viewer__toc" aria-label="Índice del informe">
-            <p className="hr-viewer__section-label">Índice</p>
-            <ol className="hr-viewer__toc-list">
-              {healthReport.sections.map((section) => (
-                <li key={`${section.key}-${section.sortOrder}`}>
-                  <a href={`#hr-section-${section.key}-${section.sortOrder}`}>{section.title}</a>
-                </li>
-              ))}
-            </ol>
-          </nav>
+          {/* Índice de secciones — solo para DOCX */}
+          {healthReport.body.format === "html" && healthReport.sections.length > 0 && (
+            <nav className="hr-viewer__toc" aria-label="Índice del informe">
+              <p className="hr-viewer__section-label">Índice</p>
+              <ol className="hr-viewer__toc-list">
+                {healthReport.sections.map((section) => (
+                  <li key={`${section.key}-${section.sortOrder}`}>
+                    <a href={`#hr-section-${section.key}-${section.sortOrder}`}>{section.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
 
-          {/* Secciones en orden — solo cuando existe vista documental (DOCX) */}
+          {/* Contenido — DOCX con vista formateada o PDF preservado */}
           {healthReport.body.format === "html" ? (
             <div className="hr-viewer__sections">
               {healthReport.sections.map((section) => (
@@ -126,11 +130,14 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
             </div>
           ) : (
             <div className="hr-viewer__section-ocr-notice">
-              <p className="hr-viewer__section-ocr-label">Vista documental no disponible</p>
+              <p className="hr-viewer__section-ocr-label">Fuente primaria preservada</p>
               <p className="hr-viewer__section-ocr-note">
-                El documento fue procesado como texto extraído (PDF).
-                El contenido está disponible para el análisis territorial interno.
-                Para consultar el informe completo, abre el fichero original:{" "}
+                Documento PDF cargado como fuente diagnóstica primaria.
+                Preservado en el Repositorio documental.
+                No se ha convertido en evidencia estructurada ni se ha usado para generar análisis automático.
+              </p>
+              <p className="hr-viewer__section-ocr-note">
+                Para consultar el informe, abre el fichero original:{" "}
                 <strong>{healthReport.sourceFileName}</strong>
               </p>
             </div>
@@ -154,14 +161,11 @@ function ReportSection({ section }: { section: HealthReportSection }) {
           dangerouslySetInnerHTML={{ __html: section.bodyHtml }}
         />
       ) : (
-        // Fuente PDF o texto plano: el OCR se reserva para procesamiento interno.
-        // No se muestra como lectura principal.
         <div className="hr-viewer__section-ocr-notice">
-          <p className="hr-viewer__section-ocr-label">Vista documental no disponible</p>
+          <p className="hr-viewer__section-ocr-label">Vista de sección no disponible</p>
           <p className="hr-viewer__section-ocr-note">
-            El texto extraído de esta sección está disponible para el procesamiento
-            interno del análisis territorial, pero no se muestra como lectura principal.
-            Para consultar el contenido original, abre el documento fuente.
+            Esta sección no dispone de vista formateada.
+            Para consultar el contenido, abre el documento fuente.
           </p>
         </div>
       )}

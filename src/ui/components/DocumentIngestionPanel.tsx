@@ -70,7 +70,7 @@ export function DocumentIngestionPanel({
       </div>
 
       {isHealthReport ? (
-        /* ── Carga DOCX para Informe de Salud ── */
+        /* ── Carga del Informe de Salud (DOCX o PDF) ── */
         <div className="docx-upload">
           <select
             value={kind}

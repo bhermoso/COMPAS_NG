@@ -691,8 +691,8 @@ export default function App() {
       };
 
       const healthReport = isPdf
-        ? await createHealthReportDocumentFromPdf({
-            arrayBuffer,
+        ? createHealthReportDocumentFromPdf({
+            arrayBuffer,          // no usado internamente; incluido por compatibilidad de tipo
             municipalityId,
             linkedDocumentId: documentId,
             sourceFileName: file.name,
@@ -708,7 +708,9 @@ export default function App() {
             authors: [],
           });
 
-      const hrAtoms = healthReportToEvidenceAtoms(healthReport);
+      // PDF: se preserva como fuente primaria íntegra; no se generan EvidenceAtom.
+      // DOCX: se generan EvidenceAtom por sección para el análisis territorial.
+      const hrAtoms = isPdf ? [] : healthReportToEvidenceAtoms(healthReport);
       setWorkspace((prev) => ({
         ...prev,
         repository: replaceMunicipalDocumentByKind(prev.repository, newDocInput),
@@ -726,7 +728,9 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       }));
       setLastHealthReportMessage(
-        `Informe de Salud cargado: ${hrAtoms.length} sección(es) incorporada(s) al análisis territorial.`
+        isPdf
+          ? `Informe de Salud (PDF) preservado como fuente diagnóstica primaria. No se ha generado evidencia estructurada. Para consultarlo, abre el fichero: ${file.name}`
+          : `Informe de Salud cargado: ${hrAtoms.length} sección(es) incorporada(s) al análisis territorial.`
       );
     } catch (err) {
       console.error("[health-report-load-error]", err);
