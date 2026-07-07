@@ -752,7 +752,7 @@ export function LocalHealthProfileView({
               <div className="psl-doc-health-report__identity">
                 <h3 className="psl-doc-health-report__title">{psl.healthReportTitle}</h3>
                 <p className="psl-doc-health-report__caption">
-                  Fuente epidemiológica oficial del municipio. Preservado íntegramente
+                  Fuente epidemiológica oficial del ámbito territorial. Preservado íntegramente
                   en el Repositorio documental. El Perfil lo referencia y lo contextualiza
                   con otras fuentes territoriales; no lo sustituye ni lo modifica.
                 </p>
@@ -770,7 +770,7 @@ export function LocalHealthProfileView({
                 es la lectura integrada: incorpora la perspectiva ciudadana, los
                 recursos del territorio y el enfoque salutogénico, respondiendo no
                 solo a <em>«qué ocurre»</em> sino a <em>«por qué ocurre»</em>{" "}
-                y <em>«con qué capacidades cuenta el municipio»</em>.
+                y <em>«con qué capacidades cuenta el territorio»</em>.
               </p>
             </InterpretationBox>
           </>
@@ -876,14 +876,14 @@ export function LocalHealthProfileView({
       <section id="psl-cap-iv" className="psl-doc-section workspace-panel">
         <SectionHeader num="IV" title="Interpretación territorial" />
         <p className="psl-doc-section-subtitle">
-          ¿Qué ocurre en el municipio? ¿Por qué puede estar ocurriendo?
+          ¿Qué ocurre en el territorio? ¿Por qué puede estar ocurriendo?
           ¿Con qué activos y fortalezas cuenta? ¿Qué implica para la planificación local?
         </p>
 
         {isEmpty ? (
           <div className="psl-doc-notice psl-doc-notice--empty">
             Sin evidencia disponible. Incorpora documentos al Repositorio documental
-            para construir la interpretación territorial del municipio.
+            para construir la interpretación territorial del ámbito.
           </div>
         ) : (
           <>

@@ -463,3 +463,61 @@ describe("Granada-Zaidín — marcos estratégicos cargados desde PDF reales", (
     ).toBe(3);
   });
 });
+
+// ── Cautelas de escala proxy y vocabulario territorial en el Perfil ──────────
+// (incremento narrativo: el Perfil de un distrito no habla de "municipio" y
+// declara la evidencia provincial/externa como contexto exploratorio).
+
+describe("Granada-Zaidín — vocabulario territorial y cautelas de escala en el Perfil", () => {
+  it("el Perfil se refiere al ámbito como distrito, nunca como municipio", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    const textos = [
+      psl.territorialSummary,
+      psl.conclusiones.content,
+      psl.conclusiones.authorshipNote,
+      psl.cierreInterpretativo.content,
+      psl.cierreInterpretativo.authorshipNote,
+      psl.priorizacion.deliberacionNota,
+      psl.longitudinalNote,
+    ].join("\n");
+    // Única mención admisible: la referencia al municipio matriz en la
+    // cautela inframunicipal de activos (el distrito pertenece a un municipio).
+    const sinReferenciaMatriz = textos.split("municipio matriz").join("");
+    expect(sinReferenciaMatriz).not.toMatch(/\bmunicipios?\b/i);
+    expect(textos).toContain("distrito");
+  });
+
+  it("el Perfil contiene el bloque de alcance con cautela explícita de escala/proxy", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    expect(psl.conclusiones.content).toContain("Alcance y escala de la evidencia disponible");
+    expect(psl.conclusiones.content).toContain("contexto exploratorio");
+    expect(psl.conclusiones.content).toContain("pendiente de contraste territorial");
+    // Las cautelas declaradas por los estudios se propagan literalmente
+    expect(psl.conclusiones.content).toContain(PROXY_CAUTION);
+  });
+
+  it("declara que los datos provinciales/contextuales no son estimación específica del distrito", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    expect(psl.conclusiones.content).toMatch(
+      /no constituyen? (una )?estimación específica del distrito/
+    );
+    expect(psl.cierreInterpretativo.content).toContain("contexto");
+    expect(psl.cierreInterpretativo.content).toContain("contraste territorial");
+  });
+
+  it("IBSE se presenta como referencia contextual, no como valor propio del distrito", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    expect(psl.conclusiones.content).toMatch(
+      /IBSE[\s\S]{0,400}?no constituye una estimación específica del distrito/
+    );
+    expect(psl.conclusiones.content).toMatch(/IBSE[\s\S]{0,400}?referencia exploratoria/);
+  });
+
+  it("los estudios siguen disponibles y sin recomendaciones ni actuaciones en el Perfil", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    expect(psl.complementaryStudyCount).toBe(13);
+    const textos = psl.conclusiones.content + "\n" + psl.cierreInterpretativo.content;
+    expect(textos).not.toMatch(/se recomienda|recomendamos|debe implantarse|actuaciones a desarrollar/i);
+    expect(psl.cierreInterpretativo.content).toContain("No formula actuaciones ni recomendaciones");
+  });
+});

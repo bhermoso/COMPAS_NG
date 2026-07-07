@@ -141,7 +141,7 @@ function buildDimensionLongitudinal(
     evidenciasLongitudinales: 0,
     nota:
       "Sin evidencia longitudinal disponible. La interpretación se basa en el " +
-      "estado actual del municipio sin contexto histórico comparativo.",
+      "estado actual del territorio sin contexto histórico comparativo.",
   };
 }
 

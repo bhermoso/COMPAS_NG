@@ -46,6 +46,63 @@ const STRATEGIC_FRAMEWORK_SECTION_IDS: string[] = [
   "fuentes",
 ];
 
+// ── Vocabulario territorial ───────────────────────────────────────────────────
+// El sustantivo con el que el Perfil se refiere a su ámbito se deriva de
+// territorialType: un distrito nunca debe redactarse como "municipio".
+
+export function territorialScopeNoun(territorialType: string | undefined): string {
+  const t = (territorialType ?? "").trim().toLowerCase();
+  if (t === "distrito" || t === "district") return "distrito";
+  if (t === "municipio" || t === "municipality") return "municipio";
+  return "ámbito territorial";
+}
+
+// ── Cautelas de escala/proxy ──────────────────────────────────────────────────
+// Detecta cautelas metodológicas que declaran evidencia de escala más amplia
+// que el ámbito (provincial u origen externo) usada como contexto exploratorio.
+
+const PROXY_SCALE_RE =
+  /proxy|contexto exploratorio|estimaci[óo]n espec[íi]fica|escala provincial|[áa]mbito provincial/i;
+
+interface StudyWithCautions {
+  methodologicalCautions?: string[];
+}
+
+function collectStudyCautions(workspace: MunicipalityWorkspace): string[] {
+  const studies: Array<StudyWithCautions | undefined> = [
+    workspace.ibseStudy,
+    workspace.dukeStudy,
+    workspace.predimedStudy,
+    workspace.sf12Study,
+    workspace.suenoStudy,
+    workspace.cageStudy,
+    workspace.auditcStudy,
+    workspace.ipaqStudy,
+    workspace.ghq12Study,
+    workspace.phq9Study,
+    workspace.psqiStudy,
+    workspace.fagerstromStudy,
+    workspace.sbqStudy,
+  ];
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const study of studies) {
+    for (const caution of study?.methodologicalCautions ?? []) {
+      if (!seen.has(caution)) {
+        seen.add(caution);
+        unique.push(caution);
+      }
+    }
+  }
+  return unique;
+}
+
+interface ScopeContext {
+  scopeNoun: string;
+  studyCautions: string[];
+  hasProxyScale: boolean;
+}
+
 // ── Input ─────────────────────────────────────────────────────────────────────
 
 export interface BuildLocalHealthProfileInput {
@@ -67,6 +124,16 @@ export function buildLocalHealthProfile(
 
   const now = new Date().toISOString();
   const lt1 = mit.dimensionDiagnostica;
+
+  // Vocabulario y escala del ámbito, compartidos por todos los bloques narrativos.
+  const scope: ScopeContext = (() => {
+    const studyCautions = collectStudyCautions(workspace);
+    return {
+      scopeNoun: territorialScopeNoun(workspace.municipality.identity.territorialType),
+      studyCautions,
+      hasProxyScale: studyCautions.some((c) => PROXY_SCALE_RE.test(c)),
+    };
+  })();
 
   // ── Capítulo II: referencia al Informe de Salud ──────────────────────────
   const hr = workspace.healthReport;
@@ -118,7 +185,7 @@ export function buildLocalHealthProfile(
     deliberacionNota:
       "Pendiente de autoría humana. El equipo técnico, la ciudadanía y las " +
       "instituciones deben deliberar sobre las prioridades definitivas del " +
-      "municipio a partir de las candidaturas técnicas y las preferencias " +
+      `${scope.scopeNoun} a partir de las candidaturas técnicas y las preferencias ` +
       "ciudadanas. Este capítulo no puede ser completado por el sistema.",
     consensoDocumentado: false,
   };
@@ -189,11 +256,11 @@ export function buildLocalHealthProfile(
 
     // ── V: Conclusiones (scaffold) ─────────────────────────────────────────
     conclusiones: {
-      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hr?.title, workspace.ibseStudy),
+      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hr?.title, workspace.ibseStudy, scope),
       status: "scaffold",
       authorshipNote:
         "Requiere autoría humana. El equipo técnico debe redactar la síntesis " +
-        "razonada del estado de salud del municipio y el funcionamiento del " +
+        `razonada del estado de salud del ${scope.scopeNoun} y el funcionamiento del ` +
         "territorio. El contenido generado por el sistema es orientativo.",
     },
 
@@ -201,7 +268,8 @@ export function buildLocalHealthProfile(
     cierreInterpretativo: {
       content: buildCierreInterpretativoScaffold(mit, reconciliacion, oitParaDecision, {
         hasLocalizaSaludAssets: lt1.assets.some((a) => a.provenance.origin === "localiza-salud"),
-        isDistrict: workspace.municipality.identity.territorialType === "distrito",
+        isDistrict: scope.scopeNoun === "distrito",
+        scope,
       }),
       status: "scaffold",
       authorshipNote:
@@ -272,6 +340,7 @@ function buildConclusionesScaffold(
   oitParaDecision: OITResult,
   healthReportTitle: string | undefined,
   ibseStudy: IBSEStudy | undefined,
+  scope: ScopeContext,
 ): string {
   const lt1 = mit.dimensionDiagnostica;
   const hasReal = oitParaDecision.opportunities.some((o) => !o.isAnalyticalGap);
@@ -312,14 +381,45 @@ function buildConclusionesScaffold(
   }
 
   // ── Bloque 4: bienestar socioemocional escolar ────────────────────────────
+  // Si el estudio declara cautelas de escala/proxy, el valor se presenta como
+  // referencia contextual, nunca como estimación propia del ámbito.
   if (ibseStudy && Number.isFinite(ibseStudy.aggregates.meanTotal)) {
     const agg = ibseStudy.aggregates;
-    parts.push(
-      `El bienestar socioemocional escolar (IBSE) se sitúa en ` +
-      `${agg.meanTotal.toFixed(1)} sobre 100 en una muestra de ${agg.nValid} escolares. ` +
-      `Este dato debe interpretarse en relación con el contexto socioeconómico ` +
-      `y los determinantes familiares y comunitarios del territorio.`
+    const ibseEsProxy = (ibseStudy.methodologicalCautions ?? []).some((c) =>
+      PROXY_SCALE_RE.test(c)
     );
+    const valorBase =
+      `El bienestar socioemocional escolar (IBSE) se sitúa en ` +
+      `${agg.meanTotal.toFixed(1)} sobre 100 en una muestra de ${agg.nValid} escolares.`;
+    parts.push(
+      ibseEsProxy
+        ? `${valorBase} Este valor procede de evidencia contextual de ámbito ` +
+          `provincial u origen externo, incorporada como referencia exploratoria: ` +
+          `no constituye una estimación específica del ${scope.scopeNoun} y ` +
+          `requiere contraste territorial.`
+        : `${valorBase} Este dato debe interpretarse en relación con el contexto ` +
+          `socioeconómico y los determinantes familiares y comunitarios del territorio.`
+    );
+  }
+
+  // ── Bloque 4 bis: alcance y escala de la evidencia disponible ─────────────
+  // Propaga al Perfil las cautelas metodológicas declaradas por los estudios.
+  if (scope.studyCautions.length > 0) {
+    const alcance: string[] = ["Alcance y escala de la evidencia disponible."];
+    if (scope.hasProxyScale) {
+      alcance.push(
+        `Parte de la evidencia de los estudios complementarios procede de ámbitos ` +
+        `más amplios que el ${scope.scopeNoun} (escala provincial u origen externo) ` +
+        `y se incorpora como contexto exploratorio para orientar la interpretación: ` +
+        `no constituye estimación específica del ${scope.scopeNoun} y queda ` +
+        `pendiente de contraste territorial.`
+      );
+    }
+    alcance.push(
+      `Cautelas metodológicas declaradas por los estudios: ` +
+      scope.studyCautions.join(" · ")
+    );
+    parts.push(alcance.join(" "));
   }
 
   // ── Bloque 5: dimensión longitudinal ─────────────────────────────────────
@@ -338,10 +438,10 @@ function buildConclusionesScaffold(
 
   // ── Bloque 7: orientación para el equipo técnico ──────────────────────────
   parts.push(
-    "El equipo técnico debe redactar aquí la síntesis diagnóstica del municipio. " +
+    `El equipo técnico debe redactar aquí la síntesis diagnóstica del ${scope.scopeNoun}. ` +
     "Las conclusiones deben responder a: ¿cuál es el estado de salud del territorio " +
     "y qué lo caracteriza?, ¿qué determinantes parecen estar operando?, " +
-    "¿con qué activos y capacidades cuenta el municipio?, " +
+    "¿con qué activos y capacidades cuenta el territorio?, " +
     "¿qué aporta la perspectiva ciudadana que los datos no capturan?, " +
     "¿qué incertidumbres críticas permanecen abiertas?"
   );
@@ -353,8 +453,10 @@ function buildCierreInterpretativoScaffold(
   mit: EstadoTerritorialEvolutivo,
   reconciliacion: ReconciliacionResult,
   oitParaDecision: OITResult,
-  options: { hasLocalizaSaludAssets: boolean; isDistrict: boolean } = { hasLocalizaSaludAssets: false, isDistrict: false },
+  options: { hasLocalizaSaludAssets: boolean; isDistrict: boolean; scope: ScopeContext },
 ): string {
+  const { scopeNoun, hasProxyScale } = options.scope;
+
   if (mit.totalEvidencias === 0) {
     return (
       "El Perfil aún no dispone de información suficiente para formular un cierre " +
@@ -369,9 +471,19 @@ function buildCierreInterpretativoScaffold(
   parts.push(
     "El cierre interpretativo es la lectura integrada del territorio que emerge " +
     "del conjunto del diagnóstico. No formula actuaciones ni recomendaciones: " +
-    "establece qué comprensión del municipio queda disponible para orientar " +
+    `establece qué comprensión del ${scopeNoun} queda disponible para orientar ` +
     "la priorización y el proceso comunitario."
   );
+
+  // ── Escala de la evidencia: contexto exploratorio, no estimación propia ───
+  if (hasProxyScale) {
+    parts.push(
+      "Parte de la evidencia utilizada procede de escalas más amplias que el " +
+      `${scopeNoun} (provincial u origen externo) y tiene carácter de contexto ` +
+      "exploratorio: su lectura requiere contraste territorial antes de sustentar " +
+      `interpretaciones específicas del ${scopeNoun}.`
+    );
+  }
 
   // ── Tensiones que señalan donde el conocimiento es más incierto ───────────
   const hasConflictos = reconciliacion.conflictos.length > 0;
@@ -395,7 +507,7 @@ function buildCierreInterpretativoScaffold(
         "mediante consulta de Localiza Salud. " +
         (options.isDistrict
           ? "En este ámbito inframunicipal, los activos incorporados pueden " +
-            "incluir recursos del municipio o del entorno funcional más amplio. " +
+            "incluir recursos del municipio matriz o del entorno funcional más amplio. " +
             "Requieren validación territorial fina antes de ser interpretados " +
             "como activos propios del ámbito y antes de respaldar decisiones de planificación."
           : "Requieren validación territorial antes de ser incorporados " +

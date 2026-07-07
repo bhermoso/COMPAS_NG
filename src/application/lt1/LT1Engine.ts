@@ -106,7 +106,7 @@ function buildSummary(input: {
           "Requieren validación territorial antes de ser interpretados como activos " +
           "propios del ámbito. La lectura salutogénica del territorio debe apoyarse " +
           "en el contraste comunitario."
-        : "El municipio cuenta con activos y capacidades comunitarias que pueden " +
+        : "El territorio cuenta con activos y capacidades comunitarias que pueden " +
           "actuar como palancas para la acción en salud. " +
           "La lectura salutogénica del territorio no se agota en sus déficits: " +
           "las fortalezas existentes son punto de partida para la planificación."
