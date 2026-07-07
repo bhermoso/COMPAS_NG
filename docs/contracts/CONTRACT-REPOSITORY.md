@@ -85,25 +85,38 @@ la capa de aplicación y los motores analíticos, con trazabilidad explícita.
 El tipo (`kind`) de un documento determina cómo el sistema lo procesa y qué
 garantías ofrece. Los tipos actuales son:
 
-| `kind` | Nombre canónico | Canonicidad | Genera evidencia (por defecto) |
-|---|---|:---:|:---:|
-| `health-report` | Informe de Salud | Por `kind` | No* |
-| `community-asset` | Activos Comunitarios | Por `kind` | Sí |
-| `redcap-export` | Exportación REDCap | Por `tag` (IBSE, TP) o acumulable | Sí |
-| `complementary-study` | Estudio Complementario | Acumulable | Sí |
-| `eas-variable` | Variable EAS | Acumulable | Sí |
-| `cmi-indicator` | Indicador CMI | Acumulable | Sí |
-| `localiza-salud` | Localiza Salud | Acumulable | Sí |
-| `territorial-documentation` | Documentación territorial | Acumulable | Sí |
-| `qualitative-material` | Material cualitativo | Acumulable | Sí |
-| `longitudinal-evidence` | Evidencia longitudinal | Acumulable | Sí |
-| `other` | Otro | Acumulable | Sí |
+| `kind` | Nombre canónico | Canonicidad | Genera evidencia | Visible en selector |
+|---|---|:---:|:---:|:---:|
+| `health-report` | Informe de Salud | Por `kind` | **No** (D-HR-01) | Sí — cargador DOCX/PDF |
+| `community-asset` | Activos Comunitarios | Por `kind` | Sí | **No** — tipo interno/legado† |
+| `strategic-framework` | Marco estratégico y normativo | Acumulable | Sí | Sí |
+| `redcap-export` | Exportación REDCap | Por `tag` (IBSE, TP) o acumulable | Sí | No directamente |
+| `complementary-study` | Estudio Complementario | Acumulable | Sí | Sí |
+| `eas-variable` | Variable EAS | Acumulable | Sí | **No** — sin parser real |
+| `cmi-indicator` | Indicador CMI | Acumulable | Sí | **No** — sin parser real |
+| `localiza-salud` | Localiza Salud | Acumulable | Sí | Sí — vía visible única para activos‡ |
+| `territorial-documentation` | Documentación territorial | Acumulable | Sí | Sí |
+| `qualitative-material` | Material cualitativo | Acumulable | Sí | Sí |
+| `longitudinal-evidence` | Evidencia longitudinal | Acumulable | Sí | Sí |
+| `other` | Otro | Acumulable | Sí | **No** — no debe exponerse como opción visible |
 
-\* El Informe de Salud genera `EvidenceAtom` mediante una pipeline dedicada
-(`HealthReportToEvidencePipeline`), pero el flag `canGenerateEvidence` es
-`false` por defecto, porque la pipeline genérica de ingesta no se le aplica.
-La generación de evidencia del Informe de Salud es siempre explícita y
-controlada, no automática.
+**Notas:**
+
+\* **D-HR-01 (resuelta):** El Informe de Salud **no genera `EvidenceAtom`** en el flujo activo del producto.
+`canGenerateEvidence = false` bloquea la pipeline genérica. La pipeline dedicada
+`HealthReportToEvidencePipeline` queda fuera del flujo activo (función aislada, no llamada).
+El IS se preserva como `HealthReportDocument` para visualización y referencia. Ver `CONTRACT-EVIDENCE.md §5.1`.
+
+El Informe de Salud admite dos formatos:
+- **DOCX** (`.docx`): se crea `HealthReportDocument` con cuerpo HTML y secciones para visualización.
+- **PDF** (`.pdf`): se preserva como fuente primaria sin extracción de texto ni secciones diagnósticas.
+
+† **`community-asset`** existe como tipo interno para compatibilidad con datos anteriores y flujo de Localiza Salud.
+No está expuesto como categoría visible en el selector documental del producto.
+
+‡ **`localiza-salud`** es la vía visible única para registrar activos comunitarios en el selector.
+Internamente genera átomos con `origin: "localiza-salud"` y `kind: "asset"`. Los documentos de tipo
+`community-asset` generados antes del cierre del selector siguen procesándose correctamente.
 
 ### IBSE y Priorización Temática dentro de `redcap-export`
 
@@ -397,3 +410,4 @@ propios contratos:
 | Fecha | Motivo |
 |---|---|
 | 2026-06-24 | Primera redacción. Incorpora la distinción canonicidad-por-kind vs canonicidad-por-tag introducida en commit `1e582f5`. |
+| 2026-07-07 | **Revisión D-HR-01 + selector documental.** Tabla de `DocumentKind` ampliada con `strategic-framework` y columna de visibilidad en selector. `health-report` actualizado: DOCX/PDF aceptados; no genera EvidenceAtom (D-HR-01 resuelta). `community-asset` aclarado como tipo interno/legado. `localiza-salud` declarado como vía visible única para activos. `eas-variable`, `cmi-indicator` y `other` marcados como no expuestos en selector. |

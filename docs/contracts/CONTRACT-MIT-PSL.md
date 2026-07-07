@@ -79,15 +79,18 @@ El MIT acepta como entrada un `EvidenceStore` **ya saneado** por el
 
 Las fuentes documentales que pueden contribuir evidencia al store son:
 
-| Fuente | `EvidenceOrigin` | Estado de implementación |
-|---|---|:---:|
-| Informe de Salud | `health-report` | Implementado |
-| Activos Comunitarios | `community-assets` | Implementado |
-| Localiza Salud | `localiza-salud` | Implementado |
-| IBSE | `ibse` | Implementado |
-| Priorización Temática | `citizen-participation` | Implementado |
-| Estudio Complementario | `complementary-study` | Implementado |
-| Evidencia longitudinal | `longi` | Implementado (atoms) |
+| Fuente | `EvidenceOrigin` | Estado en EvidenceStore |
+|---|---|---|
+| Informe de Salud | `health-report` | **Fuente primaria preservada — no genera EvidenceAtom** (D-HR-01 resuelta; véase CONTRACT-EVIDENCE §5.1) |
+| Activos Comunitarios (legado) | `community-assets` | Activo (tipo interno; no visible en selector) |
+| Localiza Salud | `localiza-salud` | Activo — vía visible única para activos comunitarios |
+| Marco estratégico y normativo | `strategic-framework` | Activo |
+| Documentación territorial | `territorial-documentation` | Activo |
+| Material cualitativo | `qualitative-material` | Activo |
+| IBSE | `ibse` | Activo |
+| Priorización Temática | `citizen-participation` | Activo |
+| Estudio Complementario | `complementary-study` | Activo |
+| Evidencia longitudinal | `longi` | Activo (atoms) |
 | EAS | `eas` | Origen reconocido; parser pendiente |
 | CMI | `cmi` | Origen reconocido; parser pendiente |
 | SAM | `sam` | Origen reservado; sin implementación |
@@ -98,9 +101,11 @@ El MIT no distingue entre fuentes implementadas y pendientes: procesa los
 responsabilidad de garantizar que el store contiene evidencia de calidad es
 del repositorio y del IntegrityGuard.
 
-El Informe de Salud es la **fuente diagnóstica primaria recomendada**. Su
-ausencia no impide la ejecución del MIT, pero el PSL la señala explícitamente
-en el Capítulo II y en el resumen ejecutivo.
+**El Informe de Salud no contribuye al EvidenceStore como átomos ordinarios.** El MIT
+no recibe átomos con `origin: "health-report"` en el flujo activo del producto. El PSL
+referencia el `HealthReportDocument` directamente por su título e identificador como
+fuente primaria disponible. Su ausencia no impide la ejecución del MIT, pero el PSL
+la señala explícitamente en el Capítulo II y en el resumen ejecutivo.
 
 ---
 
@@ -115,8 +120,8 @@ El MIT produce un `EstadoTerritorialEvolutivo`, que incluye:
 - **`dimensionDiagnostica`** (LT1): clasificación de átomos por tipo semántico.
 - **`areasDeIntervencion`** (OIT): candidaturas de intervención territorial.
 - **`dimensionLongitudinal`**: presencia y nota sobre evidencia evolutiva.
-- **`tensionesEstructurales`**: contradicciones heurísticas detectadas entre
-  fuentes.
+- **`tensionesEstructurales`**: tensiones territoriales reales detectadas entre fuentes analíticas. Solo deben incluirse tensiones con base en datos del territorio, no observaciones sobre la calidad de la base documental.
+- **`limitacionesDiagnosticas`**: observaciones sobre la calidad de la base documental (cautelas metodológicas, ausencia de determinantes, base insuficiente). **No son tensiones territoriales.** No pueden escalar a áreas de intervención ni alimentar la ReconciliaciónInterpretativa. Se declaran en el Perfil como lagunas o aspectos pendientes de contraste, nunca como candidaturas de priorización.
 - **`marcosAplicados`**: marcos interpretativos presentes (EPVSA, ESCA, RELAS
   y otros), con conteo de elementos por marco.
 - **`origenesPresentes`**: lista ordenada de orígenes con al menos un átomo.
@@ -161,13 +166,24 @@ OIT es otra sub-rutina interna del MIT. Transforma el resultado de LT1 en
 | `methodologicalCautions.length > 0` | Revisar cautelas antes de priorizar |
 | Ninguna condición cumplida | Área de fallback: ampliar la base de evidencia |
 
-Cada área tiene: `id`, `title`, `rationale`, `relatedEvidenceIds`, `cautions` y
-`requiresHumanValidation: true`.
+Cada área tiene: `id`, `title`, `rationale`, `relatedEvidenceIds`, `cautions`,
+`requiresHumanValidation: true` y **`isAnalyticalGap?: boolean`**.
+
+El campo `isAnalyticalGap` es obligatorio para la clasificación institucional:
+- `isAnalyticalGap: true` — la "área" refleja una limitación diagnóstica (cautela metodológica, base insuficiente, ausencia de determinantes). **No puede pasar al capítulo de áreas de intervención del Perfil ni a la sección de candidaturas del Cap. VII.** Debe mostrarse, como máximo, en "Aspectos pendientes de contraste".
+- `isAnalyticalGap: false` (o `undefined`) — área territorial sustantiva con base en datos reales. Puede pasar al Perfil como candidatura.
+
+| Condición | Área generada | `isAnalyticalGap` |
+|---|---|:---:|
+| `determinants.length > 0` y `assets.length > 0` | Conectar determinantes con activos comunitarios | `false` |
+| `qualitativeFindings.length > 0` y `indicators.length > 0` | Contrastar hallazgos participativos con indicadores | `false` |
+| `methodologicalCautions.length > 0` | Revisar cautelas antes de priorizar | **`true`** |
+| Ninguna condición cumplida | Ampliar la base de evidencia | **`true`** |
 
 **Límites del OIT:**
 Las áreas son heurísticas del sistema. Reflejan posibilidades analíticas,
-no compromisos de intervención. No deben traducirse directamente a actuaciones
-del Plan de Acción sin pasar por el PSL y la deliberación técnica.
+no compromisos de intervención. Las áreas con `isAnalyticalGap: true` no
+deben traducirse a candidaturas de priorización en ningún caso.
 
 ### 4.4 Dimensión longitudinal
 
@@ -602,3 +618,4 @@ y el PSL. Los siguientes aspectos quedan fuera de su alcance:
 | Fecha | Motivo |
 |---|---|
 | 2026-06-24 | Primera redacción. Documenta el estado del código a partir del commit `1e582f5`. Formaliza PSL-I1, PSL-C1, el ciclo de vida del PSL, los criterios de relevancia/escalado de la Reconciliación y la semántica de `pslIsStale`. |
+| 2026-07-07 | **Revisión D-HR-01 + orígenes documentales + separación limitaciones/áreas.** Tabla de fuentes actualizada: `health-report` marcado como fuente primaria no atomizable; añadidos `territorial-documentation`, `qualitative-material`, `strategic-framework`. Campo `limitacionesDiagnosticas` documentado en `EstadoTerritorialEvolutivo`. OIT actualizado con campo `isAnalyticalGap` y tabla de clasificación. |

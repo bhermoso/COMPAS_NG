@@ -1,7 +1,7 @@
 # CONTRACT-INDEX — Índice maestro de contratos arquitectónicos
 
 > COMPÁS NG — Referencia de arquitectura contractual
-> Última actualización: Sprint 2 — 2026-07-03
+> Última actualización: Sprint 3 — 2026-07-07
 
 Este documento es la puerta de entrada a la arquitectura contractual de COMPÁS NG.
 No duplica contenido de los contratos. Cada entrada contiene: propósito, alcance, estado y relaciones.
@@ -22,9 +22,9 @@ Los contratos se ordenan por **nivel arquitectónico**, de infraestructura base 
 ## Nivel 1 — Repositorio y persistencia
 
 ### CONTRACT-REPOSITORY
-**Estado:** VIGENTE
+**Estado:** VIGENTE — revisado 2026-07-07
 
-Contrato del Repositorio Documental Municipal (`MunicipalDocumentRepository`). Define los 11 tipos de documento (`DocumentKind`), el ciclo de vida de un documento y la regla de trazabilidad: todo átomo de evidencia debe poder rastrear su documento de origen.
+Contrato del Repositorio Documental Municipal (`MunicipalDocumentRepository`). Define los 12 tipos de documento (`DocumentKind`, incluido `strategic-framework` añadido en Sprint 3), el ciclo de vida de un documento y la regla de trazabilidad. Incluye reglas de visibilidad en el selector documental: `community-asset` es tipo interno/legado (no visible); `localiza-salud` es la vía visible única para activos; `eas-variable` y `cmi-indicator` no están expuestos sin parser real; `other` no se expone como opción cómoda. `health-report` admite DOCX y PDF; `canGenerateEvidence = false`; no genera EvidenceAtom (D-HR-01).
 
 **Productores:** UI (carga de documentos por el equipo técnico).
 **Consumidores:** EvidenceStore, MIT.
@@ -46,11 +46,11 @@ Contrato de persistencia y rehidratación del workspace municipal en localStorag
 ## Nivel 1 tardío — Evidencia estructurada
 
 ### CONTRACT-EVIDENCE
-**Estado:** VIGENTE
+**Estado:** VIGENTE — revisado 2026-07-07
 
-Contrato de `EvidenceAtom`, `EvidenceStore` y `EvidenceStoreIntegrityGuard`. Define los tipos de átomo (`EvidenceAtomKind`), los niveles de confianza, la clave estable de deduplicación, y las 5 reglas de integridad (A–E) que el Guard aplica antes de exponer el store al MIT.
+Contrato de `EvidenceAtom`, `EvidenceStore` y `EvidenceStoreIntegrityGuard`. Define los tipos de átomo (`EvidenceAtomKind`), los niveles de confianza, la clave estable de deduplicación, y las 5 reglas de integridad (A–E) que el Guard aplica antes de exponer el store al MIT. Incluye la tabla actualizada de `EvidenceOrigin` con `territorial-documentation`, `qualitative-material` y `strategic-framework`. `health-report` se mantiene como origen reconocido en el tipo pero **no genera EvidenceAtom en el flujo activo del producto** (D-HR-01 resuelta; §5.1 actualizado).
 
-**Productores:** Parsers de estudios complementarios, motor de extracción del Informe de Salud.
+**Productores:** Parsers de estudios complementarios, cargadores del selector documental.
 **Consumidores:** MIT, PSL.
 **Relacionado con:** CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-EVIDENCE-QUALITY, CONTRACT-MIT-PSL.
 

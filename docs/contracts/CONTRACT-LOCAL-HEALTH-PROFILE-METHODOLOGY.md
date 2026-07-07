@@ -118,8 +118,45 @@ El Perfil puede integrar evidencia de las siguientes familias:
 | **Informes institucionales** | Diagnósticos producidos por el sistema sanitario, servicios sociales u otras instituciones |
 | **Evidencia longitudinal** | Cambios observados entre ciclos diagnósticos anteriores y el actual |
 | **Cautelas metodológicas** | Limitaciones de las fuentes anteriores que condicionan la interpretación |
+| **Marcos estratégicos y normativos** | Orientaciones programáticas autonómicas o estatales relevantes para la planificación (EPVSA, ESCA, RELAS, etc.) |
 
 Ninguna familia tiene rango superior a las demás. El Perfil declara de qué familia proviene cada afirmación y con qué nivel de confianza metodológica.
+
+### Art. 7 bis. Estatuto del Informe de Salud como fuente primaria
+
+El Informe de Salud del municipio (Informe de Situación de Salud u equivalente) tiene un estatuto diferenciado del resto de las fuentes de evidencia:
+
+1. **Es la base epidemiológica oficial del Perfil.** Sintetiza el estado de salud de la población desde la perspectiva del sistema sanitario público. El Perfil lo referencia como fuente primaria, no lo sustituye.
+2. **Se preserva íntegro.** El Informe de Salud se carga, conserva y visualiza como documento, no como evidencia atomizada. El sistema no lo transforma en unidades de evidencia ordinarias del EvidenceStore.
+3. **No genera EvidenceAtom en el flujo activo del producto.** Las secciones del Informe no se convierten en átomos de evidencia ni alimentan el Motor de Interpretación Territorial como evidencia estructurada. Ver D-HR-01 en el Gap Register.
+4. **El Perfil contextualiza el Informe, no lo reemplaza.** Lo que el Perfil añade es la lectura integrada: determinantes sociales, activos comunitarios, perspectiva ciudadana, documentación territorial, estudios complementarios y marcos estratégicos. Esta lectura enriquece el Informe sin modificarlo.
+5. **Admite DOCX y PDF.** Ambos formatos se aceptan. El DOCX permite visualización estructurada; el PDF se preserva como fuente primaria sin extracción de contenido.
+
+### Art. 7 ter. Limitaciones diagnósticas y áreas territoriales
+
+El sistema puede detectar observaciones sobre la calidad de la base documental (ausencia de determinantes, cautelas metodológicas, base insuficiente). Estas observaciones son **limitaciones diagnósticas** (`limitacionesDiagnosticas` en el modelo del MIT), no áreas territoriales de intervención.
+
+**Reglas de separación obligatorias:**
+
+- Una carencia de información no es un área de intervención territorial.
+- Una cautela metodológica no es una candidatura para la deliberación del Grupo Motor.
+- La ausencia de determinantes identificados no puede escalar a área priorizable.
+- Los conflictos interpretativos internos del sistema no son áreas de intervención.
+- Las limitaciones diagnósticas se declaran como lagunas (Art. 8) o decisiones posteriores, no como áreas.
+
+Solo pueden pasar a la sección de áreas de intervención del Perfil los aspectos que representen **tensiones territoriales sustantivas** con base en datos reales: convergencia de determinantes, activos en relación con necesidades identificadas, hallazgos participativos contrastados con indicadores. Las limitaciones diagnósticas se muestran, como máximo, como "Aspectos pendientes de contraste" o "Limitaciones del diagnóstico".
+
+### Art. 7 quater. Capítulo VI — Cierre interpretativo
+
+El Capítulo VI del Perfil es el **Cierre interpretativo**. No es "Recomendaciones" ni "Plan de acción".
+
+El cierre interpretativo establece:
+- Qué comprensión del territorio emerge del conjunto del diagnóstico.
+- Qué tensiones o patrones deben contrastarse con el Grupo Motor.
+- Qué capacidades territoriales pueden sostener el proceso comunitario.
+- Qué incertidumbres deben quedar explícitas antes de la priorización.
+
+El Capítulo VI no formula actuaciones, no establece compromisos, no prescribe intervenciones. La formulación de recomendaciones operativas pertenece al Plan de Acción / Plan Local de Salud, que es un producto distinto del Perfil. El Perfil termina cuando el territorio queda comprendido.
 
 ### Art. 8. Tipos de afirmación
 
@@ -395,6 +432,26 @@ El Perfil integra activos comunitarios con el mismo rango metodológico que los 
 *Consecuencia si se viola:* el Plan de Acción derivado del Perfil tenderá a diseñarse sobre carencias, ignorando las capacidades existentes del territorio que podrían potenciarse para mejorar la salud.
 
 *Fuente:* METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING PM-4; BENCHMARK-INSTITUTIONAL-PRODUCTS §P2.
+
+---
+
+**I-LHPM-6 bis — Informe de Salud como fuente primaria no atomizable**
+
+El Informe de Salud no se convierte en evidencia ordinaria del sistema. El Perfil lo referencia como fuente diagnóstica primaria pero no lo transforma en `EvidenceAtom`. Las secciones del Informe no alimentan el MIT como evidencia estructurada.
+
+*Consecuencia si se viola:* el Informe de Salud pierde su estatuto como fuente oficial primaria; sus afirmaciones se mezclan en el pipeline analítico con evidencia de distinto rango, escala y metodología. La trazabilidad y la autoridad institucional del informe quedan comprometidas.
+
+*Fuente:* CONTRACT-EVIDENCE §5.1 (D-HR-01 resuelta); CONTRACT-REPOSITORY §3; Gap Register H-15.
+
+---
+
+**I-LHPM-6 ter — Separación de limitaciones diagnósticas y áreas territoriales**
+
+Las limitaciones diagnósticas —cautelas metodológicas, vacíos de información, ausencia de determinantes, base documental insuficiente— no pueden escalarse a áreas de intervención territorial ni a candidaturas para el proceso de priorización. Solo áreas con base en datos territoriales sustantivos pueden pasar al capítulo de intervención.
+
+*Consecuencia si se viola:* el Perfil propone la priorización de huecos de información como si fueran problemas de salud del territorio; el Grupo Motor delibera sobre limitaciones metodológicas en lugar de sobre prioridades sanitarias.
+
+*Fuente:* CODE (TerritorialInterpretationEngine — campo `limitacionesDiagnosticas`; OITEngine — campo `isAnalyticalGap`); Arts. 7 ter, 7 quater.
 
 ---
 

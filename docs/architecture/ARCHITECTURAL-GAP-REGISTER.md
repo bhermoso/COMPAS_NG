@@ -51,16 +51,21 @@ El objetivo es evitar que todo lo no implementado aparezca mezclado bajo la pala
 | H-12 | Anexo Técnico Metodológico | Implementación pendiente + decisión estructural menor | `INSTITUTIONAL-PRODUCTS-ARCHITECTURE.md`; `METHODOLOGICAL-FOUNDATIONS`; relación con SAM | Producto identificado; estructura y compilador pendientes | Producto documental metodológico | Media |
 | H-13 | Memoria endocualitativa del proceso local | Reserva arquitectónica | `FOUNDATIONS.md`; `ROADMAP.md`; principio endocualitativo | Principio definido, mecanismo no diseñado | Memoria longitudinal del proceso | Media |
 | H-14 | ExecutiveSummaryArtifact como tipo independiente | Retirado / absorbido | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.md`; H-08 | Absorbido por H-08; no debe implementarse como artefacto autónomo salvo nueva decisión metodológica | Nada | Baja |
-| H-15 | D-HR-01 — Health-report como fuente primaria no atomizable | Decisión metodológica abierta | `src/application/health-report/HealthReportToEvidencePipeline.ts`; `src/App.tsx:715`; `CONTRACT-EVIDENCE.md §5.1`; `CONTRACT-REPOSITORY.md §3`; `docs/architecture/DOMAIN-MODEL.md §3` | Contradicción entre regla metodológica (el Informe de Salud no debe convertirse en EvidenceAtom) y pipeline dedicada activa que lo hace | Revisión metodológica + sprint específico | Alta |
+| H-15 | D-HR-01 — Health-report como fuente primaria no atomizable | ~~Decisión metodológica abierta~~ **RESUELTA** | `src/App.tsx`; `CONTRACT-EVIDENCE.md §5.1`; `CONTRACT-REPOSITORY.md §3` | ~~Contradicción entre regla metodológica y pipeline activa~~ Resuelta: DOCX/PDF no generan EvidenceAtom; pipeline aislada | ✓ Resuelto — 2026-07-07 | ~~Alta~~ **Cerrada** |
+| H-16 | BADEA/IECA — Ingesta de indicadores municipales | Implementación pendiente | Necesidad de datos municipales BADEA/IECA; riesgo de duplicación; granularidad municipal variable; decisión sobre `EvidenceOrigin` pendiente | Sin parser específico; próximo paso: piloto controlado con consulta verificada, guion de normalización y prueba de ingesta | **Pendiente de piloto controlado** — línea inmediata de trabajo | Media |
 
 ---
 
 ## H-15 — D-HR-01: Health-report como fuente primaria no atomizable
 
-**Categoría:** Decisión metodológica abierta
+**Categoría:** ~~Decisión metodológica abierta~~ → **RESUELTA**
 **Identificador interno:** D-HR-01
 **Detectada:** 2026-07-07
-**Estado:** Contradicción documentada. No resuelta. Bloqueada hasta sprint específico.
+**Resuelta:** 2026-07-07
+
+> **Estado:** CERRADA. La contradicción ha sido neutralizada en el flujo activo del producto.
+> `HealthReportToEvidencePipeline` queda aislada fuera de la ruta de carga institucional.
+> Ver condiciones de cierre a continuación.
 
 ### Estado actual del código
 
@@ -121,11 +126,67 @@ Este impacto afecta al Nivel 1, al Nivel 2 y a los compiladores del Nivel 3. No 
 
 Esta decisión requiere deliberación metodológica explícita con el equipo técnico. No puede resolverse sin un sprint dedicado con contrato previo.
 
+### Condiciones de cierre (2026-07-07)
+
+1. **DOCX no genera EvidenceAtom.** La llamada a `healthReportToEvidenceAtoms` ha sido eliminada de `handleLoadHealthReport` en `App.tsx`. El flujo activo de carga DOCX ya no llama a la función.
+2. **PDF no genera EvidenceAtom.** `createHealthReportDocumentFromPdf` no extrae texto ni crea secciones diagnósticas. La función es síncrona y produce un `HealthReportDocument` con `sections: []` y `body.originalText: ""`.
+3. **`HealthReportToEvidencePipeline` aislada.** La función `healthReportToEvidenceAtoms` permanece en el código como utilidad accesible para tests y análisis histórico, pero no está importada ni llamada desde ningún camino institucional de carga.
+4. **Átomos legacy purgados.** El flujo de carga filtra `atoms.filter(a => a.provenance.origin !== "health-report")` para limpiar el store antes de actualizar el workspace.
+5. **Contratos actualizados.** `CONTRACT-EVIDENCE.md §5.1`, `CONTRACT-REPOSITORY.md §3` y `CONTRACT-MIT-PSL.md §3` reflejan el nuevo estatuto.
+6. **`canGenerateEvidence = false`** para `kind: "health-report"` por defecto en el repositorio.
+
+### Restricciones históricas (cumplidas)
+
+~~No resolver sin sprint específico y contrato previo aprobado.~~
+~~No modificar `HealthReportToEvidencePipeline`, `CONTRACT-EVIDENCE.md`, `CONTRACT-MIT-PSL.md` ni `CONTRACT-REPOSITORY.md` fuera de ese sprint.~~
+~~La pipeline actual puede seguir operativa mientras la decisión esté abierta.~~
+
+---
+
+## H-16 — BADEA/IECA: Ingesta de indicadores municipales
+
+**Categoría:** Implementación pendiente
+**Identificador:** H-16
+**Detectado:** 2026-07-07
+**Estado:** Pendiente de piloto controlado. Línea inmediata de trabajo para enriquecer territorialmente el Perfil Local de Salud.
+
+### Descripción
+
+BADEA (Banco de Datos Estadísticos de Andalucía) e IECA (Instituto de Estadística y Cartografía de Andalucía) son fuentes de indicadores municipales oficiales (demografía, economía, vivienda, salud). BADEA/IECA puede enriquecer significativamente el diagnóstico territorial del Perfil, aportando indicadores cuantitativos oficiales que actualmente deben introducirse manualmente.
+
+Actualmente no existe un parser específico para ingesta estructurada de estas fuentes en COMPÁS NG. El flujo de integración aún no ha sido pilotado.
+
+### Próximo paso previsto: piloto controlado
+
+Antes de diseñar el parser definitivo, se realizará un piloto controlado que incluye:
+
+1. **Consulta municipal BADEA/IECA verificada**: selección de un municipio concreto y una consulta BADEA reproducible. Verificación de que los datos existen a granularidad municipal y no solo provincial.
+2. **Guion externo de normalización**: definición del formato tabular de salida de la consulta BADEA (columnas esperadas, unidades, períodos) antes de implementar ningún código.
+3. **Prueba de ingesta**: ingesta del CSV/JSON normalizado en COMPÁS NG, inicialmente mediante el tipo `territorial-documentation` con metadatos de fuente IECA explícitos.
+4. **Evaluación de clasificación heurística**: verificar si la clasificación heurística del pipeline genérico clasifica correctamente los indicadores BADEA como `indicator`, `determinant` u otros kinds. Identificar falsos positivos y negativos.
+5. **Decisión sobre deduplicación/idempotencia**: evaluar si `addEvidenceAtom` es suficiente o si se necesita `upsertEvidenceAtom` con una clave estable (período + municipio + indicador). Definir la estrategia de reimportación cuando cambian los datos.
+6. **Decisión posterior sobre parser específico**: en función del piloto, decidir si se crea un nuevo `DocumentKind` (e.g., `"badea-export"`) con un `EvidenceOrigin` propio (e.g., `"ieca"`) o si se reutiliza `"cmi"` (ya definido pero sin parser activo).
+
+### Necesidades técnicas identificadas
+
+- Granularidad municipal no garantizada para todos los indicadores: algunos solo están disponibles a escala provincial o comarcal.
+- Riesgo de duplicación por reimportación de la misma consulta con diferentes fechas de descarga.
+- Sincronización futura de `PopulationReference` (datos de padrón) desde vía distinta al repositorio documental.
+- El `EvidenceOrigin` adecuado requiere decisión explícita antes de implementar el parser.
+
+### Estado actual y relación con productos
+
+- **No implementado.** No hay parser, no hay `DocumentKind` específico, no hay `EvidenceOrigin` propio para BADEA/IECA.
+- **No bloquea ningún producto activo** (Perfil Local de Salud, selector documental, IS, IBSE, ni ningún motor del Nivel 2 o 3).
+- **Sí es línea inmediata de trabajo** para enriquecer el Perfil Local de Salud con indicadores cuantitativos oficiales de contexto territorial.
+
 ### Restricciones
 
-- No resolver sin sprint específico y contrato previo aprobado.
-- No modificar `HealthReportToEvidencePipeline`, `CONTRACT-EVIDENCE.md`, `CONTRACT-MIT-PSL.md` ni `CONTRACT-REPOSITORY.md` fuera de ese sprint.
-- La pipeline actual puede seguir operativa mientras la decisión esté abierta.
+- No implementar parser definitivo sin completar el piloto controlado.
+- No usar `"other"` como origen para datos BADEA/IECA en producción.
+- No añadir indicadores BADEA manualmente como `territorial-documentation` sin declarar explícitamente la fuente IECA en los metadatos del documento.
+
+---
 
 ## 4. No son deuda
 

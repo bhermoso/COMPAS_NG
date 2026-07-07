@@ -90,22 +90,25 @@ el documento y activa la rama de fallback por `origin`, que es menos precisa.
 
 ### Orígenes reconocidos (`EvidenceOrigin`)
 
-| `origin` | Fuente documental correspondiente |
-|---|---|
-| `health-report` | Informe de Salud (secciones estructuradas) |
-| `complementary-study` | Estudio complementario genérico |
-| `eas` | Variable EAS (Encuesta Andaluza de Salud) |
-| `cmi` | Indicador CMI (Cuadro de Mando Integral) |
-| `ibse` | Estudio IBSE (Índice de Bienestar Socioemocional) |
-| `sam` | Sistema de Activos Municipales (origen reservado; sin implementación activa) |
-| `redcap` | Exportación REDCap genérica |
-| `localiza-salud` | Catálogo Localiza Salud |
-| `community-assets` | Activos Comunitarios del repositorio |
-| `citizen-participation` | Proceso de Priorización Temática ciudadana |
-| `longi` | Evidencia longitudinal |
-| `manual-entry` | Entrada manual |
-| `legacy-compas` | Migración desde la versión anterior de COMPÁS |
-| `other` | Origen no clasificable |
+| `origin` | Fuente documental correspondiente | Estado en el flujo activo |
+|---|---|---|
+| `health-report` | Informe de Salud | **Origen reservado — no genera EvidenceAtom en el flujo activo del producto** (D-HR-01 resuelto; véase §5.1) |
+| `complementary-study` | Estudio complementario genérico | Activo |
+| `eas` | Variable EAS (Encuesta Andaluza de Salud) | Origen reconocido; parser pendiente |
+| `cmi` | Indicador CMI (Cuadro de Mando Integral) | Origen reconocido; parser pendiente |
+| `ibse` | Estudio IBSE (Índice de Bienestar Socioemocional) | Activo |
+| `sam` | Sistema de Activos Municipales | Origen reservado; sin implementación activa |
+| `redcap` | Exportación REDCap genérica | Activo |
+| `localiza-salud` | Catálogo Localiza Salud | Activo — vía visible única para activos comunitarios |
+| `community-assets` | Activos Comunitarios del repositorio (tipo interno/legado) | Activo (legacy); no expuesto como categoría visible en el selector |
+| `citizen-participation` | Proceso de Priorización Temática ciudadana | Activo |
+| `longi` | Evidencia longitudinal | Activo |
+| `manual-entry` | Entrada manual | Origen reconocido |
+| `legacy-compas` | Migración desde la versión anterior de COMPÁS | Compatibilidad |
+| `territorial-documentation` | Documentación territorial de contexto | Activo |
+| `qualitative-material` | Material cualitativo y participativo | Activo |
+| `strategic-framework` | Marco estratégico y normativo (EPVSA, ESCA, RELAS, etc.) | Activo; genera `kind: "strategic-priority"` |
+| `other` | Origen no clasificable | Fallback interno; no debe usarse en categorías visibles |
 
 Un átomo con un `origin` que no figure en esta lista es rechazado por el
 IntegrityGuard (Regla A). No se pueden crear orígenes ad hoc sin actualizar
@@ -236,19 +239,36 @@ pipelines no se mezclan entre sí y no comparten lógica de extracción.
 
 ### 5.1 Pipeline del Informe de Salud (`HealthReportToEvidencePipeline`)
 
-**Origen:** `"health-report"` · **Activación:** explícita (carga DOCX o PDF)
+> **D-HR-01 RESUELTA — 2026-07-07**
+>
+> `HealthReportToEvidencePipeline` **no forma parte del flujo activo del producto**.
+> La función `healthReportToEvidenceAtoms` existe en el código como utilidad aislada
+> pero no se llama desde `handleLoadHealthReport` ni desde ningún camino institucional
+> de carga del Informe de Salud (ni DOCX ni PDF).
+>
+> El Informe de Salud se carga, conserva y referencia como fuente primaria documental
+> (`HealthReportDocument`) sin conversión a `EvidenceAtom`.
+> El `EvidenceStore` no recibe átomos con `origin: "health-report"` en el ciclo activo.
+> Los átomos de `health-report` que pudieran existir en workspaces anteriores
+> se purgan al recargar el Informe de Salud.
 
-- Una sección del `HealthReportDocument` → un `EvidenceAtom`.
-- Las secciones `title-page` y `autores` se excluyen siempre.
-- El `kind` se asigna por clave de sección:
-  - `mortalidad`, `morbilidad`, `cancer`, `edo-its`, `vacunacion-cribados`, `demografia` → `indicator`
-  - `metodologia` → `methodological-caution`
-  - `introduccion` → `territorial-context`
-  - resto → `qualitative-observation`
-- El contenido se trunca a 2 000 caracteres si la sección es más larga.
-- La confianza es siempre `"medium"`.
-- El `id` del átomo es determinista: `health-report:{linkedDocumentId}:{sectionKey}:{sortOrder}`.
-- El `provenance.documentId` es `report.linkedDocumentId` (el ID del documento en el repositorio).
+**Estatuto actual del Informe de Salud:**
+
+- **DOCX**: cargado mediante `mammoth`; se crea un `HealthReportDocument` con cuerpo HTML y secciones para visualización. No genera `EvidenceAtom`.
+- **PDF**: preservado como fuente primaria sin extracción de texto, sin secciones diagnósticas. No genera `EvidenceAtom`.
+- `canGenerateEvidence = false` para `kind: "health-report"` en el repositorio (bloquea también la pipeline genérica).
+- El PSL referencia el `HealthReportDocument` por su ID y título como fuente primaria, no como evidencia atomizada.
+
+**Descripción histórica de la pipeline (referencia):**
+
+La función `healthReportToEvidenceAtoms` aún existe en `HealthReportToEvidencePipeline.ts`
+y puede llamarse manualmente con fines de test o análisis. Su lógica interna:
+
+- Una sección → un átomo; `title-page` y `autores` excluidas.
+- `kind` por clave de sección: `mortalidad`/`morbilidad`/`cancer`/`edo-its`/`vacunacion-cribados`/`demografia` → `indicator`; `metodologia` → `methodological-caution`; `introduccion` → `territorial-context`; resto → `qualitative-observation`.
+- Truncado a 2 000 caracteres. Confianza `"medium"`. ID determinista `health-report:{linkedDocumentId}:{sectionKey}:{sortOrder}`.
+
+Esta descripción queda como referencia histórica. No describe el flujo activo del producto.
 
 ### 5.2 Pipeline IBSE (`IBSEStudyToEvidenceAtoms`)
 
@@ -315,17 +335,27 @@ que no tienen pipeline específico.
 La correspondencia entre `DocumentKind` y `EvidenceOrigin` en el pipeline
 genérico es:
 
-| `DocumentKind` | `EvidenceOrigin` resultante |
-|---|---|
-| `health-report` | `"health-report"` |
-| `complementary-study` | `"complementary-study"` |
-| `eas-variable` | `"eas"` |
-| `cmi-indicator` | `"cmi"` |
-| `community-asset` | `"community-assets"` |
-| `localiza-salud` | `"localiza-salud"` |
-| `redcap-export` | `"redcap"` |
-| `longitudinal-evidence` | `"longi"` |
-| resto | `"other"` |
+| `DocumentKind` | `EvidenceOrigin` resultante | `EvidenceAtomKind` resultante (prior) |
+|---|---|---|
+| `health-report` | — | — (no pasa por este pipeline; D-HR-01) |
+| `complementary-study` | `"complementary-study"` | heurístico textual |
+| `eas-variable` | `"eas"` | `"indicator"` |
+| `cmi-indicator` | `"cmi"` | `"indicator"` |
+| `community-asset` | `"community-assets"` | `"asset"` (segmentación por `##`) |
+| `localiza-salud` | `"localiza-salud"` | `"asset"` (una línea = un activo) |
+| `strategic-framework` | `"strategic-framework"` | `"strategic-priority"` |
+| `territorial-documentation` | `"territorial-documentation"` | heurístico textual |
+| `qualitative-material` | `"qualitative-material"` | heurístico textual |
+| `redcap-export` | `"redcap"` | heurístico textual |
+| `longitudinal-evidence` | `"longi"` | heurístico textual |
+| resto | `"other"` | heurístico textual |
+
+> `community-asset` es un tipo interno/legado; no aparece como categoría visible en
+> el selector documental del producto. La vía visible única para activos comunitarios
+> es `localiza-salud`.
+>
+> `eas-variable` y `cmi-indicator` no están expuestos en el selector visible del
+> producto (no tienen parser/cargador real implementado).
 
 ---
 
@@ -437,3 +467,4 @@ evidencia estructurada. Los siguientes aspectos quedan fuera de su alcance:
 | Fecha | Motivo |
 |---|---|
 | 2026-06-24 | Primera redacción. Documenta el estado del código a partir del commit `1e582f5`. Incluye la distinción IBSE_FACTORES / IBSE_RESUMEN, las reglas A–E del IntegrityGuard y la correspondencia DocumentKind → EvidenceOrigin del pipeline genérico. |
+| 2026-07-07 | **Revisión D-HR-01.** §5.1 actualizado: `HealthReportToEvidencePipeline` queda fuera del flujo activo del producto; `health-report` no genera EvidenceAtom. Tabla de orígenes ampliada con `territorial-documentation`, `qualitative-material`, `strategic-framework`. Tabla DocumentKind→EvidenceOrigin actualizada con nuevos tipos y nota sobre visibilidad en el selector. |
