@@ -65,7 +65,7 @@ type DocCategory =
 
 function getCategory(document: MunicipalDocument): DocCategory {
   if (document.kind === "health-report") return "primary-source";
-  if (document.kind === "community-asset") return "community-asset";
+  if (document.kind === "community-asset" || document.kind === "localiza-salud") return "community-asset";
   if (
     document.kind === "complementary-study" ||
     (document.kind === "redcap-export" && document.tags.some((t) => STUDY_LABEL_BY_TAG[t]))

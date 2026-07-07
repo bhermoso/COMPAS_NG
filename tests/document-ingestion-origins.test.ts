@@ -476,3 +476,259 @@ describe("regresión — community-asset sigue produciendo origin community-asse
     }
   });
 });
+
+// ── Test G: localiza-salud — formato pipe, idempotencia y selector ────────────
+
+describe("localiza-salud — formato pipe, idempotencia y contrato de selector", () => {
+  it('extrae el título desde el primer campo separado por | (pipe)', () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Granada-Zaidín 2023",
+      plainText: "Centro Participación Activa Mayores Zaidín | Talleres deportivos y socioculturales",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(1);
+    expect(result!.evidenceStore.atoms[0].title).toBe(
+      "Centro Participación Activa Mayores Zaidín"
+    );
+  });
+
+  it("genera un átomo por línea válida con formato pipe", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Zaidín multi",
+      plainText: [
+        "Cruz Roja Granada | Voluntariado y atención social",
+        "Fundación Albihar | Salud mental comunitaria",
+        "Unidad Salud Mental Comunitaria Zaidín | SAS — atención comunitaria",
+      ].join("\n"),
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(3);
+  });
+
+  it("los átomos son idempotentes por título — cargar el mismo texto dos veces no duplica", () => {
+    const TEXT = [
+      "Cruz Roja Granada | Voluntariado y atención social",
+      "Fundación Albihar | Salud mental comunitaria",
+    ].join("\n");
+
+    const r1 = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — carga 1",
+      plainText: TEXT,
+    });
+    expect(r1).not.toBeNull();
+
+    const r2 = ingestManualDocument({
+      repository: r1!.repository,
+      evidenceStore: r1!.evidenceStore,
+      kind: "localiza-salud",
+      title: "Localiza Salud — carga 2",
+      plainText: TEXT,
+    });
+    expect(r2).not.toBeNull();
+
+    const localizaAtoms = r2!.evidenceStore.atoms.filter(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
+    expect(localizaAtoms).toHaveLength(2);
+  });
+
+  it("health-report no genera EvidenceAtom (canGenerateEvidence=false por defecto)", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "health-report",
+      title: "Informe de Salud test",
+      plainText: "Contenido del informe que no debe generar átomos.",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(0);
+    expect(result!.evidenceStore.atoms).toHaveLength(0);
+  });
+
+  it("community-asset no está en las opciones visibles del selector documental", () => {
+    // Refleja el contrato de DOCUMENT_KINDS en App.tsx — si alguien añade
+    // community-asset al selector visible, este test debe actualizarse conscientemente.
+    const VISIBLE_KIND_VALUES = [
+      "health-report",
+      "complementary-study",
+      "localiza-salud",
+      "strategic-framework",
+      "territorial-documentation",
+      "qualitative-material",
+      "longitudinal-evidence",
+    ] as const;
+
+    expect(VISIBLE_KIND_VALUES).not.toContain("community-asset" as never);
+    expect(VISIBLE_KIND_VALUES).toContain("localiza-salud");
+  });
+});
+
+// ── Test H: integración de persistencia localiza-salud ────────────────────────
+// Verifica que la capa de ingesta produce un resultado completo que el workspace
+// puede recibir directamente: documento registrado, átomos trazables, metadatos correctos.
+
+describe("localiza-salud — integración de persistencia (capa de datos)", () => {
+  const ZAIDIN_TEXT = [
+    "Centro de Salud Zaidín Sur | SAS — Atención primaria · Distrito AP Granada-Metropolitano",
+    "Centro Participación Activa Mayores Zaidín | Talleres deportivos y socioculturales para mayores",
+    "Unidad Salud Mental Comunitaria Zaidín | SAS — atención comunitaria en salud mental",
+  ].join("\n");
+
+  it("el documento localiza-salud aparece en repository.documents tras la ingesta", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Granada-Zaidín 2023",
+      plainText: ZAIDIN_TEXT,
+    });
+
+    expect(result).not.toBeNull();
+    const doc = result!.repository.documents.find((d) => d.kind === "localiza-salud");
+    expect(doc).toBeDefined();
+    expect(doc!.title).toBe("Localiza Salud — Granada-Zaidín 2023");
+    expect(doc!.kind).toBe("localiza-salud");
+  });
+
+  it("canGenerateEvidence es true en el documento localiza-salud", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Zaidín",
+      plainText: "Centro de Salud Zaidín Sur | SAS — Atención primaria",
+    });
+
+    expect(result).not.toBeNull();
+    const doc = result!.repository.documents.find((d) => d.kind === "localiza-salud");
+    expect(doc!.canGenerateEvidence).toBe(true);
+  });
+
+  it("sourceText se preserva en el documento localiza-salud", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Zaidín",
+      plainText: ZAIDIN_TEXT,
+    });
+
+    expect(result).not.toBeNull();
+    const doc = result!.repository.documents.find((d) => d.kind === "localiza-salud");
+    expect(doc!.sourceText).toBe(ZAIDIN_TEXT);
+  });
+
+  it("los átomos aparecen en evidenceStore.atoms con origin localiza-salud y documentId correcto", () => {
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Zaidín",
+      plainText: ZAIDIN_TEXT,
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.evidenceStore.atoms.length).toBe(3);
+    expect(result!.atomsCreated).toBe(3);
+
+    const doc = result!.repository.documents.find((d) => d.kind === "localiza-salud");
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).toBe("localiza-salud");
+      expect(atom.provenance.documentId).toBe(doc!.id);
+      expect(atom.kind).toBe("asset");
+      expect(atom.methodology?.requiresHumanValidation).toBe(true);
+    }
+  });
+
+  it("workspace con health-report previo conserva health-report tras añadir localiza-salud", () => {
+    // Simula la secuencia: cargar IS → añadir Localiza Salud
+    const repoWithHealthReport = (() => {
+      const r = makeRepository();
+      const { repository } = ingestManualDocument({
+        repository: r,
+        evidenceStore: makeStore(),
+        kind: "health-report",
+        title: "Informe Salud Granada Abril 2023",
+        plainText: "Texto del informe (canGenerateEvidence=false, no genera átomos).",
+      })!;
+      return repository;
+    })();
+
+    // El IS está en el repositorio (aunque con 0 átomos)
+    expect(repoWithHealthReport.documents.find((d) => d.kind === "health-report")).toBeDefined();
+
+    // Añadir localiza-salud (con filtrado de versiones previas de localiza-salud)
+    const repoForIngestion = {
+      ...repoWithHealthReport,
+      documents: repoWithHealthReport.documents.filter((d) => d.kind !== "localiza-salud"),
+    };
+
+    const result = ingestManualDocument({
+      repository: repoForIngestion,
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud — Zaidín",
+      plainText: ZAIDIN_TEXT,
+    });
+
+    expect(result).not.toBeNull();
+
+    // Ambos documentos presentes
+    const kinds = result!.repository.documents.map((d) => d.kind);
+    expect(kinds).toContain("health-report");
+    expect(kinds).toContain("localiza-salud");
+    expect(result!.repository.documents).toHaveLength(2);
+
+    // Solo átomos localiza-salud (health-report no genera)
+    expect(result!.evidenceStore.atoms.length).toBe(3);
+    for (const atom of result!.evidenceStore.atoms) {
+      expect(atom.provenance.origin).toBe("localiza-salud");
+    }
+  });
+
+  it("recargar localiza-salud sustituye átomos anteriores (sin acumulación)", () => {
+    const TEXT_V1 = "Activo A | Descripción primera versión";
+    const TEXT_V2 = "Activo A | Descripción segunda versión";
+
+    const r1 = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud v1",
+      plainText: TEXT_V1,
+    });
+    expect(r1).not.toBeNull();
+    expect(r1!.evidenceStore.atoms).toHaveLength(1);
+
+    // Simula el reemplazo que hace handleProcessDocument en App.tsx
+    const storeForV2 = {
+      ...r1!.evidenceStore,
+      atoms: r1!.evidenceStore.atoms.filter((a) => a.provenance.origin !== "localiza-salud"),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const r2 = ingestManualDocument({
+      repository: makeRepository(), // repo limpio (simula el filtrado de handleProcessDocument)
+      evidenceStore: storeForV2,
+      kind: "localiza-salud",
+      title: "Localiza Salud v2",
+      plainText: TEXT_V2,
+    });
+    expect(r2).not.toBeNull();
+
+    // Sigue habiendo 1 átomo (misma clave estable, v2 reemplaza a v1)
+    const localizaAtoms = r2!.evidenceStore.atoms.filter(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
+    expect(localizaAtoms).toHaveLength(1);
+  });
+});

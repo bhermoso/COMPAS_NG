@@ -53,6 +53,7 @@ export function DocumentIngestionPanel({
   const isHealthReport = kind === "health-report";
   const isComplementaryStudy = kind === "complementary-study";
   const isStrategicFramework = kind === "strategic-framework";
+  const isLocalizaSalud = kind === "localiza-salud";
 
   return (
     <section className="workspace-panel">
@@ -222,6 +223,68 @@ export function DocumentIngestionPanel({
               <strong>{lastProcessedDocument.title}</strong>
               {atomsCreated !== undefined && atomsCreated > 0 && (
                 <> · <strong>{atomsCreated}</strong> unidades de evidencia generadas</>
+              )}
+            </p>
+          )}
+        </div>
+      ) : isLocalizaSalud ? (
+        /* ── Carga de activos Localiza Salud ── */
+        <div className="docx-upload">
+          <select
+            value={kind}
+            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+            className="docx-upload__kind"
+          >
+            {documentKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="ingestion-hint">
+            Pega el listado de activos exportado o copiado desde Localiza Salud.
+            Usa el formato <strong>Nombre del activo | Descripción funcional</strong> —
+            una línea por activo. Cada línea se registrará como un activo comunitario trazable.
+            Si ya existe un listado previo para este ámbito, será sustituido.
+          </p>
+          <p className="ingestion-hint">
+            Ejemplo:{" "}
+            <code>
+              Centro de Salud Zaidín Sur | Atención primaria SAS — Distrito AP Granada-Metropolitano
+            </code>
+          </p>
+          <textarea
+            value={plainText}
+            onChange={(event) => onPlainTextChange(event.target.value)}
+            placeholder={
+              "Centro Participación Activa Mayores Zaidín | Talleres deportivos y socioculturales para mayores\n" +
+              "Cruz Roja Granada | Atención social y voluntariado\n" +
+              "Unidad Salud Mental Comunitaria Zaidín | SAS — atención comunitaria en salud mental"
+            }
+            rows={7}
+          />
+          <div className="document-form">
+            <input
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              placeholder="Título del listado (ej. Localiza Salud — Granada-Zaidín 2023)"
+            />
+            <button
+              type="button"
+              onClick={onProcessDocument}
+              disabled={!canSubmit}
+              title={canSubmit ? undefined : hint}
+            >
+              Registrar activos
+            </button>
+          </div>
+          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {lastProcessedDocument && lastProcessedDocument.kind === "localiza-salud" && (
+            <p className="panel-note">
+              Último listado registrado:{" "}
+              <strong>{lastProcessedDocument.title}</strong>
+              {atomsCreated !== undefined && atomsCreated > 0 && (
+                <> · <strong>{atomsCreated}</strong> activos comunitarios incorporados</>
               )}
             </p>
           )}

@@ -611,24 +611,32 @@ export default function App() {
   function handleProcessDocument() {
     // community-asset es un tipo canónico: una sola versión activa por municipio.
     // Se eliminan entradas previas del mismo tipo antes de registrar la nueva.
+    // community-asset y localiza-salud son tipos canónicos: una sola versión activa por municipio.
+    // Se eliminan entradas y átomos previos del mismo tipo antes de registrar la nueva.
     const repositoryForIngestion =
-      kind === "community-asset"
+      kind === "community-asset" || kind === "localiza-salud"
         ? {
             ...workspace.repository,
             documents: workspace.repository.documents.filter(
-              (d) => d.kind !== "community-asset"
+              (d) => d.kind !== kind
             ),
           }
         : workspace.repository;
 
-    // Para community-asset, purgar también los átomos derivados de versiones
-    // anteriores del documento para evitar acumulación de fragmentos residuales.
     const evidenceStoreForIngestion =
       kind === "community-asset"
         ? {
             ...workspace.evidenceStore,
             atoms: workspace.evidenceStore.atoms.filter(
               (a) => a.provenance.origin !== "community-assets"
+            ),
+            updatedAt: new Date().toISOString(),
+          }
+        : kind === "localiza-salud"
+        ? {
+            ...workspace.evidenceStore,
+            atoms: workspace.evidenceStore.atoms.filter(
+              (a) => a.provenance.origin !== "localiza-salud"
             ),
             updatedAt: new Date().toISOString(),
           }
