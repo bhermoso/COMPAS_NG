@@ -51,6 +51,81 @@ El objetivo es evitar que todo lo no implementado aparezca mezclado bajo la pala
 | H-12 | Anexo Técnico Metodológico | Implementación pendiente + decisión estructural menor | `INSTITUTIONAL-PRODUCTS-ARCHITECTURE.md`; `METHODOLOGICAL-FOUNDATIONS`; relación con SAM | Producto identificado; estructura y compilador pendientes | Producto documental metodológico | Media |
 | H-13 | Memoria endocualitativa del proceso local | Reserva arquitectónica | `FOUNDATIONS.md`; `ROADMAP.md`; principio endocualitativo | Principio definido, mecanismo no diseñado | Memoria longitudinal del proceso | Media |
 | H-14 | ExecutiveSummaryArtifact como tipo independiente | Retirado / absorbido | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.md`; H-08 | Absorbido por H-08; no debe implementarse como artefacto autónomo salvo nueva decisión metodológica | Nada | Baja |
+| H-15 | D-HR-01 — Health-report como fuente primaria no atomizable | Decisión metodológica abierta | `src/application/health-report/HealthReportToEvidencePipeline.ts`; `src/App.tsx:715`; `CONTRACT-EVIDENCE.md §5.1`; `CONTRACT-REPOSITORY.md §3`; `docs/architecture/DOMAIN-MODEL.md §3` | Contradicción entre regla metodológica (el Informe de Salud no debe convertirse en EvidenceAtom) y pipeline dedicada activa que lo hace | Revisión metodológica + sprint específico | Alta |
+
+---
+
+## H-15 — D-HR-01: Health-report como fuente primaria no atomizable
+
+**Categoría:** Decisión metodológica abierta
+**Identificador interno:** D-HR-01
+**Detectada:** 2026-07-07
+**Estado:** Contradicción documentada. No resuelta. Bloqueada hasta sprint específico.
+
+### Estado actual del código
+
+`src/domain/repository/MunicipalDocumentRepository.ts` define:
+
+```typescript
+function defaultCanGenerateEvidence(kind: DocumentKind): boolean {
+  return kind !== "health-report";
+}
+```
+
+Este flag bloquea la pipeline genérica (`DocumentToEvidencePipeline`) para el Informe de Salud.
+
+Sin embargo, `src/application/health-report/HealthReportToEvidencePipeline.ts` es una pipeline dedicada que convierte cada sección del `HealthReportDocument` en un `EvidenceAtom` con `origin: "health-report"`. Es llamada explícitamente en `src/App.tsx:715` durante `handleLoadHealthReport`:
+
+```typescript
+const hrAtoms = healthReportToEvidenceAtoms(healthReport);
+// → atoms añadidos al EvidenceStore con origin: "health-report"
+```
+
+Los átomos resultantes alimentan el MIT, que tiene `KIND_CONSTRAINTS["health-report"]` definido en el IntegrityGuard. El PSL consume estos átomos a través del EvidenceStore.
+
+### Regla metodológica consolidada
+
+El Informe de Salud del Territorio es una fuente epidemiológica oficial, institucional, canónica e íntegra. Debe:
+
+- cargarse, conservarse y visualizarse íntegramente;
+- mantenerse literal como fuente diagnóstica primaria;
+- compilarse o referenciarse como base del Perfil de Salud Local.
+
+No debe:
+- convertirse en EvidenceAtom ordinario ni ser procesado por ninguna pipeline de atomización;
+- mezclarse con el flujo de evidencia territorial genérica;
+- ser sustituido por inferencia automática del motor.
+
+El Perfil de Salud Local no es una copia del Informe de Salud. El Perfil parte del Informe como base epidemiológica oficial y lo amplía con interpretación territorial desde sociología de la salud, epidemiología social, determinantes sociales, salutogénesis, activos comunitarios, participación ciudadana y conocimiento profesional del equipo técnico.
+
+### Contradicción
+
+`canGenerateEvidence = false` bloquea únicamente la pipeline genérica. No bloquea `HealthReportToEvidencePipeline`, que opera por una ruta paralela explícita. El Informe de Salud sí genera `EvidenceAtom` hoy, en contradicción con la regla metodológica consolidada.
+
+El `CONTRACT-EVIDENCE.md §5.1` describe esta pipeline como "explícita y controlada, no automática", lo que es técnicamente correcto pero no resuelve la contradicción metodológica de fondo: el contenido del informe oficial se atomiza y entra en el mismo pipeline analítico que cualquier otra fuente documental.
+
+### Impacto potencial si se resuelve
+
+Resolver D-HR-01 implicaría:
+1. Eliminar o desconectar `HealthReportToEvidencePipeline` del flujo de `App.tsx`.
+2. Decidir qué consume el MIT si no hay átomos de `origin: "health-report"` en el store.
+3. Revisar si los compiladores PSL-C y PSL-NHS leen directamente el `HealthReportDocument` en lugar del EvidenceStore para la dimensión epidemiológica.
+4. Actualizar `CONTRACT-EVIDENCE.md §5.1`, `CONTRACT-MIT-PSL.md §3` y posiblemente `CONTRACT-REPOSITORY.md`.
+5. Adaptar los tests que verifican átomos con `origin: "health-report"`.
+
+Este impacto afecta al Nivel 1, al Nivel 2 y a los compiladores del Nivel 3. No es un cambio puntual.
+
+### Decisión pendiente
+
+¿Debe el Informe de Salud contribuir al EvidenceStore como átomos (modelo actual) o debe permanecer como objeto `HealthReportDocument` de solo lectura, accesible directamente por los compiladores institucionales sin pasar por el MIT?
+
+Esta decisión requiere deliberación metodológica explícita con el equipo técnico. No puede resolverse sin un sprint dedicado con contrato previo.
+
+### Restricciones
+
+- No resolver sin sprint específico y contrato previo aprobado.
+- No modificar `HealthReportToEvidencePipeline`, `CONTRACT-EVIDENCE.md`, `CONTRACT-MIT-PSL.md` ni `CONTRACT-REPOSITORY.md` fuera de ese sprint.
+- La pipeline actual puede seguir operativa mientras la decisión esté abierta.
 
 ## 4. No son deuda
 
