@@ -23,7 +23,6 @@ import type { PerfilLocalDeSalud } from "./domain/health-profile";
 import {
   createHealthReportDocumentFromDocx,
   createHealthReportDocumentFromPdf,
-  healthReportToEvidenceAtoms,
 } from "./application/health-report";
 import { parseIBSECSV, ibseStudyToEvidenceAtoms } from "./application/ibse";
 import { createIBSEStudy } from "./domain/ibse";
@@ -708,29 +707,25 @@ export default function App() {
             authors: [],
           });
 
-      // PDF: se preserva como fuente primaria íntegra; no se generan EvidenceAtom.
-      // DOCX: se generan EvidenceAtom por sección para el análisis territorial.
-      const hrAtoms = isPdf ? [] : healthReportToEvidenceAtoms(healthReport);
+      // D-HR-01: health-report nunca genera EvidenceAtom, ni DOCX ni PDF.
+      // El EvidenceStore se limpia de átomos residuales de versiones anteriores.
       setWorkspace((prev) => ({
         ...prev,
         repository: replaceMunicipalDocumentByKind(prev.repository, newDocInput),
         healthReport,
         evidenceStore: {
           ...prev.evidenceStore,
-          atoms: [
-            ...prev.evidenceStore.atoms.filter(
-              (a) => a.provenance.origin !== "health-report"
-            ),
-            ...hrAtoms,
-          ],
+          atoms: prev.evidenceStore.atoms.filter(
+            (a) => a.provenance.origin !== "health-report"
+          ),
           updatedAt: new Date().toISOString(),
         },
         updatedAt: new Date().toISOString(),
       }));
       setLastHealthReportMessage(
-        isPdf
-          ? `Informe de Salud (PDF) preservado como fuente diagnóstica primaria. No se ha generado evidencia estructurada. Para consultarlo, abre el fichero: ${file.name}`
-          : `Informe de Salud cargado: ${hrAtoms.length} sección(es) incorporada(s) al análisis territorial.`
+        "Informe de Salud registrado como fuente diagnóstica primaria. " +
+        "Preservado en el Repositorio documental. " +
+        "Para consultarlo, abre el fichero original."
       );
     } catch (err) {
       console.error("[health-report-load-error]", err);
@@ -2537,7 +2532,6 @@ export default function App() {
                 runtime.workspace.sbqStudy,
               ];
               const studiesLoaded = studies.filter(Boolean).length;
-              const hrAtoms = atoms.filter(a => a.provenance.origin === "health-report").length;
               const ibseAtoms = atoms.filter(a => a.provenance.origin === "ibse").length;
               const studyAtoms = atoms.filter(a => a.provenance.origin === "complementary-study").length;
 
@@ -2569,8 +2563,8 @@ export default function App() {
                 : "empty";
 
               const conclusionMsg: Record<DiagState, string> = {
-                ready:   "Diagnóstico con evidencia suficiente para revisar el Perfil de Salud Local.",
-                partial: "Diagnóstico parcial. Para avanzar al Perfil de Salud Local es necesario incorporar al menos el Informe de Salud.",
+                ready:   "Diagnóstico con evidencia complementaria disponible para revisar el Perfil de Salud Local.",
+                partial: "Diagnóstico en elaboración. Incorpora el Informe de Salud y fuentes complementarias para enriquecer el análisis territorial.",
                 empty:   "El diagnóstico está vacío. Comienza incorporando el Informe de Salud del municipio.",
               };
 
@@ -2592,7 +2586,7 @@ export default function App() {
                       <li className={`diag-status__item diag-status__item--${hrLoaded ? "ok" : "missing"}`}>
                         <span className="diag-status__label">Informe de Salud</span>
                         <span className="diag-status__value">
-                          {hrLoaded ? `Incorporado · ${hrAtoms} evidencias` : "No incorporado"}
+                          {hrLoaded ? "Fuente primaria disponible" : "No incorporado"}
                         </span>
                       </li>
                       <li className={`diag-status__item diag-status__item--${studiesLoaded > 0 ? "ok" : "pending"}`}>
