@@ -521,3 +521,64 @@ describe("Granada-Zaidín — vocabulario territorial y cautelas de escala en el
     expect(psl.cierreInterpretativo.content).toContain("No formula actuaciones ni recomendaciones");
   });
 });
+
+// ── Estructura narrativa por determinantes (capítulos I–VI del borrador) ─────
+
+describe("Granada-Zaidín — el Perfil se organiza en capítulos por determinantes", () => {
+  it("el borrador de conclusiones contiene los seis capítulos en orden", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    const texto = psl.conclusiones.content;
+    const capitulos = [
+      "I. Alcance, fuentes y escala de la evidencia",
+      "II. Contexto territorial y sociodemográfico",
+      "III. Situación de salud y desigualdades",
+      "IV. Determinantes sociales, comunitarios y ambientales",
+      "V. Activos, capacidades territoriales e incertidumbres",
+      "VI. Conclusiones técnicas para la priorización",
+    ];
+    let posicionAnterior = -1;
+    for (const capitulo of capitulos) {
+      const posicion = texto.indexOf(capitulo);
+      expect(posicion, capitulo).toBeGreaterThan(posicionAnterior);
+      posicionAnterior = posicion;
+    }
+  });
+
+  it("cada capítulo selecciona y comenta la evidencia, sin volcados masivos", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    const texto = psl.conclusiones.content;
+    // Los 15 activos no se listan íntegros: se muestran ejemplos y el total.
+    expect(texto).toContain("entre otros (15 en total)");
+    // Fuentes citadas en el capítulo I
+    expect(texto).toContain("fuente diagnóstica primaria");
+    expect(texto).toContain("13 estudios");
+    // Documentación territorial diagnóstica (Vigía) presente
+    expect(texto).toContain("Informe Zaidin Centro Este");
+    // La ausencia de desagregaciones se declara como incertidumbre
+    expect(texto).toContain("no un indicio de equidad");
+    // La ausencia de determinantes se declara, no se rellena
+    expect(texto).toContain("no documenta determinantes");
+  });
+
+  it("mantiene cautelas, cualificación IBSE y vocabulario territorial dentro de la nueva estructura", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    const texto = psl.conclusiones.content;
+    expect(texto).toContain("Alcance y escala de la evidencia disponible");
+    expect(texto).toContain(PROXY_CAUTION);
+    expect(texto).toMatch(/IBSE[\s\S]{0,400}?referencia exploratoria/);
+    expect(texto).toContain("Incertidumbres del diagnóstico");
+    // El capítulo VI declara el límite del Perfil
+    expect(texto).toContain("no formula recomendaciones");
+    // Vocabulario territorial: distrito, nunca municipio (salvo municipio matriz)
+    const sinMatriz = texto.split("municipio matriz").join("");
+    expect(sinMatriz).not.toMatch(/\bmunicipios?\b/i);
+  });
+
+  it("los marcos estratégicos no aparecen en la nueva estructura", () => {
+    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    const texto = psl.conclusiones.content + "\n" + psl.cierreInterpretativo.content;
+    expect(texto).not.toContain("EPVSA");
+    expect(texto).not.toContain("ESCA");
+    expect(texto).not.toContain("Personas Mayores en Andalucía");
+  });
+});

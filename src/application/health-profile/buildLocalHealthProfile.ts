@@ -35,6 +35,7 @@ import type {
   PSLPriorizacionStatus,
 } from "../../domain/health-profile";
 import { THEMATIC_TOPICS } from "../../domain/thematic-prioritisation";
+import { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
 
 // ── Secciones del Marco Estratégico (Capítulo I) ──────────────────────────────
 // Corresponden a los IDs fijos de createStrategicFramework().
@@ -256,7 +257,12 @@ export function buildLocalHealthProfile(
 
     // ── V: Conclusiones (scaffold) ─────────────────────────────────────────
     conclusiones: {
-      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hr?.title, workspace.ibseStudy, scope),
+      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hr?.title, workspace.ibseStudy, scope, {
+        complementaryStudyCount,
+        territorialDocTitles: workspace.repository.documents
+          .filter((d) => d.kind === "territorial-documentation")
+          .map((d) => d.title),
+      }),
       status: "scaffold",
       authorshipNote:
         "Requiere autoría humana. El equipo técnico debe redactar la síntesis " +
@@ -341,9 +347,9 @@ function buildConclusionesScaffold(
   healthReportTitle: string | undefined,
   ibseStudy: IBSEStudy | undefined,
   scope: ScopeContext,
+  extras: { complementaryStudyCount: number; territorialDocTitles: string[] },
 ): string {
   const lt1 = mit.dimensionDiagnostica;
-  const hasReal = oitParaDecision.opportunities.some((o) => !o.isAnalyticalGap);
 
   if (mit.totalEvidencias === 0) {
     return (
@@ -353,100 +359,49 @@ function buildConclusionesScaffold(
     );
   }
 
-  const parts: string[] = [];
+  // El borrador de conclusiones se organiza como documento por determinantes
+  // (capítulos I–VI). La composición vive en narrativeChapters.ts como
+  // funciones puras; aquí solo se seleccionan los datos que lo alimentan.
+  const areasReales = oitParaDecision.opportunities
+    .filter((o) => !o.isAnalyticalGap)
+    .map((o) => o.title);
 
-  // ── Bloque 1: lectura territorial (territorial, no pipeline) ─────────────
-  // lt1.summary es la síntesis diagnóstica generada por LT1Engine.
-  // Con la nueva redacción habla del territorio, no del sistema.
-  parts.push(lt1.summary);
+  const chapters = buildNarrativeChapters({
+    scopeNoun: scope.scopeNoun,
+    studyCautions: scope.studyCautions,
+    hasProxyScale: scope.hasProxyScale,
+    healthReportTitle,
+    complementaryStudyCount: extras.complementaryStudyCount,
+    territorialDocTitles: extras.territorialDocTitles,
+    ibse:
+      ibseStudy && Number.isFinite(ibseStudy.aggregates.meanTotal)
+        ? {
+            meanTotal: ibseStudy.aggregates.meanTotal,
+            nValid: ibseStudy.aggregates.nValid,
+            isProxy: (ibseStudy.methodologicalCautions ?? []).some((c) =>
+              PROXY_SCALE_RE.test(c)
+            ),
+          }
+        : undefined,
+    indicatorCount: lt1.indicators.length,
+    determinantCount: lt1.determinants.length,
+    determinantTitles: lt1.determinants.map((a) => a.title),
+    assetCount: lt1.assets.length,
+    assetTitles: lt1.assets.map((a) => a.title),
+    hasLocalizaAssets: lt1.assets.some(
+      (a) => a.provenance.origin === "localiza-salud"
+    ),
+    qualitativeCount: lt1.qualitativeFindings.length,
+    cautionCount: lt1.methodologicalCautions.length,
+    longitudinalNote: mit.dimensionLongitudinal.nota,
+    tensionesEscaladas: reconciliacion.tensionesEscaladas.length,
+    tensionesNoEscaladas: reconciliacion.tensionesNoEscaladas.length,
+    conflictos: reconciliacion.conflictos.length,
+    limitacionesDiagnosticas: [...(mit.limitacionesDiagnosticas ?? [])],
+    areasReales,
+  });
 
-  // ── Bloque 2: referencia al Informe de Salud (si existe) ──────────────────
-  if (healthReportTitle) {
-    parts.push(
-      `«${healthReportTitle}» actúa como fuente diagnóstica primaria del territorio.`
-    );
-  }
-
-  // ── Bloque 3: áreas territoriales detectadas ──────────────────────────────
-  if (hasReal) {
-    const areaTitles = oitParaDecision.opportunities
-      .map((a, i) => `${i + 1}. ${a.title}`)
-      .join("; ");
-    parts.push(
-      `La información disponible apunta a ${oitParaDecision.opportunities.length} ` +
-      `área(s) territorial(es) que merecen atención preferente: ${areaTitles}. ` +
-      `Estas áreas son candidaturas para la deliberación con el Grupo Motor, ` +
-      `no decisiones definitivas.`
-    );
-  }
-
-  // ── Bloque 4: bienestar socioemocional escolar ────────────────────────────
-  // Si el estudio declara cautelas de escala/proxy, el valor se presenta como
-  // referencia contextual, nunca como estimación propia del ámbito.
-  if (ibseStudy && Number.isFinite(ibseStudy.aggregates.meanTotal)) {
-    const agg = ibseStudy.aggregates;
-    const ibseEsProxy = (ibseStudy.methodologicalCautions ?? []).some((c) =>
-      PROXY_SCALE_RE.test(c)
-    );
-    const valorBase =
-      `El bienestar socioemocional escolar (IBSE) se sitúa en ` +
-      `${agg.meanTotal.toFixed(1)} sobre 100 en una muestra de ${agg.nValid} escolares.`;
-    parts.push(
-      ibseEsProxy
-        ? `${valorBase} Este valor procede de evidencia contextual de ámbito ` +
-          `provincial u origen externo, incorporada como referencia exploratoria: ` +
-          `no constituye una estimación específica del ${scope.scopeNoun} y ` +
-          `requiere contraste territorial.`
-        : `${valorBase} Este dato debe interpretarse en relación con el contexto ` +
-          `socioeconómico y los determinantes familiares y comunitarios del territorio.`
-    );
-  }
-
-  // ── Bloque 4 bis: alcance y escala de la evidencia disponible ─────────────
-  // Propaga al Perfil las cautelas metodológicas declaradas por los estudios.
-  if (scope.studyCautions.length > 0) {
-    const alcance: string[] = ["Alcance y escala de la evidencia disponible."];
-    if (scope.hasProxyScale) {
-      alcance.push(
-        `Parte de la evidencia de los estudios complementarios procede de ámbitos ` +
-        `más amplios que el ${scope.scopeNoun} (escala provincial u origen externo) ` +
-        `y se incorpora como contexto exploratorio para orientar la interpretación: ` +
-        `no constituye estimación específica del ${scope.scopeNoun} y queda ` +
-        `pendiente de contraste territorial.`
-      );
-    }
-    alcance.push(
-      `Cautelas metodológicas declaradas por los estudios: ` +
-      scope.studyCautions.join(" · ")
-    );
-    parts.push(alcance.join(" "));
-  }
-
-  // ── Bloque 5: dimensión longitudinal ─────────────────────────────────────
-  if (mit.dimensionLongitudinal.activa) {
-    parts.push(mit.dimensionLongitudinal.nota);
-  }
-
-  // ── Bloque 6: aspectos que requieren contraste con Grupo Motor ────────────
-  if (reconciliacion.tensionesEscaladas.length > 0) {
-    parts.push(
-      "El diagnóstico identifica aspectos del territorio donde las fuentes " +
-      "disponibles ofrecen lecturas que conviene contrastar con el Grupo Motor " +
-      "antes de trasladarlas a prioridades de planificación."
-    );
-  }
-
-  // ── Bloque 7: orientación para el equipo técnico ──────────────────────────
-  parts.push(
-    `El equipo técnico debe redactar aquí la síntesis diagnóstica del ${scope.scopeNoun}. ` +
-    "Las conclusiones deben responder a: ¿cuál es el estado de salud del territorio " +
-    "y qué lo caracteriza?, ¿qué determinantes parecen estar operando?, " +
-    "¿con qué activos y capacidades cuenta el territorio?, " +
-    "¿qué aporta la perspectiva ciudadana que los datos no capturan?, " +
-    "¿qué incertidumbres críticas permanecen abiertas?"
-  );
-
-  return parts.join("\n\n");
+  return renderNarrativeChapters(chapters);
 }
 
 function buildCierreInterpretativoScaffold(

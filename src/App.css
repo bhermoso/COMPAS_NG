@@ -5608,6 +5608,8 @@ h3 {
   font-size: 0.9rem;
   line-height: 1.65;
   color: #526070;
+  /* Los capítulos del borrador narrativo se separan con saltos de línea. */
+  white-space: pre-line;
 }
 
 .psl-doc-scaffold-block__note {

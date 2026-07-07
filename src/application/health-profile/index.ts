@@ -35,3 +35,5 @@ export {
   computePerfilEstadoGlobal,
   computeEstadoDelConocimiento,
 } from "./profileOperations";
+export type { NarrativeChapter, NarrativeChaptersInput } from "./narrativeChapters";
+export { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
