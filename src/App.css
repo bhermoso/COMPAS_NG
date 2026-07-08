@@ -9186,3 +9186,29 @@ h3 {
 
 /* Export DOCX del artefacto PSL-C */
 .psl-doc-docx-btn { margin: 10px 0 4px; }
+
+/* ── PSL-C: checklist de compilación institucional (ruta operativa) ───────── */
+.pslc-checklist {
+  border-left: 4px solid #1e293b;
+}
+.pslc-checklist__items {
+  list-style: none;
+  margin: 10px 0 14px;
+  padding: 0;
+}
+.pslc-checklist__item {
+  font-size: 0.92rem;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e2e8f0;
+  color: #33404e;
+}
+.pslc-checklist__item:last-child { border-bottom: none; }
+.pslc-checklist__item--ok { color: #15803d; }
+.pslc-checklist__item--ok strong { color: #15803d; }
+.pslc-checklist__action {
+  font-weight: 600;
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pslc-checklist__action:hover { color: #1e293b; }

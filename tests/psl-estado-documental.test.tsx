@@ -62,6 +62,7 @@ function render(
       compiledProfiles={compiledProfiles}
       onValidate={() => {}}
       onInvalidate={() => {}}
+      onCompile={() => {}}
     />
   );
 }
@@ -126,6 +127,59 @@ describe("estados documentales — validado sin compilar", () => {
     const html = render(validado);
     const marcas = html.match(/no forma parte del documento\s+institucional/g) ?? [];
     expect(marcas.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("ruta operativa — checklist de compilación PSL-C", () => {
+  it("con Perfil validado sin PSL-C aparece la caja con los requisitos pendientes", () => {
+    const html = render(validado);
+    expect(html).toContain("Crear documento institucional PSL-C");
+    expect(html).toContain("Autoría del documento del Perfil");
+    expect(html).toContain("Autoría del cierre interpretativo");
+    expect(html).toContain("Consenso del Grupo Motor");
+    expect(html).toContain("pendiente de compilar");
+    expect(html).toContain("Ir a redactar y asumir autoría");
+    expect(html).toContain("Ir a documentar deliberación y consenso");
+    // Explica exactamente qué falta y no ofrece compilar todavía
+    expect(html).toContain("La compilación aún no está disponible: falta");
+    expect(html).toContain("asumir la autoría del documento del Perfil");
+    expect(html).not.toContain("documento institucional completo");
+  });
+
+  it("el checklist no aparece en el borrador sin validar", () => {
+    expect(render(generado)).not.toContain("Crear documento institucional PSL-C");
+  });
+
+  it("con requisitos cumplidos ofrece la acción de compilar", () => {
+    const listo: LocalHealthProfile = {
+      ...validado,
+      conclusiones: { ...validado.conclusiones, status: "authored" },
+      cierreInterpretativo: {
+        ...validado.cierreInterpretativo,
+        status: "authored",
+      },
+      priorizacionStatus: "complete",
+      priorizacion: {
+        ...validado.priorizacion,
+        consensoDocumentado: true,
+        deliberacionNota: "El Grupo Motor deliberó y documentó el consenso.",
+      },
+    };
+    const html = render(listo);
+    expect(html).toContain("Compilar Perfil de Salud Local");
+    expect(html).toContain("asumida");
+    expect(html).toContain("documentado");
+    expect(html).not.toContain("La compilación aún no está disponible");
+  });
+
+  it("con PSL-C compilado la caja enlaza al documento y a la descarga DOCX", () => {
+    const html = render(validado, [artifact]);
+    expect(html).toContain("Documento institucional compilado");
+    expect(html).toContain(
+      "Ver documento institucional completo y descargar DOCX"
+    );
+    expect(html).toContain('href="#psl-compilados"');
+    expect(html).toContain("Descargar DOCX");
   });
 });
 

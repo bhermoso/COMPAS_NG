@@ -217,6 +217,129 @@ function PSLChapterEditor({ chapter, label, onSave }: PSLChapterEditorProps) {
   );
 }
 
+// ── Checklist de compilación institucional ───────────────────────────────────
+// Ruta operativa hacia el PSL-C. No duplica lógica de gates: usa los mismos
+// campos de estado que la sección de compilación (y que valida el compilador).
+
+function PSLCCompilationChecklist({
+  psl,
+  compiledCount,
+  onCompile,
+}: {
+  psl: LocalHealthProfile;
+  compiledCount: number;
+  onCompile?: () => void;
+}) {
+  const docOk = psl.conclusiones.status === "authored";
+  const cierreOk = psl.cierreInterpretativo.status === "authored";
+  const consensoOk =
+    psl.priorizacion.consensoDocumentado && psl.priorizacionStatus === "complete";
+  const compilado = compiledCount > 0;
+  const listo = docOk && cierreOk && consensoOk;
+
+  const pendientes: string[] = [];
+  if (!docOk) pendientes.push("asumir la autoría del documento del Perfil");
+  if (!cierreOk) pendientes.push("asumir la autoría del cierre interpretativo");
+  if (!consensoOk) pendientes.push("documentar el consenso del Grupo Motor");
+
+  const item = (
+    ok: boolean,
+    etiqueta: string,
+    estadoOk: string,
+    estadoPendiente: string,
+    href: string,
+    accion: string
+  ) => (
+    <li
+      className={
+        ok ? "pslc-checklist__item pslc-checklist__item--ok" : "pslc-checklist__item"
+      }
+    >
+      <span aria-hidden="true">{ok ? "✓" : "○"}</span> {etiqueta}:{" "}
+      <strong>{ok ? estadoOk : estadoPendiente}</strong>
+      {!ok && (
+        <>
+          {" · "}
+          <a className="pslc-checklist__action" href={href}>
+            {accion}
+          </a>
+        </>
+      )}
+    </li>
+  );
+
+  return (
+    <section className="workspace-panel pslc-checklist">
+      <p className="eyebrow">Ruta operativa</p>
+      <h2>Crear documento institucional PSL-C</h2>
+      {compilado ? (
+        <p className="panel-note">
+          <strong>Documento institucional compilado</strong>: {compiledCount}{" "}
+          artefacto(s) PSL-C congelado(s).{" "}
+          <a className="pslc-checklist__action" href="#psl-compilados">
+            Ver documento institucional completo y descargar DOCX
+          </a>
+          .
+        </p>
+      ) : (
+        <p className="panel-note">
+          El documento institucional (PSL-C) se crea al compilar. Requisitos:
+        </p>
+      )}
+      <ul className="pslc-checklist__items">
+        {item(
+          docOk,
+          "Autoría del documento del Perfil",
+          "asumida",
+          "pendiente",
+          "#psl-autoria-documento",
+          "Ir a redactar y asumir autoría"
+        )}
+        {item(
+          cierreOk,
+          "Autoría del cierre interpretativo",
+          "asumida",
+          "pendiente",
+          "#psl-autoria-cierre",
+          "Ir a redactar el cierre"
+        )}
+        {item(
+          consensoOk,
+          "Consenso del Grupo Motor",
+          "documentado",
+          "pendiente",
+          "#psl-deliberacion",
+          "Ir a documentar deliberación y consenso"
+        )}
+        <li
+          className={
+            compilado
+              ? "pslc-checklist__item pslc-checklist__item--ok"
+              : "pslc-checklist__item"
+          }
+        >
+          <span aria-hidden="true">{compilado ? "✓" : "○"}</span> PSL-C:{" "}
+          <strong>{compilado ? "compilado" : "pendiente de compilar"}</strong>
+        </li>
+      </ul>
+      {!compilado &&
+        (listo && onCompile !== undefined ? (
+          <button
+            type="button"
+            className="psl-doc-compile-action__btn"
+            onClick={onCompile}
+          >
+            Compilar Perfil de Salud Local
+          </button>
+        ) : (
+          <p className="panel-note">
+            La compilación aún no está disponible: falta {pendientes.join("; ")}.
+          </p>
+        ))}
+    </section>
+  );
+}
+
 // ── Deliberation editor sub-component ────────────────────────────────────────
 
 interface PSLDeliberacionEditorProps {
@@ -611,6 +734,15 @@ export function LocalHealthProfileView({
         </div>
       )}
 
+      {/* ── Ruta operativa hacia el documento institucional ──────────────── */}
+      {psl.status === "validated" && !pslIsStale && (
+        <PSLCCompilationChecklist
+          psl={psl}
+          compiledCount={compiledProfiles?.length ?? 0}
+          onCompile={onCompile}
+        />
+      )}
+
       {psl.status === "validated" && pslIsStale && (
         <div className="psl-doc-stale-notice">
           <span className="psl-doc-stale-notice__label">Perfil desactualizado</span>
@@ -764,7 +896,7 @@ export function LocalHealthProfileView({
 
       {/* Edición del documento (autoría técnica sobre el texto completo) */}
       {psl.status === "validated" && onEditConclusion && (
-        <section className="psl-doc-section workspace-panel">
+        <section id="psl-autoria-documento" className="psl-doc-section workspace-panel">
           <p className="eyebrow">
             Autoría técnica · espacio de trabajo — no forma parte del documento
             institucional
@@ -1050,7 +1182,7 @@ export function LocalHealthProfileView({
       </div>
 
       {/* ── Cierre interpretativo (autoría técnica) ─────────────────────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-autoria-cierre" className="psl-doc-section workspace-panel">
         <p className="eyebrow">Espacio de trabajo</p>
         <h2>Cierre interpretativo (autoría técnica)</h2>
         <p className="panel-note">
@@ -1077,7 +1209,7 @@ export function LocalHealthProfileView({
       </section>
 
       {/* ── Preparación de la deliberación (fase posterior al Perfil) ─────── */}
-      <section className="psl-doc-section workspace-panel">
+      <section id="psl-deliberacion" className="psl-doc-section workspace-panel">
         <p className="eyebrow">Espacio de trabajo · fase posterior</p>
         <h2>Preparación de la deliberación con el Grupo Motor</h2>
         <p className="panel-note">
@@ -1162,7 +1294,7 @@ export function LocalHealthProfileView({
 
       {/* ── Compilación del PSL-C ──────────────────────────────── */}
       {psl.status === "validated" && !pslIsStale && onCompile != null && (
-        <section className="workspace-panel psl-doc-compile-action">
+        <section id="psl-compilacion" className="workspace-panel psl-doc-compile-action">
           <p className="eyebrow">Compilación institucional</p>
           <h2>Compilar Perfil de Salud Local</h2>
           {psl.conclusiones.status === "authored" &&
@@ -1196,7 +1328,7 @@ export function LocalHealthProfileView({
 
       {/* ── Perfiles PSL-C compilados ──────────────────────────── */}
       {compiledProfiles != null && compiledProfiles.length > 0 && (
-        <section className="workspace-panel">
+        <section id="psl-compilados" className="workspace-panel">
           <p className="eyebrow">Perfiles de Salud Local Compilados</p>
           <h2>Documentos institucionales generados</h2>
           <p className="panel-note">
