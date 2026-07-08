@@ -2382,6 +2382,7 @@ export default function App() {
           pslHasEvidence={runtime.psl.totalEvidenceAtoms > 0}
           pslStatus={runtime.psl.status}
           pslIsStale={runtime.pslIsStale}
+          pslCompiled={(runtime.workspace.compiledProfiles?.length ?? 0) > 0}
           thematicPrioritisationDone={runtime.workspace.thematicPrioritisation !== undefined}
           onNavigate={(v) => setView(v as AppView)}
         />

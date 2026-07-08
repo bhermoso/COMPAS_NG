@@ -29,6 +29,8 @@ export interface LocalHealthPlanningCycleProps {
   pslHasEvidence: boolean;
   pslStatus: LocalHealthProfileStatus;
   pslIsStale: boolean;
+  /** Existe al menos un artefacto institucional PSL-C compilado/congelado. */
+  pslCompiled: boolean;
   thematicPrioritisationDone: boolean;
   onNavigate?: (view: AppViewId) => void;
 }
@@ -52,17 +54,26 @@ function derivePhases({
   pslHasEvidence,
   pslStatus,
   pslIsStale,
+  pslCompiled,
   thematicPrioritisationDone,
 }: LocalHealthPlanningCycleProps): CyclePhase[] {
   const pslValidated  = pslStatus === "validated" && !pslIsStale;
   const pslStaleNote  = pslIsStale ? "La evidencia ha cambiado" : undefined;
 
   // 3 — Perfil de Salud Local
+  // «Completada» exige el artefacto institucional PSL-C compilado/congelado:
+  // la validación técnica del borrador no cierra la fase por sí sola.
   let pslPhase: PhaseStatus;
+  let pslStatusLabel: string | undefined;
+  let pslNote = pslStaleNote;
   if (pslStatus === "validated" && pslIsStale) {
     pslPhase = "requires-validation";
-  } else if (pslValidated) {
+  } else if (pslValidated && pslCompiled) {
     pslPhase = "completed";
+  } else if (pslValidated) {
+    pslPhase = "current";
+    pslStatusLabel = "Validado técnicamente";
+    pslNote = "Pendiente de compilación institucional";
   } else if (pslHasEvidence) {
     pslPhase = "current";
   } else {
@@ -117,7 +128,8 @@ function derivePhases({
       num:         3,
       label:       "Perfil de Salud Local",
       status:      pslPhase,
-      note:        pslStaleNote,
+      statusLabel: pslStatusLabel,
+      note:        pslNote,
       navigateTo:  "psl",
     },
     {
