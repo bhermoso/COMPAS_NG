@@ -1,0 +1,564 @@
+/**
+ * complementaryIndicatorReferences
+ *
+ * Referencias comparativas de los indicadores de estudios complementarios:
+ * la cadena bloque diagnóstico → instrumento → indicador → valor territorial
+ * demo → referencia provincial → referencia autonómica → procedencia →
+ * cautela → lectura comparativa prudente.
+ *
+ * Corrección conceptual que este módulo garantiza:
+ *   - Los estudios complementarios organizan los instrumentos e indicadores;
+ *     las referencias comparativas de Granada/provincia y Andalucía NO forman
+ *     parte de esos estudios: proceden de cálculos derivados de microdatos EAS
+ *     (o de un monitor provincial equivalente, en el caso del IBSE).
+ *   - En la demostración Granada-Zaidín los valores territoriales de los
+ *     instrumentos EAS coinciden con la referencia provincial de Granada
+ *     porque proceden de los mismos ficheros: eso es comportamiento demo/proxy
+ *     (demoProxy = true) y NO constituye estimación específica del distrito.
+ *   - La referencia autonómica de Andalucía es calculable desde microdatos EAS
+ *     pero no está incorporada: se declara pendiente, nunca se finge.
+ *   - Nada se inventa: cada valor procede de los agregados reales del estudio
+ *     cargado en el workspace; si no existe, se declara no disponible.
+ */
+
+import type { MunicipalityWorkspace } from "../../domain/workspace";
+import { DIAGNOSTIC_BLOCK_TITLES } from "./complementaryStudiesReading";
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
+
+export interface IndicatorComparisonReference {
+  indicatorId: string;
+  /** Título real del átomo indicador en la evidencia. */
+  indicatorTitle: string;
+  instrument: string;
+  diagnosticBlockId: string;
+  diagnosticBlockTitle: string;
+  /** Valor de la muestra territorial/demo (agregado real del estudio). */
+  territorialValue?: number | string;
+  territorialLabel: string;
+  provinceReference?: number | string;
+  provinceLabel: string;
+  andalusiaReference?: number | string;
+  andalusiaLabel: string;
+  unit?: string;
+  /** Fichero/procedencia del cálculo. */
+  source: string;
+  calculationMethod?: string;
+  scaleCaution: string;
+  /** El valor territorial demo coincide con la referencia provincial. */
+  demoProxy: boolean;
+  comparisonReading: string;
+  /** Etiqueta narrativa para citar el indicador en el documento. */
+  narrativeLabel: string;
+  /** Prioridad como indicador trazador del bloque (1 = principal). */
+  tracerPriority?: number;
+}
+
+export interface IndicatorReferencesCoverage {
+  total: number;
+  conValorTerritorial: number;
+  conReferenciaProvincial: number;
+  conReferenciaAndalucia: number;
+  pendientesDeReferencia: number;
+}
+
+export interface ComplementaryIndicatorReferencesReading {
+  references: IndicatorComparisonReference[];
+  coverage: IndicatorReferencesCoverage;
+}
+
+// ── Especificación declarativa de los 23 indicadores ─────────────────────────
+// Los accesores leen los agregados reales del estudio cargado. La procedencia
+// provincial distingue tres casos honestos:
+//   "eas"      → cálculo derivado de microdatos EAS de Granada (PROV=18); en
+//                demo el valor territorial coincide con esa referencia (proxy).
+//   "monitor"  → monitor IBSE provincial de Granada (mismo parser canónico);
+//                misma coincidencia demo/proxy.
+//   "ninguna"  → el instrumento se cargó desde un fichero municipal sin
+//                referencia provincial ni autonómica equivalente.
+
+type ProvincialProvenance = "eas" | "monitor" | "ninguna";
+
+interface IndicatorSpec {
+  id: string;
+  /** Fragmento normalizado que identifica el título real del átomo. */
+  match: string;
+  narrativeLabel: string;
+  instrument: string;
+  blockId: string;
+  unit?: string;
+  value: (w: MunicipalityWorkspace) => number | string | undefined;
+  provincial: ProvincialProvenance;
+  sourceFile: (w: MunicipalityWorkspace) => string | undefined;
+  calculationMethod?: string;
+  tracerPriority?: number;
+}
+
+const INDICATOR_SPECS: IndicatorSpec[] = [
+  // ── IBSE — bienestar socioemocional escolar ────────────────────────────────
+  {
+    id: "ibse-indice-total",
+    match: "indice total",
+    narrativeLabel: "el índice total de bienestar socioemocional (IBSE)",
+    instrument: "IBSE",
+    blockId: "bienestar-socioemocional-escolar",
+    unit: "/100",
+    value: (w) => w.ibseStudy?.aggregates.meanTotal,
+    provincial: "monitor",
+    sourceFile: (w) => w.ibseStudy?.sourceFileName,
+    calculationMethod: "media de los 8 ítems IBSE, escala 0–100",
+    tracerPriority: 1,
+  },
+  {
+    id: "ibse-factor-vinculo",
+    match: "factor vinculo",
+    narrativeLabel: "el factor Vínculo del IBSE",
+    instrument: "IBSE",
+    blockId: "bienestar-socioemocional-escolar",
+    unit: "/100",
+    value: (w) => w.ibseStudy?.aggregates.meanFactorVinculo,
+    provincial: "monitor",
+    sourceFile: (w) => w.ibseStudy?.sourceFileName,
+  },
+  {
+    id: "ibse-factor-situacion",
+    match: "factor situacion",
+    narrativeLabel: "el factor Situación del IBSE",
+    instrument: "IBSE",
+    blockId: "bienestar-socioemocional-escolar",
+    unit: "/100",
+    value: (w) => w.ibseStudy?.aggregates.meanFactorSituacion,
+    provincial: "monitor",
+    sourceFile: (w) => w.ibseStudy?.sourceFileName,
+  },
+  {
+    id: "ibse-factor-control",
+    match: "factor control",
+    narrativeLabel: "el factor Control del IBSE",
+    instrument: "IBSE",
+    blockId: "bienestar-socioemocional-escolar",
+    unit: "/100",
+    value: (w) => w.ibseStudy?.aggregates.meanFactorControl,
+    provincial: "monitor",
+    sourceFile: (w) => w.ibseStudy?.sourceFileName,
+  },
+  {
+    id: "ibse-factor-persona",
+    match: "factor persona",
+    narrativeLabel: "el factor Persona del IBSE",
+    instrument: "IBSE",
+    blockId: "bienestar-socioemocional-escolar",
+    unit: "/100",
+    value: (w) => w.ibseStudy?.aggregates.meanFactorPersona,
+    provincial: "monitor",
+    sourceFile: (w) => w.ibseStudy?.sourceFileName,
+  },
+  // ── DUKE — apoyo social ────────────────────────────────────────────────────
+  {
+    id: "duke-apoyo-global",
+    match: "apoyo social funcional global",
+    narrativeLabel: "el apoyo social funcional global (DUKE)",
+    instrument: "DUKE",
+    blockId: "apoyo-social-vinculo-comunitario",
+    unit: "/55",
+    value: (w) => w.dukeStudy?.aggregates.meanGlobal,
+    provincial: "eas",
+    sourceFile: (w) => w.dukeStudy?.sourceFileName,
+    calculationMethod: "suma P5701–P5711, recodificación EAS reproducida al 100 %",
+    tracerPriority: 1,
+  },
+  {
+    id: "duke-apoyo-confidencial",
+    match: "apoyo confidencial",
+    narrativeLabel: "el apoyo confidencial (DUKE)",
+    instrument: "DUKE",
+    blockId: "apoyo-social-vinculo-comunitario",
+    unit: "/35",
+    value: (w) => w.dukeStudy?.aggregates.meanConfidential,
+    provincial: "eas",
+    sourceFile: (w) => w.dukeStudy?.sourceFileName,
+  },
+  {
+    id: "duke-apoyo-afectivo",
+    match: "apoyo afectivo",
+    narrativeLabel: "el apoyo afectivo (DUKE)",
+    instrument: "DUKE",
+    blockId: "apoyo-social-vinculo-comunitario",
+    unit: "/20",
+    value: (w) => w.dukeStudy?.aggregates.meanAffective,
+    provincial: "eas",
+    sourceFile: (w) => w.dukeStudy?.sourceFileName,
+  },
+  // ── PREDIMED — alimentación ────────────────────────────────────────────────
+  {
+    id: "predimed-adherencia",
+    match: "dieta mediterranea",
+    narrativeLabel: "la adherencia a la dieta mediterránea (PREDIMED)",
+    instrument: "PREDIMED",
+    blockId: "consumos-alimentacion-habitos",
+    unit: "/14",
+    value: (w) => w.predimedStudy?.aggregates.meanScore,
+    provincial: "eas",
+    sourceFile: (w) => w.predimedStudy?.sourceFileName,
+    calculationMethod: "puntuación canónica del campo derivado EAS (PREDIMED-14)",
+    tracerPriority: 1,
+  },
+  // ── SF-12 — salud percibida ────────────────────────────────────────────────
+  {
+    id: "sf12-pcs",
+    match: "componente fisico",
+    narrativeLabel: "la salud física percibida (SF-12, componente físico)",
+    instrument: "SF-12",
+    blockId: "salud-mental-sueno-malestar",
+    unit: "/100",
+    value: (w) => w.sf12Study?.aggregates.meanPCS,
+    provincial: "eas",
+    sourceFile: (w) => w.sf12Study?.sourceFileName,
+    calculationMethod:
+      "puntuación canónica precalculada por la EAS (norma española, Vilagut 2008)",
+  },
+  {
+    id: "sf12-mcs",
+    match: "componente mental",
+    narrativeLabel: "la salud mental percibida (SF-12, componente mental)",
+    instrument: "SF-12",
+    blockId: "salud-mental-sueno-malestar",
+    unit: "/100",
+    value: (w) => w.sf12Study?.aggregates.meanMCS,
+    provincial: "eas",
+    sourceFile: (w) => w.sf12Study?.sourceFileName,
+    calculationMethod:
+      "puntuación canónica precalculada por la EAS (norma española, Vilagut 2008)",
+    tracerPriority: 1,
+  },
+  // ── Sueño (EAS) ────────────────────────────────────────────────────────────
+  {
+    id: "sueno-insuficiente",
+    match: "duracion insuficiente",
+    narrativeLabel: "el sueño de duración insuficiente (EAS)",
+    instrument: "Sueño (EAS)",
+    blockId: "salud-mental-sueno-malestar",
+    unit: " %",
+    value: (w) => w.suenoStudy?.aggregates.pctInsufficientSleep,
+    provincial: "eas",
+    sourceFile: (w) => w.suenoStudy?.sourceFileName,
+    calculationMethod: "campo derivado oficial EAS P33_R",
+    tracerPriority: 2,
+  },
+  {
+    id: "sueno-no-descansa",
+    match: "no descansa",
+    narrativeLabel: "el descanso insuficiente autopercibido (EAS)",
+    instrument: "Sueño (EAS)",
+    blockId: "salud-mental-sueno-malestar",
+    unit: " %",
+    value: (w) => w.suenoStudy?.aggregates.pctNoRest,
+    provincial: "eas",
+    sourceFile: (w) => w.suenoStudy?.sourceFileName,
+    calculationMethod: "campo derivado oficial EAS P33A",
+  },
+  // ── CAGE ───────────────────────────────────────────────────────────────────
+  {
+    id: "cage-riesgo",
+    match: "riesgo de alcoholismo",
+    narrativeLabel: "el riesgo de alcoholismo (CAGE)",
+    instrument: "CAGE",
+    blockId: "consumos-alimentacion-habitos",
+    unit: " %",
+    value: (w) => w.cageStudy?.aggregates.pctRisk,
+    provincial: "eas",
+    sourceFile: (w) => w.cageStudy?.sourceFileName,
+    calculationMethod: "campo derivado oficial EAS CAGE_R",
+  },
+  {
+    id: "cage-ordinal",
+    match: "clasificacion ordinal",
+    narrativeLabel: "la clasificación ordinal de consumo (CAGE)",
+    instrument: "CAGE",
+    blockId: "consumos-alimentacion-habitos",
+    value: (w) => {
+      const a = w.cageStudy?.aggregates;
+      if (!a) return undefined;
+      return `distribución ordinal 1–4: ${a.nCAGE1}/${a.nCAGE2}/${a.nCAGE3}/${a.nCAGE4}`;
+    },
+    provincial: "ninguna",
+    sourceFile: (w) => w.cageStudy?.sourceFileName,
+    calculationMethod:
+      "distribución de categorías del campo derivado EAS CAGE; no comparable como valor único",
+  },
+  // ── AUDIT-C ────────────────────────────────────────────────────────────────
+  {
+    id: "auditc-positivo",
+    match: "consumo de riesgo de alcohol",
+    narrativeLabel: "el cribado AUDIT-C positivo",
+    instrument: "AUDIT-C",
+    blockId: "consumos-alimentacion-habitos",
+    unit: " %",
+    value: (w) => w.auditcStudy?.aggregates.pctPositive,
+    provincial: "ninguna",
+    sourceFile: (w) => w.auditcStudy?.sourceFileName,
+    calculationMethod: "punto de corte score ≥ 4",
+    tracerPriority: 2,
+  },
+  // ── IPAQ ───────────────────────────────────────────────────────────────────
+  {
+    id: "ipaq-alta",
+    match: "alta actividad fisica",
+    narrativeLabel: "la actividad física alta (IPAQ)",
+    instrument: "IPAQ",
+    blockId: "actividad-fisica-sedentarismo-entorno",
+    unit: " %",
+    value: (w) => w.ipaqStudy?.aggregates.pctHigh,
+    provincial: "eas",
+    sourceFile: (w) => w.ipaqStudy?.sourceFileName,
+    calculationMethod: "campo derivado oficial EAS IPAQ_DICO",
+  },
+  {
+    id: "ipaq-inactividad",
+    match: "inactividad en tiempo libre",
+    narrativeLabel: "la inactividad en tiempo libre (IPAQ)",
+    instrument: "IPAQ",
+    blockId: "actividad-fisica-sedentarismo-entorno",
+    unit: " %",
+    value: (w) => w.ipaqStudy?.aggregates.pctInactive,
+    provincial: "eas",
+    sourceFile: (w) => w.ipaqStudy?.sourceFileName,
+    calculationMethod: "campo derivado oficial EAS P34A_R",
+    tracerPriority: 1,
+  },
+  // ── GHQ-12 ─────────────────────────────────────────────────────────────────
+  {
+    id: "ghq12-positivo",
+    match: "malestar psicologico",
+    narrativeLabel: "el probable malestar psicológico (GHQ-12)",
+    instrument: "GHQ-12",
+    blockId: "salud-mental-sueno-malestar",
+    unit: " %",
+    value: (w) => w.ghq12Study?.aggregates.pctPositive,
+    provincial: "ninguna",
+    sourceFile: (w) => w.ghq12Study?.sourceFileName,
+    calculationMethod: "scoring bimodal, punto de corte ≥ 3",
+  },
+  // ── PHQ-9 ──────────────────────────────────────────────────────────────────
+  {
+    id: "phq9-positivo",
+    match: "sintomas depresivos",
+    narrativeLabel: "los síntomas depresivos moderados o superiores (PHQ-9)",
+    instrument: "PHQ-9",
+    blockId: "salud-mental-sueno-malestar",
+    unit: " %",
+    value: (w) => w.phq9Study?.aggregates.pctPositive,
+    provincial: "ninguna",
+    sourceFile: (w) => w.phq9Study?.sourceFileName,
+    calculationMethod: "punto de corte ≥ 10 (Kroenke 2001)",
+  },
+  // ── PSQI ───────────────────────────────────────────────────────────────────
+  {
+    id: "psqi-positivo",
+    match: "mala calidad del sueno",
+    narrativeLabel: "la mala calidad del sueño (PSQI)",
+    instrument: "PSQI",
+    blockId: "salud-mental-sueno-malestar",
+    unit: " %",
+    value: (w) => w.psqiStudy?.aggregates.pctPositive,
+    provincial: "ninguna",
+    sourceFile: (w) => w.psqiStudy?.sourceFileName,
+    calculationMethod: "punto de corte > 5 (Buysse 1989)",
+  },
+  // ── Fagerström ─────────────────────────────────────────────────────────────
+  {
+    id: "fagerstrom-positivo",
+    match: "nicotina",
+    narrativeLabel: "la dependencia moderada o superior a la nicotina (Fagerström)",
+    instrument: "Fagerström",
+    blockId: "consumos-alimentacion-habitos",
+    unit: " %",
+    value: (w) => w.fagerstromStudy?.aggregates.pctPositive,
+    provincial: "ninguna",
+    sourceFile: (w) => w.fagerstromStudy?.sourceFileName,
+    calculationMethod: "punto de corte ≥ 5 (Heatherton 1991), submuestra de fumadores",
+  },
+  // ── SBQ ────────────────────────────────────────────────────────────────────
+  {
+    id: "sbq-sedentario",
+    match: "altamente sedentario",
+    narrativeLabel: "el comportamiento altamente sedentario (SBQ)",
+    instrument: "SBQ",
+    blockId: "actividad-fisica-sedentarismo-entorno",
+    unit: " %",
+    value: (w) => w.sbqStudy?.aggregates.pctPositive,
+    provincial: "ninguna",
+    sourceFile: (w) => w.sbqStudy?.sourceFileName,
+    calculationMethod: "punto de corte > 8 h/día",
+    tracerPriority: 2,
+  },
+];
+
+// ── Utilidades ────────────────────────────────────────────────────────────────
+
+function normalize(value: string): string {
+  const decomposed = value.normalize("NFD").toLowerCase();
+  let out = "";
+  for (let i = 0; i < decomposed.length; i++) {
+    const code = decomposed.charCodeAt(i);
+    const keep =
+      (code >= 48 && code <= 57) || (code >= 97 && code <= 122) || code === 32;
+    if (keep) out += decomposed[i];
+  }
+  return out;
+}
+
+/** Formatea un valor con su unidad para citarlo en la narrativa. */
+export function formatIndicatorValue(
+  value: number | string | undefined,
+  unit?: string
+): string {
+  if (value === undefined) return "no disponible";
+  if (typeof value === "string") return value;
+  const s = Number.isInteger(value) ? String(value) : value.toFixed(1);
+  return unit !== undefined ? `${s}${unit}` : s;
+}
+
+const PROVINCE_LABEL: Record<ProvincialProvenance, string> = {
+  eas: "cálculo derivado de microdatos EAS de Granada (PROV=18), parser canónico",
+  monitor: "monitor IBSE provincial de Granada, agregado con el parser canónico",
+  ninguna: "sin referencia provincial metodológicamente equivalente",
+};
+
+const ANDALUSIA_LABEL: Record<ProvincialProvenance, string> = {
+  eas:
+    "calculable desde microdatos EAS de Andalucía; pendiente de incorporación " +
+    "de un fixture oficial metodológicamente equivalente — no se presenta como dato",
+  monitor: "sin referencia autonómica equivalente del monitor IBSE",
+  ninguna: "sin referencia autonómica disponible",
+};
+
+/** Lectura comparativa prudente por indicador. */
+export function interpretIndicatorComparison(
+  ref: Pick<
+    IndicatorComparisonReference,
+    "territorialValue" | "provinceReference" | "demoProxy" | "unit"
+  >
+): string {
+  if (ref.territorialValue === undefined) {
+    return "Valor no disponible en el expediente actual.";
+  }
+  if (ref.demoProxy && ref.provinceReference !== undefined) {
+    return (
+      "El valor territorial demo coincide con la referencia provincial " +
+      "(comportamiento demo/proxy): es referencia contextual para el contraste " +
+      "territorial y no constituye una estimación específica del ámbito."
+    );
+  }
+  if (
+    typeof ref.territorialValue === "number" &&
+    typeof ref.provinceReference === "number"
+  ) {
+    // Comparación general (fuera de demo): tolerancia prudente para no
+    // sobredimensionar pequeñas diferencias. Nunca causalidad.
+    const tolerance = Math.max(0.5, Math.abs(ref.provinceReference) * 0.05);
+    const diff = ref.territorialValue - ref.provinceReference;
+    const posicion =
+      Math.abs(diff) <= tolerance
+        ? "similar a"
+        : diff > 0
+          ? "superior a"
+          : "inferior a";
+    return (
+      `El valor territorial se interpreta como ${posicion} la referencia ` +
+      `provincial dentro de la cautela de escala declarada; la comparación ` +
+      `no implica causalidad.`
+    );
+  }
+  return (
+    "No comparable: sin referencia territorial metodológicamente equivalente; " +
+    "el valor describe la muestra territorial/demo."
+  );
+}
+
+// ── Punto de entrada ──────────────────────────────────────────────────────────
+
+export interface BuildIndicatorComparisonReferencesInput {
+  workspace: MunicipalityWorkspace;
+  /** Títulos reales de los indicadores; si no se pasan, se derivan del workspace. */
+  indicatorTitles?: string[];
+}
+
+export function buildIndicatorComparisonReferences(
+  input: BuildIndicatorComparisonReferencesInput
+): ComplementaryIndicatorReferencesReading {
+  const { workspace } = input;
+  const titles =
+    input.indicatorTitles ??
+    workspace.evidenceStore.atoms
+      .filter((a) => a.kind === "indicator")
+      .map((a) => a.title);
+  const normalizedTitles = titles.map((t) => ({ raw: t, norm: normalize(t) }));
+
+  const references: IndicatorComparisonReference[] = [];
+  for (const spec of INDICATOR_SPECS) {
+    // Un indicador solo se referencia si su átomo consta en la evidencia.
+    const atomTitle = normalizedTitles.find(
+      (t) =>
+        t.norm.includes(normalize(spec.match)) &&
+        t.norm.includes(normalize(spec.instrument.split(" ")[0]))
+    );
+    if (atomTitle === undefined) continue;
+
+    const territorialValue = spec.value(workspace);
+    // En la demo, los valores de los instrumentos EAS/monitor provincial
+    // coinciden con la referencia provincial: mismo fichero, mismo parser.
+    const demoProxy =
+      spec.provincial !== "ninguna" && typeof territorialValue === "number";
+    const provinceReference = demoProxy
+      ? (territorialValue as number)
+      : undefined;
+    const sourceFile = spec.sourceFile(workspace) ?? "fichero no registrado";
+
+    const ref: IndicatorComparisonReference = {
+      indicatorId: spec.id,
+      indicatorTitle: atomTitle.raw,
+      instrument: spec.instrument,
+      diagnosticBlockId: spec.blockId,
+      diagnosticBlockTitle: DIAGNOSTIC_BLOCK_TITLES[spec.blockId] ?? spec.blockId,
+      territorialValue,
+      territorialLabel:
+        "valor de la muestra territorial/demo (agregado real del estudio cargado)",
+      provinceReference,
+      provinceLabel: PROVINCE_LABEL[spec.provincial],
+      andalusiaReference: undefined,
+      andalusiaLabel: ANDALUSIA_LABEL[spec.provincial],
+      unit: spec.unit,
+      source: sourceFile,
+      calculationMethod: spec.calculationMethod,
+      scaleCaution:
+        "Evidencia contextual (proxy) de ámbito provincial u origen externo: " +
+        "no constituye estimación específica del distrito y requiere contraste " +
+        "territorial.",
+      demoProxy,
+      comparisonReading: "",
+      narrativeLabel: spec.narrativeLabel,
+      tracerPriority: spec.tracerPriority,
+    };
+    ref.comparisonReading = interpretIndicatorComparison(ref);
+    references.push(ref);
+  }
+
+  const coverage: IndicatorReferencesCoverage = {
+    total: references.length,
+    conValorTerritorial: references.filter((r) => r.territorialValue !== undefined)
+      .length,
+    conReferenciaProvincial: references.filter(
+      (r) => r.provinceReference !== undefined
+    ).length,
+    conReferenciaAndalucia: references.filter(
+      (r) => r.andalusiaReference !== undefined
+    ).length,
+    pendientesDeReferencia: references.filter(
+      (r) =>
+        r.provinceReference === undefined && r.andalusiaReference === undefined
+    ).length,
+  };
+
+  return { references, coverage };
+}

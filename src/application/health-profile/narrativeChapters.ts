@@ -16,6 +16,8 @@
  */
 
 import type { DiagnosticAnswers, SpaceKnowledge } from "./diagnosticAnswers";
+import type { IndicatorComparisonReference } from "./complementaryIndicatorReferences";
+import { formatIndicatorValue } from "./complementaryIndicatorReferences";
 import type { ProfileSpace } from "../../domain/health-profile";
 
 export interface NarrativeChapter {
@@ -123,6 +125,38 @@ function redactarLagunas(answers: DiagnosticAnswers | undefined): string[] {
 
 const MAX_EJEMPLOS = 5;
 
+// ── Indicadores trazadores: citas con valor, referencia y cautela ─────────────
+
+/** Cita narrativa de un indicador: etiqueta + valor formateado. */
+function citar(ref: IndicatorComparisonReference): string {
+  return `${ref.narrativeLabel} se sitúa en ${formatIndicatorValue(
+    ref.territorialValue,
+    ref.unit
+  )}`;
+}
+
+/**
+ * Trazadores agrupados por bloque, en el orden de los bloques diagnósticos.
+ * Máximo 2 por bloque (prioridad 1 y 2), para citar sin listar los 23.
+ */
+function trazadoresPorBloque(
+  answers: DiagnosticAnswers | undefined
+): Array<{ blockTitle: string; items: IndicatorComparisonReference[] }> {
+  if (!answers) return [];
+  const refs = answers.referencias.references.filter(
+    (r) => r.tracerPriority !== undefined && r.territorialValue !== undefined
+  );
+  const grupos: Array<{ blockTitle: string; items: IndicatorComparisonReference[] }> = [];
+  for (const bloque of answers.estudios.diagnosticBlocks) {
+    const items = refs
+      .filter((r) => r.diagnosticBlockId === bloque.id)
+      .sort((a, b) => (a.tracerPriority ?? 9) - (b.tracerPriority ?? 9))
+      .slice(0, 2);
+    if (items.length > 0) grupos.push({ blockTitle: bloque.title, items });
+  }
+  return grupos;
+}
+
 function muestra(titles: string[]): string {
   const seleccion = titles.slice(0, MAX_EJEMPLOS).join("; ");
   return titles.length > MAX_EJEMPLOS
@@ -165,6 +199,21 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `y se incorpora como contexto exploratorio para orientar la interpretación: ` +
         `no constituye estimación específica del ${scopeNoun} y queda ` +
         `pendiente de contraste territorial.`
+      );
+    }
+    // Procedencia de las referencias comparativas: los estudios organizan los
+    // instrumentos e indicadores; las referencias provincial y autonómica no
+    // forman parte de ellos, proceden de cálculos derivados de microdatos EAS.
+    if (input.answers?.referencias.references.some((r) => r.demoProxy)) {
+      const prov = input.province ? ` de ${input.province}` : "";
+      alcance.push(
+        `Los estudios complementarios organizan los instrumentos e indicadores; ` +
+        `las referencias comparativas provincial y autonómica no forman parte de ` +
+        `esos estudios: proceden de cálculos derivados de microdatos EAS —o de un ` +
+        `monitor provincial equivalente— y se incorporan como base de contraste. ` +
+        `En la demostración actual, parte de los valores territoriales se usa como ` +
+        `proxy contextual coincidente con la referencia provincial${prov}: no ` +
+        `constituyen estimación específica del ${scopeNoun}.`
       );
     }
     if (input.studyCautions.length > 0) {
@@ -270,6 +319,28 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
             `de esta agrupación, consultables en el panel de cada estudio.`
           : "")
       );
+      // Indicadores trazadores: qué aporta cada bloque, con valor citado,
+      // referencia comparativa y cautela de procedencia.
+      const trazadores = trazadoresPorBloque(input.answers);
+      if (trazadores.length > 0) {
+        const prov = input.province ? ` de ${input.province}` : "";
+        partes.push(
+          `Indicadores trazadores por bloque: ` +
+          trazadores
+            .map((g) => `en ${g.blockTitle}, ${g.items.map(citar).join(" y ")}`)
+            .join("; ") +
+          `. Cuando el instrumento procede de cálculos derivados de microdatos ` +
+          `EAS o del monitor provincial, el valor territorial demo coincide con ` +
+          `la referencia provincial${prov} (comportamiento demo/proxy): esta ` +
+          `lectura no constituye una estimación específica del ${scopeNoun}, ` +
+          `pero permite usar cada indicador como punto de contraste territorial. ` +
+          `La referencia autonómica de Andalucía es calculable desde los mismos ` +
+          `microdatos EAS y queda pendiente de incorporación: no se presenta ` +
+          `como dato. La trazabilidad completa de los ` +
+          `${input.answers!.referencias.coverage.total} indicadores (valor, ` +
+          `referencias, procedencia y cautelas) consta en el anexo técnico.`
+        );
+      }
     } else if (input.indicatorCount > 0) {
       const seleccion = input.indicatorTitles.slice(0, 4);
       partes.push(
@@ -387,6 +458,43 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `Los bloques diagnósticos del capítulo III sostienen esta lectura: ` +
           `${sustentos.join("; ")}. Son hipótesis plausibles, trazables y ` +
           `pendientes de contraste territorial.`
+        );
+      }
+      // Anclaje a indicadores: cada hipótesis se apoya en trazadores citados
+      // con su valor, no solo en el nombre del bloque.
+      const refsIV = (input.answers?.referencias.references ?? []).filter(
+        (r) => r.tracerPriority !== undefined && r.territorialValue !== undefined
+      );
+      const anclajes = plausibles
+        .map((d) => {
+          const bloquesHipotesis = bloquesIV
+            .filter((b) => b.relatedDeterminantHypotheses.includes(d.enunciado))
+            .map((b) => b.id);
+          const trazadores = refsIV
+            .filter((r) => bloquesHipotesis.includes(r.diagnosticBlockId))
+            .sort((a, b) => (a.tracerPriority ?? 9) - (b.tracerPriority ?? 9))
+            .slice(0, 3);
+          if (trazadores.length === 0) return undefined;
+          const corto = d.enunciado.split(" (")[0];
+          return (
+            `la hipótesis sobre ${corto} se ancla en ` +
+            trazadores
+              .map(
+                (r) =>
+                  `${r.narrativeLabel} ` +
+                  `(${formatIndicatorValue(r.territorialValue, r.unit)})`
+              )
+              .join(", ")
+          );
+        })
+        .filter((s): s is string => s !== undefined);
+      if (anclajes.length > 0) {
+        partes.push(
+          `Las hipótesis quedan ancladas a indicadores trazadores concretos, no ` +
+          `solo al nombre de los bloques: ${anclajes.join("; ")}. Los valores ` +
+          `citados son referencia contextual con la cautela de escala del ` +
+          `capítulo I: sostienen hipótesis plausibles pendientes de contraste, ` +
+          `nunca causalidad demostrada.`
         );
       }
     }
@@ -541,11 +649,25 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     }
     const bloquesVI = input.answers?.estudios.diagnosticBlocks ?? [];
     if (bloquesVI.length > 0) {
+      // Cita de un trazador principal por bloque: la conclusión se apoya en
+      // indicadores concretos, siempre con la cautela de escala del capítulo I.
+      const citasVI = trazadoresPorBloque(input.answers)
+        .map((g) => g.items[0])
+        .map(
+          (r) =>
+            `${r.narrativeLabel} ` +
+            `(${formatIndicatorValue(r.territorialValue, r.unit)})`
+        );
       conclusion.push(
         `La principal aportación de los estudios complementarios es ordenar el ` +
         `diagnóstico en bloques de salud y bienestar ` +
         `—${bloquesVI.map((b) => b.title).join("; ")}— que permiten pasar de ` +
-        `indicadores dispersos a hipótesis contrastables.`
+        `indicadores dispersos a hipótesis contrastables` +
+        (citasVI.length > 0
+          ? `, apoyadas en indicadores trazadores concretos: ` +
+            `${citasVI.join("; ")}, siempre dentro de la cautela de escala ` +
+            `declarada en el capítulo I.`
+          : `.`)
       );
     }
     const plausiblesVI = (input.answers?.determinantes ?? []).filter(

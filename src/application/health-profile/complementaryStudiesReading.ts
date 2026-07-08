@@ -220,6 +220,11 @@ const BLOCK_SPECS: BlockSpec[] = [
   },
 ];
 
+/** Título narrativo de cada bloque diagnóstico, por id. */
+export const DIAGNOSTIC_BLOCK_TITLES: Record<string, string> = Object.fromEntries(
+  BLOCK_SPECS.map((b) => [b.id, b.title])
+);
+
 // ── Utilidades ────────────────────────────────────────────────────────────────
 
 function normalize(value: string): string {

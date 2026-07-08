@@ -68,7 +68,18 @@ export type {
 } from "./complementaryStudiesReading";
 export {
   buildComplementaryStudiesReading,
+  DIAGNOSTIC_BLOCK_TITLES,
   HIPOTESIS_PSICOSOCIAL,
   HIPOTESIS_ENTORNO_URBANO,
   HIPOTESIS_CONSUMOS,
 } from "./complementaryStudiesReading";
+export type {
+  IndicatorComparisonReference,
+  IndicatorReferencesCoverage,
+  ComplementaryIndicatorReferencesReading,
+} from "./complementaryIndicatorReferences";
+export {
+  buildIndicatorComparisonReferences,
+  interpretIndicatorComparison,
+  formatIndicatorValue,
+} from "./complementaryIndicatorReferences";

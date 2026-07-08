@@ -6,7 +6,9 @@ import {
   INSTITUTIONAL_NAV,
   CONTRAST_TOPICS_LABEL,
   PENDING_CONTRAST_LABEL,
+  formatIndicatorValue,
 } from "../../application/health-profile";
+import type { IndicatorComparisonReference } from "../../application/health-profile";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
@@ -14,6 +16,8 @@ interface LocalHealthProfileViewProps {
   psl: LocalHealthProfile;
   pslIsStale: boolean;
   municipalityName: string;
+  /** Referencias comparativas por indicador para la trazabilidad técnica. */
+  indicatorReferences?: IndicatorComparisonReference[];
   compiledProfiles?: LocalHealthProfileArtifact[];
   onValidate: (validatedBy: string) => void;
   onInvalidate: () => void;
@@ -511,6 +515,7 @@ export function LocalHealthProfileView({
   psl,
   pslIsStale,
   municipalityName,
+  indicatorReferences,
   compiledProfiles,
   onValidate,
   onInvalidate,
@@ -643,8 +648,20 @@ export function LocalHealthProfileView({
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--indicator">
                 <span className="psl-doc-kpi__value">{psl.indicatorCount}</span>
-                <span className="psl-doc-kpi__label">Indicadores disponibles</span>
+                <span className="psl-doc-kpi__label">
+                  {indicatorReferences !== undefined && indicatorReferences.length > 0
+                    ? "Indicadores comparables"
+                    : "Indicadores disponibles"}
+                </span>
               </div>
+              {indicatorReferences !== undefined && indicatorReferences.length > 0 && (
+                <div className="psl-doc-kpi psl-doc-kpi--indicator">
+                  <span className="psl-doc-kpi__value">
+                    {new Set(indicatorReferences.map((r) => r.diagnosticBlockId)).size}
+                  </span>
+                  <span className="psl-doc-kpi__label">Bloques diagnósticos</span>
+                </div>
+              )}
               <div className="psl-doc-kpi psl-doc-kpi--area">
                 <span className="psl-doc-kpi__value">{psl.areasDeIntervencion.length}</span>
                 <span className="psl-doc-kpi__label">Cuestiones para contraste</span>
@@ -772,6 +789,68 @@ export function LocalHealthProfileView({
                 <span className="psl-doc-evidence-cell__hint">Limitaciones que deben considerarse</span>
               </div>
             </div>
+
+            {indicatorReferences !== undefined && indicatorReferences.length > 0 && (
+              <details className="psl-doc-annex__details psl-doc-indicator-refs">
+                <summary className="psl-doc-annex__summary">
+                  Referencias comparativas por indicador ({indicatorReferences.length})
+                  · valor demo, referencia provincial, referencia Andalucía y procedencia
+                </summary>
+                <p className="panel-note">
+                  Los estudios complementarios organizan los instrumentos e
+                  indicadores; las referencias comparativas provincial y autonómica
+                  proceden de cálculos derivados de microdatos EAS —o de un monitor
+                  provincial equivalente— y se incorporan como base de contraste.
+                  En la demostración actual, los valores marcados como demo/proxy
+                  coinciden con la referencia provincial de Granada: no constituyen
+                  estimación específica del distrito.
+                </p>
+                <div style={{ overflowX: "auto" }}>
+                  <table className="psl-doc-indicator-refs__table">
+                    <thead>
+                      <tr>
+                        <th>Bloque</th>
+                        <th>Instrumento</th>
+                        <th>Indicador</th>
+                        <th>Valor demo</th>
+                        <th>Ref. Granada/prov.</th>
+                        <th>Ref. Andalucía</th>
+                        <th>Procedencia</th>
+                        <th>Cautela / lectura</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {indicatorReferences.map((r) => (
+                        <tr key={r.indicatorId}>
+                          <td>{r.diagnosticBlockTitle}</td>
+                          <td>{r.instrument}</td>
+                          <td>{r.indicatorTitle}</td>
+                          <td>
+                            {formatIndicatorValue(r.territorialValue, r.unit)}
+                            {r.demoProxy ? " (demo/proxy)" : ""}
+                          </td>
+                          <td>
+                            {r.provinceReference !== undefined
+                              ? formatIndicatorValue(r.provinceReference, r.unit)
+                              : "no disponible"}
+                          </td>
+                          <td>
+                            {r.andalusiaReference !== undefined
+                              ? formatIndicatorValue(r.andalusiaReference, r.unit)
+                              : "pendiente / no disponible"}
+                          </td>
+                          <td>
+                            {r.source}
+                            {r.calculationMethod ? ` · ${r.calculationMethod}` : ""}
+                          </td>
+                          <td>{r.comparisonReading}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
 
             {psl.originsSummary.length > 0 && (
               <div className="psl-doc-origins">

@@ -18,7 +18,10 @@ import {
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
-import { hasPSLHumanContent } from "./application/health-profile";
+import {
+  hasPSLHumanContent,
+  buildIndicatorComparisonReferences,
+} from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
 import {
   createHealthReportDocumentFromDocx,
@@ -2939,6 +2942,9 @@ export default function App() {
               psl={runtime.psl}
               pslIsStale={runtime.pslIsStale}
               municipalityName={municipality.name}
+              indicatorReferences={
+                buildIndicatorComparisonReferences({ workspace }).references
+              }
               compiledProfiles={workspace.compiledProfiles}
               onValidate={handleValidatePSL}
               onInvalidate={handleInvalidatePSL}

@@ -38,6 +38,8 @@ import {
   HIPOTESIS_ENTORNO_URBANO,
   HIPOTESIS_CONSUMOS,
 } from "./complementaryStudiesReading";
+import type { ComplementaryIndicatorReferencesReading } from "./complementaryIndicatorReferences";
+import { buildIndicatorComparisonReferences } from "./complementaryIndicatorReferences";
 
 // ── Tipos de la capa ──────────────────────────────────────────────────────────
 
@@ -91,6 +93,8 @@ export interface DiagnosticAnswers {
   salutogenica: SalutogenicReading;
   /** Lectura sustantiva de los estudios complementarios (bloques diagnósticos). */
   estudios: ComplementaryStudiesReading;
+  /** Referencias comparativas por indicador (valor demo, provincial, Andalucía). */
+  referencias: ComplementaryIndicatorReferencesReading;
   /** Síntesis narrativa del técnico, si existe. */
   sintesisTexto?: string;
 }
@@ -401,6 +405,7 @@ export function buildDiagnosticAnswers(
     senalesPresentes,
     salutogenica,
     estudios: buildComplementaryStudiesReading({ workspace, indicatorTitles }),
+    referencias: buildIndicatorComparisonReferences({ workspace, indicatorTitles }),
     sintesisTexto: workspace.perfilLocalDeSalud?.sintesisTexto?.trim() || undefined,
   };
 }
