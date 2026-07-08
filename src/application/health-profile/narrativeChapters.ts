@@ -373,3 +373,27 @@ export function renderNarrativeChapters(chapters: NarrativeChapter[]): string {
     .map((c) => `${c.numeral}. ${c.title}\n\n${c.content}`)
     .join("\n\n\n");
 }
+
+/**
+ * Operación inversa de renderNarrativeChapters: recupera los capítulos desde
+ * el texto del documento (generado o de autoría humana que conserve la
+ * estructura). Si el texto no tiene estructura de capítulos reconocible,
+ * devuelve una lista vacía y quien llama debe usar el texto íntegro.
+ */
+export function parseNarrativeChapters(text: string): NarrativeChapter[] {
+  const segments = text.split("\n\n\n");
+  const chapters: NarrativeChapter[] = [];
+  for (const segment of segments) {
+    const headerEnd = segment.indexOf("\n\n");
+    if (headerEnd === -1) return [];
+    const header = segment.slice(0, headerEnd).trim();
+    const match = /^([IVX]+)\.\s+(.+)$/.exec(header);
+    if (match === null) return [];
+    chapters.push({
+      numeral: match[1],
+      title: match[2],
+      content: segment.slice(headerEnd + 2).trim(),
+    });
+  }
+  return chapters.length >= 2 ? chapters : [];
+}

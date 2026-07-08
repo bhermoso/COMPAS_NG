@@ -9033,3 +9033,23 @@ h3 {
   font-size: 0.90rem !important;
   line-height: 1.7 !important;
 }
+
+/* ── Perfil: documento narrativo de seis capítulos ─────────────────────────── */
+.psl-doc-narrative-chapter__paragraph {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #33404e;
+}
+.psl-doc-narrative-chapter__paragraph:last-child { margin-bottom: 0; }
+
+/* ── Perfil: anexo técnico plegable ────────────────────────────────────────── */
+.psl-doc-annex__summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 4px 0;
+}
+.psl-doc-annex__summary:hover { color: #33404e; }
+.psl-doc-annex__details[open] .psl-doc-annex__summary { margin-bottom: 14px; }

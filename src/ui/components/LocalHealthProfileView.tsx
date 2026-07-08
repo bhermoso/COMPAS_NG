@@ -1,6 +1,12 @@
 import { useState } from "react";
 import type { LocalHealthProfile, PSLScaffoldChapter } from "../../domain/health-profile";
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
+import {
+  buildInstitutionalProfileViewModel,
+  INSTITUTIONAL_NAV,
+  CONTRAST_TOPICS_LABEL,
+  PENDING_CONTRAST_LABEL,
+} from "../../application/health-profile";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
@@ -71,33 +77,15 @@ function ScaffoldBadge({ text }: { text: string }) {
   return <span className="psl-doc-scaffold-badge">{text}</span>;
 }
 
-function InterpretationBox({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="psl-doc-interp-box">
-      <p className="psl-doc-interp-box__label">{label}</p>
-      <div className="psl-doc-interp-box__body">{children}</div>
-    </div>
-  );
-}
-
-// ── Tarea 1: Índice de capítulos ──────────────────────────────────────────────
-
-const CHAPTERS = [
-  { href: "#psl-resumen",  label: "Resumen" },
-  { href: "#psl-cap-i",   label: "I · Marco estratégico" },
-  { href: "#psl-cap-ii",  label: "II · Informe de Salud" },
-  { href: "#psl-cap-iii", label: "III · Diagnóstico" },
-  { href: "#psl-cap-iv",  label: "IV · Interpretación" },
-  { href: "#psl-cap-v",   label: "V · Conclusiones" },
-  { href: "#psl-cap-vi",  label: "VI · Cierre interpretativo" },
-  { href: "#psl-cap-vii", label: "VII · Priorización" },
-] as const;
+// ── Índice del documento institucional ────────────────────────────────────────
+// La estructura principal del Perfil son los seis capítulos narrativos por
+// determinantes (INSTITUTIONAL_NAV, fuente única en el modelo de aplicación).
 
 function PslChapterNav() {
   return (
     <nav className="psl-doc-chapter-nav" aria-label="Capítulos del perfil">
       <div className="psl-doc-chapter-nav__inner">
-        {CHAPTERS.map((ch) => (
+        {INSTITUTIONAL_NAV.map((ch) => (
           <a key={ch.href} href={ch.href} className="psl-doc-chapter-nav__link">
             {ch.label}
           </a>
@@ -470,7 +458,7 @@ function PSLCArtefactoCard({ artifact }: { artifact: LocalHealthProfileArtifact 
           {areas.length > 0 && (
             <div>
               <p className="psl-artifact-section__label">
-                Áreas de intervención ({areas.length})
+                Cuestiones para contraste ({areas.length})
               </p>
               <div className="psl-artifact-areas">
                 {areas.map((area, i) => (
@@ -533,6 +521,7 @@ export function LocalHealthProfileView({
   onApprove,
 }: LocalHealthProfileViewProps) {
   const isEmpty = psl.totalEvidenceAtoms === 0;
+  const doc = buildInstitutionalProfileViewModel(psl);
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "long",
@@ -658,13 +647,13 @@ export function LocalHealthProfileView({
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--area">
                 <span className="psl-doc-kpi__value">{psl.areasDeIntervencion.length}</span>
-                <span className="psl-doc-kpi__label">Áreas de intervención</span>
+                <span className="psl-doc-kpi__label">Cuestiones para contraste</span>
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--priority">
                 <span className="psl-doc-kpi__value">
                   {psl.priorizacion.tematicasSeleccionadasIds.length}
                 </span>
-                <span className="psl-doc-kpi__label">Temáticas priorizadas</span>
+                <span className="psl-doc-kpi__label">Temáticas ciudadanas</span>
               </div>
             </div>
 
@@ -689,103 +678,65 @@ export function LocalHealthProfileView({
         )}
       </section>
 
-      {/* ── I: Marco Estratégico ──────────────────────────────────────────── */}
-      <section id="psl-cap-i" className="psl-doc-section workspace-panel">
-        <SectionHeader num="I" title="Marco Estratégico" />
-        <p className="psl-doc-framework-intro">
-          Este Perfil de Salud Local se elabora dentro del marco de la planificación
-          local en salud de la Junta de Andalucía, bajo los principios de la
-          Estrategia de Promoción de la Vida Saludable 2024–2030 (EPVSA),
-          la metodología de la Red Local de Acción en Salud (RELAS) y el
-          enfoque salutogénico orientado a activos comunitarios.
-        </p>
-        <dl className="psl-doc-framework-list">
-          {[
-            {
-              id: "EPVSA",
-              title: "Estrategia de Promoción de la Vida Saludable 2024–2030",
-              desc: "Marco estratégico autonómico. Define líneas de actuación en alimentación, actividad física, bienestar emocional, entornos y estilos de vida.",
-            },
-            {
-              id: "RELAS",
-              title: "Red Local de Acción en Salud",
-              desc: "Marco metodológico de referencia. Articula diagnóstico participativo, priorización ciudadana, planificación e implementación en red municipal.",
-            },
-            {
-              id: "Salutogénesis",
-              title: "Enfoque salutogénico y basado en activos",
-              desc: "Orienta el análisis hacia los recursos, capacidades y fortalezas del territorio, complementando el análisis de necesidades.",
-            },
-            {
-              id: "Determinantes sociales",
-              title: "Determinantes sociales de la salud",
-              desc: "Integra condiciones de vida, trabajo, educación, vivienda y equidad como factores estructurales que determinan los resultados de salud.",
-            },
-            {
-              id: "Salud en Todas las Políticas",
-              title: "Salud en Todas las Políticas",
-              desc: "Promueve la acción intersectorial local, incorporando la salud en las decisiones de urbanismo, educación, servicios sociales y cultura.",
-            },
-            {
-              id: "Participación ciudadana",
-              title: "Acción comunitaria y participación",
-              desc: "La comunidad es actora del diagnóstico, la priorización y la acción. La voz ciudadana informa y valida las decisiones de planificación.",
-            },
-          ].map((f) => (
-            <div key={f.id} className="psl-doc-framework-item">
-              <dt>
-                <span className="psl-doc-framework-item__id">{f.id}</span>
-                <span className="psl-doc-framework-item__title">{f.title}</span>
-              </dt>
-              <dd className="psl-doc-framework-item__desc">{f.desc}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      {/* ── Documento principal: seis capítulos narrativos por determinantes ─ */}
+      {!isEmpty && doc.isDraft && (
+        <div className="psl-doc-draft-notice">
+          <span className="psl-doc-draft-notice__label">Borrador asistido</span>
+          Documento de trabajo elaborado con apoyo de COMPÁS NG a partir de la
+          evidencia del repositorio. El equipo técnico debe revisarlo, completarlo
+          y asumir su autoría antes del uso institucional.
+        </div>
+      )}
 
-      {/* ── II: Informe de Salud ──────────────────────────────────────────── */}
-      <section id="psl-cap-ii" className="psl-doc-section workspace-panel">
-        <SectionHeader num="II" title="Informe de Salud" />
-        {psl.healthReportTitle ? (
-          <>
-            <div className="psl-doc-health-report">
-              <div className="psl-doc-health-report__identity">
-                <h3 className="psl-doc-health-report__title">{psl.healthReportTitle}</h3>
-                <p className="psl-doc-health-report__caption">
-                  Fuente epidemiológica oficial del ámbito territorial. Preservado íntegramente
-                  en el Repositorio documental. El Perfil lo referencia y lo contextualiza
-                  con otras fuentes territoriales; no lo sustituye ni lo modifica.
+      {doc.chapters.length > 0 ? (
+        doc.chapters.map((chapter, index) => (
+          <section
+            key={chapter.numeral}
+            id={INSTITUTIONAL_NAV[index + 1]?.href.slice(1) ?? `psl-cap-${chapter.numeral.toLowerCase()}`}
+            className="psl-doc-section workspace-panel"
+          >
+            <SectionHeader num={chapter.numeral} title={chapter.title} />
+            <div className="psl-doc-narrative-chapter">
+              {chapter.content.split("\n\n").map((paragraph, i) => (
+                <p key={i} className="psl-doc-narrative-chapter__paragraph">
+                  {paragraph}
                 </p>
-              </div>
+              ))}
             </div>
-            <InterpretationBox label="Rol del Informe de Salud en el Perfil">
-              <p>
-                El Informe de Salud es la base epidemiológica oficial del Perfil.
-                COMPÁS NG lo referencia íntegramente y lo contextualiza con el
-                diagnóstico participativo, los determinantes sociales y los activos
-                comunitarios del territorio.
-              </p>
-              <p>
-                El Perfil no sustituye ni modifica el Informe de Salud. Lo que aporta
-                es la lectura integrada: incorpora la perspectiva ciudadana, los
-                recursos del territorio y el enfoque salutogénico, respondiendo no
-                solo a <em>«qué ocurre»</em> sino a <em>«por qué ocurre»</em>{" "}
-                y <em>«con qué capacidades cuenta el territorio»</em>.
-              </p>
-            </InterpretationBox>
-          </>
-        ) : (
-          <div className="psl-doc-notice psl-doc-notice--info">
-            <strong>Informe de Salud no registrado.</strong> El Informe de Salud es la fuente
-            diagnóstica primaria recomendada. Cárgalo en el Repositorio documental (formatos
-            .docx o .pdf) para enriquecer el diagnóstico territorial.
-          </div>
-        )}
-      </section>
+          </section>
+        ))
+      ) : (
+        <section id="psl-cap-i" className="psl-doc-section workspace-panel">
+          <SectionHeader num="I" title="Documento del Perfil" />
+          <p className="psl-doc-narrative-chapter__paragraph">{doc.fallbackContent}</p>
+        </section>
+      )}
 
-      {/* ── III: Diagnóstico integrado ────────────────────────────────────── */}
-      <section id="psl-cap-iii" className="psl-doc-section workspace-panel">
-        <SectionHeader num="III" title="Diagnóstico integrado" />
+      {/* Edición del documento (autoría técnica sobre el texto completo) */}
+      {psl.status === "validated" && onEditConclusion && (
+        <section className="psl-doc-section workspace-panel">
+          <p className="eyebrow">Autoría técnica</p>
+          <h2>Revisión y redacción del documento</h2>
+          <p className="panel-note">
+            El texto de los seis capítulos es un borrador asistido. Al guardarlo,
+            el equipo técnico asume su autoría (requisito para compilar el
+            documento institucional).
+          </p>
+          <PSLChapterEditor
+            chapter={psl.conclusiones}
+            label="documento del Perfil"
+            onSave={onEditConclusion}
+          />
+        </section>
+      )}
+
+      {/* ── Anexo: trazabilidad técnica del diagnóstico (apoyo interno) ────── */}
+      <section id="psl-anexo" className="psl-doc-section workspace-panel psl-doc-annex">
+        <details className="psl-doc-annex__details">
+          <summary className="psl-doc-annex__summary">
+            Trazabilidad técnica del diagnóstico · apoyo interno del equipo — no
+            forma parte del documento institucional
+          </summary>
 
         {isEmpty ? (
           <div className="psl-doc-notice psl-doc-notice--empty">
@@ -868,25 +819,6 @@ export function LocalHealthProfileView({
                 {" "}Consulta el Panel de Análisis para más detalle.
               </div>
             )}
-          </>
-        )}
-      </section>
-
-      {/* ── IV: Interpretación territorial ───────────────────────────────── */}
-      <section id="psl-cap-iv" className="psl-doc-section workspace-panel">
-        <SectionHeader num="IV" title="Interpretación territorial" />
-        <p className="psl-doc-section-subtitle">
-          ¿Qué ocurre en el territorio? ¿Por qué puede estar ocurriendo?
-          ¿Con qué activos y fortalezas cuenta? ¿Qué implica para la planificación local?
-        </p>
-
-        {isEmpty ? (
-          <div className="psl-doc-notice psl-doc-notice--empty">
-            Sin evidencia disponible. Incorpora documentos al Repositorio documental
-            para construir la interpretación territorial del ámbito.
-          </div>
-        ) : (
-          <>
             <div className="psl-doc-territorial-summary">
               <p>{psl.territorialSummary}</p>
             </div>
@@ -947,119 +879,69 @@ export function LocalHealthProfileView({
               </div>
             )}
 
-            {psl.marcosAplicados.length > 0 && (
-              <div className="psl-doc-frameworks-row">
-                <p className="psl-doc-frameworks-row__label">Marcos interpretativos aplicados</p>
-                <div className="psl-doc-frameworks-row__chips">
-                  {psl.marcosAplicados.map((m) => (
-                    <span key={m.framework} className="psl-doc-framework-chip">
-                      {m.framework} <em>({m.elementCount})</em>
-                    </span>
+            {doc.contrastTopics.length > 0 && (
+              <div className="psl-doc-areas">
+                <p className="psl-doc-areas__label">
+                  {CONTRAST_TOPICS_LABEL} ({doc.contrastTopics.length})
+                </p>
+                <p className="psl-doc-areas-intro">
+                  Cuestiones diagnósticas identificadas a partir de la evidencia
+                  disponible. Requieren deliberación técnica y comunitaria en la
+                  fase posterior; no son decisiones ni propuestas de actuación.
+                </p>
+                <div className="psl-doc-area-list">
+                  {doc.contrastTopics.map((topic, i) => (
+                    <div key={topic.id} className="psl-doc-area-card">
+                      <div className="psl-doc-area-card__num">{i + 1}</div>
+                      <div className="psl-doc-area-card__body">
+                        <h3 className="psl-doc-area-card__title">{topic.title}</h3>
+                        <p className="psl-doc-area-card__rationale">{topic.rationale}</p>
+                        {topic.cautions.length > 0 && (
+                          <ul className="psl-doc-area-card__cautions">
+                            {topic.cautions.map((c) => <li key={c}>{c}</li>)}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
-
-            {(() => {
-              const realAreas = psl.areasDeIntervencion.filter((a) => !a.isAnalyticalGap);
-              const analyticalGaps = psl.areasDeIntervencion.filter((a) => a.isAnalyticalGap);
-              return (
-                <>
-                  {realAreas.length > 0 ? (
-                    <div className="psl-doc-areas">
-                      <p className="psl-doc-areas__label">
-                        Áreas de intervención territorial ({realAreas.length})
-                      </p>
-                      <p className="psl-doc-areas-intro">
-                        Áreas identificadas a partir de la evidencia disponible.
-                        Son candidaturas para la deliberación técnica y comunitaria;
-                        requieren validación antes de traducirse en objetivos del Plan de Acción.
-                      </p>
-                      <div className="psl-doc-area-list">
-                        {realAreas.map((area, i) => (
-                          <div key={area.id} className="psl-doc-area-card">
-                            <div className="psl-doc-area-card__num">{i + 1}</div>
-                            <div className="psl-doc-area-card__body">
-                              <h3 className="psl-doc-area-card__title">{area.title}</h3>
-                              <p className="psl-doc-area-card__rationale">{area.rationale}</p>
-                              {area.relatedEvidenceIds.length > 0 && (
-                                <p className="psl-doc-area-card__meta">
-                                  {area.relatedEvidenceIds.length} referencia(s) de evidencia
-                                </p>
-                              )}
-                              {area.cautions.length > 0 && (
-                                <ul className="psl-doc-area-card__cautions">
-                                  {area.cautions.map((c) => <li key={c}>{c}</li>)}
-                                </ul>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+            {doc.pendingContrasts.length > 0 && (
+              <div className="psl-doc-gaps">
+                <p className="psl-doc-gaps__label">{PENDING_CONTRAST_LABEL}</p>
+                <p className="psl-doc-gaps__intro">
+                  El diagnóstico señala cuestiones que requieren atención metodológica
+                  o ampliación de evidencia. No son conclusiones del diagnóstico.
+                </p>
+                <div className="psl-doc-gap-list">
+                  {doc.pendingContrasts.map((gap) => (
+                    <div key={gap.id} className="psl-doc-gap-card">
+                      <h3 className="psl-doc-gap-card__title">{gap.title}</h3>
+                      <p className="psl-doc-gap-card__rationale">{gap.rationale}</p>
                     </div>
-                  ) : (
-                    <div className="psl-doc-notice psl-doc-notice--info">
-                      El Perfil no identifica todavía áreas territoriales sustantivas para
-                      priorización. Antes de formular candidaturas, es necesario completar
-                      la lectura diagnóstica con determinantes, contexto territorial,
-                      participación y validación técnica.
-                    </div>
-                  )}
-                  {analyticalGaps.length > 0 && (
-                    <div className="psl-doc-gaps">
-                      <p className="psl-doc-gaps__label">Aspectos pendientes de contraste</p>
-                      <p className="psl-doc-gaps__intro">
-                        El diagnóstico señala cuestiones que requieren atención metodológica
-                        o ampliación de evidencia antes de avanzar hacia la priorización.
-                        No son áreas de intervención territorial.
-                      </p>
-                      <div className="psl-doc-gap-list">
-                        {analyticalGaps.map((gap) => (
-                          <div key={gap.id} className="psl-doc-gap-card">
-                            <h3 className="psl-doc-gap-card__title">{gap.title}</h3>
-                            <p className="psl-doc-gap-card__rationale">{gap.rationale}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
+        </details>
       </section>
 
-      {/* ── Tarea 3: Transición entre análisis (I–IV) y elaboración (V–VII) ─ */}
-      <div className="psl-doc-level-break" role="separator" aria-label="Elaboración y validación humana">
-        <span>Elaboración y validación humana</span>
+      {/* ── Espacio de trabajo del equipo técnico (fuera del documento) ───── */}
+      <div className="psl-doc-level-break" role="separator" aria-label="Espacio de trabajo del equipo técnico">
+        <span>Espacio de trabajo del equipo técnico · no forma parte del documento institucional</span>
       </div>
 
-      {/* ── V: Conclusiones ──────────────────────────────────────────────── */}
-      <section id="psl-cap-v" className="psl-doc-section workspace-panel">
-        <SectionHeader num="V" title="Conclusiones" />
-        {psl.status === "validated" && onEditConclusion ? (
-          <PSLChapterEditor
-            chapter={psl.conclusiones}
-            label="Conclusiones"
-            onSave={onEditConclusion}
-          />
-        ) : (
-          <div className="psl-doc-scaffold-block">
-            <ScaffoldBadge text="Propuesta asistida por COMPÁS NG · Pendiente de revisión técnica" />
-            {stripBrackets(psl.conclusiones.content) && (
-              <p className="psl-doc-scaffold-block__content">
-                {stripBrackets(psl.conclusiones.content)}
-              </p>
-            )}
-            <p className="psl-doc-scaffold-block__note">{psl.conclusiones.authorshipNote}</p>
-          </div>
-        )}
-      </section>
-
-      {/* ── VI: Cierre interpretativo ────────────────────────────────────── */}
-      <section id="psl-cap-vi" className="psl-doc-section workspace-panel">
-        <SectionHeader num="VI" title="Cierre interpretativo" />
+      {/* ── Cierre interpretativo (autoría técnica) ─────────────────────── */}
+      <section className="psl-doc-section workspace-panel">
+        <p className="eyebrow">Espacio de trabajo</p>
+        <h2>Cierre interpretativo (autoría técnica)</h2>
+        <p className="panel-note">
+          Lectura integrada de alcance y limitaciones que acompaña al documento.
+          Requiere redacción del equipo técnico antes de compilar.
+        </p>
         {psl.status === "validated" && onEditCierreInterpretativo ? (
           <PSLChapterEditor
             chapter={psl.cierreInterpretativo}
@@ -1079,17 +961,24 @@ export function LocalHealthProfileView({
         )}
       </section>
 
-      {/* ── VII: Síntesis y Priorización ─────────────────────────────────── */}
-      <section id="psl-cap-vii" className="psl-doc-section workspace-panel">
-        <SectionHeader num="VII" title="Síntesis y Priorización" />
+      {/* ── Preparación de la deliberación (fase posterior al Perfil) ─────── */}
+      <section className="psl-doc-section workspace-panel">
+        <p className="eyebrow">Espacio de trabajo · fase posterior</p>
+        <h2>Preparación de la deliberación con el Grupo Motor</h2>
+        <p className="panel-note">
+          La priorización es una fase posterior al Perfil y corresponde al Grupo
+          Motor. Este espacio reúne los materiales de tránsito: las cuestiones
+          para contraste y las temáticas ciudadanas. El documento del Perfil
+          concluye; no prioriza ni recomienda.
+        </p>
 
         {psl.priorizacion.hasTechnicalCandidatures && (
           <div className="psl-doc-prio-block">
-            <p className="psl-doc-prio-block__label">Candidaturas técnicas</p>
+            <p className="psl-doc-prio-block__label">Cuestiones para la deliberación</p>
             <p className="psl-doc-prio-block__caption">
-              Áreas identificadas a partir de la evidencia disponible para ser
-              consideradas en la deliberación con el Grupo Motor.
-              No ordenan prioridades sin contraste técnico y comunitario.
+              Cuestiones diagnósticas identificadas a partir de la evidencia
+              disponible, para su contraste con el Grupo Motor. No ordenan
+              prioridades ni proponen actuaciones.
             </p>
             <div className="psl-doc-candidature-list">
               {psl.priorizacion.candidaturasTecnicas.map((c, i) => (
@@ -1107,9 +996,9 @@ export function LocalHealthProfileView({
 
         {psl.priorizacion.hasParticipatorySelection && (
           <div className="psl-doc-prio-block">
-            <p className="psl-doc-prio-block__label">Prioridades ciudadanas</p>
+            <p className="psl-doc-prio-block__label">Temáticas ciudadanas</p>
             <p className="psl-doc-prio-block__caption">
-              Temáticas seleccionadas en el proceso de participación ciudadana.
+              Temáticas señaladas en el proceso de participación ciudadana.
             </p>
             <div className="psl-doc-priority-chips">
               {psl.priorizacion.tematicasSeleccionadasLabels.map((label, i) => (
@@ -1134,8 +1023,8 @@ export function LocalHealthProfileView({
 
         {psl.priorizacionStatus === "scaffold" && (
           <div className="psl-doc-notice psl-doc-notice--info">
-            Para completar este capítulo, realiza la priorización temática con la ciudadanía
-            (Priorizaciones) y ejecuta el análisis territorial completo.
+            Para preparar la deliberación, realiza la priorización temática con la
+            ciudadanía (Priorizaciones) y ejecuta el análisis territorial completo.
           </div>
         )}
       </section>
@@ -1149,8 +1038,8 @@ export function LocalHealthProfileView({
             <PSLApproveAction onApprove={onApprove} />
           ) : (
             <p className="panel-note">
-              La aprobación institucional requiere que el capítulo VII (deliberación del
-              Grupo Motor y consenso documentado) esté completo.
+              La aprobación institucional requiere que la deliberación del Grupo Motor
+              y el consenso estén documentados en el espacio de trabajo.
             </p>
           )}
         </section>
@@ -1166,8 +1055,9 @@ export function LocalHealthProfileView({
            psl.priorizacionStatus === "complete" ? (
             <>
               <p className="panel-note">
-                El Perfil de Salud Local está validado y sus capítulos de autoría humana
-                están completos. Puede compilarse como documento institucional exportable (PSL-C).
+                El Perfil de Salud Local está validado y la autoría técnica está completa
+                (documento, cierre interpretativo y consenso). Puede compilarse como
+                documento institucional exportable (PSL-C).
               </p>
               <button
                 type="button"
@@ -1179,8 +1069,9 @@ export function LocalHealthProfileView({
             </>
           ) : (
             <p className="panel-note">
-              Para compilar el PSL-C, complete los capítulos V (Conclusiones) y VI (Cierre interpretativo)
-              con autoría humana, y documente el consenso del Grupo Motor en el capítulo VII.
+              Para compilar el PSL-C, asuma la autoría del documento del Perfil y del
+              cierre interpretativo, y documente el consenso del Grupo Motor en el
+              espacio de trabajo.
             </p>
           )}
         </section>

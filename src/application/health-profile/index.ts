@@ -37,3 +37,14 @@ export {
 } from "./profileOperations";
 export type { NarrativeChapter, NarrativeChaptersInput } from "./narrativeChapters";
 export { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
+export { parseNarrativeChapters } from "./narrativeChapters";
+export type {
+  InstitutionalProfileViewModel,
+  ContrastTopic,
+} from "./institutionalProfileModel";
+export {
+  buildInstitutionalProfileViewModel,
+  INSTITUTIONAL_NAV,
+  CONTRAST_TOPICS_LABEL,
+  PENDING_CONTRAST_LABEL,
+} from "./institutionalProfileModel";
