@@ -36,6 +36,7 @@ import type {
 } from "../../domain/health-profile";
 import { THEMATIC_TOPICS } from "../../domain/thematic-prioritisation";
 import { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
+import { buildDiagnosticAnswers } from "./diagnosticAnswers";
 
 // ── Secciones del Marco Estratégico (Capítulo I) ──────────────────────────────
 // Corresponden a los IDs fijos de createStrategicFramework().
@@ -264,12 +265,13 @@ export function buildLocalHealthProfile(
           .map((d) => d.title),
         scopeName: workspace.municipality.identity.name,
         province: workspace.municipality.identity.province,
+        workspace,
       }),
       status: "scaffold",
       authorshipNote:
-        "Requiere autoría humana. El equipo técnico debe redactar la síntesis " +
-        `razonada del estado de salud del ${scope.scopeNoun} y el funcionamiento del ` +
-        "territorio. El contenido generado por el sistema es orientativo.",
+        "Borrador sustantivo elaborado desde la evidencia y el espacio de " +
+        "conocimiento. El equipo técnico debe revisarlo, matizarlo y asumir su " +
+        "autoría; no es un hueco a rellenar desde cero.",
     },
 
     // ── VI: Cierre interpretativo (scaffold) ──────────────────────────────
@@ -382,6 +384,7 @@ function buildConclusionesScaffold(
     territorialDocTitles: string[];
     scopeName: string;
     province?: string;
+    workspace: MunicipalityWorkspace;
   },
 ): string {
   const lt1 = mit.dimensionDiagnostica;
@@ -411,7 +414,16 @@ function buildConclusionesScaffold(
           .filter((a) => normalizeForScopeMatch(`${a.title} ${a.content}`).includes(scopeToken))
           .map((a) => a.title);
 
+  // Capa de respuestas diagnósticas: conocimiento del técnico + lectura del
+  // Informe de Salud + epidemiología social + salutogénesis analítica.
+  const answers = buildDiagnosticAnswers({
+    workspace: extras.workspace,
+    determinantTitles: lt1.determinants.map((a) => a.title),
+    assets: lt1.assets.map((a) => ({ title: a.title, content: a.content })),
+  });
+
   const chapters = buildNarrativeChapters({
+    answers,
     scopeNoun: scope.scopeNoun,
     province: extras.province,
     studyCautions: scope.studyCautions,

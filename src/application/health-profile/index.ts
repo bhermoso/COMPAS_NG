@@ -48,3 +48,17 @@ export {
   CONTRAST_TOPICS_LABEL,
   PENDING_CONTRAST_LABEL,
 } from "./institutionalProfileModel";
+export type {
+  DiagnosticAnswers,
+  DiagnosticDeterminantReading,
+  DeterminantReadingKind,
+  HealthReportReading,
+  SalutogenicReading,
+  SalutogenicGroup,
+  SpaceKnowledge,
+} from "./diagnosticAnswers";
+export {
+  buildDiagnosticAnswers,
+  inferSocialEpidemiologyDeterminants,
+  buildSalutogenicReading,
+} from "./diagnosticAnswers";

@@ -4,6 +4,14 @@ import type { PerfilLocalDeSalud } from "../../domain/health-profile";
 /**
  * Proyecta sintesisTexto del PerfilLocalDeSalud sobre las conclusiones (Cap. V) del PSL.
  *
+ * ESTADO DE LA CONEXIÓN (2026-07-08): la síntesis del técnico llega al
+ * documento narrativo por la capa de respuestas diagnósticas
+ * (diagnosticAnswers → capítulo VI del borrador de seis capítulos), que la
+ * ENCABEZA sin sustituir el documento completo. Esta función conserva la
+ * semántica original de sustitución íntegra + authored y queda reservada para
+ * un uso deliberado de anulación total del borrador; no se invoca en el
+ * runtime porque reemplazaría los seis capítulos por un texto plano.
+ *
  * Invariantes:
  *   - Si sintesisTexto tiene contenido no vacío: popula conclusiones.content y
  *     marca conclusiones.status = "authored".

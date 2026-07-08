@@ -15,6 +15,9 @@
  *    ámbito territorial), nunca se presupone "municipio".
  */
 
+import type { DiagnosticAnswers, SpaceKnowledge } from "./diagnosticAnswers";
+import type { ProfileSpace } from "../../domain/health-profile";
+
 export interface NarrativeChapter {
   numeral: string;
   title: string;
@@ -63,7 +66,60 @@ export interface NarrativeChaptersInput {
 
   /** Títulos de áreas con evidencia suficiente (no huecos analíticos). */
   areasReales: string[];
+
+  /**
+   * Respuestas diagnósticas (capa de conocimiento). Opcional: sin ella, los
+   * capítulos se generan solo desde la evidencia agregada.
+   */
+  answers?: DiagnosticAnswers;
 }
+
+// ── Conocimiento del técnico: redacción por espacio ──────────────────────────
+// Prioridad epistémica: interpretación (afirmación con certeza) > hipótesis
+// (explicación candidata) > laguna (incertidumbre declarada).
+
+function redactarConocimiento(
+  answers: DiagnosticAnswers | undefined,
+  espacios: ProfileSpace[]
+): string[] {
+  if (!answers) return [];
+  const partes: string[] = [];
+  for (const espacio of espacios) {
+    const k: SpaceKnowledge | undefined = answers.porEspacio[espacio];
+    if (!k) continue;
+    for (const i of k.interpretaciones) {
+      partes.push(
+        `Lectura del equipo técnico (certeza ${i.certeza}): ${i.enunciado}`
+      );
+    }
+    for (const h of k.hipotesis) {
+      const resolutoras =
+        h.preguntasResolutoras.length > 0
+          ? ` La resolverían: ${h.preguntasResolutoras.join("; ")}.`
+          : "";
+      partes.push(
+        `Hipótesis diagnóstica del equipo (plausibilidad ${h.plausibilidad}, ` +
+        `pendiente de confirmación): ${h.enunciado}.${resolutoras}`
+      );
+    }
+  }
+  return partes;
+}
+
+function redactarLagunas(answers: DiagnosticAnswers | undefined): string[] {
+  if (!answers) return [];
+  const lagunas = Object.values(answers.porEspacio)
+    .flatMap((k) => k?.lagunas ?? [])
+    .sort((a, b) => (a.urgencia === "alta" ? -1 : b.urgencia === "alta" ? 1 : 0));
+  return lagunas
+    .slice(0, MAX_EJEMPLOS)
+    .map(
+      (l) =>
+        `Laguna de conocimiento declarada (urgencia ${l.urgencia}): ` +
+        `${l.formulacion} Importa porque ${l.relevancia}`
+    );
+}
+
 
 const MAX_EJEMPLOS = 5;
 
@@ -158,6 +214,16 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `contrastar la evidencia contextual de mayor escala.`
       );
     }
+    // Lectura sustantiva del Informe de Salud: qué cubre (secciones parseadas).
+    if (input.answers?.healthReport.present && input.answers.healthReport.temas.length > 0) {
+      partes.push(
+        `La fuente diagnóstica primaria cubre la base oficial del diagnóstico en: ` +
+        `${input.answers.healthReport.temas.join("; ")}. Esta lectura sitúa el ` +
+        `punto de partida sociodemográfico y epidemiológico; su detalle debe ` +
+        `consultarse en el documento original, preservado íntegro.`
+      );
+    }
+    partes.push(...redactarConocimiento(input.answers, ["contexto-territorial"]));
     partes.push(input.longitudinalNote);
 
     chapters.push({
@@ -202,6 +268,18 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
             `socioeconómico y los determinantes familiares y comunitarios del territorio.`
       );
     }
+    // Señales que ordenan la situación de salud (desde la capa de respuestas).
+    if ((input.answers?.senalesPresentes.length ?? 0) > 0) {
+      partes.push(
+        `El diagnóstico apunta a una situación de salud caracterizada, en la ` +
+        `evidencia contextual disponible, por señales en: ` +
+        `${input.answers!.senalesPresentes.join("; ")}. Estas señales dibujan un ` +
+        `patrón de salud percibida, hábitos y bienestar que constituye el punto ` +
+        `de partida de la interpretación, siempre dentro de la cautela de escala ` +
+        `declarada en el capítulo I.`
+      );
+    }
+    partes.push(...redactarConocimiento(input.answers, ["situacion-salud", "desigualdades"]));
     partes.push(
       `Con la evidencia disponible no es posible caracterizar desigualdades internas ` +
       `del ${scopeNoun}: los agregados no están desagregados por sexo, edad ni ` +
@@ -229,11 +307,47 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     } else {
       partes.push(
         `La base de evidencia actual no documenta determinantes sociales, ` +
-        `comunitarios o ambientales específicos del ${scopeNoun}. ` +
-        `Esta carencia condiciona la lectura del conjunto del diagnóstico y debe ` +
-        `tenerse presente en la deliberación.`
+        `comunitarios o ambientales específicos del ${scopeNoun} de forma directa. ` +
+        `Esta carencia condiciona la lectura, pero no impide la interpretación: ` +
+        `la epidemiología social permite formular hipótesis diagnósticas prudentes ` +
+        `a partir del patrón de señales disponible.`
       );
     }
+
+    // Lectura desde la epidemiología social: documentado / plausible /
+    // no evaluable / a contrastar. Hipótesis, nunca causalidad demostrada.
+    const lecturas = input.answers?.determinantes ?? [];
+    const plausibles = lecturas.filter((d) => d.kind === "plausible");
+    const aContrastar = lecturas.filter((d) => d.kind === "a-contrastar");
+    const noEvaluables = lecturas.filter((d) => d.kind === "no-evaluable");
+    if (plausibles.length > 0) {
+      partes.push(
+        `Lectura desde la epidemiología social. La evidencia disponible sugiere, ` +
+        `como hipótesis diagnósticas plausibles y pendientes de contraste, que en ` +
+        `el patrón observado pueden estar operando: ` +
+        plausibles
+          .map((d) => `${d.enunciado} (${d.base})`)
+          .join("; ") +
+        `. Ninguna de estas lecturas constituye causalidad demostrada: son ` +
+        `hipótesis trazables que el Grupo Motor y las fuentes territoriales ` +
+        `deben contrastar.`
+      );
+    }
+    if (aContrastar.length > 0) {
+      partes.push(
+        `Determinantes a contrastar: ` +
+        aContrastar.map((d) => `${d.enunciado} — ${d.base}`).join("; ") + `.`
+      );
+    }
+    if (noEvaluables.length > 0) {
+      partes.push(
+        `Determinantes no evaluables con la evidencia actual: ` +
+        noEvaluables
+          .map((d) => `${d.enunciado} (${d.base})`)
+          .join("; ") + `.`
+      );
+    }
+    partes.push(...redactarConocimiento(input.answers, ["determinantes"]));
     if (input.limitacionesDiagnosticas.length > 0) {
       partes.push(input.limitacionesDiagnosticas.join(" "));
     }
@@ -271,6 +385,27 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `La lectura salutogénica del territorio no se agota en sus déficits: ` +
         `estas capacidades son punto de partida del proceso comunitario.`
       );
+      // Lectura salutogénica mínima: capacidades por ámbito, derivadas del
+      // contenido real de los activos. Capacidades potenciales, no soluciones.
+      const grupos = input.answers?.salutogenica.grupos ?? [];
+      if (grupos.length > 0) {
+        const top = grupos.slice(0, 4);
+        partes.push(
+          `La lectura salutogénica identifica concentraciones de capacidad ` +
+          `comunitaria en: ` +
+          top
+            .map((g) => `${g.ambito} (${g.count} recursos; p. ej., ${g.ejemplos.join(", ")})`)
+            .join("; ") +
+          (grupos.length > top.length || (input.answers?.salutogenica.sinClasificar ?? 0) > 0
+            ? `; junto a otros recursos de clasificación menos directa.`
+            : `.`) +
+          ` Estas concentraciones describen capacidades potenciales del tejido ` +
+          `territorial —no prueban cobertura ni resultado— y dialogan con las ` +
+          `hipótesis del capítulo IV: allí donde el patrón sugiere ejes de ` +
+          `atención, el mapa de activos indica con qué capacidades podría ` +
+          `trabajarse en la fase comunitaria.`
+        );
+      }
       if (input.hasLocalizaAssets) {
         partes.push(
           `Los activos proceden de la consulta de Localiza Salud. ` +
@@ -279,6 +414,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `antes de interpretarse como activos propios del ${scopeNoun}.`
         );
       }
+      partes.push(...redactarConocimiento(input.answers, ["activos"]));
     } else {
       partes.push(
         `No se han incorporado todavía activos ni capacidades comunitarias al ` +
@@ -310,6 +446,8 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     if (incertidumbres.length > 0) {
       partes.push(`Incertidumbres del diagnóstico. ${incertidumbres.join(" ")}`);
     }
+    // Lagunas de conocimiento declaradas por el técnico: información positiva.
+    partes.push(...redactarLagunas(input.answers));
 
     chapters.push({
       numeral: "V",
@@ -321,12 +459,71 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
   // ── VI. Conclusiones técnicas para la priorización ────────────────────────
   {
     const partes: string[] = [];
-    if (input.areasReales.length > 0) {
-      const lista = input.areasReales.map((t, i) => `${i + 1}. ${t}`).join("; ");
+
+    // Síntesis del técnico, si existe: encabeza y modula el cierre diagnóstico.
+    if (input.answers?.sintesisTexto) {
       partes.push(
-        `La información disponible apunta a ${input.areasReales.length} ` +
-        `área(s) territorial(es) que merecen atención preferente: ${lista}. ` +
-        `Estas áreas son candidaturas para la deliberación con el Grupo Motor, ` +
+        `Síntesis diagnóstica del equipo técnico. ${input.answers.sintesisTexto}`
+      );
+    }
+
+    // Conclusión técnica generada: sustantiva, trazable y sin recomendaciones.
+    const conclusion: string[] = [];
+    if ((input.answers?.senalesPresentes.length ?? 0) > 0) {
+      conclusion.push(
+        `El diagnóstico apunta a un ${scopeNoun} cuya situación de salud, leída ` +
+        `desde la evidencia contextual disponible, se ordena en torno a ` +
+        `${input.answers!.senalesPresentes.slice(0, 4).join(", ")}` +
+        `${input.answers!.senalesPresentes.length > 4 ? ", entre otras señales" : ""}.`
+      );
+    }
+    const plausiblesVI = (input.answers?.determinantes ?? []).filter(
+      (d) => d.kind === "plausible" || d.kind === "a-contrastar"
+    );
+    if (plausiblesVI.length > 0) {
+      conclusion.push(
+        `La lectura epidemiológico-social permite formular como hipótesis que ` +
+        `en ese patrón pueden estar operando ` +
+        plausiblesVI.slice(0, 3).map((d) => d.enunciado).join("; ") +
+        `.`
+      );
+    }
+    const gruposVI = input.answers?.salutogenica.grupos ?? [];
+    if (gruposVI.length > 0) {
+      conclusion.push(
+        `Las capacidades territoriales se concentran en ` +
+        gruposVI.slice(0, 3).map((g) => g.ambito).join(", ") +
+        `, y constituyen la base salutogénica del proceso comunitario.`
+      );
+    }
+    if (input.hasProxyScale) {
+      conclusion.push(
+        `La principal tensión interpretativa es de escala: buena parte de la ` +
+        `evidencia es contextual (provincial u origen externo) y queda pendiente ` +
+        `de contraste territorial.`
+      );
+    }
+    if (conclusion.length > 0) {
+      partes.push(conclusion.join(" "));
+    }
+
+    // Líneas prioritarias diagnósticas: ámbitos que pasan a deliberación.
+    const lineas: string[] = [];
+    for (const area of input.areasReales) lineas.push(area);
+    for (const d of plausiblesVI.slice(0, 2)) {
+      lineas.push(`contraste territorial de la hipótesis sobre ${d.enunciado}`);
+    }
+    if (input.hasProxyScale) {
+      lineas.push(
+        `construcción de evidencia propia del ${scopeNoun} que confirme o matice el patrón contextual`
+      );
+    }
+    if (lineas.length > 0) {
+      partes.push(
+        `Ámbitos diagnósticos que pasan a deliberación como prioridades ` +
+        `diagnósticas potenciales: ` +
+        lineas.map((l, i) => `${i + 1}) ${l}`).join("; ") +
+        `. Son candidaturas para la deliberación con el Grupo Motor, ` +
         `no decisiones definitivas.`
       );
     } else {
@@ -344,18 +541,17 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         "antes de trasladarlas a prioridades de planificación."
       );
     }
-    partes.push(
-      `El equipo técnico debe redactar aquí la síntesis diagnóstica del ${scopeNoun}. ` +
-      "Las conclusiones deben responder a: ¿cuál es el estado de salud del territorio " +
-      "y qué lo caracteriza?, ¿qué determinantes parecen estar operando?, " +
-      "¿con qué activos y capacidades cuenta el territorio?, " +
-      "¿qué aporta la perspectiva ciudadana que los datos no capturan?, " +
-      "¿qué incertidumbres críticas permanecen abiertas?"
-    );
+    partes.push(...redactarConocimiento(input.answers, ["sintesis", "preparacion-deliberativa"]));
+
+    // Cierre único: frontera de fase y validación. (Única mención a la autoría
+    // pendiente en todo el documento: el Grupo Motor valida y prioriza, no
+    // redacta el diagnóstico desde cero.)
     partes.push(
       "Este capítulo cierra el diagnóstico: no formula recomendaciones, " +
       "actuaciones ni programas. La traducción a prioridades y acciones " +
-      "corresponde a las fases posteriores del proceso de planificación."
+      "corresponde a las fases posteriores del proceso de planificación. " +
+      "Corresponde al equipo técnico validar, matizar y asumir la autoría de " +
+      "esta síntesis; al Grupo Motor, contrastarla y priorizar."
     );
 
     chapters.push({
