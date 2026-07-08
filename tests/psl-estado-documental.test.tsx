@@ -214,6 +214,41 @@ describe("ruta operativa — navegación por anclas", () => {
   });
 });
 
+describe("salidas institucionales — bloqueadas antes de compilar, activas después", () => {
+  it("con Perfil validado sin PSL-C las salidas aparecen bloqueadas, no activas", () => {
+    const html = render(validado);
+    expect(html).toContain("Salidas institucionales");
+    expect(html).toContain(
+      "Estas salidas se activan cuando se crea el artefacto institucional congelado PSL-C"
+    );
+    // Las cuatro salidas, en estado pendiente/bloqueado
+    expect(html).toContain("pendiente de compilar el PSL-C");
+    expect(html).toContain("Export DOCX (Word)");
+    expect(html).toContain("Export PDF");
+    expect(html).toContain("disponible tras compilar");
+    expect(html).toContain("Impresión navegador");
+    // Sin acciones activas: ni descargas ni acceso al documento
+    expect(html).not.toContain("Descargar DOCX");
+    expect(html).not.toContain("Descargar PDF");
+    expect(html).not.toContain("Ver documento institucional completo");
+  });
+
+  it("con PSL-C compilado las salidas están activas y enlazan al artefacto", () => {
+    const html = render(validado, [artifact]);
+    expect(html).toContain("Salidas institucionales");
+    expect(html).toContain("Ver documento institucional completo");
+    expect(html).toContain('href="#psl-compilados"');
+    // Descargas activas en las salidas Y en la tarjeta del artefacto
+    const docx = html.match(/Descargar DOCX \(/g) ?? [];
+    const pdf = html.match(/Descargar PDF \(/g) ?? [];
+    expect(docx.length).toBeGreaterThanOrEqual(2);
+    expect(pdf.length).toBeGreaterThanOrEqual(2);
+    // La impresión se explica desde el visor
+    expect(html).toContain("Ctrl+P");
+    expect(html).not.toContain("pendiente de compilar el PSL-C");
+  });
+});
+
 describe("estados documentales — PSL-C compilado", () => {
   it("«documento institucional completo» solo aparece con el artefacto congelado", () => {
     const html = render(validado, [artifact]);

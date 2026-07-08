@@ -9236,3 +9236,27 @@ h3 {
   margin: 14px 0 0;
   font-size: 0.85rem;
 }
+
+/* ── PSL-C: salidas institucionales (bloqueadas / activas) ─────────────────── */
+.pslc-salidas { border-left: 4px solid #64748b; }
+.pslc-salidas__items { list-style: none; margin: 8px 0 4px; padding: 0; }
+.pslc-salidas__item {
+  font-size: 0.92rem;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e2e8f0;
+  color: #64748b;
+}
+.pslc-salidas__item:last-child { border-bottom: none; }
+.pslc-salidas__item--ok { color: #33404e; }
+.pslc-salidas__btn {
+  font: inherit;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pslc-salidas__btn:hover { color: #1e293b; }

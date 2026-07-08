@@ -352,6 +352,97 @@ function PSLCCompilationChecklist({
   );
 }
 
+// ── Salidas institucionales del PSL-C ────────────────────────────────────────
+// Hace visible el destino final de la ruta operativa: visor, DOCX, PDF e
+// impresión. Antes de compilar, las salidas se muestran bloqueadas (nunca como
+// acciones activas); después, reutilizan las mismas funciones de descarga que
+// la tarjeta del artefacto (sin duplicar lógica de generación).
+
+function PSLCSalidasInstitucionales({
+  compiledProfiles,
+}: {
+  compiledProfiles?: LocalHealthProfileArtifact[];
+}) {
+  const compilado =
+    compiledProfiles !== undefined && compiledProfiles.length > 0;
+  const ultimo = compilado
+    ? compiledProfiles[compiledProfiles.length - 1]
+    : undefined;
+
+  return (
+    <section className="workspace-panel pslc-salidas">
+      <p className="eyebrow">Salidas del documento</p>
+      <h2>Salidas institucionales</h2>
+      {!compilado ? (
+        <>
+          <p className="panel-note">
+            Estas salidas se activan cuando se crea el artefacto institucional
+            congelado PSL-C.
+          </p>
+          <ul className="pslc-salidas__items">
+            <li className="pslc-salidas__item">
+              <span aria-hidden="true">🔒</span> Documento institucional
+              completo: <strong>pendiente de compilar el PSL-C</strong>.
+            </li>
+            <li className="pslc-salidas__item">
+              <span aria-hidden="true">🔒</span> Export DOCX (Word):{" "}
+              <strong>disponible tras compilar</strong>.
+            </li>
+            <li className="pslc-salidas__item">
+              <span aria-hidden="true">🔒</span> Export PDF:{" "}
+              <strong>disponible tras compilar</strong>.
+            </li>
+            <li className="pslc-salidas__item">
+              <span aria-hidden="true">🔒</span> Impresión navegador:{" "}
+              <strong>disponible tras abrir el visor institucional</strong>.
+            </li>
+          </ul>
+        </>
+      ) : (
+        <>
+          <p className="panel-note">
+            El artefacto institucional congelado existe: estas salidas están
+            activas.
+          </p>
+          <ul className="pslc-salidas__items">
+            <li className="pslc-salidas__item pslc-salidas__item--ok">
+              <span aria-hidden="true">✓</span>{" "}
+              <a className="pslc-checklist__action" href="#psl-compilados">
+                Ver documento institucional completo
+              </a>{" "}
+              (ir al artefacto compilado)
+            </li>
+            <li className="pslc-salidas__item pslc-salidas__item--ok">
+              <span aria-hidden="true">✓</span>{" "}
+              <button
+                type="button"
+                className="pslc-salidas__btn"
+                onClick={() => void descargarPSLCDocx(ultimo!)}
+              >
+                Descargar DOCX ({ultimo!.artifactVersion})
+              </button>
+            </li>
+            <li className="pslc-salidas__item pslc-salidas__item--ok">
+              <span aria-hidden="true">✓</span>{" "}
+              <button
+                type="button"
+                className="pslc-salidas__btn"
+                onClick={() => void descargarPSLCPdf(ultimo!)}
+              >
+                Descargar PDF ({ultimo!.artifactVersion})
+              </button>
+            </li>
+            <li className="pslc-salidas__item pslc-salidas__item--ok">
+              <span aria-hidden="true">✓</span> Para imprimir, abra el visor
+              institucional y use Ctrl+P / Imprimir.
+            </li>
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
 // Retorno a la ruta operativa desde las secciones destino de sus enlaces.
 function VolverARuta() {
   return (
@@ -759,11 +850,14 @@ export function LocalHealthProfileView({
 
       {/* ── Ruta operativa hacia el documento institucional ──────────────── */}
       {psl.status === "validated" && !pslIsStale && (
-        <PSLCCompilationChecklist
-          psl={psl}
-          compiledCount={compiledProfiles?.length ?? 0}
-          onCompile={onCompile}
-        />
+        <>
+          <PSLCCompilationChecklist
+            psl={psl}
+            compiledCount={compiledProfiles?.length ?? 0}
+            onCompile={onCompile}
+          />
+          <PSLCSalidasInstitucionales compiledProfiles={compiledProfiles} />
+        </>
       )}
 
       {psl.status === "validated" && pslIsStale && (
