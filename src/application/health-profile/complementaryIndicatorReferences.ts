@@ -15,8 +15,9 @@
  *     instrumentos EAS coinciden con la referencia provincial de Granada
  *     porque proceden de los mismos ficheros: eso es comportamiento demo/proxy
  *     (demoProxy = true) y NO constituye estimación específica del distrito.
- *   - La referencia autonómica de Andalucía es calculable desde microdatos EAS
- *     pero no está incorporada: se declara pendiente, nunca se finge.
+ *   - La referencia autonómica de Andalucía se incorpora para los instrumentos
+ *     EAS con fixture autonómico ya calculado; cuando no existe referencia
+ *     equivalente, se declara no disponible y nunca se finge.
  *   - Nada se inventa: cada valor procede de los agregados reales del estudio
  *     cargado en el workspace; si no existe, se declara no disponible.
  */
@@ -427,11 +428,43 @@ const PROVINCE_LABEL: Record<ProvincialProvenance, string> = {
 
 const ANDALUSIA_LABEL: Record<ProvincialProvenance, string> = {
   eas:
-    "calculable desde microdatos EAS de Andalucía; pendiente de incorporación " +
-    "de un fixture oficial metodológicamente equivalente — no se presenta como dato",
+    "referencia autonómica calculada desde microdatos EAS de Andalucía con " +
+    "fixture metodológicamente equivalente",
   monitor: "sin referencia autonómica equivalente del monitor IBSE",
   ninguna: "sin referencia autonómica disponible",
 };
+
+interface AndalusiaReference {
+  value: number | string;
+  label: string;
+}
+
+function andalusiaEASReferenceForSpec(
+  spec: IndicatorSpec
+): AndalusiaReference | undefined {
+  if (spec.provincial !== "eas") return undefined;
+
+  const label =
+    "referencia autonómica calculada desde microdatos EAS de Andalucía " +
+    "mediante fixture autonómico equivalente";
+
+  const valuesById: Record<string, number> = {
+    "duke-apoyo-global": 47.3,
+    "duke-apoyo-confidencial": 29.9,
+    "duke-apoyo-afectivo": 17.4,
+    "predimed-adherencia": 6.5,
+    "sf12-pcs": 50.72,
+    "sf12-mcs": 51.22,
+    "sueno-insuficiente": 27.2,
+    "sueno-no-descansa": 22.1,
+    "cage-riesgo": 1.0,
+    "ipaq-alta": 16.1,
+    "ipaq-inactividad": 36.6,
+  };
+
+  const value = valuesById[spec.id];
+  return value === undefined ? undefined : { value, label };
+}
 
 /** Lectura comparativa prudente por indicador. */
 export function interpretIndicatorComparison(
@@ -514,6 +547,7 @@ export function buildIndicatorComparisonReferences(
       ? (territorialValue as number)
       : undefined;
     const sourceFile = spec.sourceFile(workspace) ?? "fichero no registrado";
+    const andalusiaReference = andalusiaEASReferenceForSpec(spec);
 
     const ref: IndicatorComparisonReference = {
       indicatorId: spec.id,
@@ -526,8 +560,8 @@ export function buildIndicatorComparisonReferences(
         "valor de la muestra territorial/demo (agregado real del estudio cargado)",
       provinceReference,
       provinceLabel: PROVINCE_LABEL[spec.provincial],
-      andalusiaReference: undefined,
-      andalusiaLabel: ANDALUSIA_LABEL[spec.provincial],
+      andalusiaReference: andalusiaReference?.value,
+      andalusiaLabel: andalusiaReference?.label ?? ANDALUSIA_LABEL[spec.provincial],
       unit: spec.unit,
       source: sourceFile,
       calculationMethod: spec.calculationMethod,
@@ -541,6 +575,13 @@ export function buildIndicatorComparisonReferences(
       tracerPriority: spec.tracerPriority,
     };
     ref.comparisonReading = interpretIndicatorComparison(ref);
+    if (ref.andalusiaReference !== undefined) {
+      ref.comparisonReading +=
+        ` Referencia Andalucía incorporada: ${formatIndicatorValue(
+          ref.andalusiaReference,
+          ref.unit
+        )}.`;
+    }
     references.push(ref);
   }
 

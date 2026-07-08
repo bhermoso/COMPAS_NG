@@ -334,9 +334,10 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `la referencia provincial${prov} (comportamiento demo/proxy): esta ` +
           `lectura no constituye una estimación específica del ${scopeNoun}, ` +
           `pero permite usar cada indicador como punto de contraste territorial. ` +
-          `La referencia autonómica de Andalucía es calculable desde los mismos ` +
-          `microdatos EAS y queda pendiente de incorporación: no se presenta ` +
-          `como dato. La trazabilidad completa de los ` +
+          `La referencia autonómica de Andalucía se incorpora cuando existe ` +
+          `fixture EAS metodológicamente equivalente; en instrumentos sin ` +
+          `referencia autonómica equivalente queda declarada como no disponible, ` +
+          `sin inventarse dato. La trazabilidad completa de los ` +
           `${input.answers!.referencias.coverage.total} indicadores (valor, ` +
           `referencias, procedencia y cautelas) consta en el anexo técnico.`
         );

@@ -92,9 +92,10 @@ describe("estructura de referencias comparativas", () => {
 
   it("la cobertura declara lo que existe y lo que queda pendiente", () => {
     // 16 indicadores de instrumentos EAS/monitor provincial tienen referencia
-    // provincial (coincidente en demo); el resto queda declarado pendiente.
+    // provincial (coincidente en demo); 11 de ellos, correspondientes a EAS,
+    // incorporan además referencia autonómica Andalucía ya calculada.
     expect(lectura.coverage.conReferenciaProvincial).toBe(16);
-    expect(lectura.coverage.conReferenciaAndalucia).toBe(0);
+    expect(lectura.coverage.conReferenciaAndalucia).toBe(11);
     expect(lectura.coverage.pendientesDeReferencia).toBe(7);
   });
 });
@@ -120,14 +121,32 @@ describe("proxy demo y referencia autonómica honesta", () => {
     expect(auditc!.provinceReference).toBeUndefined();
   });
 
-  it("Andalucía aparece como calculable/pendiente, nunca como dato", () => {
-    for (const r of lectura.references) {
-      expect(r.andalusiaReference).toBeUndefined();
-      expect(r.andalusiaLabel.length).toBeGreaterThan(0);
-    }
+  it("Andalucía aparece como referencia real solo cuando existe fixture EAS", () => {
+    const conAndalucia = lectura.references.filter(
+      (r) => r.andalusiaReference !== undefined
+    );
+    expect(conAndalucia).toHaveLength(11);
+
     const duke = lectura.references.find((r) => r.indicatorId === "duke-apoyo-global");
-    expect(duke!.andalusiaLabel).toContain("calculable desde microdatos EAS");
-    expect(duke!.andalusiaLabel).toContain("pendiente");
+    expect(duke!.andalusiaReference).toBe(47.3);
+    expect(duke!.andalusiaLabel).toContain("microdatos EAS de Andalucía");
+    expect(duke!.andalusiaLabel).not.toContain("pendiente");
+
+    const predimed = lectura.references.find((r) => r.indicatorId === "predimed-adherencia");
+    expect(predimed!.andalusiaReference).toBe(6.5);
+
+    const suenoNoDescansa = lectura.references.find((r) => r.indicatorId === "sueno-no-descansa");
+    expect(suenoNoDescansa!.andalusiaReference).toBe(22.1);
+
+    const ipaqAlta = lectura.references.find((r) => r.indicatorId === "ipaq-alta");
+    expect(ipaqAlta!.andalusiaReference).toBe(16.1);
+
+    const ipaq = lectura.references.find((r) => r.indicatorId === "ipaq-inactividad");
+    expect(ipaq!.andalusiaReference).toBe(36.6);
+
+    const ibse = lectura.references.find((r) => r.indicatorId === "ibse-indice-total");
+    expect(ibse!.andalusiaReference).toBeUndefined();
+    expect(ibse!.andalusiaLabel).toContain("sin referencia autonómica equivalente");
   });
 
   it("la lectura comparativa general no sobredimensiona diferencias pequeñas", () => {
@@ -164,7 +183,7 @@ describe("narrativa — citación diagnóstica", () => {
     expect(texto).toContain("comportamiento demo/proxy");
     expect(texto).toMatch(/no constituye una estimación específica del distrito/);
     expect(texto).toContain(
-      "La referencia autonómica de Andalucía es calculable desde los mismos microdatos EAS"
+      "La referencia autonómica de Andalucía se incorpora cuando existe fixture EAS"
     );
   });
 
