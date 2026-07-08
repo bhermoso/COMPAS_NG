@@ -24,6 +24,8 @@ export interface NarrativeChapter {
 export interface NarrativeChaptersInput {
   /** Sustantivo del ámbito: "distrito" | "municipio" | "ámbito territorial". */
   scopeNoun: string;
+  /** Provincia del ámbito, para situarlo territorialmente. */
+  province?: string;
   /** Cautelas metodológicas declaradas por los estudios (deduplicadas). */
   studyCautions: string[];
   /** Hay cautelas de escala provincial / proxy / origen externo. */
@@ -37,10 +39,17 @@ export interface NarrativeChaptersInput {
   ibse?: { meanTotal: number; nValid: number; isProxy: boolean };
 
   indicatorCount: number;
+  /** Títulos de los indicadores disponibles (para selección comentada). */
+  indicatorTitles: string[];
   determinantCount: number;
   determinantTitles: string[];
   assetCount: number;
   assetTitles: string[];
+  /**
+   * Subconjunto de assetTitles cuyos activos se identifican expresamente con
+   * el ámbito (p. ej., contienen su nombre). Prioridad en la muestra del Cap. V.
+   */
+  scopeMatchedAssetTitles: string[];
   hasLocalizaAssets: boolean;
   qualitativeCount: number;
   cautionCount: number;
@@ -89,6 +98,9 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
       );
     }
 
+    // El bloque de alcance es compacto: una cautela principal literal y el
+    // resto sintetizado. El detalle instrumento a instrumento vive en los
+    // paneles de cada estudio y en el capítulo IV del Perfil, no aquí.
     const alcance: string[] = ["Alcance y escala de la evidencia disponible."];
     if (input.hasProxyScale) {
       alcance.push(
@@ -100,10 +112,18 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
       );
     }
     if (input.studyCautions.length > 0) {
-      alcance.push(
-        `Cautelas metodológicas declaradas por los estudios: ` +
-        input.studyCautions.join(" · ")
-      );
+      const principal =
+        input.studyCautions.find((c) => /proxy|contexto exploratorio/i.test(c)) ??
+        input.studyCautions[0];
+      const restantes = input.studyCautions.filter((c) => c !== principal).length;
+      alcance.push(`Cautela principal declarada por los estudios: ${principal}`);
+      if (restantes > 0) {
+        alcance.push(
+          `Constan además ${restantes} cautelas metodológicas específicas de ` +
+          `instrumento (muestras, recodificaciones y límites de cada escala), ` +
+          `consultables en el panel de cada estudio.`
+        );
+      }
     }
 
     chapters.push({
@@ -115,16 +135,27 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
   // ── II. Contexto territorial y sociodemográfico ───────────────────────────
   {
+    const esDistrito = scopeNoun === "distrito";
+    const provincia = input.province ? ` de la provincia de ${input.province}` : "";
     const partes: string[] = [
-      `La lectura se realiza a escala de ${scopeNoun}. ` +
+      esDistrito
+        ? `La lectura se realiza a escala de distrito: un ámbito inframunicipal ` +
+          `que se inscribe en su municipio matriz${provincia}. Buena parte del ` +
+          `conocimiento oficial se produce a escala de ciudad, de zona básica de ` +
+          `salud o de provincia, y desciende al distrito solo como contexto; esta ` +
+          `asimetría de escalas condiciona todo el capítulo de situación de salud.`
+        : `La lectura se realiza a escala de ${scopeNoun}${provincia}.`,
       `La caracterización sociodemográfica específica debe tomarse de la fuente ` +
-      `diagnóstica primaria y de las fuentes oficiales de referencia; este capítulo ` +
-      `no la sustituye.`,
+      `diagnóstica primaria${
+        input.healthReportTitle ? ` («${input.healthReportTitle}»)` : ""
+      } y de las fuentes oficiales de referencia; este capítulo no la sustituye.`,
     ];
     if (input.territorialDocTitles.length > 0) {
       partes.push(
-        `La documentación territorial disponible aporta contexto de zona básica ` +
-        `de salud y de entorno urbano para la interpretación del ${scopeNoun}.`
+        `La documentación territorial disponible (${muestra(input.territorialDocTitles)}) ` +
+        `aporta la mirada de zona básica de salud y de entorno urbano: es el material ` +
+        `con mayor proximidad territorial al ${scopeNoun} y el punto de partida para ` +
+        `contrastar la evidencia contextual de mayor escala.`
       );
     }
     partes.push(input.longitudinalNote);
@@ -140,9 +171,20 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
   {
     const partes: string[] = [];
     if (input.indicatorCount > 0) {
+      const seleccion = input.indicatorTitles.slice(0, 4);
       partes.push(
         `La evidencia cuantitativa disponible reúne ${input.indicatorCount} ` +
-        `indicadores de salud y bienestar procedentes de los estudios complementarios.`
+        `indicadores de salud y bienestar procedentes de los estudios complementarios.` +
+        (seleccion.length > 0
+          ? ` Entre las señales que ordenan la lectura: ${seleccion.join("; ")}` +
+            (input.indicatorTitles.length > seleccion.length
+              ? `; entre otras (${input.indicatorTitles.length} en total).`
+              : ".") +
+            ` Estas señales proceden de la evidencia contextual descrita en el ` +
+            `capítulo I: orientan sobre patrones plausibles de salud y estilos de ` +
+            `vida, pero no miden el ${scopeNoun} ni permiten inferencia directa ` +
+            `sobre su población.`
+          : "")
       );
     }
     if (input.ibse && Number.isFinite(input.ibse.meanTotal)) {
@@ -207,9 +249,25 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
   {
     const partes: string[] = [];
     if (input.assetCount > 0) {
+      // Muestra curada: primero los activos que se identifican expresamente con
+      // el ámbito; después, los del municipio matriz o del entorno funcional.
+      const propios = input.scopeMatchedAssetTitles;
+      const resto = input.assetTitles.filter((t) => !propios.includes(t));
+      const ordenados = [...propios, ...resto];
+      const seleccion = ordenados.slice(0, MAX_EJEMPLOS).join("; ");
+      const sufijo =
+        ordenados.length > MAX_EJEMPLOS
+          ? `; entre otros (${ordenados.length} en total)`
+          : "";
+      const identificacion =
+        propios.length > 0
+          ? ` De ellos, ${propios.length} se identifican expresamente con el ` +
+            `${scopeNoun}; el resto corresponde al municipio matriz o al entorno ` +
+            `funcional, sin que el inventario permita atribuirlos con precisión.`
+          : "";
       partes.push(
         `El territorio dispone de ${input.assetCount} activos y recursos para la ` +
-        `salud identificados; entre ellos: ${muestra(input.assetTitles)}. ` +
+        `salud identificados; entre ellos: ${seleccion}${sufijo}.${identificacion} ` +
         `La lectura salutogénica del territorio no se agota en sus déficits: ` +
         `estas capacidades son punto de partida del proceso comunitario.`
       );

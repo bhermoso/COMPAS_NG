@@ -1,17 +1,23 @@
 /**
  * scripts/demo/rebuild-granada-zaidin.gen.ts
  *
- * Generador del expediente restaurable de Granada-Zaidín.
- * Se ejecuta con: npm run rebuild:zaidin
+ * Generador de la RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (HISTÓRICA, 15/51) de
+ * Granada-Zaidín. Se ejecuta con: npm run rebuild:zaidin
  * (config dedicada vitest.rebuild.config.ts — NO forma parte de `npm test`).
  *
- * Produce en municipalities/granada-zaidin/exports/:
- *   - compas-ng-workspace-granada-zaidin.json      valor exacto de localStorage
- *   - restore-granada-zaidin.console.js            fragmento para pegar en consola
+ * LÍNEAS DE REFERENCIA — no confundir:
+ *   - 56/92 = EXPORT VIGENTE de trabajo (preservado manualmente):
+ *       municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json
+ *       Este generador NO lo toca. No sustituir 56/92 por 15/51.
+ *   - 15/51 = reconstrucción mínima reproducible desde fuentes auditadas
+ *       (15 activos del CSV auditado + 36 evidencias de estudios). Se escribe en:
+ *       compas-ng-workspace-granada-zaidin-reproducible-minimo.json
  *
  * La serialización se obtiene llamando al servicio real
  * saveWorkspaceToLocalStorage sobre una simulación de localStorage, de modo
  * que el fichero exportado es byte a byte lo que la aplicación escribiría.
+ * El fragmento de restauración en consola se genera aparte, SIEMPRE desde el
+ * export vigente, con: npm run restore:zaidin
  */
 
 import { describe, it, expect } from "vitest";
@@ -88,35 +94,13 @@ describe("Generador — expediente restaurable de Granada-Zaidín", () => {
     expect(/^[\x00-\x7F]*$/.test(asciiValue)).toBe(true);
     expect(JSON.stringify(JSON.parse(asciiValue))).toBe(JSON.stringify(JSON.parse(value)));
 
-    const consoleSnippet = [
-      "// COMPAS NG - Restaurar el expediente demo de Granada-Zaidin.",
-      "// (Comentarios sin tildes a proposito: este fichero es 100% ASCII para",
-      "//  sobrevivir a consolas con pagina de codigos CP850/CP1252. Los acentos",
-      "//  viajan como escapes \\uXXXX y se reconstruyen intactos al parsear.)",
-      "// 1. Abrir http://localhost:5173/COMPAS_NG/ (puerto fijo: strictPort).",
-      "// 2. Abrir DevTools -> Console y pegar ESTE FICHERO INTEGRO.",
-      "// 3. Recargar la pagina y seleccionar el ambito Granada-Zaidin.",
-      `localStorage.setItem(${JSON.stringify(key)}, JSON.stringify(`,
-      asciiValue,
-      "));",
-      `console.log("Granada-Zaidin restaurado:", localStorage.getItem(${JSON.stringify(key)}).length, "caracteres");`,
-      "",
-    ].join("\n");
-    expect(/^[\x00-\x7F]*$/.test(consoleSnippet)).toBe(true);
-
     mkdirSync(outDir, { recursive: true });
-    writeFileSync(
-      resolve(outDir, "compas-ng-workspace-granada-zaidin.json"),
-      asciiValue,
-      "utf8"
-    );
-    writeFileSync(resolve(outDir, "restore-granada-zaidin.console.js"), consoleSnippet, "utf8");
+    // Salida propia de la reconstrucción mínima: NUNCA el export vigente 56/92.
+    const outFile = "compas-ng-workspace-granada-zaidin-reproducible-minimo.json";
+    writeFileSync(resolve(outDir, outFile), asciiValue, "utf8");
 
     // Validación de ida y vuelta sobre lo escrito en disco.
-    const writtenJson = readFileSync(
-      resolve(outDir, "compas-ng-workspace-granada-zaidin.json"),
-      "utf8"
-    );
+    const writtenJson = readFileSync(resolve(outDir, outFile), "utf8");
     const roundTrip = JSON.stringify(JSON.parse(writtenJson));
     for (const literal of ["Granada-Zaidín", "Andalucía", "COMPÁS", "ámbito", "—"]) {
       expect(roundTrip, `literal ${literal}`).toContain(literal);

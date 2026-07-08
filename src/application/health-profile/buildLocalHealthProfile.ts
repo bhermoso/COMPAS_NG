@@ -262,6 +262,8 @@ export function buildLocalHealthProfile(
         territorialDocTitles: workspace.repository.documents
           .filter((d) => d.kind === "territorial-documentation")
           .map((d) => d.title),
+        scopeName: workspace.municipality.identity.name,
+        province: workspace.municipality.identity.province,
       }),
       status: "scaffold",
       authorshipNote:
@@ -340,6 +342,34 @@ function mapAreaIntervencion(o: OITOpportunity): PSLAreaIntervencion {
 
 // ── Scaffold text generators ──────────────────────────────────────────────────
 
+// Normalización para la heurística de pertenencia territorial de activos.
+function normalizeForScopeMatch(value: string): string {
+  const decomposed = value.normalize("NFD").toLowerCase();
+  let out = "";
+  for (let i = 0; i < decomposed.length; i++) {
+    const code = decomposed.charCodeAt(i);
+    const isDigit = code >= 48 && code <= 57;
+    const isLower = code >= 97 && code <= 122;
+    if (isDigit || isLower) out += decomposed[i];
+  }
+  return out;
+}
+
+// Token distintivo del ámbito: el fragmento más largo de su nombre que no sea
+// el nombre de la provincia (para "Granada-Zaidín" → "zaidin").
+function distinctiveScopeToken(
+  scopeName: string,
+  province: string | undefined
+): string | undefined {
+  const provinceNorm = province !== undefined ? normalizeForScopeMatch(province) : "";
+  const tokens = scopeName
+    .split(/[^\p{L}\p{N}]+/u)
+    .map(normalizeForScopeMatch)
+    .filter((t) => t.length >= 4 && t !== provinceNorm);
+  if (tokens.length === 0) return undefined;
+  return tokens.reduce((a, b) => (b.length > a.length ? b : a));
+}
+
 function buildConclusionesScaffold(
   mit: EstadoTerritorialEvolutivo,
   reconciliacion: ReconciliacionResult,
@@ -347,7 +377,12 @@ function buildConclusionesScaffold(
   healthReportTitle: string | undefined,
   ibseStudy: IBSEStudy | undefined,
   scope: ScopeContext,
-  extras: { complementaryStudyCount: number; territorialDocTitles: string[] },
+  extras: {
+    complementaryStudyCount: number;
+    territorialDocTitles: string[];
+    scopeName: string;
+    province?: string;
+  },
 ): string {
   const lt1 = mit.dimensionDiagnostica;
 
@@ -366,8 +401,19 @@ function buildConclusionesScaffold(
     .filter((o) => !o.isAnalyticalGap)
     .map((o) => o.title);
 
+  // Activos que se identifican expresamente con el ámbito: su título o
+  // contenido contiene el nombre distintivo del territorio (p. ej., "Zaidín").
+  const scopeToken = distinctiveScopeToken(extras.scopeName, extras.province);
+  const scopeMatchedAssetTitles =
+    scopeToken === undefined
+      ? []
+      : lt1.assets
+          .filter((a) => normalizeForScopeMatch(`${a.title} ${a.content}`).includes(scopeToken))
+          .map((a) => a.title);
+
   const chapters = buildNarrativeChapters({
     scopeNoun: scope.scopeNoun,
+    province: extras.province,
     studyCautions: scope.studyCautions,
     hasProxyScale: scope.hasProxyScale,
     healthReportTitle,
@@ -384,10 +430,12 @@ function buildConclusionesScaffold(
           }
         : undefined,
     indicatorCount: lt1.indicators.length,
+    indicatorTitles: lt1.indicators.map((a) => a.title),
     determinantCount: lt1.determinants.length,
     determinantTitles: lt1.determinants.map((a) => a.title),
     assetCount: lt1.assets.length,
     assetTitles: lt1.assets.map((a) => a.title),
+    scopeMatchedAssetTitles,
     hasLocalizaAssets: lt1.assets.some(
       (a) => a.provenance.origin === "localiza-salud"
     ),

@@ -1,20 +1,22 @@
 /**
  * tests/granada-zaidin-reconstruction.test.ts
  *
- * Verificación del expediente demo reconstruible de Granada-Zaidín
+ * Verificación de la RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (histórica, 15/51)
+ * de Granada-Zaidín
  * (scripts/demo/buildGranadaZaidinWorkspace.ts, ejecutable con
  * `npm run rebuild:zaidin`).
  *
- * NOTA SOBRE LOS NÚMEROS DE REFERENCIA:
- * El expediente perdido declaraba 56 activos Localiza Salud (92 evidencias
- * totales). Esos 56 procedían de un copia-pega directo de la web de Localiza
- * Salud que NO quedó preservado. La única fuente preservada y auditada
- * (MapaDeActivo_PLS_Zaidin.csv → GRANADA-ZAIDIN-ACTIVOS-LOCALIZA-AUDIT.md §8)
- * produce 15 activos normalizados sin datos personales. Estos tests fijan los
- * números REALES y reproducibles: 36 evidencias de estudios (emergentes de los
- * 13 fixtures, coincide con el objetivo) + 15 activos = 51 totales.
- * Si el equipo reincorpora los 56 activos desde la web, el cargador
- * localiza-salud los admite y estos números deberán revisarse deliberadamente.
+ * LÍNEAS DE REFERENCIA — no confundir:
+ *   - 56/92 = EXPORT VIGENTE de trabajo (56 activos Localiza Salud, 92
+ *     evidencias), preservado manualmente el 2026-07-08 en
+ *     municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json
+ *     y protegido por tests/granada-zaidin-vigente-56-92.test.ts.
+ *   - 15/51 = RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (HISTÓRICA) que verifica este
+ *     fichero: 15 activos del CSV auditado (sin datos personales, RGPD) + 36
+ *     evidencias de estudios = 51. Sirve para garantizar que el expediente
+ *     puede regenerarse desde fuentes versionadas, NO es la línea vigente y
+ *     NUNCA debe sustituir al export 56/92 (el generador escribe en
+ *     compas-ng-workspace-granada-zaidin-reproducible-minimo.json).
  */
 
 import { describe, it, expect, beforeAll } from "vitest";

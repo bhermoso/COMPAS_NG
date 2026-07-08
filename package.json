@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:smoke": "node tests/home-complementary-studies.smoke.mjs",
     "test:atarfe": "node tests/load-atarfe-complete.mjs",
-    "rebuild:zaidin": "vitest run --config vitest.rebuild.config.ts"
+    "rebuild:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/rebuild-granada-zaidin.gen.ts",
+    "restore:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/restore-zaidin-console.gen.ts"
   },
   "dependencies": {
     "mammoth": "^1.12.0",

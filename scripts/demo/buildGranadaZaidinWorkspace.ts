@@ -1,7 +1,12 @@
 /**
  * scripts/demo/buildGranadaZaidinWorkspace.ts
  *
- * Reconstrucción reproducible del expediente demo de Granada-Zaidín.
+ * RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (HISTÓRICA, 15/51) de Granada-Zaidín.
+ *
+ * ATENCIÓN — línea vigente: el export de trabajo es 56/92 (56 activos, 92
+ * evidencias), preservado en exports/compas-ng-workspace-granada-zaidin.json.
+ * Este constructor produce la variante mínima desde fuentes versionadas y su
+ * salida va SIEMPRE a …-reproducible-minimo.json. No sustituir 56/92 por 15/51.
  *
  * Construye el MunicipalityWorkspace del ámbito piloto usando exclusivamente
  * los servicios reales de COMPÁS NG y material fuente preservado en el
