@@ -193,6 +193,17 @@ describe("visor PSL-C — documento institucional renderizado", () => {
     );
   });
 
+  it("expone la estructura de clases que anclan el estilo institucional e imprimible", () => {
+    // Ganchos estables del CSS del visor y de la salida imprimible
+    // (@media print oculta todo salvo .pslc-viewer): si cambian de nombre,
+    // el documento pierde su presentación y su impresión.
+    expect(html).toContain('class="pslc-viewer"');
+    expect(html).toContain("pslc-viewer__portada");
+    expect(html).toContain("pslc-viewer__meta");
+    expect(html).toContain("pslc-viewer__capitulo");
+    expect(html).toContain("pslc-viewer__frontera");
+  });
+
   it("sin espacio de conocimiento, declara EKC no disponible en lugar de inventarlo", () => {
     const sinPerfil = compileLocalHealthProfile({
       psl: pslCompilable(generated),

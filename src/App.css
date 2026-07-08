@@ -9053,3 +9053,133 @@ h3 {
 }
 .psl-doc-annex__summary:hover { color: #33404e; }
 .psl-doc-annex__details[open] .psl-doc-annex__summary { margin-bottom: 14px; }
+
+/* ── PSL-C: visor institucional del artefacto congelado ────────────────────
+   Lectura de documento institucional: jerarquía sobria, densidad de texto
+   razonable, trazabilidad y cautelas visibles. No es un panel de mandos. */
+
+.pslc-viewer {
+  max-width: 860px;
+  margin: 0 auto;
+  color: #33404e;
+  line-height: 1.7;
+}
+.pslc-viewer .psl-doc-section {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0;
+  margin: 0;
+  padding: 26px 8px;
+  box-shadow: none;
+}
+.pslc-viewer h2 {
+  font-size: 1.45rem;
+  margin: 6px 0 10px;
+  color: #1e293b;
+}
+.pslc-viewer h3 {
+  font-size: 1.05rem;
+  margin: 18px 0 8px;
+  color: #1e293b;
+}
+.pslc-viewer h4 {
+  font-size: 0.95rem;
+  margin: 16px 0 6px;
+  color: #33404e;
+}
+.pslc-viewer p { font-size: 0.93rem; margin: 0 0 10px; }
+.pslc-viewer ul { margin: 0 0 12px; padding-left: 20px; }
+.pslc-viewer li { font-size: 0.93rem; margin-bottom: 5px; }
+
+/* Portada */
+.pslc-viewer__portada {
+  border-top: 3px solid #1e293b !important;
+  background: #f8fafc;
+}
+.pslc-viewer__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px 20px;
+  margin: 14px 0 0;
+}
+.pslc-viewer__meta dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 3px;
+}
+.pslc-viewer__meta dd {
+  margin: 0;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.pslc-viewer__meta code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  background: #eef2f7;
+  border: 1px solid #dbe3ec;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* Núcleo narrativo: capítulos */
+.pslc-viewer__capitulo { margin-bottom: 18px; }
+.pslc-viewer__capitulo h4 {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+}
+.pslc-viewer__capitulo p { text-align: justify; }
+
+/* Frontera institucional */
+.pslc-viewer__frontera {
+  background: #f8fafc;
+  border-left: 4px solid #1e293b;
+  padding-left: 20px !important;
+}
+
+/* ── PSL-C: salida imprimible desde navegador ──────────────────────────────
+   Sin export PDF/DOCX: al imprimir, solo el documento institucional abierto
+   es visible; el resto de la aplicación se oculta. La trazabilidad, las
+   cautelas y la frontera con el Plan de Acción nunca se ocultan. */
+
+@media print {
+  body * { visibility: hidden; }
+  .pslc-viewer, .pslc-viewer * { visibility: visible; }
+  .pslc-viewer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    font-size: 11pt;
+    color: #000;
+  }
+  .pslc-viewer .psl-doc-section {
+    border-top: 1px solid #999;
+    padding: 14pt 0;
+  }
+  /* Portada entera en la primera página; el documento empieza después. */
+  .pslc-viewer__portada {
+    break-inside: avoid;
+    break-after: page;
+    border-top: 3pt solid #000 !important;
+  }
+  .pslc-viewer h2, .pslc-viewer h3, .pslc-viewer h4 { break-after: avoid; }
+  .pslc-viewer__meta, .pslc-viewer ul, .psl-doc-notice { break-inside: avoid; }
+  .pslc-viewer p { orphans: 3; widows: 3; }
+  /* Cautelas y frontera: visibles y sin partirse. */
+  .pslc-viewer .psl-doc-notice--warning {
+    border: 1pt solid #000;
+    background: none;
+    color: #000;
+  }
+  .pslc-viewer__frontera {
+    break-inside: avoid;
+    background: none;
+    border-left: 3pt solid #000;
+  }
+}
