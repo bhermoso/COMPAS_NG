@@ -36,6 +36,7 @@ export * from "./ThematicPrioritisationModal";
 export * from "./QuestionnaireBuilderPanel";
 export * from "./GESPanel";
 export * from "./NHSHealthProfileView";
+export * from "./PSLCArtifactViewer";
 export * from "./LecturaEstrategicaView";
 export * from "./PAIView";
 export * from "./PerfilLocalDeSaludPanel";

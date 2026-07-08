@@ -505,6 +505,9 @@ export default function App() {
       if (!psl) return prev;
       const result = compileLocalHealthProfile({
         psl,
+        // Puente del espacio de conocimiento: sin él, el artefacto congelado
+        // no registra EKC, hipótesis ni preguntas abiertas del técnico.
+        perfil: prev.perfilLocalDeSalud,
         municipalityName: prev.municipality.identity.name,
         municipalityProvince: prev.municipality.identity.province,
         existingArtifactCount: prev.compiledProfiles?.length ?? 0,

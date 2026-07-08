@@ -12,6 +12,7 @@ import type {
   IndicatorComparisonReference,
   PerfilEpistemicMetrics,
 } from "../../application/health-profile";
+import { PSLCArtifactViewer } from "./PSLCArtifactViewer";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
@@ -1184,7 +1185,15 @@ export function LocalHealthProfileView({
           </p>
           <div className="psl-compiled-list">
             {[...compiledProfiles].reverse().map((artifact) => (
-              <PSLCArtefactoCard key={artifact.id} artifact={artifact} />
+              <div key={artifact.id}>
+                <PSLCArtefactoCard artifact={artifact} />
+                <details className="psl-doc-annex__details">
+                  <summary className="psl-doc-annex__summary">
+                    Ver documento institucional completo ({artifact.artifactVersion})
+                  </summary>
+                  <PSLCArtifactViewer artifact={artifact} />
+                </details>
+              </div>
             ))}
           </div>
         </section>
