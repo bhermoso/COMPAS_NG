@@ -5,3 +5,9 @@ export {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToDocxBuffer,
 } from "./pslcDocx";
+export {
+  buildPSLCPdf,
+  exportPSLCArtifactToPdfBlob,
+  exportPSLCArtifactToPdfBuffer,
+  pslcPdfFileName,
+} from "./pslcPdf";

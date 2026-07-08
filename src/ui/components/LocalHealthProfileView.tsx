@@ -13,18 +13,30 @@ import type {
   PerfilEpistemicMetrics,
 } from "../../application/health-profile";
 import { PSLCArtifactViewer } from "./PSLCArtifactViewer";
-import { exportPSLCArtifactToDocxBlob } from "../../application/psl-c-export";
+import {
+  exportPSLCArtifactToDocxBlob,
+  exportPSLCArtifactToPdfBlob,
+} from "../../application/psl-c-export";
 
-// Descarga del documento institucional congelado como DOCX (solo artefactos
-// PSL-C compilados; el borrador y el PSL validado no tienen export).
-async function descargarPSLCDocx(artifact: LocalHealthProfileArtifact): Promise<void> {
-  const { blob, fileName } = await exportPSLCArtifactToDocxBlob(artifact);
+// Descarga del documento institucional congelado (solo artefactos PSL-C
+// compilados; el borrador y el PSL validado no tienen export).
+function descargarBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;
   anchor.click();
   URL.revokeObjectURL(url);
+}
+
+async function descargarPSLCDocx(artifact: LocalHealthProfileArtifact): Promise<void> {
+  const { blob, fileName } = await exportPSLCArtifactToDocxBlob(artifact);
+  descargarBlob(blob, fileName);
+}
+
+async function descargarPSLCPdf(artifact: LocalHealthProfileArtifact): Promise<void> {
+  const { blob, fileName } = await exportPSLCArtifactToPdfBlob(artifact);
+  descargarBlob(blob, fileName);
 }
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
@@ -1364,6 +1376,14 @@ export function LocalHealthProfileView({
                   title="Descargar el documento institucional congelado en formato Word"
                 >
                   Descargar DOCX ({artifact.artifactVersion})
+                </button>
+                <button
+                  type="button"
+                  className="psl-doc-compile-action__btn psl-doc-docx-btn"
+                  onClick={() => void descargarPSLCPdf(artifact)}
+                  title="Descargar el documento institucional congelado en formato PDF"
+                >
+                  Descargar PDF ({artifact.artifactVersion})
                 </button>
                 <details className="psl-doc-annex__details">
                   <summary className="psl-doc-annex__summary">

@@ -9185,7 +9185,7 @@ h3 {
 }
 
 /* Export DOCX del artefacto PSL-C */
-.psl-doc-docx-btn { margin: 10px 0 4px; }
+.psl-doc-docx-btn { margin: 10px 8px 4px 0; }
 
 /* ── PSL-C: checklist de compilación institucional (ruta operativa) ───────── */
 .pslc-checklist {

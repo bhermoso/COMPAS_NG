@@ -228,6 +228,14 @@ describe("estados documentales — PSL-C compilado", () => {
     expect(render(validado, [artifact])).toContain("Descargar DOCX");
   });
 
+  it("la descarga PDF solo existe cuando hay artefacto PSL-C compilado, junto al DOCX", () => {
+    expect(render(generado)).not.toContain("Descargar PDF");
+    expect(render(validado)).not.toContain("Descargar PDF");
+    const html = render(validado, [artifact]);
+    expect(html).toContain("Descargar PDF");
+    expect(html).toContain("Descargar DOCX");
+  });
+
   it("la frontera con el Plan de Acción permanece intacta en la narrativa", () => {
     const html = render(validado, [artifact]);
     expect(html).toContain("no formula recomendaciones");
