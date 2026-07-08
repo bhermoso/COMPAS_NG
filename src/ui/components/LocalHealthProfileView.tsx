@@ -39,7 +39,7 @@ interface LocalHealthProfileViewProps {
 const STATUS_LABEL: Record<LocalHealthProfile["status"], string> = {
   generated: "Documento de trabajo",
   review:    "En revisión técnica",
-  validated: "Validado",
+  validated: "Validado técnicamente",
   approved:  "Aprobado",
   superseded:"Sustituido",
   archived:  "Archivado",
@@ -293,7 +293,9 @@ function PSLValidationAction({
       <div className="psl-validate-action__body">
         <p className="psl-validate-action__text">
           Al validar técnicamente, el equipo confirma que este borrador ha sido
-          revisado y es adecuado para fundamentar la priorización municipal.
+          revisado y es adecuado para fundamentar la priorización municipal. La
+          validación técnica no genera el documento institucional: el PSL-C se
+          crea después, con la compilación.
         </p>
         <div className="psl-validate-action__form">
           <label className="psl-validate-action__label" htmlFor="psl-validated-by">
@@ -578,10 +580,13 @@ export function LocalHealthProfileView({
 
       {psl.status === "validated" && !pslIsStale && (
         <div className="psl-doc-validated-notice">
-          <span className="psl-doc-validated-notice__label">Validado</span>
+          <span className="psl-doc-validated-notice__label">Validado técnicamente</span>
           <span className="psl-doc-validated-notice__meta">
             {psl.validatedAt && `el ${formatDate(psl.validatedAt)}`}
             {psl.validatedBy && ` · ${psl.validatedBy}`}
+            {(compiledProfiles?.length ?? 0) === 0
+              ? " — Documento técnico validado, pendiente de compilación institucional: el documento institucional (PSL-C) se crea al compilar, tras asumir la autoría y documentar el consenso."
+              : ` — Compilado como documento institucional: ${compiledProfiles!.length} artefacto(s) PSL-C congelado(s) al final de esta pantalla.`}
           </span>
           <button
             className="psl-doc-validated-notice__invalidate"
@@ -747,7 +752,10 @@ export function LocalHealthProfileView({
       {/* Edición del documento (autoría técnica sobre el texto completo) */}
       {psl.status === "validated" && onEditConclusion && (
         <section className="psl-doc-section workspace-panel">
-          <p className="eyebrow">Autoría técnica</p>
+          <p className="eyebrow">
+            Autoría técnica · espacio de trabajo — no forma parte del documento
+            institucional
+          </p>
           <h2>Revisión y redacción del documento</h2>
           <p className="panel-note">
             El texto de los seis capítulos es un borrador asistido. Al guardarlo,
@@ -1142,7 +1150,7 @@ export function LocalHealthProfileView({
       {/* ── Compilación del PSL-C ──────────────────────────────── */}
       {psl.status === "validated" && !pslIsStale && onCompile != null && (
         <section className="workspace-panel psl-doc-compile-action">
-          <p className="eyebrow">Exportación institucional</p>
+          <p className="eyebrow">Compilación institucional</p>
           <h2>Compilar Perfil de Salud Local</h2>
           {psl.conclusiones.status === "authored" &&
            psl.cierreInterpretativo.status === "authored" &&
@@ -1150,8 +1158,9 @@ export function LocalHealthProfileView({
             <>
               <p className="panel-note">
                 El Perfil de Salud Local está validado y la autoría técnica está completa
-                (documento, cierre interpretativo y consenso). Puede compilarse como
-                documento institucional exportable (PSL-C).
+                (documento, cierre interpretativo y consenso). Al compilar se crea el
+                artefacto institucional congelado (PSL-C): la versión inmutable y
+                trazable del Perfil, que es el documento institucional definitivo.
               </p>
               <button
                 type="button"
@@ -1163,9 +1172,10 @@ export function LocalHealthProfileView({
             </>
           ) : (
             <p className="panel-note">
-              Para compilar el PSL-C, asuma la autoría del documento del Perfil y del
-              cierre interpretativo, y documente el consenso del Grupo Motor en el
-              espacio de trabajo.
+              El documento institucional congelado (PSL-C) aún no se ha creado. Para
+              compilarlo, asuma la autoría del documento del Perfil y del cierre
+              interpretativo, y documente el consenso del Grupo Motor en el espacio
+              de trabajo.
             </p>
           )}
         </section>
