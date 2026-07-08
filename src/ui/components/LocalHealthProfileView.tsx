@@ -269,7 +269,7 @@ function PSLCCompilationChecklist({
   );
 
   return (
-    <section className="workspace-panel pslc-checklist">
+    <section id="psl-ruta-compilacion" className="workspace-panel pslc-checklist">
       <p className="eyebrow">Ruta operativa</p>
       <h2>Crear documento institucional PSL-C</h2>
       {compilado ? (
@@ -337,6 +337,17 @@ function PSLCCompilationChecklist({
           </p>
         ))}
     </section>
+  );
+}
+
+// Retorno a la ruta operativa desde las secciones destino de sus enlaces.
+function VolverARuta() {
+  return (
+    <p className="pslc-volver-ruta">
+      <a className="pslc-checklist__action" href="#psl-ruta-compilacion">
+        ↑ Volver a la ruta operativa
+      </a>
+    </p>
   );
 }
 
@@ -912,6 +923,7 @@ export function LocalHealthProfileView({
             label="documento del Perfil"
             onSave={onEditConclusion}
           />
+          {!pslIsStale && <VolverARuta />}
         </section>
       )}
 
@@ -1206,6 +1218,7 @@ export function LocalHealthProfileView({
             <p className="psl-doc-scaffold-block__note">{psl.cierreInterpretativo.authorshipNote}</p>
           </div>
         )}
+        {psl.status === "validated" && !pslIsStale && <VolverARuta />}
       </section>
 
       {/* ── Preparación de la deliberación (fase posterior al Perfil) ─────── */}
@@ -1274,6 +1287,7 @@ export function LocalHealthProfileView({
             ciudadanía (Priorizaciones) y ejecuta el análisis territorial completo.
           </div>
         )}
+        {psl.status === "validated" && !pslIsStale && <VolverARuta />}
       </section>
 
       {/* ── Aprobación institucional del PSL ───────────────────── */}
@@ -1323,6 +1337,7 @@ export function LocalHealthProfileView({
               de trabajo.
             </p>
           )}
+          <VolverARuta />
         </section>
       )}
 

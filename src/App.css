@@ -9212,3 +9212,27 @@ h3 {
   text-underline-offset: 2px;
 }
 .pslc-checklist__action:hover { color: #1e293b; }
+
+/* ── PSL-C: orientación de navegación por anclas de la ruta operativa ─────── */
+#psl-ruta-compilacion,
+#psl-autoria-documento,
+#psl-autoria-cierre,
+#psl-deliberacion,
+#psl-compilacion,
+#psl-compilados {
+  scroll-margin-top: 84px;
+}
+/* Al aterrizar por ancla, la sección destino queda claramente localizada. */
+#psl-autoria-documento:target,
+#psl-autoria-cierre:target,
+#psl-deliberacion:target,
+#psl-compilacion:target,
+#psl-compilados:target,
+#psl-ruta-compilacion:target {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 3px;
+}
+.pslc-volver-ruta {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+}

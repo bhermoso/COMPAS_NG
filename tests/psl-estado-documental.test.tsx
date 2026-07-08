@@ -63,6 +63,9 @@ function render(
       onValidate={() => {}}
       onInvalidate={() => {}}
       onCompile={() => {}}
+      onEditConclusion={() => {}}
+      onEditCierreInterpretativo={() => {}}
+      onDocumentarDeliberacion={() => {}}
     />
   );
 }
@@ -180,6 +183,34 @@ describe("ruta operativa — checklist de compilación PSL-C", () => {
     );
     expect(html).toContain('href="#psl-compilados"');
     expect(html).toContain("Descargar DOCX");
+  });
+});
+
+describe("ruta operativa — navegación por anclas", () => {
+  it("la caja de ruta tiene ancla estable y los enlaces apuntan a anclas existentes", () => {
+    const html = render(validado);
+    expect(html).toContain('id="psl-ruta-compilacion"');
+    // Cada enlace pendiente de la ruta apunta a una sección que existe
+    for (const ancla of [
+      "psl-autoria-documento",
+      "psl-autoria-cierre",
+      "psl-deliberacion",
+    ]) {
+      expect(html).toContain(`href="#${ancla}"`);
+      expect(html).toContain(`id="${ancla}"`);
+    }
+  });
+
+  it("las secciones destino incluyen «Volver a la ruta operativa»", () => {
+    const html = render(validado);
+    const retornos = html.match(/Volver a la ruta operativa/g) ?? [];
+    // Autoría del documento, cierre, deliberación y compilación
+    expect(retornos.length).toBeGreaterThanOrEqual(3);
+    expect(html).toContain('href="#psl-ruta-compilacion"');
+  });
+
+  it("el retorno a la ruta no aparece en el borrador (la ruta no existe)", () => {
+    expect(render(generado)).not.toContain("Volver a la ruta operativa");
   });
 });
 
