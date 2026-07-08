@@ -9183,3 +9183,6 @@ h3 {
     border-left: 3pt solid #000;
   }
 }
+
+/* Export DOCX del artefacto PSL-C */
+.psl-doc-docx-btn { margin: 10px 0 4px; }

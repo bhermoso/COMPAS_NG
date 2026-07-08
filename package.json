@@ -15,6 +15,7 @@
     "restore:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/restore-zaidin-console.gen.ts"
   },
   "dependencies": {
+    "docx": "^9.7.1",
     "mammoth": "^1.12.0",
     "pdfjs-dist": "^6.0.227",
     "react": "^19.2.6",

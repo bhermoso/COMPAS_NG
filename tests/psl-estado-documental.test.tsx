@@ -137,6 +137,12 @@ describe("estados documentales — PSL-C compilado", () => {
     expect(html).toContain("Documento congelado");
   });
 
+  it("la descarga DOCX solo existe cuando hay artefacto PSL-C compilado", () => {
+    expect(render(generado)).not.toContain("Descargar DOCX");
+    expect(render(validado)).not.toContain("Descargar DOCX");
+    expect(render(validado, [artifact])).toContain("Descargar DOCX");
+  });
+
   it("la frontera con el Plan de Acción permanece intacta en la narrativa", () => {
     const html = render(validado, [artifact]);
     expect(html).toContain("no formula recomendaciones");
