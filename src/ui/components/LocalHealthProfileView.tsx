@@ -572,7 +572,7 @@ export function LocalHealthProfileView({
       {/* ── Estado: borrador / validado / validado obsoleto ───────────────── */}
       {psl.status === "generated" && (
         <div className="psl-doc-draft-notice">
-          <span className="psl-doc-draft-notice__label">Documento de trabajo</span>
+          <span className="psl-doc-draft-notice__label">Documento de trabajo</span>{" "}
           Base diagnóstica en elaboración. Requiere revisión técnica y validación
           por el equipo local antes de su uso institucional.
         </div>
@@ -652,7 +652,7 @@ export function LocalHealthProfileView({
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--determinant">
                 <span className="psl-doc-kpi__value">{psl.determinantCount}</span>
-                <span className="psl-doc-kpi__label">Determinantes documentados</span>
+                <span className="psl-doc-kpi__label">Determinantes con evidencia directa</span>
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--asset">
                 <span className="psl-doc-kpi__value">{psl.assetCount}</span>
@@ -718,7 +718,7 @@ export function LocalHealthProfileView({
       {/* ── Documento principal: seis capítulos narrativos por determinantes ─ */}
       {!isEmpty && doc.isDraft && (
         <div className="psl-doc-draft-notice">
-          <span className="psl-doc-draft-notice__label">Borrador asistido</span>
+          <span className="psl-doc-draft-notice__label">Borrador asistido</span>{" "}
           Documento de trabajo elaborado con apoyo de COMPÁS NG a partir de la
           evidencia del repositorio. El equipo técnico debe revisarlo, completarlo
           y asumir su autoría antes del uso institucional.

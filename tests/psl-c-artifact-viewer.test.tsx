@@ -193,6 +193,17 @@ describe("visor PSL-C — documento institucional renderizado", () => {
     );
   });
 
+  it("renderiza los seis capítulos canónicos y ningún capítulo VII", () => {
+    for (const numeral of ["I.", "II.", "III.", "IV.", "V.", "VI."]) {
+      expect(html).toContain(`<h4>${numeral} `);
+    }
+    expect(html).not.toContain("<h4>VII.");
+    // El cierre y la frontera se presentan como bloques con nombre propio,
+    // no como capítulos numerados.
+    expect(html).toContain("Cierre interpretativo");
+    expect(html).toContain("Frontera institucional");
+  });
+
   it("expone la estructura de clases que anclan el estilo institucional e imprimible", () => {
     // Ganchos estables del CSS del visor y de la salida imprimible
     // (@media print oculta todo salvo .pslc-viewer): si cambian de nombre,

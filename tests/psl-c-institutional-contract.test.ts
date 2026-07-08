@@ -31,6 +31,8 @@ import {
   addHypothesis,
   addOpenQuestion,
   updateSynthesis,
+  parseNarrativeChapters,
+  NARRATIVE_CHAPTER_TITLES,
 } from "../src/application/health-profile";
 import type { LocalHealthProfileArtifact } from "../src/domain/health-profile-artifact";
 import type { LocalHealthProfile, PerfilLocalDeSalud } from "../src/domain/health-profile";
@@ -274,7 +276,48 @@ describe("contrato PSL-C — estado del conocimiento", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 6. Gates: un Perfil sin autoría validada no es compilable
+// 6. Estructura institucional: seis capítulos + bloques no capitulares
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("contrato PSL-C — estructura institucional del documento", () => {
+  it("el documento narrativo tiene exactamente los seis capítulos canónicos", () => {
+    const capitulos = parseNarrativeChapters(artifact.conclusiones.content);
+    expect(capitulos.map((c) => c.title)).toEqual([...NARRATIVE_CHAPTER_TITLES]);
+    expect(capitulos.map((c) => c.numeral)).toEqual([
+      "I",
+      "II",
+      "III",
+      "IV",
+      "V",
+      "VI",
+    ]);
+  });
+
+  it("no existe un séptimo capítulo: cierre, priorización y EKC son bloques no capitulares", () => {
+    // El documento narrativo no numera un capítulo VII…
+    expect(artifact.conclusiones.content).not.toMatch(/(^|\n)VII\.\s/);
+    // …y los elementos institucionales adicionales viven como bloques propios
+    // del artefacto, separados del documento y sin numeración capitular.
+    expect(artifact.cierreInterpretativo.content.trim().length).toBeGreaterThan(0);
+    expect(artifact.cierreInterpretativo.content).not.toMatch(/(^|\n)[IVX]+\.\s/);
+    expect(artifact.priorizacion.deliberacionNota.length).toBeGreaterThan(0);
+    expect(artifact.ekcSnapshot).not.toBeNull();
+    expect(artifact.cautelasMetodologicas.nota.length).toBeGreaterThan(0);
+    expect(artifact.sourceHash.length).toBeGreaterThan(0);
+  });
+
+  it("los gates hablan de bloques institucionales, sin numeración capitular contractual", () => {
+    const violations = validateCompilationPreconditions(generated);
+    const mensajes = violations.map((v) => v.message).join("\n");
+    expect(mensajes).not.toMatch(/Cap\. V|Cap\. VI|Cap\. VII/);
+    expect(mensajes).toContain("documento del Perfil (seis capítulos narrativos)");
+    expect(mensajes).toContain("bloque institucional no capitular");
+    expect(mensajes).toContain("bloque de preparación deliberativa");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 7. Gates: un Perfil sin autoría validada no es compilable
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("contrato PSL-C — gates de compilación", () => {

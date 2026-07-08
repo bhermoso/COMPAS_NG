@@ -66,21 +66,21 @@ export function validateCompilationPreconditions(
   if (psl.conclusiones.status !== "authored") {
     violations.push({
       gate: "G-LHC-2",
-      message: `Las conclusiones (Cap. V) deben estar en estado "authored". Estado actual: "${psl.conclusiones.status}".`,
+      message: `El documento del Perfil (seis capítulos narrativos) debe estar en estado "authored". Estado actual: "${psl.conclusiones.status}".`,
     });
   }
 
   if (psl.cierreInterpretativo.status !== "authored") {
     violations.push({
       gate: "G-LHC-3",
-      message: `El cierre interpretativo (Cap. VI) debe estar en estado "authored". Estado actual: "${psl.cierreInterpretativo.status}".`,
+      message: `El cierre interpretativo (bloque institucional no capitular) debe estar en estado "authored". Estado actual: "${psl.cierreInterpretativo.status}".`,
     });
   }
 
   if (psl.priorizacionStatus !== "complete") {
     violations.push({
       gate: "G-LHC-4",
-      message: `La priorización (Cap. VII) debe estar en estado "complete". Estado actual: "${psl.priorizacionStatus}".`,
+      message: `La priorización (bloque de preparación deliberativa) debe estar en estado "complete". Estado actual: "${psl.priorizacionStatus}".`,
     });
   }
 
@@ -252,12 +252,12 @@ export function compileLocalHealthProfile(
       pslValidatedBy: psl.validatedBy,
     },
 
-    // ── Marco estratégico (Cap. I) ─────────────────────────────────────────
+    // ── Bloque: Marco estratégico ─────────────────────────────────────────
     marcoEstrategico: {
       sectionIds: [...psl.strategicFrameworkSectionIds],
     },
 
-    // ── Informe de Salud (Cap. II) — referencia, no contenido ─────────────
+    // ── Bloque: Informe de Salud — referencia, no contenido ─────────────
     informeSalud: {
       documentId: psl.healthReportDocumentId,
       title: psl.healthReportTitle,
@@ -265,7 +265,7 @@ export function compileLocalHealthProfile(
       atomCount: psl.healthReportAtomCount,
     },
 
-    // ── Base documental (Cap. III) ─────────────────────────────────────────
+    // ── Bloque: Base documental ─────────────────────────────────────────
     baseDocumental: {
       totalEvidenceAtoms: psl.totalEvidenceAtoms,
       integrityErrors: psl.integrityErrors,
@@ -290,7 +290,7 @@ export function compileLocalHealthProfile(
       thematicPrioritisationPresent: psl.thematicPrioritisationPresent,
     },
 
-    // ── Lectura territorial (Cap. IV) ──────────────────────────────────────
+    // ── Bloque: Lectura territorial ──────────────────────────────────────
     lecturaTerritorial: {
       territorialSummary: psl.territorialSummary,
       determinantCount: psl.determinantCount,
@@ -312,17 +312,17 @@ export function compileLocalHealthProfile(
       areasDeIntervencion,
     },
 
-    // ── Conclusiones (Cap. V) — autoría humana ─────────────────────────────
+    // ── Documento del Perfil (seis capítulos narrativos) — autoría humana ─────────────────────────────
     conclusiones: {
       content: psl.conclusiones.content,
     },
 
-    // ── Cierre interpretativo (Cap. VI) — autoría humana ──────────────────
+    // ── Bloque: Cierre interpretativo (no capitular) — autoría humana ──────────────────
     cierreInterpretativo: {
       content: psl.cierreInterpretativo.content,
     } satisfies PSLCArtifactCierreInterpretativo,
 
-    // ── Priorización (Cap. VII) ────────────────────────────────────────────
+    // ── Bloque: Priorización — preparación deliberativa ────────────────────────────────────────────
     priorizacion: {
       candidaturasTecnicas,
       hasTechnicalCandidatures: psl.priorizacion.hasTechnicalCandidatures,

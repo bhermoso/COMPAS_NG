@@ -5,8 +5,8 @@ import type { MunicipalityId } from "../municipality";
 export type LocalHealthProfileStatus =
   | "generated"   // generado automáticamente; sin revisión humana
   | "review"      // en revisión técnica activa
-  | "validated"   // validado técnicamente (capítulos I–V y VII completos)
-  | "approved"    // aprobado institucionalmente (capítulo VII completo)
+  | "validated"   // validado técnicamente (bloques diagnósticos completos)
+  | "approved"    // aprobado institucionalmente (deliberación y consenso documentados)
   | "superseded"  // sustituido por versión posterior para el mismo municipio
   | "archived";   // retirado por cierre, obsolescencia o decisión técnica
 
@@ -49,7 +49,7 @@ export interface PSLAreaIntervencion {
   isAnalyticalGap?: boolean;  // true = vacío o cautela metodológica, no área territorial real
 }
 
-// ── Capítulo scaffold (V) y cierre interpretativo (VI) ───────────────────────
+// ── Bloques de texto institucional: documento del Perfil y cierre ───────────────────────
 // El sistema genera un andamiaje; la autoría definitiva es siempre humana.
 
 export type PSLChapterStatus = "scaffold" | "review" | "authored";
@@ -60,7 +60,7 @@ export interface PSLScaffoldChapter {
   authorshipNote: string;   // recordatorio de autoría humana requerida
 }
 
-// ── Capítulo VII: Síntesis y Priorización scaffold ────────────────────────────
+// ── Bloque de priorización (preparación deliberativa) scaffold ────────────────────────────
 
 export interface PSLCandidaturaPriorizacion {
   id: string;
@@ -101,12 +101,12 @@ export interface LocalHealthProfile {
   evidenceStoreVersion: string;   // = evidenceStore.updatedAt en el momento de captura;
                                   // detecta si la evidencia ha cambiado desde la validación
 
-  // ── Capítulo I: Marco Estratégico ─────────────────────────────────────────
+  // ── Bloque: Marco Estratégico ─────────────────────────────────────────
   // Referencia los IDs de sección del StrategicFramework canónico.
   // El contenido narrativo permanece en su objeto; el PSL no lo duplica.
   strategicFrameworkSectionIds: string[];
 
-  // ── Capítulo II: Informe de Salud ─────────────────────────────────────────
+  // ── Bloque: Informe de Salud ─────────────────────────────────────────
   // Invariante PSL-I1: el PSL referencia el Informe de Salud; no lo contiene.
   // healthReportDocumentId = linkedDocumentId del HealthReportDocument
   //                        = id del MunicipalDocument en el repositorio.
@@ -115,7 +115,7 @@ export interface LocalHealthProfile {
   healthReportSectionCount: number;   // secciones parsadas del documento fuente
   healthReportAtomCount: number;      // EvidenceAtoms generados del informe
 
-  // ── Capítulo III: Diagnóstico integrado ───────────────────────────────────
+  // ── Bloque: Diagnóstico integrado ───────────────────────────────────
   totalEvidenceAtoms: number;
   integrityErrors: number;
   integrityWarnings: number;
@@ -139,7 +139,7 @@ export interface LocalHealthProfile {
   thematicPrioritisationPresent: boolean;
   complementaryStudyCount: number;
 
-  // ── Capítulo IV: Interpretación territorial ───────────────────────────────
+  // ── Bloque: Interpretación territorial ───────────────────────────────
   territorialSummary: string;
   determinantCount: number;
   assetCount: number;
@@ -159,17 +159,17 @@ export interface LocalHealthProfile {
   ruidoEstructural: PSLTension[];
   areasDeIntervencion: PSLAreaIntervencion[];
 
-  // ── Capítulo V: Conclusiones ──────────────────────────────────────────────
+  // ── Documento del Perfil: conclusiones (seis capítulos narrativos) ──────────────────────────────────────────────
   // Borrador sustantivo: síntesis del estado de salud y funcionamiento del
   // territorio. El equipo técnico lo revisa y valida antes de la validación.
   conclusiones: PSLScaffoldChapter;
 
-  // ── Capítulo VI: Cierre interpretativo ───────────────────────────────────
+  // ── Bloque: Cierre interpretativo (no capitular) ───────────────────────────────────
   // Alcance, limitaciones metodológicas y síntesis del diagnóstico.
   // No prescribe acciones. El equipo técnico lo revisa y valida.
   cierreInterpretativo: PSLScaffoldChapter;
 
-  // ── Capítulo VII: Síntesis y Priorización ─────────────────────────────────
+  // ── Bloque: Priorización — preparación deliberativa ─────────────────────────────────
   // Scaffold: priorización técnica + participativa. Deliberación: solo humana.
   // Condición necesaria para transición a estado "approved".
   priorizacion: PSLPriorizacion;

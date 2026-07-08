@@ -38,7 +38,11 @@ export {
   computePerfilEpistemicMetrics,
 } from "./profileOperations";
 export type { NarrativeChapter, NarrativeChaptersInput } from "./narrativeChapters";
-export { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
+export {
+  buildNarrativeChapters,
+  renderNarrativeChapters,
+  NARRATIVE_CHAPTER_TITLES,
+} from "./narrativeChapters";
 export { parseNarrativeChapters } from "./narrativeChapters";
 export type {
   InstitutionalProfileViewModel,

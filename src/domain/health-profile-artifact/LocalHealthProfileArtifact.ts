@@ -127,11 +127,11 @@ export interface PSLCArtifactLecturaTerritorial {
 }
 
 export interface PSLCArtifactConclusiones {
-  content: string;    // Texto de autoría humana (caps. V del PSL)
+  content: string;    // Documento narrativo del Perfil (seis capítulos, autoría humana)
 }
 
 export interface PSLCArtifactCierreInterpretativo {
-  content: string;    // Texto de autoría humana (cap. VI del PSL)
+  content: string;    // Cierre interpretativo (bloque no capitular, autoría humana)
 }
 
 export interface PSLCArtifactCandidatura {

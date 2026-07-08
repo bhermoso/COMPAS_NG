@@ -26,6 +26,22 @@ export interface NarrativeChapter {
   content: string;
 }
 
+// ── Estructura institucional del Perfil ───────────────────────────────────────
+// El documento narrativo del Perfil Local de Salud tiene SEIS capítulos
+// canónicos. La portada, la trazabilidad, el cierre interpretativo, el estado
+// del conocimiento (EKC), las cautelas y la priorización (preparación
+// deliberativa) son BLOQUES INSTITUCIONALES NO CAPITULARES: acompañan al
+// documento sin numerarse como capítulos. No existe un séptimo capítulo.
+
+export const NARRATIVE_CHAPTER_TITLES = [
+  "Alcance, fuentes y escala de la evidencia",
+  "Contexto territorial y sociodemográfico",
+  "Situación de salud y desigualdades",
+  "Determinantes sociales, comunitarios y ambientales",
+  "Activos, capacidades territoriales e incertidumbres",
+  "Conclusiones técnicas para la priorización",
+] as const;
+
 export interface NarrativeChaptersInput {
   /** Sustantivo del ámbito: "distrito" | "municipio" | "ámbito territorial". */
   scopeNoun: string;
@@ -233,7 +249,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
     chapters.push({
       numeral: "I",
-      title: "Alcance, fuentes y escala de la evidencia",
+      title: NARRATIVE_CHAPTER_TITLES[0],
       content: [...fuentes, alcance.join(" ")].join("\n\n"),
     });
   }
@@ -277,7 +293,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
     chapters.push({
       numeral: "II",
-      title: "Contexto territorial y sociodemográfico",
+      title: NARRATIVE_CHAPTER_TITLES[1],
       content: partes.join("\n\n"),
     });
   }
@@ -395,7 +411,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
     chapters.push({
       numeral: "III",
-      title: "Situación de salud y desigualdades",
+      title: NARRATIVE_CHAPTER_TITLES[2],
       content: partes.join("\n\n"),
     });
   }
@@ -520,7 +536,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
     chapters.push({
       numeral: "IV",
-      title: "Determinantes sociales, comunitarios y ambientales",
+      title: NARRATIVE_CHAPTER_TITLES[3],
       content: partes.join("\n\n"),
     });
   }
@@ -622,7 +638,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
     chapters.push({
       numeral: "V",
-      title: "Activos, capacidades territoriales e incertidumbres",
+      title: NARRATIVE_CHAPTER_TITLES[4],
       content: partes.join("\n\n"),
     });
   }
@@ -761,7 +777,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
 
     chapters.push({
       numeral: "VI",
-      title: "Conclusiones técnicas para la priorización",
+      title: NARRATIVE_CHAPTER_TITLES[5],
       content: partes.join("\n\n"),
     });
   }
