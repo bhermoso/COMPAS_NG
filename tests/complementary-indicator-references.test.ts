@@ -24,6 +24,10 @@ import {
   buildIndicatorComparisonReferences,
   interpretIndicatorComparison,
 } from "../src/application/health-profile";
+import {
+  ANDALUSIA_EAS_REFERENCE_CONTRACT,
+  ANDALUSIA_REFERENCE_LABEL,
+} from "../src/application/eas-references";
 import type { ComplementaryIndicatorReferencesReading } from "../src/application/health-profile";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
 import type { LocalHealthProfile } from "../src/domain/health-profile";
@@ -147,6 +151,28 @@ describe("proxy demo y referencia autonómica honesta", () => {
     const ibse = lectura.references.find((r) => r.indicatorId === "ibse-indice-total");
     expect(ibse!.andalusiaReference).toBeUndefined();
     expect(ibse!.andalusiaLabel).toContain("sin referencia autonómica equivalente");
+  });
+
+  it("el Perfil consume exactamente el contrato compartido de la capa EAS", () => {
+    // Sin doble fuente de verdad: cada referencia autonómica del Perfil debe
+    // ser exactamente la entrada del contrato compartido, asociada por id.
+    for (const entry of ANDALUSIA_EAS_REFERENCE_CONTRACT) {
+      const ref = lectura.references.find(
+        (r) => r.indicatorId === entry.perfilIndicatorId
+      );
+      expect(ref, `indicador ${entry.perfilIndicatorId}`).toBeDefined();
+      expect(ref!.andalusiaReference).toBe(entry.value);
+      expect(ref!.andalusiaLabel).toBe(ANDALUSIA_REFERENCE_LABEL);
+    }
+    // Y ningún indicador fuera del contrato recibe referencia autonómica.
+    const contratoIds = new Set(
+      ANDALUSIA_EAS_REFERENCE_CONTRACT.map((e) => e.perfilIndicatorId)
+    );
+    for (const r of lectura.references) {
+      if (!contratoIds.has(r.indicatorId)) {
+        expect(r.andalusiaReference, r.indicatorId).toBeUndefined();
+      }
+    }
   });
 
   it("la lectura comparativa general no sobredimensiona diferencias pequeñas", () => {

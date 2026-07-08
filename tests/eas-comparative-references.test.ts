@@ -4,7 +4,9 @@ import { resolve } from "node:path";
 import {
   buildEASComparativeReferences,
   EAS_COMPARATIVE_REFERENCE_CAUTION,
+  ANDALUSIA_EAS_REFERENCE_CONTRACT,
 } from "../src/application/eas-references";
+import { parseDUKECSV } from "../src/application/duke";
 
 const fixture = (name: string): string =>
   readFileSync(resolve(process.cwd(), "fixtures", name), "utf-8");
@@ -78,5 +80,38 @@ describe("EAS comparative references", () => {
     expect(refs.every((r) => r.andalucia.sourceLabel.endsWith("-andalucia.csv"))).toBe(true);
     expect(refs.every((r) => r.granada.nValid > 0)).toBe(true);
     expect(refs.every((r) => r.andalucia.nValid > 0)).toBe(true);
+  });
+
+  it("el contrato del Perfil coincide con los valores calculados desde los fixtures", () => {
+    // Sincronización sin doble fuente de verdad: cada valor del contrato
+    // compartido (el que consume complementaryIndicatorReferences) se
+    // contrasta contra el cálculo real desde el fixture autonómico. Si un
+    // fixture cambia, este test obliga a actualizar el contrato.
+    const refs = buildReferences();
+
+    expect(ANDALUSIA_EAS_REFERENCE_CONTRACT).toHaveLength(11);
+
+    for (const entry of ANDALUSIA_EAS_REFERENCE_CONTRACT) {
+      if (entry.easReferenceId === undefined) continue;
+      const ref = refs.find((r) => r.id === entry.easReferenceId);
+      expect(ref, `referencia EAS ${entry.easReferenceId}`).toBeDefined();
+      expect(
+        ref!.andalucia.value,
+        `${entry.perfilIndicatorId} ← ${entry.easReferenceId}`
+      ).toBe(entry.value);
+    }
+
+    // DUKE confidencial/afectivo: la capa comparativa no publica estos
+    // agregados; el contrato los deriva directamente del mismo fixture con
+    // el parser canónico. Se contrastan aquí contra ese cálculo.
+    const dukeAndalucia = parseDUKECSV(fixture("duke-eas-andalucia.csv")).aggregates;
+    const confidencial = ANDALUSIA_EAS_REFERENCE_CONTRACT.find(
+      (e) => e.perfilIndicatorId === "duke-apoyo-confidencial"
+    );
+    const afectivo = ANDALUSIA_EAS_REFERENCE_CONTRACT.find(
+      (e) => e.perfilIndicatorId === "duke-apoyo-afectivo"
+    );
+    expect(dukeAndalucia.meanConfidential).toBe(confidencial!.value);
+    expect(dukeAndalucia.meanAffective).toBe(afectivo!.value);
   });
 });

@@ -24,6 +24,10 @@
 
 import type { MunicipalityWorkspace } from "../../domain/workspace";
 import { DIAGNOSTIC_BLOCK_TITLES } from "./complementaryStudiesReading";
+import {
+  ANDALUSIA_REFERENCE_VALUE_BY_INDICATOR,
+  ANDALUSIA_REFERENCE_LABEL,
+} from "../eas-references/andalusiaReferenceContract";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -443,27 +447,12 @@ function andalusiaEASReferenceForSpec(
   spec: IndicatorSpec
 ): AndalusiaReference | undefined {
   if (spec.provincial !== "eas") return undefined;
-
-  const label =
-    "referencia autonómica calculada desde microdatos EAS de Andalucía " +
-    "mediante fixture autonómico equivalente";
-
-  const valuesById: Record<string, number> = {
-    "duke-apoyo-global": 47.3,
-    "duke-apoyo-confidencial": 29.9,
-    "duke-apoyo-afectivo": 17.4,
-    "predimed-adherencia": 6.5,
-    "sf12-pcs": 50.72,
-    "sf12-mcs": 51.22,
-    "sueno-insuficiente": 27.2,
-    "sueno-no-descansa": 22.1,
-    "cage-riesgo": 1.0,
-    "ipaq-alta": 16.1,
-    "ipaq-inactividad": 36.6,
-  };
-
-  const value = valuesById[spec.id];
-  return value === undefined ? undefined : { value, label };
+  // Contrato único compartido con la capa comparativa EAS: asociación
+  // explícita por id, sincronizada por test contra los fixtures autonómicos.
+  const value = ANDALUSIA_REFERENCE_VALUE_BY_INDICATOR[spec.id];
+  return value === undefined
+    ? undefined
+    : { value, label: ANDALUSIA_REFERENCE_LABEL };
 }
 
 /** Lectura comparativa prudente por indicador. */
