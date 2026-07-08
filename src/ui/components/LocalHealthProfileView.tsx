@@ -8,7 +8,10 @@ import {
   PENDING_CONTRAST_LABEL,
   formatIndicatorValue,
 } from "../../application/health-profile";
-import type { IndicatorComparisonReference } from "../../application/health-profile";
+import type {
+  IndicatorComparisonReference,
+  PerfilEpistemicMetrics,
+} from "../../application/health-profile";
 
 // ── Tipos auxiliares ──────────────────────────────────────────────────────────
 
@@ -18,6 +21,8 @@ interface LocalHealthProfileViewProps {
   municipalityName: string;
   /** Referencias comparativas por indicador para la trazabilidad técnica. */
   indicatorReferences?: IndicatorComparisonReference[];
+  /** Métricas epistémicas del espacio de conocimiento (computePerfilEpistemicMetrics). */
+  epistemicMetrics?: PerfilEpistemicMetrics;
   compiledProfiles?: LocalHealthProfileArtifact[];
   onValidate: (validatedBy: string) => void;
   onInvalidate: () => void;
@@ -516,6 +521,7 @@ export function LocalHealthProfileView({
   pslIsStale,
   municipalityName,
   indicatorReferences,
+  epistemicMetrics,
   compiledProfiles,
   onValidate,
   onInvalidate,
@@ -660,6 +666,14 @@ export function LocalHealthProfileView({
                     {new Set(indicatorReferences.map((r) => r.diagnosticBlockId)).size}
                   </span>
                   <span className="psl-doc-kpi__label">Bloques diagnósticos</span>
+                </div>
+              )}
+              {epistemicMetrics !== undefined && (
+                <div className="psl-doc-kpi psl-doc-kpi--determinant">
+                  <span className="psl-doc-kpi__value">
+                    {epistemicMetrics.hipotesisAbiertas}
+                  </span>
+                  <span className="psl-doc-kpi__label">Hipótesis en estudio</span>
                 </div>
               )}
               <div className="psl-doc-kpi psl-doc-kpi--area">

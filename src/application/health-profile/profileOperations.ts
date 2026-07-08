@@ -743,3 +743,44 @@ export function computeEstadoDelConocimiento(
 
   return { base, nivelEstado, criteriosCobertura, coberturaMinimaCumplida };
 }
+
+// ── Métricas epistémicas del Perfil ───────────────────────────────────────────
+// Proyección compacta y estable del estado del conocimiento, pensada para
+// contadores e indicadores de proceso (KPI). No introduce semántica nueva:
+// reutiliza computePerfilEstadoGlobal / computeEstadoDelConocimiento y solo
+// selecciona. Sin narrativa institucional y sin recomendaciones.
+
+export interface PerfilEpistemicMetrics {
+  /** Interpretaciones activas (lecturas afirmadas por el técnico). */
+  interpretaciones:          number;
+  interpretacionesSuperadas: number;
+  /** Hipótesis en estudio (status "activa"). */
+  hipotesisAbiertas:         number;
+  hipotesisResueltas:        number;
+  hipotesisDescartadas:      number;
+  preguntasAbiertas:         number;
+  preguntasResueltas:        number;
+  tieneSintesis:             boolean;
+  /** Estado general EKC-compatible (computeEstadoDelConocimiento). */
+  nivelEstado:               PerfilEstadoNivel;
+  coberturaMinimaCumplida:   boolean;
+}
+
+export function computePerfilEpistemicMetrics(
+  perfil: PerfilLocalDeSalud
+): PerfilEpistemicMetrics {
+  const ekc = computeEstadoDelConocimiento(perfil);
+  const base = ekc.base;
+  return {
+    interpretaciones:          base.interpretacionesActivas,
+    interpretacionesSuperadas: base.interpretacionesSuperadas,
+    hipotesisAbiertas:         base.hipotesisActivas,
+    hipotesisResueltas:        base.hipotesisResueltas,
+    hipotesisDescartadas:      base.hipotesisDescartadas,
+    preguntasAbiertas:         base.preguntasAbiertas,
+    preguntasResueltas:        base.preguntasResueltas,
+    tieneSintesis:             base.tieneSintesis,
+    nivelEstado:               ekc.nivelEstado,
+    coberturaMinimaCumplida:   ekc.coberturaMinimaCumplida,
+  };
+}

@@ -21,6 +21,7 @@ import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramewo
 import {
   hasPSLHumanContent,
   buildIndicatorComparisonReferences,
+  computePerfilEpistemicMetrics,
 } from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
 import {
@@ -2944,6 +2945,11 @@ export default function App() {
               municipalityName={municipality.name}
               indicatorReferences={
                 buildIndicatorComparisonReferences({ workspace }).references
+              }
+              epistemicMetrics={
+                workspace.perfilLocalDeSalud !== undefined
+                  ? computePerfilEpistemicMetrics(workspace.perfilLocalDeSalud)
+                  : undefined
               }
               compiledProfiles={workspace.compiledProfiles}
               onValidate={handleValidatePSL}

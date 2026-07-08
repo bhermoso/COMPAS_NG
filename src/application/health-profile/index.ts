@@ -18,6 +18,7 @@ export type {
   PerfilEstadoNivel,
   CriterioEstructural,
   EstadoDelConocimiento,
+  PerfilEpistemicMetrics,
 } from "./profileOperations";
 export {
   createPerfilLocalDeSalud,
@@ -34,6 +35,7 @@ export {
   updateSynthesis,
   computePerfilEstadoGlobal,
   computeEstadoDelConocimiento,
+  computePerfilEpistemicMetrics,
 } from "./profileOperations";
 export type { NarrativeChapter, NarrativeChaptersInput } from "./narrativeChapters";
 export { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
