@@ -160,13 +160,13 @@ export interface LocalHealthProfile {
   areasDeIntervencion: PSLAreaIntervencion[];
 
   // ── Capítulo V: Conclusiones ──────────────────────────────────────────────
-  // Scaffold: síntesis del estado de salud y funcionamiento del territorio.
-  // Requiere autoría humana antes de la validación.
+  // Borrador sustantivo: síntesis del estado de salud y funcionamiento del
+  // territorio. El equipo técnico lo revisa y valida antes de la validación.
   conclusiones: PSLScaffoldChapter;
 
   // ── Capítulo VI: Cierre interpretativo ───────────────────────────────────
   // Alcance, limitaciones metodológicas y síntesis del diagnóstico.
-  // No prescribe acciones. Requiere autoría humana.
+  // No prescribe acciones. El equipo técnico lo revisa y valida.
   cierreInterpretativo: PSLScaffoldChapter;
 
   // ── Capítulo VII: Síntesis y Priorización ─────────────────────────────────

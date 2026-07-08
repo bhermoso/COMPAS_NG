@@ -31,6 +31,13 @@ import type {
   HealthProfileHypothesis,
   HealthProfileOpenQuestion,
 } from "../../domain/health-profile";
+import type { ComplementaryStudiesReading } from "./complementaryStudiesReading";
+import {
+  buildComplementaryStudiesReading,
+  HIPOTESIS_PSICOSOCIAL,
+  HIPOTESIS_ENTORNO_URBANO,
+  HIPOTESIS_CONSUMOS,
+} from "./complementaryStudiesReading";
 
 // ── Tipos de la capa ──────────────────────────────────────────────────────────
 
@@ -82,6 +89,8 @@ export interface DiagnosticAnswers {
   /** Señales presentes en la evidencia (para redactar la situación de salud). */
   senalesPresentes: string[];
   salutogenica: SalutogenicReading;
+  /** Lectura sustantiva de los estudios complementarios (bloques diagnósticos). */
+  estudios: ComplementaryStudiesReading;
   /** Síntesis narrativa del técnico, si existe. */
   sintesisTexto?: string;
 }
@@ -92,6 +101,11 @@ export interface BuildDiagnosticAnswersInput {
   determinantTitles: string[];
   /** Activos disponibles (título + contenido) para la lectura salutogénica. */
   assets: Array<{ title: string; content: string }>;
+  /**
+   * Títulos de los indicadores disponibles, para la lectura por bloques de los
+   * estudios complementarios. Si no se pasan, se derivan del propio workspace.
+   */
+  indicatorTitles?: string[];
 }
 
 // ── Utilidades ────────────────────────────────────────────────────────────────
@@ -213,9 +227,7 @@ export function inferSocialEpidemiologyDeterminants(
   if (redes.length > 0 || psicosocial.length > 0) {
     lecturas.push({
       kind: "plausible",
-      enunciado:
-        "condiciones psicosociales del entorno cotidiano (redes de apoyo, " +
-        "convivencia y carga de malestar emocional)",
+      enunciado: HIPOTESIS_PSICOSOCIAL,
       base:
         `patrón compatible con las señales de ${[...redes, ...psicosocial].join(", ")} ` +
         `presentes en la evidencia contextual`,
@@ -225,9 +237,7 @@ export function inferSocialEpidemiologyDeterminants(
   if (urbano.length > 0) {
     lecturas.push({
       kind: "plausible",
-      enunciado:
-        "características del entorno urbano y oportunidades de vida activa " +
-        "(espacio público, accesibilidad, usos cotidianos)",
+      enunciado: HIPOTESIS_ENTORNO_URBANO,
       base: `patrón compatible con las señales de ${urbano.join(", ")}`,
     });
   }
@@ -236,8 +246,7 @@ export function inferSocialEpidemiologyDeterminants(
   if (consumos.length > 0 || alimentario.length > 0) {
     lecturas.push({
       kind: "plausible",
-      enunciado:
-        "condiciones socioeconómicas y contextos de consumo y alimentación",
+      enunciado: HIPOTESIS_CONSUMOS,
       base:
         `patrón compatible con las señales de ${[...consumos, ...alimentario].join(", ")}`,
     });
@@ -375,6 +384,11 @@ export function buildDiagnosticAnswers(
   const senalesPresentes = detectarSenales(workspace)
     .filter((s) => s.presente)
     .map((s) => s.etiqueta);
+  const indicatorTitles =
+    input.indicatorTitles ??
+    workspace.evidenceStore.atoms
+      .filter((a) => a.kind === "indicator")
+      .map((a) => a.title);
 
   return {
     porEspacio: knowledgeBySpace(workspace.perfilLocalDeSalud),
@@ -386,6 +400,7 @@ export function buildDiagnosticAnswers(
     ),
     senalesPresentes,
     salutogenica,
+    estudios: buildComplementaryStudiesReading({ workspace, indicatorTitles }),
     sintesisTexto: workspace.perfilLocalDeSalud?.sintesisTexto?.trim() || undefined,
   };
 }

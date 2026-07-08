@@ -62,3 +62,13 @@ export {
   inferSocialEpidemiologyDeterminants,
   buildSalutogenicReading,
 } from "./diagnosticAnswers";
+export type {
+  ComplementaryStudiesReading,
+  ComplementaryStudyDiagnosticBlock,
+} from "./complementaryStudiesReading";
+export {
+  buildComplementaryStudiesReading,
+  HIPOTESIS_PSICOSOCIAL,
+  HIPOTESIS_ENTORNO_URBANO,
+  HIPOTESIS_CONSUMOS,
+} from "./complementaryStudiesReading";

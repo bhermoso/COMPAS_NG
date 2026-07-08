@@ -236,7 +236,41 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
   // ── III. Situación de salud y desigualdades ───────────────────────────────
   {
     const partes: string[] = [];
-    if (input.indicatorCount > 0) {
+    const estudios = input.answers?.estudios;
+    const bloques = estudios?.diagnosticBlocks ?? [];
+    if (bloques.length > 0) {
+      // Lectura sustantiva: los estudios no se cuentan, se leen por bloques.
+      const ordinales = [
+        "El primero",
+        "el segundo",
+        "el tercero",
+        "el cuarto",
+        "el quinto",
+        "el sexto",
+      ];
+      const enumeracion = bloques
+        .slice(0, ordinales.length)
+        .map(
+          (b, i) =>
+            `${ordinales[i]} se refiere a ${b.title}, sostenido por ` +
+            `${b.supportingStudies.join(", ")} (${b.supportingIndicators.length} ` +
+            `indicadores)`
+        )
+        .join("; ");
+      partes.push(
+        `Los ${estudios!.totalStudies} estudios complementarios no aportan solo ` +
+        `${estudios!.totalIndicators} indicadores aislados: organizan la lectura ` +
+        `diagnóstica en ${bloques.length} bloques interpretables de salud y ` +
+        `bienestar. ${enumeracion}. Estos bloques proceden de la evidencia ` +
+        `contextual descrita en el capítulo I: describen patrones plausibles de ` +
+        `salud y estilos de vida, pero no miden el ${scopeNoun} ni permiten ` +
+        `inferencia directa sobre su población.` +
+        (estudios!.unclassifiedIndicators.length > 0
+          ? ` Quedan ${estudios!.unclassifiedIndicators.length} indicadores fuera ` +
+            `de esta agrupación, consultables en el panel de cada estudio.`
+          : "")
+      );
+    } else if (input.indicatorCount > 0) {
       const seleccion = input.indicatorTitles.slice(0, 4);
       partes.push(
         `La evidencia cuantitativa disponible reúne ${input.indicatorCount} ` +
@@ -332,6 +366,29 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `hipótesis trazables que el Grupo Motor y las fuentes territoriales ` +
         `deben contrastar.`
       );
+      // Trazabilidad hipótesis ← bloques: qué bloque del capítulo III sostiene
+      // cada hipótesis (vínculo por identidad textual del enunciado).
+      const bloquesIV = input.answers?.estudios.diagnosticBlocks ?? [];
+      const sustentos = plausibles
+        .map((d) => {
+          const soportes = bloquesIV
+            .filter((b) => b.relatedDeterminantHypotheses.includes(d.enunciado))
+            .map((b) => b.title);
+          if (soportes.length === 0) return undefined;
+          const sujeto =
+            soportes.length > 1
+              ? `los bloques de ${soportes.join(" y de ")} sostienen`
+              : `el bloque de ${soportes[0]} sostiene`;
+          return `${sujeto} la hipótesis sobre ${d.enunciado}`;
+        })
+        .filter((s): s is string => s !== undefined);
+      if (sustentos.length > 0) {
+        partes.push(
+          `Los bloques diagnósticos del capítulo III sostienen esta lectura: ` +
+          `${sustentos.join("; ")}. Son hipótesis plausibles, trazables y ` +
+          `pendientes de contraste territorial.`
+        );
+      }
     }
     if (aContrastar.length > 0) {
       partes.push(
@@ -403,7 +460,12 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `territorial —no prueban cobertura ni resultado— y dialogan con las ` +
           `hipótesis del capítulo IV: allí donde el patrón sugiere ejes de ` +
           `atención, el mapa de activos indica con qué capacidades podría ` +
-          `trabajarse en la fase comunitaria.`
+          `trabajarse en la fase comunitaria.` +
+          ((input.answers?.estudios.diagnosticBlocks.length ?? 0) > 0
+            ? ` Esta concentración de activos dialoga también con los bloques ` +
+              `diagnósticos del capítulo III, sin que ello pruebe capacidad ` +
+              `suficiente ni cobertura territorial.`
+            : "")
         );
       }
       if (input.hasLocalizaAssets) {
@@ -477,6 +539,15 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `${input.answers!.senalesPresentes.length > 4 ? ", entre otras señales" : ""}.`
       );
     }
+    const bloquesVI = input.answers?.estudios.diagnosticBlocks ?? [];
+    if (bloquesVI.length > 0) {
+      conclusion.push(
+        `La principal aportación de los estudios complementarios es ordenar el ` +
+        `diagnóstico en bloques de salud y bienestar ` +
+        `—${bloquesVI.map((b) => b.title).join("; ")}— que permiten pasar de ` +
+        `indicadores dispersos a hipótesis contrastables.`
+      );
+    }
     const plausiblesVI = (input.answers?.determinantes ?? []).filter(
       (d) => d.kind === "plausible" || d.kind === "a-contrastar"
     );
@@ -508,8 +579,10 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     }
 
     // Líneas prioritarias diagnósticas: ámbitos que pasan a deliberación.
+    // Primero las candidaturas específicas del diagnóstico (hipótesis y
+    // evidencia propia); las áreas técnicas genéricas cierran la lista y no
+    // encabezan la deliberación.
     const lineas: string[] = [];
-    for (const area of input.areasReales) lineas.push(area);
     for (const d of plausiblesVI.slice(0, 2)) {
       lineas.push(`contraste territorial de la hipótesis sobre ${d.enunciado}`);
     }
@@ -518,6 +591,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `construcción de evidencia propia del ${scopeNoun} que confirme o matice el patrón contextual`
       );
     }
+    for (const area of input.areasReales) lineas.push(area);
     if (lineas.length > 0) {
       partes.push(
         `Ámbitos diagnósticos que pasan a deliberación como prioridades ` +
@@ -539,6 +613,14 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         "El diagnóstico identifica aspectos del territorio donde las fuentes " +
         "disponibles ofrecen lecturas que conviene contrastar con el Grupo Motor " +
         "antes de trasladarlas a prioridades de planificación."
+      );
+    }
+    // Preguntas de contraste territorial que los bloques dejan abiertas.
+    const preguntasVI = input.answers?.estudios.contrastQuestions ?? [];
+    if (preguntasVI.length > 0) {
+      partes.push(
+        `Preguntas de contraste territorial que el diagnóstico deja abiertas ` +
+        `para la deliberación: ${preguntasVI.slice(0, 3).join(" ")}`
       );
     }
     partes.push(...redactarConocimiento(input.answers, ["sintesis", "preparacion-deliberativa"]));

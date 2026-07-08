@@ -222,7 +222,7 @@ function PSLDeliberacionEditor({ deliberacionNota, consensoDocumentado, onSave }
           </div>
         ) : (
           <div className="psl-doc-scaffold-block psl-doc-scaffold-block--deliberation">
-            <ScaffoldBadge text="Deliberación pendiente · Autoría humana requerida" />
+            <ScaffoldBadge text="Deliberación pendiente · Se acuerda con el Grupo Motor" />
             <p className="psl-doc-scaffold-block__content">{deliberacionNota}</p>
           </div>
         )}
@@ -635,7 +635,7 @@ export function LocalHealthProfileView({
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--determinant">
                 <span className="psl-doc-kpi__value">{psl.determinantCount}</span>
-                <span className="psl-doc-kpi__label">Determinantes identificados</span>
+                <span className="psl-doc-kpi__label">Determinantes documentados</span>
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--asset">
                 <span className="psl-doc-kpi__value">{psl.assetCount}</span>
@@ -1016,7 +1016,7 @@ export function LocalHealthProfileView({
           />
         ) : (
           <div className="psl-doc-scaffold-block psl-doc-scaffold-block--deliberation">
-            <ScaffoldBadge text="Deliberación pendiente · Autoría humana requerida" />
+            <ScaffoldBadge text="Deliberación pendiente · Se acuerda con el Grupo Motor" />
             <p className="psl-doc-scaffold-block__content">{psl.priorizacion.deliberacionNota}</p>
           </div>
         )}

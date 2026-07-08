@@ -185,10 +185,11 @@ export function buildLocalHealthProfile(
     tematicasSeleccionadasLabels: selectedIds.map((id) => topicMap.get(id) ?? id),
     hasParticipatorySelection: selectedIds.length > 0,
     deliberacionNota:
-      "Pendiente de autoría humana. El equipo técnico, la ciudadanía y las " +
-      "instituciones deben deliberar sobre las prioridades definitivas del " +
-      `${scope.scopeNoun} a partir de las candidaturas técnicas y las preferencias ` +
-      "ciudadanas. Este capítulo no puede ser completado por el sistema.",
+      "Deliberación pendiente. Las prioridades definitivas del " +
+      `${scope.scopeNoun} se acuerdan entre el equipo técnico, la ciudadanía y ` +
+      "las instituciones, a partir de las candidaturas técnicas y las " +
+      "preferencias ciudadanas; el sistema prepara el material de contraste, " +
+      "no la decisión.",
     consensoDocumentado: false,
   };
 
@@ -283,9 +284,9 @@ export function buildLocalHealthProfile(
       }),
       status: "scaffold",
       authorshipNote:
-        "Requiere autoría humana. El equipo técnico debe documentar el alcance " +
-        "del diagnóstico, sus limitaciones metodológicas y la síntesis interpretativa " +
-        "del territorio. Este capítulo no formula acciones ni recomendaciones.",
+        "Borrador de cierre elaborado desde el diagnóstico. El equipo técnico " +
+        "lo revisa, matiza y valida antes de su uso institucional; no formula " +
+        "acciones ni recomendaciones.",
     },
 
     // ── VII: Síntesis y Priorización (scaffold) ───────────────────────────
@@ -420,6 +421,7 @@ function buildConclusionesScaffold(
     workspace: extras.workspace,
     determinantTitles: lt1.determinants.map((a) => a.title),
     assets: lt1.assets.map((a) => ({ title: a.title, content: a.content })),
+    indicatorTitles: lt1.indicators.map((a) => a.title),
   });
 
   const chapters = buildNarrativeChapters({
@@ -562,12 +564,13 @@ function buildCierreInterpretativoScaffold(
     );
   }
 
-  // ── Orientación para el equipo técnico ────────────────────────────────────
+  // ── Validación por el equipo técnico ──────────────────────────────────────
   parts.push(
-    "El equipo técnico debe redactar aquí el cierre interpretativo del territorio: " +
-    "qué comprensión global emerge del diagnóstico, qué tensiones o patrones " +
-    "deben contrastarse con el Grupo Motor, qué capacidades pueden sostener " +
-    "el proceso comunitario, qué incertidumbres deben quedar explícitas."
+    "El cierre interpretativo queda formulado como borrador: recoge la " +
+    "comprensión global que emerge del diagnóstico, las tensiones que deben " +
+    "contrastarse con el Grupo Motor, las capacidades que pueden sostener el " +
+    "proceso comunitario y las incertidumbres que deben quedar explícitas. " +
+    "El equipo técnico lo revisa, matiza y valida antes de su uso institucional."
   );
 
   return parts.join("\n\n");
