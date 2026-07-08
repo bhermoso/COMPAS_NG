@@ -24,7 +24,7 @@ export function ActivosSaludPanel({ repository, onDeleteDocument }: ActivosSalud
           <h2>Activos para la salud</h2>
         </div>
         <p className="panel-note">
-          Recursos comunitarios, equipamientos y redes del municipio que contribuyen
+          Recursos comunitarios, equipamientos y redes del territorio que contribuyen
           a la salud de la población.
         </p>
       </div>
@@ -33,7 +33,7 @@ export function ActivosSaludPanel({ repository, onDeleteDocument }: ActivosSalud
         <p className="study-institutional-note">
           Los activos incorporados desde Localiza Salud se añaden como base de trabajo para el equipo técnico.
           En ámbitos inframunicipales —distritos o barrios—, los recursos identificados pueden pertenecer
-          al municipio o a su entorno funcional y requieren validación territorial antes de ser
+          al ámbito o a su entorno funcional y requieren validación territorial antes de ser
           interpretados como activos propios del ámbito.
         </p>
       )}

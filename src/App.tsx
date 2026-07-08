@@ -16,7 +16,7 @@ import {
   isEmptyWorkspaceForPersistenceGuard,
 } from "./application/workspace";
 import { createMunicipalityRuntime } from "./application/runtime";
-import { ingestManualDocument, extractDocxText } from "./application/document-ingestion";
+import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import { hasPSLHumanContent } from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
@@ -798,9 +798,31 @@ export default function App() {
         // tras los await, el workspace capturado por cierre puede estar obsoleto
         // y fusionarlo pisaría cambios intermedios de repositorio/evidencia.
         setWorkspace((prev) => {
+          // Un marco estratégico recargado sustituye a su versión anterior
+          // (mismo fichero o mismo título): nunca se duplica.
+          const replaced =
+            kind === "strategic-framework"
+              ? removeEquivalentStrategicFramework(prev.repository, {
+                  title: docTitle,
+                  sourceFileName: file.name,
+                })
+              : { repository: prev.repository, removedDocumentIds: [] };
+          const baseStore =
+            replaced.removedDocumentIds.length > 0
+              ? {
+                  ...prev.evidenceStore,
+                  atoms: prev.evidenceStore.atoms.filter(
+                    (a) =>
+                      a.provenance.documentId === undefined ||
+                      !replaced.removedDocumentIds.includes(a.provenance.documentId)
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : prev.evidenceStore;
+
           const result = ingestManualDocument({
-            repository: prev.repository,
-            evidenceStore: prev.evidenceStore,
+            repository: replaced.repository,
+            evidenceStore: baseStore,
             kind,
             title: docTitle,
             plainText,
@@ -831,7 +853,17 @@ export default function App() {
         // deriva de prev dentro del actualizador (mismo motivo que en DOCX).
         const documentId = crypto.randomUUID();
         setWorkspace((prev) => {
-          const nextRepository = addMunicipalDocument(prev.repository, {
+          // Un marco estratégico recargado sustituye a su versión anterior
+          // (mismo fichero o mismo título): nunca se duplica.
+          const replaced =
+            kind === "strategic-framework"
+              ? removeEquivalentStrategicFramework(prev.repository, {
+                  title: docTitle,
+                  sourceFileName: file.name,
+                })
+              : { repository: prev.repository, removedDocumentIds: [] };
+
+          const nextRepository = addMunicipalDocument(replaced.repository, {
             id: documentId,
             kind: kind as DocumentKind,
             title: docTitle,
@@ -846,6 +878,21 @@ export default function App() {
           const registeredDoc = nextRepository.documents.find((d) => d.id === documentId);
           if (registeredDoc === undefined) return prev;
 
+          // Si se sustituyó un marco previo cargado con texto, sus evidencias
+          // derivadas se purgan junto con el documento.
+          const nextStore =
+            replaced.removedDocumentIds.length > 0
+              ? {
+                  ...prev.evidenceStore,
+                  atoms: prev.evidenceStore.atoms.filter(
+                    (a) =>
+                      a.provenance.documentId === undefined ||
+                      !replaced.removedDocumentIds.includes(a.provenance.documentId)
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : prev.evidenceStore;
+
           queueMicrotask(() => {
             setLastProcessedDocument(registeredDoc);
             setLastAtomCount(0);
@@ -858,6 +905,7 @@ export default function App() {
           return {
             ...prev,
             repository: nextRepository,
+            evidenceStore: nextStore,
             updatedAt: new Date().toISOString(),
           };
         });
@@ -2702,7 +2750,7 @@ export default function App() {
               const conclusionMsg: Record<DiagState, string> = {
                 ready:   "Diagnóstico con evidencia complementaria disponible para revisar el Perfil de Salud Local.",
                 partial: "Diagnóstico en elaboración. Incorpora el Informe de Salud y fuentes complementarias para enriquecer el análisis territorial.",
-                empty:   "El diagnóstico está vacío. Comienza incorporando el Informe de Salud del municipio.",
+                empty:   "El diagnóstico está vacío. Comienza incorporando el Informe de Salud del ámbito territorial.",
               };
 
               return (
@@ -2712,7 +2760,7 @@ export default function App() {
                       <p className="eyebrow">Diagnóstico territorial</p>
                       <h2 className="diag-header__municipality">{municipality.name}</h2>
                       <p className="diag-header__subtitle">
-                        Estado metodológico del diagnóstico del municipio.
+                        Estado metodológico del diagnóstico del ámbito territorial.
                       </p>
                     </div>
                   </div>

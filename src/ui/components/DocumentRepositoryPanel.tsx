@@ -186,7 +186,7 @@ export function DocumentRepositoryPanel({ repository, onDelete }: DocumentReposi
           </div>
           <p className="panel-note">
             Memorias, planes, diagnósticos sectoriales, encuestas y otros documentos
-            incorporados al análisis territorial del municipio.
+            incorporados al análisis territorial del ámbito.
           </p>
         </div>
 

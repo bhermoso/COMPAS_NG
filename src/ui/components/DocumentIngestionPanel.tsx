@@ -302,7 +302,7 @@ export function DocumentIngestionPanel({
           <p className="ingestion-hint">
             Los activos se incorporan como base de trabajo territorial.
             En ámbitos inframunicipales —distritos o barrios—, el copia-pega puede incluir
-            recursos del municipio o del entorno funcional más amplio.
+            recursos del municipio matriz o del entorno funcional más amplio.
             Requieren validación territorial antes de ser interpretados como activos propios del ámbito.
           </p>
           <textarea
