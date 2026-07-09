@@ -93,16 +93,22 @@ describe("enriquecimiento de fuentes — vista de impacto, no cargador", () => {
     expect(html).toContain("no están desagregados"); // desigualdades: pendiente
   });
 
-  it("BADEA/IECA aparece como candidata de determinantes/desigualdades, nunca incorporada", () => {
-    const menciones = html.match(/BADEA\/IECA[^<]*/g) ?? [];
-    expect(menciones.length).toBeGreaterThanOrEqual(1);
-    for (const m of menciones) {
-      expect(m).toContain("pendiente de carga por el cargador");
-      expect(m).toContain("no incorporada todavía");
-    }
-    expect(html).not.toMatch(
-      /BADEA[^<]*(analizad[oa]s?\b|disponible\b|cargad[oa]s?\b|incorporada\.)/i
+  it("BADEA/IECA aparece como contexto incorporado real, con escala y cautela", () => {
+    // Granada-Zaidín tiene contexto BADEA verificado (municipio matriz):
+    // deja de ser «no incorporada», pero con la doctrina de escala visible.
+    expect(html).not.toContain("no incorporada todavía");
+    expect(html).toContain("primer contexto incorporado");
+    expect(html).toContain("consulta 19824");
+    expect(html).toContain("Granada (capital)");
+    expect(html).toContain("INE 18087");
+    expect(html).toContain("escala municipal");
+    expect(html).toContain("no estimación distrital");
+    // Las dimensiones específicas siguen honestamente pendientes
+    expect(html).toContain(
+      "Indicadores específicos de esta dimensión siguen pendientes de carga"
     );
+    // Sin estados afirmativos falsos más allá del contexto real
+    expect(html).not.toMatch(/BADEA[^<]*(analizad[oa]s?\b|disponible\b)/i);
   });
 
   it("no es gate de compilación ni contiene recomendaciones", () => {

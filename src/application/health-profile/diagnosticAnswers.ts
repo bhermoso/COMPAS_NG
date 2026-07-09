@@ -40,6 +40,8 @@ import {
 } from "./complementaryStudiesReading";
 import type { ComplementaryIndicatorReferencesReading } from "./complementaryIndicatorReferences";
 import { buildIndicatorComparisonReferences } from "./complementaryIndicatorReferences";
+import type { BadeaMunicipalContext } from "../badea";
+import { getBadeaMunicipalContext } from "../badea";
 
 // ── Tipos de la capa ──────────────────────────────────────────────────────────
 
@@ -95,6 +97,8 @@ export interface DiagnosticAnswers {
   estudios: ComplementaryStudiesReading;
   /** Referencias comparativas por indicador (valor demo, provincial, Andalucía). */
   referencias: ComplementaryIndicatorReferencesReading;
+  /** Contexto municipal BADEA/IECA verificado, si existe para el ámbito. */
+  badeaContexto?: BadeaMunicipalContext;
   /** Síntesis narrativa del técnico, si existe. */
   sintesisTexto?: string;
 }
@@ -406,6 +410,7 @@ export function buildDiagnosticAnswers(
     salutogenica,
     estudios: buildComplementaryStudiesReading({ workspace, indicatorTitles }),
     referencias: buildIndicatorComparisonReferences({ workspace, indicatorTitles }),
+    badeaContexto: getBadeaMunicipalContext(workspace.municipality.identity.id),
     sintesisTexto: workspace.perfilLocalDeSalud?.sintesisTexto?.trim() || undefined,
   };
 }

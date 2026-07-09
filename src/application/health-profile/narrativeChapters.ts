@@ -279,6 +279,32 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `contrastar la evidencia contextual de mayor escala.`
       );
     }
+    // Contexto municipal BADEA/IECA verificado (capa no evidencial): dato de
+    // escala municipal, etiquetado como contexto de referencia, nunca como
+    // estimación del ámbito inframunicipal.
+    const badea = input.answers?.badeaContexto;
+    if (badea !== undefined) {
+      const lineas = badea.indicadores
+        .map((i) =>
+          typeof i.valor === "number"
+            ? `${i.indicador.toLowerCase()}: ${i.valor}${i.unidad === "%" ? " %" : ` ${i.unidad ?? ""}`}`
+            : `${i.indicador.toLowerCase()}: «${i.valor}»`
+        )
+        .join("; ");
+      partes.push(
+        badea.esProxyMunicipioMatriz
+          ? `Contexto municipal de referencia (BADEA/IECA, consulta ` +
+            `${badea.indicadores[0]?.consulta ?? ""}, año ${badea.anio}): el ` +
+            `municipio matriz, ${badea.territorio} (INE ${badea.codigoINE}), ` +
+            `presenta ${lineas}. Es un dato de escala municipal incorporado ` +
+            `como contexto de referencia: no constituye una estimación específica ` +
+            `del ${scopeNoun} ni resuelve la falta de desagregación interna.`
+          : `Contexto BADEA/IECA (consulta ` +
+            `${badea.indicadores[0]?.consulta ?? ""}, año ${badea.anio}) para ` +
+            `${badea.territorio} (INE ${badea.codigoINE}): ${lineas}. Dato de ` +
+            `escala municipal, sin desagregación interna.`
+      );
+    }
     // Lectura sustantiva del Informe de Salud: qué cubre (secciones parseadas).
     if (input.answers?.healthReport.present && input.answers.healthReport.temas.length > 0) {
       partes.push(

@@ -1,4 +1,5 @@
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
+import { getBadeaMunicipalContext } from "../../../application/badea";
 
 /**
  * PerfilFuentesPanel — «Enriquecimiento de fuentes del Perfil».
@@ -78,9 +79,19 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
     ).length ?? 0;
   const tieneInforme = workspace.healthReport !== undefined;
 
-  const BADEA_CANDIDATA =
-    "Fuente candidata: BADEA/IECA — pendiente de carga por el cargador " +
-    "documental habitual; no incorporada todavía.";
+  // Contexto BADEA/IECA real (capa no evidencial, valores verificados).
+  const badea = getBadeaMunicipalContext(workspace.municipality.identity.id);
+  const BADEA_CANDIDATA = badea
+    ? `Fuente BADEA/IECA: primer contexto incorporado (consulta 19824, ` +
+      `${badea.territorio}, INE ${badea.codigoINE}, año ${badea.anio}; escala ` +
+      `municipal${
+        badea.esProxyMunicipioMatriz
+          ? " — contexto de referencia del municipio matriz, no estimación distrital"
+          : ""
+      }). Indicadores específicos de esta dimensión siguen pendientes de carga ` +
+      `por el cargador documental habitual.`
+    : "Fuente candidata: BADEA/IECA — pendiente de carga por el cargador " +
+      "documental habitual; no incorporada todavía.";
 
   // ── Dimensiones de impacto sobre el Perfil ────────────────────────────────
   const dimensiones: DimensionImpacto[] = [
@@ -151,13 +162,22 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
     },
     {
       dimension: "Anexo técnico / contexto",
-      estado: territoriales > 0 || marcos > 0 ? "cubierta" : "pendiente",
+      estado: territoriales > 0 || marcos > 0 || badea ? "cubierta" : "pendiente",
       detalle:
-        territoriales > 0 || marcos > 0
+        (territoriales > 0 || marcos > 0
           ? `${territoriales} documento(s) territoriales de contexto y ` +
             `${marcos} marco(s) estratégico(s) de referencia (los marcos son ` +
             `insumos para el Plan de Acción, no evidencia diagnóstica).`
-          : "Sin documentación territorial de contexto todavía.",
+          : "Sin documentación territorial de contexto todavía.") +
+        (badea
+          ? ` Contexto sociodemográfico BADEA/IECA incorporado: grado de ` +
+            `urbanización de ${badea.territorio} (consulta 19824, ${badea.anio})` +
+            `${
+              badea.esProxyMunicipioMatriz
+                ? ", como contexto del municipio matriz — no estimación distrital"
+                : ""
+            }.`
+          : ""),
     },
   ];
 

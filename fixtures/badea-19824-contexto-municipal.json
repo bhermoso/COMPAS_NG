@@ -1,0 +1,70 @@
+{
+  "consulta": 19824,
+  "title": "Porcentaje de población según tipología de celda y grado de urbanización por municipio",
+  "activity": "Clasificación del grado de urbanización",
+  "source": "IECA",
+  "apiUrl": "https://www.juntadeandalucia.es/institutodeestadisticaycartografia/intranet/admin/rest/v1.0/consulta/19824",
+  "accessedAt": "2026-07-07",
+  "transcribedFrom": [
+    "docs/methodology/pilots/BADEA-IECA-PILOT-ATARFE-19824.md (ejecución del piloto, datos completos de Atarfe)",
+    "docs/methodology/pilots/BADEA-IECA-TERRITORIAL-SCOPE-MAPPING.md (consulta filtrada verificada para Granada capital)"
+  ],
+  "nota": "Transcripción fiel de los valores verificados en las ejecuciones documentadas. La respuesta cruda de la API no se conservó como fichero; solo se incorporan los valores registrados en la documentación metodológica. Ningún valor es inventado.",
+  "records": [
+    {
+      "territorio": "Granada (capital)",
+      "ine": "18087",
+      "badeaInternalId": 2574,
+      "anio": "2024",
+      "escala": "municipio",
+      "gradoUrbanizacion": "Ciudades",
+      "medidas": [
+        {
+          "indicador": "Porcentaje de población en centros urbanos",
+          "valor": 96.6,
+          "unidad": "%",
+          "precision": "documentada a 1 decimal en la ejecución verificada"
+        }
+      ],
+      "medidasNoRegistradas": [
+        "Porcentaje de población en agrupaciones urbanas",
+        "Porcentaje de población en celdas de malla rurales"
+      ]
+    },
+    {
+      "territorio": "Atarfe",
+      "ine": "18022",
+      "badeaInternalId": 2505,
+      "anio": "2024",
+      "escala": "municipio",
+      "gradoUrbanizacion": "Zona de densidad intermedia",
+      "medidas": [
+        {
+          "indicador": "Porcentaje de población en centros urbanos",
+          "valor": 0.0,
+          "unidad": "%",
+          "precision": "valor exacto documentado: 0.0"
+        },
+        {
+          "indicador": "Porcentaje de población en agrupaciones urbanas",
+          "valor": 94.3,
+          "unidad": "%",
+          "precision": "valor exacto documentado: 94.31951509999999"
+        },
+        {
+          "indicador": "Porcentaje de población en celdas de malla rurales",
+          "valor": 5.7,
+          "unidad": "%",
+          "precision": "valor exacto documentado: 5.6804849"
+        }
+      ],
+      "medidasNoRegistradas": []
+    }
+  ],
+  "cautelas": [
+    "Dato de escala municipal: para ámbitos inframunicipales (distritos) solo puede usarse como contexto municipal de referencia del municipio matriz, nunca como estimación específica del distrito.",
+    "BADEA no tiene ámbito de distrito: Granada-Zaidín no es un municipio BADEA.",
+    "El dato describe contexto poblacional/territorial; no es un indicador de salud ni permite inferencia causal.",
+    "No aporta desagregación interna por sexo, edad ni condición socioeconómica: no resuelve la incertidumbre de desigualdades."
+  ]
+}
