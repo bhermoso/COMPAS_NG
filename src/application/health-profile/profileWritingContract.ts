@@ -89,9 +89,26 @@ export function checkProfileWritingContract(
   return violations;
 }
 
+// ── Principio de primacía local ───────────────────────────────────────────────
+// El Perfil comenta primero la evidencia local o directamente incorporada al
+// proceso; las fuentes externas o de escala superior solo contextualizan,
+// comparan o ayudan a formular hipótesis, con cautela de escala, y nunca son
+// la historia principal.
+
+export const LOCAL_PRIMACY_RULE =
+  "El Perfil comenta primero la evidencia local o directamente incorporada " +
+  "al proceso —Informe de Salud, estudios complementarios, documentación " +
+  "territorial, activos, material cualitativo, priorización y contraste " +
+  "comunitario cuando existan—. Las fuentes externas o de escala superior " +
+  "—BADEA/IECA, EAS, Andalucía, provincia, municipio matriz usado como " +
+  "proxy— solo contextualizan, comparan o ayudan a formular hipótesis, y " +
+  "deben aparecer con cautela de escala. No pueden convertirse en la " +
+  "historia principal del Perfil.";
+
 // ── Criterios positivos (verificables sobre el texto generado) ───────────────
 
 export const POSITIVE_WRITING_CRITERIA = [
+  "prioritizesLocalEvidence: comenta primero la evidencia local del proceso; el contexto externo (BADEA/IECA, EAS, proxy del municipio matriz) contextualiza sin protagonizar",
   "conecta señales con mecanismos sociales plausibles",
   "formula preguntas de contraste comunitario",
   "diferencia evidencia directa, proxy/contexto y ausencia de dato",

@@ -285,6 +285,17 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `contrastar la evidencia contextual de mayor escala.`
       );
     }
+    // Lectura sustantiva del Informe de Salud: qué cubre (secciones parseadas).
+    if (input.answers?.healthReport.present && input.answers.healthReport.temas.length > 0) {
+      partes.push(
+        `La fuente diagnóstica primaria cubre la base oficial del diagnóstico en: ` +
+        `${input.answers.healthReport.temas.join("; ")}. Es la fuente que ` +
+        `estructura la lectura de situación de este Perfil: fija la base ` +
+        `sociodemográfica y epidemiológica sobre la que se interpretan las ` +
+        `señales de los estudios complementarios; su detalle debe consultarse ` +
+        `en el documento original, preservado íntegro.`
+      );
+    }
     // Contexto municipal BADEA/IECA verificado (capa no evidencial): dato de
     // escala municipal, etiquetado como contexto de referencia, nunca como
     // estimación del ámbito inframunicipal.
@@ -309,17 +320,6 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
             `${badea.indicadores[0]?.consulta ?? ""}, año ${badea.anio}) para ` +
             `${badea.territorio} (INE ${badea.codigoINE}): ${lineas}. Dato de ` +
             `escala municipal, sin desagregación interna.`
-      );
-    }
-    // Lectura sustantiva del Informe de Salud: qué cubre (secciones parseadas).
-    if (input.answers?.healthReport.present && input.answers.healthReport.temas.length > 0) {
-      partes.push(
-        `La fuente diagnóstica primaria cubre la base oficial del diagnóstico en: ` +
-        `${input.answers.healthReport.temas.join("; ")}. Es la fuente que ` +
-        `estructura la lectura de situación de este Perfil: fija la base ` +
-        `sociodemográfica y epidemiológica sobre la que se interpretan las ` +
-        `señales de los estudios complementarios; su detalle debe consultarse ` +
-        `en el documento original, preservado íntegro.`
       );
     }
     partes.push(...redactarConocimiento(input.answers, ["contexto-territorial"]));

@@ -22,6 +22,8 @@ import {
   checkProfileWritingContract,
   DIAGNOSTIC_ENGINE_QUESTIONS,
   PROFILE_READING_DIMENSIONS,
+  POSITIVE_WRITING_CRITERIA,
+  LOCAL_PRIMACY_RULE,
 } from "../src/application/health-profile";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
 import type { LocalHealthProfile } from "../src/domain/health-profile";
@@ -92,6 +94,51 @@ describe("contrato de escritura — definición operativa", () => {
         "Este capítulo no formula recomendaciones, actuaciones ni programas."
       )
     ).toHaveLength(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Principio de primacía local
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("contrato de escritura — primacía local", () => {
+  it("el contrato declara la primacía de la evidencia local", () => {
+    expect(LOCAL_PRIMACY_RULE).toContain("comenta primero la evidencia local");
+    expect(LOCAL_PRIMACY_RULE).toContain("No pueden convertirse en la historia principal");
+    expect(
+      POSITIVE_WRITING_CRITERIA.some((c) => c.includes("prioritizesLocalEvidence"))
+    ).toBe(true);
+    // Y el documento metodológico recoge la sección
+    const doc = readFileSync(
+      resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "../docs/architecture/PROFILE-WRITING-CONTRACT.md"
+      ),
+      "utf8"
+    );
+    expect(doc).toContain("Principio de primacía local");
+    expect(doc).toContain("nunca sustituye a la evidencia");
+  });
+
+  it("la lectura comenta el Informe y los estudios antes que el contexto externo BADEA", () => {
+    const informe = texto.indexOf("cubre la base oficial del diagnóstico");
+    const badea = texto.indexOf("Contexto municipal de referencia (BADEA/IECA");
+    const estudios = texto.indexOf("no aportan solo");
+    expect(informe).toBeGreaterThan(-1);
+    expect(badea).toBeGreaterThan(-1);
+    expect(estudios).toBeGreaterThan(-1);
+    // En el capítulo de contexto, la fuente primaria precede al proxy externo
+    expect(informe).toBeLessThan(badea);
+  });
+
+  it("BADEA contextualiza sin protagonizar y conserva su cautela proxy", () => {
+    // Pocas menciones: contexto, no historia principal
+    const menciones = texto.match(/BADEA/g) ?? [];
+    expect(menciones.length).toBeLessThanOrEqual(2);
+    expect(texto).toContain("no constituye una estimación específica del distrito");
+    // La evidencia propia del proceso domina el relato
+    const estudiosMenciones = texto.match(/estudios complementarios/g) ?? [];
+    expect(estudiosMenciones.length).toBeGreaterThan(menciones.length);
   });
 });
 

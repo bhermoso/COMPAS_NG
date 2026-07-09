@@ -50,6 +50,24 @@ Operativamente:
   entorno cotidiano y las condiciones de vida son la clave de lectura: cómo
   se duerme, cuánto apoyo se tiene, cuánto se camina, qué se come.
 
+## 2 bis. Principio de primacía local
+
+El Perfil comenta **primero** la evidencia local o directamente incorporada
+al proceso —Informe de Salud (fuente primaria), estudios complementarios
+(señales propias del proceso), documentación territorial, activos, material
+cualitativo, priorización y contraste comunitario cuando existan—. Las
+fuentes externas o de escala superior —BADEA/IECA, EAS, Andalucía,
+provincia, municipio matriz usado como proxy— **solo contextualizan,
+comparan o ayudan a formular hipótesis**, y aparecen siempre con cautela de
+escala. **No pueden convertirse en la historia principal del Perfil**, y el
+proxy municipal/provincial/autonómico nunca sustituye a la evidencia
+distrital/local: donde falte dato local, se declara la ausencia, no se
+rellena con contexto externo.
+
+Consecuencia de orden: en cada capítulo, la evidencia local precede al
+contexto externo (p. ej., el Informe de Salud se comenta antes que el
+contexto BADEA del municipio matriz).
+
 ## 3. Reglas de escritura
 
 1. Abrir por la comprensión del territorio, no por la lista de fuentes.

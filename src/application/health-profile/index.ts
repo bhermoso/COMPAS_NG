@@ -74,6 +74,7 @@ export {
   PROFILE_READING_DIMENSIONS,
   DIAGNOSTIC_ENGINE_QUESTIONS,
   POSITIVE_WRITING_CRITERIA,
+  LOCAL_PRIMACY_RULE,
 } from "./profileWritingContract";
 export type {
   ComplementaryStudiesReading,
