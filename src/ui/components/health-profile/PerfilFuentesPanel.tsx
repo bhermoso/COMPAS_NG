@@ -3,99 +3,59 @@ import type { MunicipalityWorkspace } from "../../../domain/workspace";
 /**
  * PerfilFuentesPanel — «Enriquecimiento de fuentes del Perfil».
  *
- * Primer plano del enriquecimiento del Perfil Local de Salud: incorporar
- * nuevas fuentes territoriales, estadísticas, sociales y comunitarias que
- * amplíen la base de evidencia antes de compilar el PSL-C. Es un plano
- * distinto del «Enriquecimiento interpretativo» (lectura técnica humana
- * sobre la evidencia disponible), que aparece después.
+ * VISTA DE IMPACTO, no cargador: este bloque NO carga documentos ni
+ * sustituye al Repositorio documental. Resume cómo las fuentes ya
+ * incorporadas enriquecen la lectura del Perfil y qué DIMENSIONES
+ * diagnósticas siguen pendientes. La carga de nuevas fuentes se hace
+ * siempre desde el selector/cargador documental habitual (pestaña
+ * «Diagnóstico territorial» · Repositorio documental).
  *
  * Reglas:
- *   - Muestra SOLO lo que existe de verdad en el expediente (workspace);
- *     las fuentes candidatas se declaran pendientes, nunca incorporadas.
- *   - No promete automatizaciones inexistentes ni inventa indicadores.
- *   - No es requisito de compilación: el PSL-C se compila con la base
- *     disponible.
- *   - No produce recomendaciones ni actuaciones.
+ *   - Sin categorías de carga propias: solo dimensiones de impacto.
+ *   - Las fuentes candidatas (BADEA/IECA) se citan dentro de la dimensión
+ *     a la que servirían, pendientes de carga por el cargador habitual,
+ *     nunca como incorporadas.
+ *   - No es requisito de compilación y no produce recomendaciones.
  */
 
 interface PerfilFuentesPanelProps {
   workspace: MunicipalityWorkspace;
 }
 
-interface FuenteCandidata {
-  nombre: string;
-  descripcion: string;
-  estado: string;
+type EstadoDimension = "cubierta" | "parcial" | "pendiente";
+
+interface DimensionImpacto {
+  dimension: string;
+  estado: EstadoDimension;
+  detalle: string;
 }
 
-const FUENTES_CANDIDATAS: FuenteCandidata[] = [
-  {
-    nombre: "BADEA / IECA",
-    descripcion:
-      "Indicadores territoriales y sociodemográficos oficiales para " +
-      "contextualizar determinantes sociales, estructura poblacional y " +
-      "desigualdades. No hay datos BADEA incorporados al Perfil mientras no " +
-      "se cargue una fuente real.",
-    estado: "pendiente de integración o carga estructurada",
-  },
-  {
-    nombre: "Indicadores sociodemográficos y determinantes sociales",
-    descripcion:
-      "Renta, empleo, educación y vivienda del ámbito, para caracterizar los " +
-      "determinantes que la evidencia actual no documenta de forma directa.",
-    estado: "pendiente de incorporación",
-  },
-  {
-    nombre: "Infancia y adolescencia",
-    descripcion:
-      "Fuentes específicas de población infantil y adolescente que amplíen " +
-      "la lectura del bienestar socioemocional escolar.",
-    estado: "preparada como fuente candidata",
-  },
-  {
-    nombre: "Envejecimiento, dependencia y soledad",
-    descripcion:
-      "Fuentes sobre estructura de edad, dependencia y soledad no deseada, " +
-      "que permitirían contrastar el eje de envejecimiento señalado por el " +
-      "mapa de activos.",
-    estado: "pendiente de incorporación",
-  },
-  {
-    nombre: "Medio urbano y entorno cotidiano",
-    descripcion:
-      "Documentación sobre espacio público, accesibilidad y usos cotidianos, " +
-      "vinculada a la hipótesis de entorno urbano y vida activa.",
-    estado: "requiere carga estructurada",
-  },
-  {
-    nombre: "Activos comunitarios verificados",
-    descripcion:
-      "Validación territorial fina del inventario Localiza Salud para " +
-      "atribuir cada activo al ámbito con precisión.",
-    estado: "pendiente de verificación territorial",
-  },
-  {
-    nombre: "Documentación cualitativa y participativa adicional",
-    descripcion:
-      "Material cualitativo, actas y procesos participativos que aporten la " +
-      "perspectiva ciudadana al diagnóstico.",
-    estado: "preparada como fuente candidata",
-  },
-];
+const MARCA: Record<EstadoDimension, string> = {
+  cubierta: "✓",
+  parcial: "◐",
+  pendiente: "○",
+};
 
 export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
   const nombre = workspace.municipality.identity.name;
   const docs = workspace.repository.documents;
   const atoms = workspace.evidenceStore.atoms;
 
-  // ── Fuentes reales ya presentes en el expediente ──────────────────────────
-  const territoriales = docs.filter((d) => d.kind === "territorial-documentation");
-  const marcos = docs.filter((d) => d.kind === "strategic-framework");
-  const cualitativos =
-    docs.filter((d) => d.kind === "qualitative-material").length +
-    atoms.filter((a) => a.kind === "qualitative-observation").length;
+  // ── Señales reales del expediente (sin duplicar categorías de carga) ──────
+  const territoriales = docs.filter(
+    (d) => d.kind === "territorial-documentation"
+  ).length;
+  const marcos = docs.filter((d) => d.kind === "strategic-framework").length;
+  const cualitativos = atoms.filter(
+    (a) => a.kind === "qualitative-observation"
+  ).length;
   const activos = atoms.filter(
     (a) => a.provenance.origin === "localiza-salud"
+  ).length;
+  const determinantes = atoms.filter((a) => a.kind === "determinant").length;
+  const indicadores = atoms.filter((a) => a.kind === "indicator").length;
+  const cautelas = atoms.filter(
+    (a) => a.kind === "methodological-caution"
   ).length;
   const estudios = [
     workspace.ibseStudy,
@@ -112,46 +72,94 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
     workspace.fagerstromStudy,
     workspace.sbqStudy,
   ].filter(Boolean).length;
+  const preguntasAbiertas =
+    workspace.perfilLocalDeSalud?.preguntasAbiertas.filter(
+      (q) => q.status === "abierta"
+    ).length ?? 0;
+  const tieneInforme = workspace.healthReport !== undefined;
 
-  const incorporadas: string[] = [];
-  if (workspace.healthReport) {
-    incorporadas.push(
-      `Fuente diagnóstica primaria: «${workspace.healthReport.title}» ` +
-        `(preservada íntegra en el Repositorio documental).`
-    );
-  }
-  if (territoriales.length > 0) {
-    incorporadas.push(
-      `Documentación territorial de contexto: ${territoriales.length} documento(s) ` +
-        `(${territoriales.map((d) => d.title).slice(0, 2).join("; ")}${
-          territoriales.length > 2 ? "; …" : ""
-        }).`
-    );
-  }
-  if (estudios > 0) {
-    incorporadas.push(`Estudios complementarios: ${estudios} instrumento(s).`);
-  }
-  if (activos > 0) {
-    incorporadas.push(
-      `Activos y recursos comunitarios (Localiza Salud): ${activos}, ` +
-        `pendientes de validación territorial fina.`
-    );
-  }
-  if (cualitativos > 0) {
-    incorporadas.push(
-      `Material cualitativo/participativo: ${cualitativos} elemento(s).`
-    );
-  }
-  if (marcos.length > 0) {
-    incorporadas.push(
-      `Marcos estratégicos de referencia: ${marcos.length} (insumos para el ` +
-        `Plan de Acción; no son evidencia diagnóstica).`
-    );
-  }
-  incorporadas.push(
-    `Total del expediente: ${docs.length} documento(s) y ${atoms.length} ` +
-      `elemento(s) de evidencia.`
-  );
+  const BADEA_CANDIDATA =
+    "Fuente candidata: BADEA/IECA — pendiente de carga por el cargador " +
+    "documental habitual; no incorporada todavía.";
+
+  // ── Dimensiones de impacto sobre el Perfil ────────────────────────────────
+  const dimensiones: DimensionImpacto[] = [
+    {
+      dimension: "Situación de salud",
+      estado: tieneInforme || estudios > 0 ? "cubierta" : "pendiente",
+      detalle:
+        tieneInforme || estudios > 0
+          ? `${tieneInforme ? "Informe de Salud" : "Sin Informe"} + ${estudios} ` +
+            `estudio(s) complementario(s) con ${indicadores} indicador(es): ` +
+            `alimentan los capítulos de situación de salud y bienestar.`
+          : "Sin fuente diagnóstica primaria ni estudios todavía.",
+    },
+    {
+      dimension: "Determinantes sociales",
+      estado: determinantes > 0 ? "cubierta" : "pendiente",
+      detalle:
+        determinantes > 0
+          ? `${determinantes} determinante(s) con evidencia directa.`
+          : `Sin evidencia directa: la lectura se sostiene por hipótesis ` +
+            `epidemiológico-sociales. ${BADEA_CANDIDATA}`,
+    },
+    {
+      dimension: "Desigualdades",
+      estado: "pendiente",
+      detalle:
+        `Los agregados disponibles no están desagregados por sexo, edad ni ` +
+        `condición socioeconómica: la ausencia consta como incertidumbre. ` +
+        `${BADEA_CANDIDATA}`,
+    },
+    {
+      dimension: "Activos y capacidades",
+      estado: activos > 0 ? "cubierta" : "pendiente",
+      detalle:
+        activos > 0
+          ? `${activos} activo(s) de Localiza Salud con lectura salutogénica; ` +
+            `pendientes de validación territorial fina.`
+          : "Sin activos incorporados todavía.",
+    },
+    {
+      dimension: "Experiencia vivida / cualitativo",
+      estado: cualitativos > 0 ? "parcial" : "pendiente",
+      detalle:
+        cualitativos > 0
+          ? `${cualitativos} elemento(s) cualitativo(s): base aún limitada para ` +
+            `la perspectiva ciudadana.`
+          : "Sin material cualitativo/participativo todavía.",
+    },
+    {
+      dimension: "Incertidumbres",
+      estado: cautelas > 0 ? "cubierta" : "pendiente",
+      detalle:
+        cautelas > 0
+          ? `${cautelas} cautela(s) metodológica(s) declaradas (escala ` +
+            `proxy/contextual incluida): alimentan las incertidumbres críticas ` +
+            `del documento.`
+          : "Sin cautelas registradas.",
+    },
+    {
+      dimension: "Preguntas para el Grupo Motor",
+      estado: preguntasAbiertas > 0 ? "parcial" : "pendiente",
+      detalle:
+        preguntasAbiertas > 0
+          ? `${preguntasAbiertas} pregunta(s) abierta(s) del equipo técnico, ` +
+            `además de las preguntas de contraste generadas por el diagnóstico.`
+          : `El diagnóstico genera preguntas de contraste; el equipo puede ` +
+            `añadir las suyas en el enriquecimiento interpretativo.`,
+    },
+    {
+      dimension: "Anexo técnico / contexto",
+      estado: territoriales > 0 || marcos > 0 ? "cubierta" : "pendiente",
+      detalle:
+        territoriales > 0 || marcos > 0
+          ? `${territoriales} documento(s) territoriales de contexto y ` +
+            `${marcos} marco(s) estratégico(s) de referencia (los marcos son ` +
+            `insumos para el Plan de Acción, no evidencia diagnóstica).`
+          : "Sin documentación territorial de contexto todavía.",
+    },
+  ];
 
   return (
     <section
@@ -164,49 +172,37 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
       </p>
       <h2 className="ekc-panel__title">Enriquecimiento de fuentes del Perfil</h2>
       <p className="panel-note">
-        Sirve para incorporar nuevas fuentes territoriales, estadísticas,
-        sociales y comunitarias antes de compilar el PSL-C: amplían la base de
-        evidencia y mejoran la lectura territorial del documento. No sustituyen
-        la interpretación técnica del equipo y no producen recomendaciones ni
-        actuaciones. Cada fuente cargada alimenta el diagnóstico, la base
-        documental, los estudios o el anexo técnico según su tipo. Las fuentes
-        candidatas todavía no incorporadas no generan contenido sustantivo en
-        el Perfil. La incorporación se realiza con los cargadores del
-        Repositorio documental (documentación territorial, estudios, activos,
-        material cualitativo).
+        Este bloque no carga documentos. Resume cómo las fuentes incorporadas
+        al Repositorio documental enriquecen la lectura del Perfil y qué
+        dimensiones siguen pendientes. Para cargar nuevas fuentes, usa el
+        selector/cargador documental habitual (pestaña «Diagnóstico
+        territorial» · Repositorio documental). Las fuentes amplían la base de
+        evidencia; no sustituyen la interpretación técnica del equipo y no
+        producen recomendaciones ni actuaciones.
       </p>
 
-      <h3 className="ekc-panel__subtitle">Fuentes incorporadas al expediente</h3>
-      {incorporadas.length > 1 ? (
-        <ul className="pslc-salidas__items">
-          {incorporadas.map((f, i) => (
-            <li key={i} className="pslc-salidas__item pslc-salidas__item--ok">
-              <span aria-hidden="true">✓</span> {f}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="panel-note">
-          Sin fuentes incorporadas todavía. Comienza por el Informe de Salud en
-          el Repositorio documental.
-        </p>
-      )}
-
       <h3 className="ekc-panel__subtitle">
-        Fuentes candidatas · pendientes de incorporación
+        Dimensiones diagnósticas del Perfil: cobertura actual
       </h3>
       <ul className="pslc-salidas__items">
-        {FUENTES_CANDIDATAS.map((f) => (
-          <li key={f.nombre} className="pslc-salidas__item">
-            <span aria-hidden="true">◌</span> <strong>{f.nombre}</strong> —{" "}
-            {f.descripcion} Estado: <em>{f.estado}</em>.
+        {dimensiones.map((d) => (
+          <li
+            key={d.dimension}
+            className={
+              d.estado === "pendiente"
+                ? "pslc-salidas__item"
+                : "pslc-salidas__item pslc-salidas__item--ok"
+            }
+          >
+            <span aria-hidden="true">{MARCA[d.estado]}</span>{" "}
+            <strong>{d.dimension}</strong> — {d.estado}. {d.detalle}
           </li>
         ))}
       </ul>
       <p className="panel-note">
-        Estas fuentes están preparadas como candidatas: no se muestran datos ni
-        indicadores suyos porque no hay carga real. Su incorporación es
-        opcional y no condiciona la compilación del PSL-C.
+        La cobertura de dimensiones es orientativa y no condiciona la
+        compilación del PSL-C: el documento se compila con la base disponible y
+        declara sus incertidumbres.
       </p>
     </section>
   );

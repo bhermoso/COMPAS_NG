@@ -1,13 +1,11 @@
 /**
  * tests/perfil-fuentes-enriquecimiento.test.tsx
  *
- * «Enriquecimiento de fuentes del Perfil»: plano de producto para incorporar
- * nuevas fuentes territoriales antes de compilar el PSL-C, separado del
- * enriquecimiento interpretativo (lectura técnica humana).
- *
- * Protege la honestidad del bloque: las fuentes reales del expediente se
- * resumen desde el workspace; las candidatas (BADEA/IECA, sociodemográficas,
- * etc.) se declaran pendientes y jamás como datos incorporados.
+ * «Enriquecimiento de fuentes del Perfil» como VISTA DE IMPACTO:
+ * no es un cargador ni un segundo selector documental — resume cómo las
+ * fuentes ya incorporadas al Repositorio documental enriquecen la lectura
+ * del Perfil y qué dimensiones diagnósticas siguen pendientes. La carga se
+ * hace siempre desde el cargador documental habitual.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
@@ -55,70 +53,62 @@ beforeAll(() => {
   html = renderToStaticMarkup(<PerfilFuentesPanel workspace={ws} />);
 }, 60000);
 
-describe("enriquecimiento de fuentes — presentación y honestidad", () => {
-  it("explica su función y su relación con el PSL-C", () => {
-    expect(html).toContain("Enriquecimiento de fuentes del Perfil");
-    expect(html).toContain("antes de compilar el PSL-C");
-    expect(html).toContain("amplían la base de evidencia");
-    expect(html).toContain("No sustituyen la interpretación técnica");
-    expect(html).toContain("no producen recomendaciones ni actuaciones");
+describe("enriquecimiento de fuentes — vista de impacto, no cargador", () => {
+  it("declara que no carga documentos y remite al cargador habitual", () => {
+    expect(html).toContain("Este bloque no carga documentos.");
     expect(html).toContain(
-      "no generan contenido sustantivo en el Perfil"
+      "Resume cómo las fuentes incorporadas al Repositorio documental " +
+        "enriquecen la lectura del Perfil y qué dimensiones siguen pendientes."
     );
+    expect(html).toContain("selector/cargador documental habitual");
+    expect(html).toContain("Repositorio documental");
     expect(html).toContain('id="psl-enriquecimiento-fuentes"');
   });
 
-  it("resume las fuentes reales del expediente vigente 56/92", () => {
-    expect(html).toContain("Fuentes incorporadas al expediente");
-    expect(html).toContain("Fuente diagnóstica primaria");
-    expect(html).toContain("13 instrumento(s)");
-    expect(html).toContain("Localiza Salud): 56");
-    expect(html).toContain("20 documento(s) y 92 elemento(s) de evidencia");
-    expect(html).toContain("Documentación territorial de contexto");
-    expect(html).toContain("no son evidencia diagnóstica"); // marcos
-  });
-
-  it("BADEA/IECA es fuente candidata pendiente, nunca dato incorporado", () => {
-    expect(html).toContain("Fuentes candidatas · pendientes de incorporación");
-    expect(html).toContain("BADEA / IECA");
-    expect(html).toContain("pendiente de integración o carga estructurada");
-    expect(html).toContain(
-      "No hay datos BADEA incorporados al Perfil mientras no se cargue una fuente real"
-    );
-    // BADEA no aparece entre las incorporadas
-    const incorporadas = html.slice(
-      html.indexOf("Fuentes incorporadas al expediente"),
-      html.indexOf("Fuentes candidatas")
-    );
-    expect(incorporadas).not.toContain("BADEA");
-    // Sin estados afirmativos falsos ni promesas de automatización
-    // (la única mención a "incorporados" junto a BADEA es la negación honesta)
-    expect(html).not.toMatch(/BADEA[^<]*(analizad[oa]|disponible)/i);
-    const conIncorporad = html.match(/BADEA[^<]*incorporad/gi) ?? [];
-    const negacionHonesta = html.match(/No hay datos BADEA incorporad/gi) ?? [];
-    expect(conIncorporad.length).toBe(negacionHonesta.length);
+  it("no duplica el selector: sin botones de carga ni promesas de automatización", () => {
+    expect(html).not.toMatch(/<input|type="file"|Cargar archivo|Subir/i);
     expect(html).not.toMatch(
       /descarga autom[áa]tica|integraci[óo]n autom[áa]tica|sincronizaci[óo]n/i
     );
   });
 
-  it("las candidatas cubren los ámbitos previstos con lenguaje de estado", () => {
-    for (const candidata of [
-      "Indicadores sociodemográficos y determinantes sociales",
-      "Infancia y adolescencia",
-      "Envejecimiento, dependencia y soledad",
-      "Medio urbano y entorno cotidiano",
-      "Activos comunitarios verificados",
-      "Documentación cualitativa y participativa adicional",
+  it("muestra dimensiones de impacto del Perfil con su cobertura real (56/92)", () => {
+    for (const dimension of [
+      "Situación de salud",
+      "Determinantes sociales",
+      "Desigualdades",
+      "Activos y capacidades",
+      "Experiencia vivida / cualitativo",
+      "Incertidumbres",
+      "Preguntas para el Grupo Motor",
+      "Anexo técnico / contexto",
     ]) {
-      expect(html).toContain(candidata);
+      expect(html).toContain(dimension);
     }
-    expect(html).toContain("no condiciona la compilación del PSL-C");
+    // Cobertura derivada del expediente vigente, no inventada
+    expect(html).toContain("13 estudio(s) complementario(s)");
+    expect(html).toContain("23 indicador(es)");
+    expect(html).toContain("56 activo(s) de Localiza Salud");
+    expect(html).toContain("Sin evidencia directa"); // determinantes: pendiente
+    expect(html).toContain("no están desagregados"); // desigualdades: pendiente
   });
 
-  it("no introduce recomendaciones, programas ni plan de acción como contenido del Perfil", () => {
+  it("BADEA/IECA aparece como candidata de determinantes/desigualdades, nunca incorporada", () => {
+    const menciones = html.match(/BADEA\/IECA[^<]*/g) ?? [];
+    expect(menciones.length).toBeGreaterThanOrEqual(1);
+    for (const m of menciones) {
+      expect(m).toContain("pendiente de carga por el cargador");
+      expect(m).toContain("no incorporada todavía");
+    }
     expect(html).not.toMatch(
-      /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico/i
+      /BADEA[^<]*(analizad[oa]s?\b|disponible\b|cargad[oa]s?\b|incorporada\.)/i
+    );
+  });
+
+  it("no es gate de compilación ni contiene recomendaciones", () => {
+    expect(html).toContain("no condiciona la compilación del PSL-C");
+    expect(html).not.toMatch(
+      /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|plan de acci[óo]n del perfil/i
     );
   });
 });
@@ -142,7 +132,6 @@ describe("enriquecimiento de fuentes — separación de planos", () => {
     );
     expect(fuentes).toBeGreaterThan(-1);
     expect(interpretativo).toBeGreaterThan(fuentes);
-    // El interpretativo remite a las fuentes como paso previo posible
     expect(ambos).toContain("incorporar nuevas fuentes territoriales");
   });
 
