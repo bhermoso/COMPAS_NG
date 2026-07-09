@@ -9373,11 +9373,13 @@ h3 {
 }
 
 /* ── Gramática visual semántica del Perfil (contrato visual) ──────────────── */
-.pv--informe  { background: #1e293b; }
-.pv--estudio  { background: #1d4ed8; }
-.pv--proxy    { background: #b45309; }
-.pv--activo   { background: #15803d; }
-.pv--equidad  { background: #7e22ce; }
+/* Tokens COMPÁS (docs/visual/VISUAL-CONTRACT.md): el color actúa como acento,
+   borde o barra sobre fondos blancos/neutros, nunca como decoración de cards. */
+.pv--informe  { background: #0074c8; }
+.pv--estudio  { background: #00acd9; }
+.pv--proxy    { background: #ffb61b; }
+.pv--activo   { background: #94d40b; }
+.pv--equidad  { background: #dc143c; }
 
 .pv-charts-grid {
   display: grid;
@@ -9430,6 +9432,8 @@ h3 {
   border-radius: 10px;
   white-space: nowrap;
 }
+/* Legibilidad sobre los tokens claros de la paleta (ámbar y verde salud). */
+.pv-escala.pv--proxy, .pv-escala.pv--activo { color: #1e293b; }
 
 /* Tabla diagnóstica central */
 .pv-tabla-central__valor { font-weight: 700; color: #1e293b; }
@@ -9450,15 +9454,15 @@ h3 {
 }
 .pv-card.pv--informe, .pv-card.pv--estudio, .pv-card.pv--proxy,
 .pv-card.pv--activo, .pv-card.pv--equidad { background: #fff; }
-.pv-card.pv--estudio { border-top-color: #1d4ed8; }
-.pv-card.pv--activo  { border-top-color: #15803d; }
-.pv-card.pv--equidad { border-top-color: #7e22ce; }
-.pv-card.pv--informe { border-top-color: #1e293b; }
-.pv-card.pv--proxy   { border-top-color: #b45309; }
+.pv-card.pv--estudio { border-top-color: #00acd9; }
+.pv-card.pv--activo  { border-top-color: #94d40b; }
+.pv-card.pv--equidad { border-top-color: #dc143c; }
+.pv-card.pv--informe { border-top-color: #0074c8; }
+.pv-card.pv--proxy   { border-top-color: #ffb61b; }
 .pv-card__tema { margin: 0 0 6px; font-size: 0.92rem; color: #1e293b; }
 .pv-card__senal { font-size: 0.85rem; color: #33404e; margin: 0 0 6px; }
 .pv-card__mecanismo { font-size: 0.8rem; color: #475569; margin: 0 0 6px; }
-.pv-card__pregunta { font-size: 0.85rem; font-weight: 600; color: #1d4ed8; margin: 0; }
+.pv-card__pregunta { font-size: 0.85rem; font-weight: 600; color: #0074c8; margin: 0; }
 
 /* ── Pulido de «Salud en síntesis» ─────────────────────────────────────────── */
 .psl-sintesis__mensajes--secundarios {
@@ -9478,6 +9482,6 @@ h3 {
 .pv-bar__etiqueta { line-height: 1.25; overflow-wrap: break-word; }
 .pv-card__oculto {
   font-size: 0.8rem;
-  color: #7e22ce;
+  color: #dc143c;
   margin: 0 0 6px;
 }

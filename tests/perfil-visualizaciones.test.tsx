@@ -262,6 +262,52 @@ describe("gramática visual semántica y Grupo Motor", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
+// Conformidad con la paleta COMPÁS (docs/visual/VISUAL-CONTRACT.md)
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("gramática visual pv-* — paleta COMPÁS", () => {
+  const css = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../src/App.css"),
+    "utf8"
+  );
+  // Solo las reglas cuyo selector pertenece a la gramática visual nueva del
+  // Perfil (pv-*): las ocurrencias antiguas fuera de este bloque no cuentan.
+  const sinComentarios = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const reglasPv = [...sinComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter(([, selector]) => selector.includes(".pv-"))
+    .map(([, selector, cuerpo]) => selector.trim() + " { " + cuerpo.trim() + " }");
+
+  it("las reglas pv-* existen y no usan colores fuera del contrato visual", () => {
+    expect(reglasPv.length).toBeGreaterThanOrEqual(10);
+    const bloque = reglasPv.join("\n");
+    for (const prohibido of ["#1d4ed8", "#b45309", "#15803d", "#7e22ce"]) {
+      expect(bloque).not.toContain(prohibido);
+    }
+  });
+
+  it("la semántica diagnóstica mapea a los tokens COMPÁS", () => {
+    const bloque = reglasPv.join("\n").toLowerCase();
+    const tokens: Array<[string, string]> = [
+      ["informe", "#0074c8"],
+      ["estudio", "#00acd9"],
+      ["proxy", "#ffb61b"],
+      ["activo", "#94d40b"],
+      ["equidad", "#dc143c"],
+    ];
+    for (const [variante, token] of tokens) {
+      const regla = reglasPv.find(
+        (r) => r.startsWith(`.pv--${variante}`) && r.includes(token)
+      );
+      expect(regla, `token ${token} para pv--${variante}`).toBeDefined();
+    }
+    // La pregunta del Grupo Motor acentúa en azul institucional; lo oculto,
+    // en el rojo de equidad/criticidad.
+    expect(bloque).toContain(".pv-card__pregunta { font-size: 0.85rem; font-weight: 600; color: #0074c8;");
+    expect(reglasPv.some((r) => r.startsWith(".pv-card__oculto") && r.includes("#dc143c"))).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
 // Línea vigente
 // ══════════════════════════════════════════════════════════════════════════════
 
