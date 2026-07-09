@@ -105,6 +105,19 @@ export {
   VISUAL_PROHIBITIONS,
   visualCaption,
 } from "./profileVisualContract";
+export type {
+  ProfileSynthesis,
+  SynthesisMessage,
+  SenalPrincipalRow,
+  MatrizAnexo,
+  MatrizAnexoFila,
+  AntiTemplateViolation,
+} from "./profileSynthesisView";
+export {
+  buildProfileSynthesis,
+  buildMatrizAnexo,
+  checkSynthesisAntiTemplate,
+} from "./profileSynthesisView";
 export type { WritingContractViolation } from "./profileWritingContract";
 export {
   checkProfileWritingContract,

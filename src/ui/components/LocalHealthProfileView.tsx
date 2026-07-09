@@ -14,6 +14,11 @@ import type {
   PerfilEpistemicMetrics,
 } from "../../application/health-profile";
 import { PSLCArtifactViewer } from "./PSLCArtifactViewer";
+import type { DiagnosticAnswers } from "../../application/health-profile";
+import {
+  buildProfileSynthesis,
+  buildMatrizAnexo,
+} from "../../application/health-profile";
 import {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToPdfBlob,
@@ -50,6 +55,8 @@ interface LocalHealthProfileViewProps {
   indicatorReferences?: IndicatorComparisonReference[];
   /** Métricas epistémicas del espacio de conocimiento (computePerfilEpistemicMetrics). */
   epistemicMetrics?: PerfilEpistemicMetrics;
+  /** Respuestas diagnósticas para «Salud en síntesis» y la matriz del anexo. */
+  diagnosticAnswers?: DiagnosticAnswers;
   compiledProfiles?: LocalHealthProfileArtifact[];
   onValidate: (validatedBy: string) => void;
   onInvalidate: () => void;
@@ -792,6 +799,7 @@ export function LocalHealthProfileView({
   municipalityName,
   indicatorReferences,
   epistemicMetrics,
+  diagnosticAnswers,
   compiledProfiles,
   onValidate,
   onInvalidate,
@@ -803,6 +811,15 @@ export function LocalHealthProfileView({
 }: LocalHealthProfileViewProps) {
   const isEmpty = psl.totalEvidenceAtoms === 0;
   const doc = buildInstitutionalProfileViewModel(psl);
+  const sintesis =
+    diagnosticAnswers !== undefined
+      ? buildProfileSynthesis(diagnosticAnswers, {
+          informeTitulo: doc.primarySource.title,
+          scopeNoun: "territorio",
+        })
+      : null;
+  const matrizAnexo =
+    diagnosticAnswers !== undefined ? buildMatrizAnexo(diagnosticAnswers) : null;
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "long",
@@ -917,6 +934,50 @@ export function LocalHealthProfileView({
       )}
 
       {/* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */}
+      {/* ── Salud en síntesis: la lectura antes que la metodología ──────── */}
+      {!isEmpty && sintesis !== null && sintesis.mensajes.length >= 4 && (
+        <section id="psl-sintesis" className="psl-doc-section workspace-panel psl-sintesis">
+          <SectionHeader num="◆" title="Salud en síntesis" />
+          <ul className="psl-sintesis__mensajes">
+            {sintesis.mensajes.map((m) => (
+              <li key={m.id} className="psl-sintesis__mensaje">
+                {m.texto}
+              </li>
+            ))}
+          </ul>
+          <h3 className="psl-sintesis__subtitulo">
+            Señales principales para deliberación
+          </h3>
+          <div style={{ overflowX: "auto" }}>
+            <table className="psl-sintesis__tabla">
+              <thead>
+                <tr>
+                  <th>Ámbito</th>
+                  <th>Señal</th>
+                  <th>Fuente</th>
+                  <th>Escala</th>
+                  <th>Lectura</th>
+                  <th>Pregunta para contraste</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sintesis.senalesPrincipales.map((r) => (
+                  <tr key={r.grupo}>
+                    <td>{r.grupo}</td>
+                    <td>{r.senal}</td>
+                    <td>{r.fuente}</td>
+                    <td>{r.escala}</td>
+                    <td>{r.lectura}</td>
+                    <td>{r.pregunta}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="panel-note">{sintesis.notaEscala}</p>
+        </section>
+      )}
+
       <PslChapterNav />
 
       {/* ── Resumen ejecutivo ─────────────────────────────────────────────── */}
@@ -1166,6 +1227,46 @@ export function LocalHealthProfileView({
                             {r.calculationMethod ? ` · ${r.calculationMethod}` : ""}
                           </td>
                           <td>{r.comparisonReading}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
+
+            {matrizAnexo !== null && matrizAnexo.filas.length > 0 && (
+              <details className="psl-doc-annex__details">
+                <summary className="psl-doc-annex__summary">
+                  Matriz epistemológica completa ({matrizAnexo.filas.length} señales)
+                  · señal, fuente, escala, mecanismo, estatus causal y pregunta
+                </summary>
+                {matrizAnexo.notasBloque.map((n, i) => (
+                  <p key={i} className="panel-note">{n}</p>
+                ))}
+                <div style={{ overflowX: "auto" }}>
+                  <table className="psl-sintesis__tabla">
+                    <thead>
+                      <tr>
+                        <th>Señal</th>
+                        <th>Fuente</th>
+                        <th>Escala</th>
+                        <th>Mecanismo plausible</th>
+                        <th>Capacidad</th>
+                        <th>Estatus causal</th>
+                        <th>Pregunta para el Grupo Motor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {matrizAnexo.filas.map((f, i) => (
+                        <tr key={i}>
+                          <td>{f.senal}</td>
+                          <td>{f.fuente}</td>
+                          <td>{f.escala}</td>
+                          <td>{f.mecanismo}</td>
+                          <td>{f.activoCapacidad ?? "—"}</td>
+                          <td>{f.estatusCausal}</td>
+                          <td>{f.pregunta}</td>
                         </tr>
                       ))}
                     </tbody>

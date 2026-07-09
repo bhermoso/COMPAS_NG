@@ -22,6 +22,7 @@ import {
   hasPSLHumanContent,
   buildIndicatorComparisonReferences,
   computePerfilEpistemicMetrics,
+  buildDiagnosticAnswers,
 } from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
 import {
@@ -2956,6 +2957,15 @@ export default function App() {
                   ? computePerfilEpistemicMetrics(workspace.perfilLocalDeSalud)
                   : undefined
               }
+              diagnosticAnswers={buildDiagnosticAnswers({
+                workspace,
+                determinantTitles: workspace.evidenceStore.atoms
+                  .filter((a) => a.kind === "determinant")
+                  .map((a) => a.title),
+                assets: workspace.evidenceStore.atoms
+                  .filter((a) => a.kind === "asset")
+                  .map((a) => ({ title: a.title, content: a.content })),
+              })}
               compiledProfiles={workspace.compiledProfiles}
               onValidate={handleValidatePSL}
               onInvalidate={handleInvalidatePSL}
