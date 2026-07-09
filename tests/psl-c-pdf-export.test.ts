@@ -132,13 +132,17 @@ describe("export PDF — capa común con el DOCX", () => {
     );
   });
 
-  it("el modelo compartido contiene los seis capítulos canónicos y ningún VII", () => {
+  it("el modelo compartido integra los seis capítulos canónicos sin capítulo VII", () => {
+    expect(NARRATIVE_CHAPTER_TITLES).toHaveLength(6);
     const titulos = model.sections.map((s) => s.title);
-    NARRATIVE_CHAPTER_TITLES.forEach((titulo, i) => {
-      const numeral = ["I", "II", "III", "IV", "V", "VI"][i];
-      expect(titulos).toContain(`${numeral}. ${titulo}`);
-    });
+    expect(titulos[0]).toBe("Lectura ejecutiva territorial");
+    expect(titulos).toContain("Anexo técnico");
     expect(titulos.some((t) => t.startsWith("VII."))).toBe(false);
+    // Contenido de los capítulos integrado en la lectura principal
+    expect(textoModelo).toContain("Indicadores trazadores por bloque");
+    expect(textoModelo).toContain("Lectura desde la epidemiología social");
+    expect(textoModelo).toContain("concentraciones de capacidad");
+    expect(textoModelo).toContain("prioridades diagnósticas potenciales");
   });
 
   it("el modelo compartido incluye hash, cautelas y frontera con el Plan de Acción", () => {

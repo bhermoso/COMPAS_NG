@@ -9260,3 +9260,11 @@ h3 {
   text-underline-offset: 2px;
 }
 .pslc-salidas__btn:hover { color: #1e293b; }
+
+/* ── PSL-C: documento principal + anexo técnico en el visor ────────────────── */
+.pslc-viewer__sub h4 { margin-top: 4px; }
+.pslc-viewer__sub { padding-top: 12px !important; }
+.pslc-viewer__anexo {
+  border-top: 3px solid #64748b !important;
+  background: #f8fafc;
+}

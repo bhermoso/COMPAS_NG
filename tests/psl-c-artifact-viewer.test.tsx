@@ -134,43 +134,50 @@ beforeAll(() => {
 }, 60000);
 
 describe("visor PSL-C — documento institucional renderizado", () => {
-  it("renderiza portada con municipio, versión, fecha y trazabilidad", () => {
+  it("renderiza portada con municipio, versión y validación; el hash vive en el anexo", () => {
     expect(html).toContain("Perfil de Salud Local de Granada-Zaidín");
     expect(html).toContain("PSL-C/v1");
-    expect(html).toContain("Artefacto congelado");
-    expect(html).toContain(artifact.sourceHash);
+    expect(html).toContain("Artefacto institucional congelado");
     expect(html).toContain("Equipo técnico de salud pública");
+    // La trazabilidad completa está presente, pero en el anexo técnico
+    expect(html).toContain(artifact.sourceHash);
+    expect(html).toContain("consta en el anexo técnico");
   });
 
-  it("muestra la base documental y declara la compilación institucional", () => {
-    expect(html).toContain("92</strong> elementos");
+  it("muestra la base documental en el anexo y declara la compilación institucional", () => {
+    expect(html).toContain("92 elementos");
     expect(html).toContain("estudios complementarios");
-    expect(html).toContain("preservado íntegro, referenciado sin atomizar");
+    expect(html).toContain("se preserva íntegro y se referencia sin atomizar");
     expect(html).toContain(
       "compilación institucional del diagnóstico validado"
     );
     expect(html).toContain("no contiene recomendaciones");
   });
 
-  it("muestra el núcleo narrativo por capítulos con conclusiones y cautelas", () => {
-    expect(html).toContain("I. Alcance, fuentes y escala de la evidencia");
-    expect(html).toContain("VI. Conclusiones técnicas para la priorización");
+  it("abre con la lectura ejecutiva y desarrolla situación, desafíos, capacidades e incertidumbres", () => {
+    expect(html).toContain("<h3>Lectura ejecutiva territorial</h3>");
+    expect(html).toContain("Situación de salud y bienestar");
+    expect(html).toContain("Desafíos diagnósticos del territorio");
+    expect(html).toContain("Capacidades y oportunidades comunitarias");
+    expect(html).toContain("Incertidumbres críticas");
+    expect(html).toContain("Conclusiones para la deliberación");
     expect(html).toContain("El diagnóstico apunta a un distrito");
     expect(html).toContain("Síntesis diagnóstica del equipo técnico.");
     expect(html).toContain("contexto exploratorio");
     expect(html).toContain("Ninguna de estas lecturas constituye causalidad demostrada");
     expect(html).toContain("Cierre interpretativo");
+    expect(html).toContain("Anexo técnico");
   });
 
-  it("muestra el estado del conocimiento: EKC, hipótesis y preguntas abiertas", () => {
+  it("muestra el conocimiento técnico integrado: hipótesis en desafíos, preguntas en incertidumbres", () => {
     expect(html).toContain("Estado del conocimiento");
-    expect(html).toContain("interpretaciones");
-    expect(html).toContain("hipótesis en estudio");
+    expect(html).toContain("Interpretaciones activas");
+    expect(html).toContain("Hipótesis en estudio");
     expect(html).toContain("El malestar emocional detectado se concentra en población cuidadora.");
     expect(html).toContain("plausibilidad moderada, pendiente de");
     expect(html).toContain("distribución interna de renta y vivienda");
     expect(html).toContain("urgencia alta");
-    expect(html).toContain("incorporada al capítulo de conclusiones");
+    expect(html).toContain("incorporada a la lectura ejecutiva del documento");
     expect(html).toContain("Cautelas metodológicas");
   });
 
@@ -193,13 +200,14 @@ describe("visor PSL-C — documento institucional renderizado", () => {
     );
   });
 
-  it("renderiza los seis capítulos canónicos y ningún capítulo VII", () => {
-    for (const numeral of ["I.", "II.", "III.", "IV.", "V.", "VI."]) {
-      expect(html).toContain(`<h4>${numeral} `);
-    }
-    expect(html).not.toContain("<h4>VII.");
-    // El cierre y la frontera se presentan como bloques con nombre propio,
-    // no como capítulos numerados.
+  it("integra el contenido de los seis capítulos sin numerar un capítulo VII", () => {
+    // Contenido de los capítulos I–VI presente en las secciones de lectura
+    expect(html).toContain("Indicadores trazadores por bloque"); // Cap. III
+    expect(html).toContain("Lectura desde la epidemiología social"); // Cap. IV
+    expect(html).toContain("concentraciones de capacidad"); // Cap. V
+    expect(html).toContain("prioridades diagnósticas potenciales"); // Cap. VI
+    expect(html).not.toContain("VII.");
+    // El cierre y la frontera se presentan como bloques con nombre propio.
     expect(html).toContain("Cierre interpretativo");
     expect(html).toContain("Frontera institucional");
   });
@@ -226,7 +234,11 @@ describe("visor PSL-C — documento institucional renderizado", () => {
     const htmlSinPerfil = renderToStaticMarkup(
       <PSLCArtifactViewer artifact={sinPerfil.artifact} />
     );
+    // La ausencia de EKC se declara con sobriedad dentro de las
+    // incertidumbres críticas, no como bloque vacío del anexo.
     expect(htmlSinPerfil).toContain("EKC no disponible");
-    expect(htmlSinPerfil).not.toContain("Hipótesis diagnósticas en estudio");
+    expect(htmlSinPerfil).toContain("No consta espacio interpretativo técnico");
+    expect(htmlSinPerfil).not.toContain("<h4>Estado del conocimiento</h4>");
+    expect(htmlSinPerfil).not.toContain("Hipótesis del equipo técnico en estudio");
   });
 });

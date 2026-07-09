@@ -127,28 +127,75 @@ beforeAll(() => {
 }, 60000);
 
 describe("export DOCX — estructura del modelo documental", () => {
-  it("contiene los seis capítulos canónicos y ningún capítulo VII", () => {
+  it("integra el contenido de los seis capítulos canónicos sin crear capítulo VII", () => {
+    // Los capítulos I–VI siguen intactos en el artefacto (contrato); el
+    // modelo documental integra su contenido en la lectura principal.
+    expect(NARRATIVE_CHAPTER_TITLES).toHaveLength(6);
+    expect(textoCompleto).toContain("Indicadores trazadores por bloque"); // Cap. III
+    expect(textoCompleto).toContain("Lectura desde la epidemiología social"); // Cap. IV
+    expect(textoCompleto).toContain("concentraciones de capacidad"); // Cap. V
+    expect(textoCompleto).toContain("prioridades diagnósticas potenciales"); // Cap. VI
+    expect(textoCompleto).toContain("contexto exploratorio"); // Cap. I (anexo)
     const titulos = model.sections.map((s) => s.title);
-    NARRATIVE_CHAPTER_TITLES.forEach((titulo, i) => {
-      const numeral = ["I", "II", "III", "IV", "V", "VI"][i];
-      expect(titulos).toContain(`${numeral}. ${titulo}`);
-    });
     expect(titulos.some((t) => t.startsWith("VII."))).toBe(false);
     expect(textoCompleto).not.toMatch(/(^|\n)VII\.\s/);
   });
 
-  it("los bloques institucionales no capitulares acompañan al documento", () => {
+  it("el documento principal abre con la lectura territorial y el anexo técnico cierra", () => {
     const titulos = model.sections.map((s) => s.title);
-    for (const bloque of [
+    expect(titulos[0]).toBe("Lectura ejecutiva territorial");
+    const principal = [
+      "Lectura ejecutiva territorial",
+      "Situación de salud y bienestar",
+      "Desafíos diagnósticos del territorio",
+      "Capacidades y oportunidades comunitarias",
+      "Incertidumbres críticas",
+      "Conclusiones para la deliberación",
+    ];
+    expect(titulos.slice(0, 6)).toEqual(principal);
+    // El anexo técnico agrupa el expediente al final
+    const anexoIdx = titulos.indexOf("Anexo técnico");
+    expect(anexoIdx).toBeGreaterThan(titulos.indexOf("Frontera institucional"));
+    for (const sub of [
+      "Alcance, fuentes y escala de la evidencia",
       "Base documental",
-      "Cierre interpretativo",
-      "Estado del conocimiento",
       "Cautelas metodológicas",
-      "Frontera institucional",
+      "Estado del conocimiento",
       "Trazabilidad",
     ]) {
-      expect(titulos).toContain(bloque);
+      expect(titulos.indexOf(sub)).toBeGreaterThan(anexoIdx);
     }
+  });
+
+  it("la lectura ejecutiva reúne situación, desafíos, capacidades e incertidumbres", () => {
+    const lectura = model.sections.find(
+      (s) => s.title === "Lectura ejecutiva territorial"
+    );
+    const texto = lectura!.paragraphs.join("\n");
+    expect(texto).toContain("se ordena en torno a"); // señales de salud
+    expect(texto).toContain("hipótesis"); // desafíos diagnósticos
+    expect(texto).toContain("capacidades territoriales se concentran"); // oportunidades
+    expect(texto).toContain("tensión interpretativa"); // incertidumbre crítica
+    expect(texto).toContain("Síntesis diagnóstica del equipo técnico.");
+  });
+
+  it("la trazabilidad y el hash viven en el anexo, no en la portada", () => {
+    expect(model.portada.join("\n")).not.toContain(artifact.sourceHash);
+    const trazabilidad = model.sections.find((s) => s.title === "Trazabilidad");
+    expect(trazabilidad!.paragraphs.join("\n")).toContain(artifact.sourceHash);
+  });
+
+  it("las incertidumbres críticas y las capacidades tienen sección propia y prudente", () => {
+    const incert = model.sections.find((s) => s.title === "Incertidumbres críticas");
+    expect(incert!.paragraphs.join("\n")).toContain("Incertidumbres del diagnóstico.");
+    expect(incert!.paragraphs.join("\n")).toContain("Pregunta abierta (urgencia alta)");
+    const capacidades = model.sections.find(
+      (s) => s.title === "Capacidades y oportunidades comunitarias"
+    );
+    const textoCap = capacidades!.paragraphs.join("\n");
+    expect(textoCap).toContain("56 activos");
+    expect(textoCap).toContain("no prueban cobertura ni resultado");
+    expect(textoCap).toContain("requieren validación territorial");
   });
 
   it("no exporta espacios de trabajo internos ni textos de la UI", () => {
