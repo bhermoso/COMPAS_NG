@@ -130,6 +130,19 @@ export {
   buildDiagnosticVisuals,
   EVIDENCE_VARIANT_LABEL,
 } from "./profileDiagnosticVisuals";
+export type {
+  ProfileIntegratedEditorialView,
+  ProfileIntegratedEditorialHeader,
+  ProfileIntegratedEditorialOverviewMessage,
+  ProfileIntegratedEditorialSourceBlock,
+  ProfileIntegratedEditorialReadingBlock,
+  ProfileIntegratedEditorialClosingColumn,
+  ProfileIntegratedEditorialTechnicalAnnex,
+  BuildProfileIntegratedEditorialViewOptions,
+} from "./profileIntegratedEditorialView";
+export {
+  buildProfileIntegratedEditorialView,
+} from "./profileIntegratedEditorialView";
 export type { WritingContractViolation } from "./profileWritingContract";
 export {
   checkProfileWritingContract,

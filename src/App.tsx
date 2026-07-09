@@ -154,7 +154,6 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Diagnóstico territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
-  { id: "nhs",           label: "Perfil Ejecutivo de Salud Local" },
   { id: "plan",          label: "Plan de Acción" },
   { id: "plan-local",    label: "Plan Local de Salud" },
   { id: "evaluacion",    label: "Evaluación" },

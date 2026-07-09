@@ -19,12 +19,14 @@ import {
   buildProfileSynthesis,
   buildMatrizAnexo,
   buildDiagnosticVisuals,
+  buildProfileIntegratedEditorialView,
 } from "../../application/health-profile";
 import type { DiagnosticBarChart } from "../../application/health-profile";
 import {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToPdfBlob,
 } from "../../application/psl-c-export";
+import { ProfileIntegratedEditorialPreview } from "./ProfileIntegratedEditorialPreview";
 
 // Descarga del documento institucional congelado (solo artefactos PSL-C
 // compilados; el borrador y el PSL validado no tienen export).
@@ -872,6 +874,15 @@ export function LocalHealthProfileView({
     month: "long",
     day: "numeric",
   });
+  const integratedEditorialView =
+    diagnosticAnswers !== undefined
+      ? buildProfileIntegratedEditorialView(diagnosticAnswers, {
+          territory: municipalityName,
+          status: STATUS_LABEL[psl.status],
+          informeTitulo: doc.primarySource.title,
+          generatedDate,
+        })
+      : null;
 
   return (
     <div className="psl-doc-view">
@@ -985,6 +996,10 @@ export function LocalHealthProfileView({
 
       {/* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */}
       {/* ── Salud en síntesis: la lectura antes que la metodología ──────── */}
+      {!isEmpty && integratedEditorialView !== null && (
+        <ProfileIntegratedEditorialPreview view={integratedEditorialView} />
+      )}
+
       {!isEmpty && sintesis !== null && sintesis.mensajes.length >= 4 && (
         <section id="psl-sintesis" className="psl-doc-section workspace-panel psl-sintesis">
           <SectionHeader num="◆" title="Salud en síntesis" />
