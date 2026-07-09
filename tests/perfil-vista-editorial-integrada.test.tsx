@@ -50,6 +50,21 @@ const EXPORT_PATH = resolve(
 const FORBIDDEN_EDITORIAL_RE =
   /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|actuaciones previstas|plan de acci[óo]n|resulta relevante|se pone de manifiesto|desde una perspectiva integral/i;
 
+function normalized(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function overviewById(id: string) {
+  const message = editorialView.overview.find((item) => item.id === id);
+  if (message === undefined) {
+    throw new Error(`No existe el mensaje de overview ${id}`);
+  }
+  return message;
+}
+
 let ws: MunicipalityWorkspace;
 let psl: LocalHealthProfile;
 let answers: DiagnosticAnswers;
@@ -120,6 +135,27 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(editorialView.groupMotorAgenda.length).toBeGreaterThan(0);
     expect(editorialView.closing).toHaveLength(3);
     expect(editorialView.technicalAnnex.matrix.filas.length).toBeGreaterThan(0);
+  });
+
+  it("alinea Vida cotidiana con sueño e inactividad, no con señales sanitarias del Informe", () => {
+    const vida = overviewById("vida-cotidiana");
+    const signal = normalized(vida.signal);
+    const source = normalized(vida.source);
+
+    expect(signal).not.toContain("prevencion y vacunacion");
+    expect(source).not.toContain("informe de salud");
+    expect(signal).toMatch(/sueno|inactividad/);
+    expect(source).toMatch(/sueno|ipaq|eas/);
+  });
+
+  it("alinea Apoyo y envejecimiento con DUKE, soledad y capacidad comunitaria", () => {
+    const apoyo = overviewById("apoyo-envejecimiento");
+    const signal = normalized(apoyo.signal);
+    const source = normalized(apoyo.source);
+
+    expect(signal).not.toContain("enfermedades cronicas");
+    expect(signal).toMatch(/apoyo social|envejecimiento|soledad|recursos comunitarios/);
+    expect(source).toMatch(/duke|localiza salud/);
   });
 
   it("cada lectura integrada incluye señal, fuente, escala, mecanismo, exclusión y pregunta", () => {

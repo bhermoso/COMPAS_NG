@@ -258,6 +258,106 @@ function buildOverviewTitle(id: string, index: number): string {
   return OVERVIEW_TITLES[id] ?? `Mensaje ${index + 1}`;
 }
 
+function findSignalById(
+  signals: IntegratedHealthProfileSignal[],
+  id: string
+): IntegratedHealthProfileSignal | undefined {
+  return signals.find((signal) => signal.id === id);
+}
+
+function joinLabels(values: Array<string | undefined>, fallback: string): string {
+  const labels = unique(values.filter((value): value is string => value !== undefined));
+  return labels.length > 0 ? labels.join(" + ") : fallback;
+}
+
+function overviewFromMessage(
+  message: { id: string; texto: string },
+  index: number,
+  context: {
+    signals: IntegratedHealthProfileSignal[];
+    visuals: ReturnType<typeof buildDiagnosticVisuals>;
+    synthesis: ReturnType<typeof buildProfileSynthesis>;
+    informeTitulo?: string;
+    totalAssets: number;
+  }
+): ProfileIntegratedEditorialOverviewMessage {
+  const title = buildOverviewTitle(message.id, index);
+
+  if (message.id === "hilo-sanitario") {
+    const informeRow = context.synthesis.senalesPrincipales.find((row) =>
+      row.grupo.includes("Informe")
+    );
+    return {
+      id: message.id,
+      title,
+      text: message.texto,
+      signal: informeRow?.senal ?? "dimensiones sanitarias principales del Informe",
+      source: context.informeTitulo ?? informeRow?.fuente ?? "Informe de salud",
+      variant: "informe",
+    };
+  }
+
+  if (message.id === "vida-cotidiana") {
+    const sueno = findSignalById(context.signals, "trazador-sueno-insuficiente");
+    const inactividad = findSignalById(context.signals, "trazador-ipaq-inactividad");
+    return {
+      id: message.id,
+      title,
+      text: message.texto,
+      signal: joinLabels(
+        [sueno?.senal, inactividad?.senal],
+        "sueño insuficiente e inactividad en tiempo libre"
+      ),
+      source: joinLabels(
+        [sueno?.fuente, inactividad?.fuente],
+        "Sueño (EAS) + IPAQ"
+      ),
+      variant: "estudio",
+    };
+  }
+
+  if (message.id === "apoyo-envejecimiento") {
+    const apoyo = findSignalById(context.signals, "trazador-duke-apoyo-global");
+    const agenda = context.visuals.grupoMotorCards.find((card) =>
+      card.id === "soledad-envejecimiento"
+    );
+    const activos =
+      context.totalAssets > 0
+        ? `${context.totalAssets} recursos comunitarios`
+        : undefined;
+    return {
+      id: message.id,
+      title,
+      text: message.texto,
+      signal: joinLabels(
+        [apoyo?.senal, agenda?.tema, activos],
+        "apoyo social funcional, envejecimiento y soledad"
+      ),
+      source: joinLabels(
+        [apoyo?.fuente, context.totalAssets > 0 ? "Localiza Salud" : undefined],
+        "DUKE + Localiza Salud"
+      ),
+      variant: "activo",
+    };
+  }
+
+  const signal = context.signals.find((candidate) =>
+    includesAny(signalText(candidate), [message.id, title, message.texto])
+  );
+  return {
+    id: message.id,
+    title,
+    text: message.texto,
+    signal:
+      signal?.senal ?? context.synthesis.senalesPrincipales[index]?.senal ?? message.id,
+    source:
+      signal?.fuente ??
+      context.synthesis.senalesPrincipales[index]?.fuente ??
+      "Perfil de Salud Local",
+    variant: signal !== undefined ? signalVariant(signal) : "estudio",
+  };
+}
+
 export function buildProfileIntegratedEditorialView(
   answers: DiagnosticAnswers,
   opts: BuildProfileIntegratedEditorialViewOptions
@@ -273,17 +373,15 @@ export function buildProfileIntegratedEditorialView(
   const signals = buildIntegratedProfileSignals(answers);
   const usedSignals = new Set<string>();
 
-  const overview = synthesis.mensajes.slice(0, 3).map((message, index) => {
-    const signal = signals[index];
-    return {
-      id: message.id,
-      title: buildOverviewTitle(message.id, index),
-      text: message.texto,
-      signal: signal?.senal ?? synthesis.senalesPrincipales[index]?.senal ?? message.id,
-      source: signal?.fuente ?? synthesis.senalesPrincipales[index]?.fuente ?? "Perfil de Salud Local",
-      variant: signal !== undefined ? signalVariant(signal) : "estudio",
-    };
-  });
+  const overview = synthesis.mensajes.slice(0, 3).map((message, index) =>
+    overviewFromMessage(message, index, {
+      signals,
+      visuals,
+      synthesis,
+      informeTitulo: opts.informeTitulo,
+      totalAssets: answers.salutogenica.totalAssets,
+    })
+  );
 
   const territorialReadings = READING_DEFINITIONS.flatMap((definition) => {
     const signal = pickSignal(signals, usedSignals, definition);
