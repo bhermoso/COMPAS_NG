@@ -118,6 +118,18 @@ export {
   buildMatrizAnexo,
   checkSynthesisAntiTemplate,
 } from "./profileSynthesisView";
+export type {
+  EvidenceVariant,
+  BarChartItem,
+  DiagnosticBarChart,
+  TrazadorRow,
+  GrupoMotorCard,
+  DiagnosticVisuals,
+} from "./profileDiagnosticVisuals";
+export {
+  buildDiagnosticVisuals,
+  EVIDENCE_VARIANT_LABEL,
+} from "./profileDiagnosticVisuals";
 export type { WritingContractViolation } from "./profileWritingContract";
 export {
   checkProfileWritingContract,

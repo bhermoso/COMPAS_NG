@@ -18,7 +18,9 @@ import type { DiagnosticAnswers } from "../../application/health-profile";
 import {
   buildProfileSynthesis,
   buildMatrizAnexo,
+  buildDiagnosticVisuals,
 } from "../../application/health-profile";
+import type { DiagnosticBarChart } from "../../application/health-profile";
 import {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToPdfBlob,
@@ -118,6 +120,33 @@ function SectionHeader({ num, title }: { num: string; title: string }) {
 
 function ScaffoldBadge({ text }: { text: string }) {
   return <span className="psl-doc-scaffold-badge">{text}</span>;
+}
+
+// Gráfico de barras CSS (sin dependencias) del contrato visual: cada barra
+// lleva variante semántica por tipo de evidencia y el pie declara
+// Fuente · Escala · Cautela.
+function PvBarChart({ chart }: { chart: DiagnosticBarChart }) {
+  return (
+    <figure className="pv-chart">
+      <figcaption className="pv-chart__titulo">{chart.titulo}</figcaption>
+      <p className="pv-chart__unidad">{chart.unidad}</p>
+      <div className="pv-chart__barras">
+        {chart.items.map((item) => (
+          <div key={item.etiqueta} className="pv-bar">
+            <span className="pv-bar__etiqueta">{item.etiqueta}</span>
+            <span className="pv-bar__pista">
+              <span
+                className={"pv-bar__relleno pv--" + item.variant}
+                style={{ width: Math.max(4, Math.round((item.valor / chart.maxValor) * 100)) + "%" }}
+              />
+            </span>
+            <span className="pv-bar__valor">{item.valor}</span>
+          </div>
+        ))}
+      </div>
+      <p className="pv-chart__pie">{chart.caption}</p>
+    </figure>
+  );
 }
 
 // ── Índice del documento institucional ────────────────────────────────────────
@@ -820,6 +849,12 @@ export function LocalHealthProfileView({
       : null;
   const matrizAnexo =
     diagnosticAnswers !== undefined ? buildMatrizAnexo(diagnosticAnswers) : null;
+  const visuales =
+    diagnosticAnswers !== undefined
+      ? buildDiagnosticVisuals(diagnosticAnswers, {
+          informeTitulo: doc.primarySource.title,
+        })
+      : null;
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "long",
@@ -975,6 +1010,78 @@ export function LocalHealthProfileView({
             </table>
           </div>
           <p className="panel-note">{sintesis.notaEscala}</p>
+
+          {visuales !== null && (
+            <>
+              <div className="pv-charts-grid">
+                {visuales.informeChart && <PvBarChart chart={visuales.informeChart} />}
+                {visuales.bloquesChart && <PvBarChart chart={visuales.bloquesChart} />}
+                {visuales.activosChart && <PvBarChart chart={visuales.activosChart} />}
+              </div>
+
+              {visuales.tablaTrazadores.length > 0 && (
+                <>
+                  <h3 className="psl-sintesis__subtitulo">
+                    Indicadores trazadores: valores y referencias
+                  </h3>
+                  <div style={{ overflowX: "auto" }}>
+                    <table className="psl-sintesis__tabla pv-tabla-central">
+                      <thead>
+                        <tr>
+                          <th>Bloque</th>
+                          <th>Indicador</th>
+                          <th>Valor</th>
+                          <th>Ref. Granada</th>
+                          <th>Ref. Andalucía</th>
+                          <th>Escala</th>
+                          <th>Lectura</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visuales.tablaTrazadores.map((f) => (
+                          <tr key={f.indicador}>
+                            <td>{f.bloque}</td>
+                            <td>{f.indicador}</td>
+                            <td className="pv-tabla-central__valor">{f.valor}</td>
+                            <td>{f.refGranada}</td>
+                            <td>{f.refAndalucia}</td>
+                            <td>
+                              <span className={"pv-escala pv--" + (f.esProxy ? "proxy" : "estudio")}>
+                                {f.esProxy
+                                  ? "proxy contextual — no estimación distrital"
+                                  : "muestra local"}
+                              </span>
+                            </td>
+                            <td>{f.lectura}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+
+              {visuales.grupoMotorCards.length >= 4 && (
+                <>
+                  <h3 className="psl-sintesis__subtitulo">
+                    Qué debe discutir el Grupo Motor
+                  </h3>
+                  <div className="pv-cards">
+                    {visuales.grupoMotorCards.map((c) => (
+                      <article key={c.id} className={"pv-card pv--" + c.variant}>
+                        <h4 className="pv-card__tema">{c.tema}</h4>
+                        <p className="pv-card__senal">{c.senal}</p>
+                        <p className="pv-card__mecanismo">
+                          Mecanismo plausible: {c.mecanismo}
+                        </p>
+                        <p className="pv-card__pregunta">{c.pregunta}</p>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </section>
       )}
 
