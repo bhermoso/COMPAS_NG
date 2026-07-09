@@ -509,8 +509,13 @@ describe("Granada-Zaidín — vocabulario territorial y cautelas de escala en el
 
   it("IBSE se presenta como referencia contextual, no como valor propio del distrito", () => {
     const psl = createMunicipalityRuntime({ workspace: ws }).psl;
+    // La cautela de escala se declara en el capítulo I; junto al IBSE se
+    // referencia sin repetirse (contrato de escritura: cautela sin redundancia).
     expect(psl.conclusiones.content).toMatch(
-      /IBSE[\s\S]{0,400}?no constituye una estimación específica del distrito/
+      /IBSE[\s\S]{0,400}?cautela de escala del capítulo I/
+    );
+    expect(psl.conclusiones.content).toMatch(
+      /no constituyen? (una )?estimación específica del distrito/
     );
     expect(psl.conclusiones.content).toMatch(/IBSE[\s\S]{0,400}?referencia exploratoria/);
   });

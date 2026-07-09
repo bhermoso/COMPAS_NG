@@ -42,6 +42,8 @@ import type { ComplementaryIndicatorReferencesReading } from "./complementaryInd
 import { buildIndicatorComparisonReferences } from "./complementaryIndicatorReferences";
 import type { BadeaMunicipalContext } from "../badea";
 import { getBadeaMunicipalContext } from "../badea";
+import type { HealthReportSanitaryReading } from "./healthReportSanitaryReading";
+import { buildHealthReportSanitaryReading } from "./healthReportSanitaryReading";
 
 // ── Tipos de la capa ──────────────────────────────────────────────────────────
 
@@ -99,6 +101,8 @@ export interface DiagnosticAnswers {
   referencias: ComplementaryIndicatorReferencesReading;
   /** Contexto municipal BADEA/IECA verificado, si existe para el ámbito. */
   badeaContexto?: BadeaMunicipalContext;
+  /** Hilo sanitario: lectura por presencia del cuerpo del Informe de salud. */
+  sanitaria: HealthReportSanitaryReading;
   /** Síntesis narrativa del técnico, si existe. */
   sintesisTexto?: string;
 }
@@ -411,6 +415,7 @@ export function buildDiagnosticAnswers(
     estudios: buildComplementaryStudiesReading({ workspace, indicatorTitles }),
     referencias: buildIndicatorComparisonReferences({ workspace, indicatorTitles }),
     badeaContexto: getBadeaMunicipalContext(workspace.municipality.identity.id),
+    sanitaria: buildHealthReportSanitaryReading(workspace.healthReport),
     sintesisTexto: workspace.perfilLocalDeSalud?.sintesisTexto?.trim() || undefined,
   };
 }

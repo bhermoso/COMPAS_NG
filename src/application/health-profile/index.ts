@@ -69,6 +69,14 @@ export {
   inferSocialEpidemiologyDeterminants,
   buildSalutogenicReading,
 } from "./diagnosticAnswers";
+export type {
+  HealthReportSanitaryReading,
+  HealthReportSanitarySignal,
+} from "./healthReportSanitaryReading";
+export {
+  buildHealthReportSanitaryReading,
+  institutionalHealthReportTitle,
+} from "./healthReportSanitaryReading";
 export type { WritingContractViolation } from "./profileWritingContract";
 export {
   checkProfileWritingContract,

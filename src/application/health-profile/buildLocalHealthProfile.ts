@@ -41,6 +41,7 @@ import {
   NARRATIVE_GENERATOR_VERSION,
 } from "./narrativeChapters";
 import { buildDiagnosticAnswers } from "./diagnosticAnswers";
+import { institutionalHealthReportTitle } from "./healthReportSanitaryReading";
 
 // ── Secciones del Marco Estratégico (Capítulo I) ──────────────────────────────
 // Corresponden a los IDs fijos de createStrategicFramework().
@@ -143,6 +144,10 @@ export function buildLocalHealthProfile(
 
   // ── Capítulo II: referencia al Informe de Salud ──────────────────────────
   const hr = workspace.healthReport;
+  const hrTitle =
+    hr !== undefined
+      ? institutionalHealthReportTitle(workspace.municipality.identity.id, hr.title)
+      : undefined;
   const hrAtomCount = sanitizedStore.atoms.filter(
     (a) => a.provenance.origin === "health-report"
   ).length;
@@ -214,7 +219,7 @@ export function buildLocalHealthProfile(
 
     // ── II: Informe de Salud — referencia, nunca el documento ─────────────
     healthReportDocumentId: hr?.linkedDocumentId,
-    healthReportTitle: hr?.title,
+    healthReportTitle: hrTitle,
     healthReportSectionCount: hr?.sections.length ?? 0,
     healthReportAtomCount: hrAtomCount,
 
@@ -264,7 +269,7 @@ export function buildLocalHealthProfile(
 
     // ── V: Conclusiones (scaffold) ─────────────────────────────────────────
     conclusiones: {
-      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hr?.title, workspace.ibseStudy, scope, {
+      content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hrTitle, workspace.ibseStudy, scope, {
         complementaryStudyCount,
         territorialDocTitles: workspace.repository.documents
           .filter((d) => d.kind === "territorial-documentation")

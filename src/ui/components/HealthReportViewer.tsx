@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { institutionalHealthReportTitle } from "../../application/health-profile";
 import type { HealthReportDocument, HealthReportSection } from "../../domain/health-report";
 
 interface HealthReportViewerProps {
@@ -23,7 +24,7 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
       <span className="fde-source-toggle__name">Informe de Salud</span>
       <span className="fde-source-toggle__subtitle">Fuente diagnóstica primaria</span>
       <span className="fde-source-toggle__status">
-        {healthReport ? healthReport.title : "Sin informe"}
+        {healthReport ? institutionalHealthReportTitle(healthReport.municipalityId, healthReport.title) : "Sin informe"}
       </span>
       <span className="fde-source-toggle__arrow">{open ? "▲" : "▼"}</span>
     </button>
@@ -68,7 +69,7 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
           <div className="hr-viewer__header">
             <div>
               <p className="eyebrow">Informe de Salud · Fuente primaria</p>
-              <h2 className="hr-viewer__title">{healthReport.title}</h2>
+              <h2 className="hr-viewer__title">{institutionalHealthReportTitle(healthReport.municipalityId, healthReport.title)}</h2>
             </div>
             <div className="hr-viewer__meta">
               <span className="panel-note">

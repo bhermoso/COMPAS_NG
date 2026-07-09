@@ -242,8 +242,8 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `esos estudios: proceden de cálculos derivados de microdatos EAS —o de un ` +
         `monitor provincial equivalente— y se incorporan como base de contraste. ` +
         `En la demostración actual, parte de los valores territoriales se usa como ` +
-        `proxy contextual coincidente con la referencia provincial${prov}: no ` +
-        `constituyen estimación específica del ${scopeNoun}.`
+        `proxy contextual coincidente con la referencia provincial${prov}, con la ` +
+        `cautela de escala ya declarada.`
       );
     }
     if (input.studyCautions.length > 0) {
@@ -300,8 +300,9 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `${input.answers.healthReport.temas.join("; ")}. Es la fuente que ` +
         `estructura la lectura de situación de este Perfil: fija la base ` +
         `sociodemográfica y epidemiológica sobre la que se interpretan las ` +
-        `señales de los estudios complementarios; su detalle debe consultarse ` +
-        `en el documento original, preservado íntegro.`
+        `señales de los estudios complementarios. El documento queda preservado ` +
+        `íntegro en el expediente; su lectura sanitaria sustantiva abre el ` +
+        `capítulo siguiente.`
       );
     }
     // Contexto municipal BADEA/IECA verificado (capa no evidencial): dato de
@@ -345,6 +346,23 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     const partes: string[] = [];
     const estudios = input.answers?.estudios;
     const bloques = estudios?.diagnosticBlocks ?? [];
+    // Hilo sanitario: el Informe de salud gobierna la lectura de situación.
+    // Señales por PRESENCIA real en el cuerpo del Informe (nada inventado);
+    // las magnitudes exactas quedan en el propio documento.
+    const sanitaria = input.answers?.sanitaria;
+    if (sanitaria?.present && sanitaria.senales.length > 0) {
+      const dims = sanitaria.senales.map((s) => s.dimension);
+      const destacadas = sanitaria.senales.slice(0, 2).map((s) => s.dimension);
+      partes.push(
+        `El ${input.healthReportTitle ?? "Informe de salud"} gobierna el hilo ` +
+        `sanitario de este capítulo. Su análisis epidemiológico y de problemas ` +
+        `de salud trata de forma sustantiva: ${dims.join("; ")} — con atención ` +
+        `destacada a ${destacadas.join(" y a ")}. Esta es la fotografía ` +
+        `sanitaria de partida del ${scopeNoun}; las magnitudes concretas ` +
+        `constan en el propio Informe. Los estudios complementarios amplían ` +
+        `este hilo hacia la vida cotidiana y el bienestar, sin sustituirlo.`
+      );
+    }
     if (bloques.length > 0) {
       // Contrato de escritura: la situación de salud se lee como expresión de
       // la vida cotidiana del territorio; los estudios son señales, no el
@@ -400,8 +418,8 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `. Cuando el instrumento procede de cálculos derivados de microdatos ` +
           `EAS o del monitor provincial, el valor territorial demo coincide con ` +
           `la referencia provincial${prov} (comportamiento demo/proxy): esta ` +
-          `lectura no constituye una estimación específica del ${scopeNoun}, ` +
-          `pero permite usar cada indicador como punto de contraste territorial. ` +
+          `lectura remite a la cautela de escala del capítulo I y permite usar ` +
+          `cada indicador como punto de contraste territorial. ` +
           `La referencia autonómica de Andalucía se incorpora cuando existe ` +
           `fixture EAS metodológicamente equivalente; en instrumentos sin ` +
           `referencia autonómica equivalente queda declarada como no disponible, ` +
@@ -437,10 +455,9 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `${input.ibse.nValid} escolares.`;
       partes.push(
         input.ibse.isProxy
-          ? `${valorBase} Este valor procede de evidencia contextual de ámbito ` +
-            `provincial u origen externo, incorporada como referencia exploratoria: ` +
-            `no constituye una estimación específica del ${scopeNoun} y ` +
-            `requiere contraste territorial.`
+          ? `${valorBase} Procede de evidencia contextual, incorporada como ` +
+            `referencia exploratoria dentro de la cautela de escala del ` +
+            `capítulo I.`
           : `${valorBase} Este dato debe interpretarse en relación con el contexto ` +
             `socioeconómico y los determinantes familiares y comunitarios del territorio.`
       );

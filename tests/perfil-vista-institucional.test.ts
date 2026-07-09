@@ -101,7 +101,7 @@ describe("vista institucional — documento principal sobre el export vigente 56
   it("el documento es borrador asistido hasta autoría humana y cita la fuente primaria", () => {
     expect(model.isDraft).toBe(true);
     expect(model.primarySource.present).toBe(true);
-    expect(model.primarySource.title).toContain("Informe Salud Granada");
+    expect(model.primarySource.title).toBe("Informe de salud de El Zaidín");
   });
 
   it("los capítulos no contienen recomendaciones ni lenguaje de Plan de Acción", () => {
