@@ -33,7 +33,11 @@
  */
 
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
-import { parseNarrativeChapters } from "../health-profile";
+import {
+  parseNarrativeChapters,
+  institutionalHealthReportTitle,
+  sanitizeHealthReportTitleInText,
+} from "../health-profile";
 
 // ── Tipos del modelo ──────────────────────────────────────────────────────────
 
@@ -125,7 +129,14 @@ export function buildPSLCDocumentModel(
   ];
 
   // ── Documento principal ───────────────────────────────────────────────────
-  const capitulos = parseNarrativeChapters(artifact.conclusiones.content);
+  // Saneado defensivo para artefactos congelados anteriores: la etiqueta y
+  // el texto exportados usan la denominación institucional del Informe; el
+  // artefacto almacenado conserva su contenido histórico exacto.
+  const conclusionesSaneadas = sanitizeHealthReportTitleInText(
+    artifact.conclusiones.content,
+    artifact.municipalityId
+  );
+  const capitulos = parseNarrativeChapters(conclusionesSaneadas);
   const cap = (numeral: string): string[] => {
     const c = capitulos.find((x) => x.numeral === numeral);
     return c ? parrafos(c.content) : [];
@@ -228,7 +239,7 @@ export function buildPSLCDocumentModel(
     sections.push({
       title: "Documento del Perfil",
       level: 1,
-      paragraphs: parrafos(artifact.conclusiones.content),
+      paragraphs: parrafos(conclusionesSaneadas),
     });
   }
 
@@ -238,7 +249,12 @@ export function buildPSLCDocumentModel(
     sections.push({
       title: "Cierre interpretativo",
       level: 2,
-      paragraphs: parrafos(artifact.cierreInterpretativo.content),
+      paragraphs: parrafos(
+        sanitizeHealthReportTitleInText(
+          artifact.cierreInterpretativo.content,
+          artifact.municipalityId
+        )
+      ),
     });
   }
 
@@ -301,7 +317,10 @@ export function buildPSLCDocumentModel(
       `de evidencia y ${artifact.baseDocumental.complementaryStudyCount} ` +
       `estudios complementarios.`,
     artifact.informeSalud.title
-      ? `Fuente diagnóstica primaria: «${artifact.informeSalud.title}» ` +
+      ? `Fuente diagnóstica primaria: «${institutionalHealthReportTitle(
+          artifact.municipalityId,
+          artifact.informeSalud.title
+        )}» ` +
         `(${artifact.informeSalud.sectionCount} secciones). El Informe de Salud ` +
         `se preserva íntegro y se referencia sin atomizar.`
       : "Fuente diagnóstica primaria: no disponible.",

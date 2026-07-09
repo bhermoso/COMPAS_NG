@@ -39,6 +39,25 @@ export function institutionalHealthReportTitle(
     .trim();
 }
 
+// Patrón de títulos técnicos históricos dentro de texto narrativo persistido.
+const RAW_TITLE_IN_TEXT_RE = /\bInforme[^\n«»]{0,80}?estilo\s+Atarfe(\.docx)?/gi;
+
+/**
+ * Saneado DEFENSIVO para rutas de lectura: sustituye menciones del título
+ * técnico histórico dentro de texto ya persistido (PSL validados o artefactos
+ * congelados anteriores) por la denominación institucional. Solo actúa si el
+ * municipio tiene denominación registrada; nunca modifica el dato bruto
+ * almacenado — es una etiqueta de presentación/exportación.
+ */
+export function sanitizeHealthReportTitleInText(
+  texto: string,
+  municipalityId: string
+): string {
+  const institucional = TITULOS_INSTITUCIONALES[municipalityId];
+  if (institucional === undefined) return texto;
+  return texto.replace(RAW_TITLE_IN_TEXT_RE, institucional);
+}
+
 // ── Lectura sanitaria por presencia ───────────────────────────────────────────
 
 export interface HealthReportSanitarySignal {

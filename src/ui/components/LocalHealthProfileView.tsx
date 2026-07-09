@@ -997,7 +997,7 @@ export function LocalHealthProfileView({
               <div className="psl-doc-primary-source__body">
                 <p className="psl-doc-primary-source__eyebrow">Fuente diagnóstica primaria</p>
                 <p className="psl-doc-primary-source__title">
-                  {psl.healthReportTitle ?? "Sin Informe de Salud registrado"}
+                  {doc.primarySource.title ?? "Sin Informe de Salud registrado"}
                 </p>
                 {psl.healthReportTitle && (
                   <p className="psl-doc-primary-source__meta">

@@ -76,6 +76,7 @@ export type {
 export {
   buildHealthReportSanitaryReading,
   institutionalHealthReportTitle,
+  sanitizeHealthReportTitleInText,
 } from "./healthReportSanitaryReading";
 export type { WritingContractViolation } from "./profileWritingContract";
 export {

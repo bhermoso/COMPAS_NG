@@ -18,6 +18,10 @@
 
 import type { LocalHealthProfile } from "../../domain/health-profile";
 import { parseNarrativeChapters, type NarrativeChapter } from "./narrativeChapters";
+import {
+  institutionalHealthReportTitle,
+  sanitizeHealthReportTitleInText,
+} from "./healthReportSanitaryReading";
 
 // ── Índice de navegación del documento institucional ─────────────────────────
 // Fuente única de verdad del índice visible: la vista lo importa de aquí.
@@ -65,7 +69,14 @@ export interface InstitutionalProfileViewModel {
 export function buildInstitutionalProfileViewModel(
   psl: LocalHealthProfile
 ): InstitutionalProfileViewModel {
-  const content = psl.conclusiones.content;
+  // Saneado defensivo: los PSL validados con generaciones anteriores pueden
+  // arrastrar el título técnico histórico del Informe dentro del texto y en
+  // healthReportTitle. La presentación siempre usa la denominación
+  // institucional; el dato persistido no se modifica.
+  const content = sanitizeHealthReportTitleInText(
+    psl.conclusiones.content,
+    psl.municipalityId
+  );
   const chapters = parseNarrativeChapters(content);
 
   const reales = psl.areasDeIntervencion.filter((a) => !a.isAnalyticalGap);
@@ -77,7 +88,10 @@ export function buildInstitutionalProfileViewModel(
     isDraft: psl.conclusiones.status !== "authored",
     primarySource: {
       present: psl.healthReportTitle !== undefined,
-      title: psl.healthReportTitle,
+      title:
+        psl.healthReportTitle !== undefined
+          ? institutionalHealthReportTitle(psl.municipalityId, psl.healthReportTitle)
+          : undefined,
     },
     contrastTopics: reales.map((a) => ({
       id: a.id,
