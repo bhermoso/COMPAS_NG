@@ -173,6 +173,22 @@ describe("tabla diagnóstica central — trazadores con referencias", () => {
     expect(visuales.tablaTrazadores.some((f) => f.refAndalucia !== "no disponible")).toBe(true);
   });
 
+  it("la columna lectura es sustantiva (comparación real), no cautela duplicada", () => {
+    const lecturas = visuales.tablaTrazadores.map((f) => f.lectura);
+    // Donde hay Andalucía real, la lectura compara de verdad
+    expect(
+      lecturas.some((l) => l.includes("referencia andaluza") || l.includes("andaluza"))
+    ).toBe(true);
+    // Ninguna lectura es la vieja cautela repetida
+    for (const l of lecturas) {
+      expect(l).not.toContain("comportamiento demo");
+      expect(l).not.toContain("no constituye");
+    }
+    // Y desde la tabla se llega a los 23 completos del anexo
+    expect(html).toContain("Los 23 indicadores completos");
+    expect(html).toContain('href="#psl-anexo"');
+  });
+
   it("los proxies llevan badge de contexto, nunca estimación distrital", () => {
     const proxies = visuales.tablaTrazadores.filter((f) => f.esProxy);
     expect(proxies.length).toBeGreaterThan(0);
@@ -197,6 +213,14 @@ describe("gramática visual semántica y Grupo Motor", () => {
     }
   });
 
+  it("jerarquía de mensajes: 3 principales destacados y el resto en bloque compacto", () => {
+    expect(html).toContain("psl-sintesis__mensajes--secundarios");
+    const destacados = html.match(/psl-sintesis__mensaje"/g) ?? [];
+    expect(destacados.length).toBe(3);
+    const secundarios = html.match(/psl-sintesis__mensaje psl-sintesis__mensaje--secundario/g) ?? [];
+    expect(secundarios.length).toBeGreaterThanOrEqual(2);
+  });
+
   it("el bloque «Qué debe discutir el Grupo Motor» conecta señal, mecanismo y pregunta", () => {
     expect(html).toContain("Qué debe discutir el Grupo Motor");
     expect(visuales.grupoMotorCards.length).toBeGreaterThanOrEqual(4);
@@ -204,8 +228,11 @@ describe("gramática visual semántica y Grupo Motor", () => {
     for (const c of visuales.grupoMotorCards) {
       expect(c.senal.length).toBeGreaterThan(15);
       expect(c.mecanismo.length).toBeGreaterThan(15);
+      // Conversación territorial: quién puede quedar fuera de los datos
+      expect(c.oculto.length).toBeGreaterThan(15);
       expect(c.pregunta).toMatch(/^¿.+\?$/);
     }
+    expect(html).toContain("Quién puede quedar fuera:");
     const temas = visuales.grupoMotorCards.map((c) => c.tema).join(" | ");
     expect(temas).toContain("Desigualdad");
     expect(temas).toContain("Soledad, envejecimiento");

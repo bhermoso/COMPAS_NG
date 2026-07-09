@@ -9145,9 +9145,12 @@ h3 {
    cautelas y la frontera con el Plan de Acción nunca se ocultan. */
 
 @media print {
-  body * { visibility: hidden; }
-  .pslc-viewer, .pslc-viewer * { visibility: visible; }
-  .pslc-viewer {
+  /* Solo cuando hay un visor institucional abierto se imprime únicamente el
+     documento; si no, la pantalla se imprime con flujo normal (no en blanco). */
+  body:has(details[open] .pslc-viewer) * { visibility: hidden; }
+  body:has(details[open] .pslc-viewer) .pslc-viewer,
+  body:has(details[open] .pslc-viewer) .pslc-viewer * { visibility: visible; }
+  body:has(details[open] .pslc-viewer) .pslc-viewer {
     position: absolute;
     left: 0;
     top: 0;
@@ -9397,3 +9400,25 @@ h3 {
 .pv-card__senal { font-size: 0.85rem; color: #33404e; margin: 0 0 6px; }
 .pv-card__mecanismo { font-size: 0.8rem; color: #475569; margin: 0 0 6px; }
 .pv-card__pregunta { font-size: 0.85rem; font-weight: 600; color: #1d4ed8; margin: 0; }
+
+/* ── Pulido de «Salud en síntesis» ─────────────────────────────────────────── */
+.psl-sintesis__mensajes--secundarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-top: 2px;
+}
+.psl-sintesis__mensaje--secundario {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #475569;
+  border-left-color: #94a3b8;
+  padding: 7px 10px 7px 14px;
+  margin-bottom: 0;
+}
+.pv-bar__etiqueta { line-height: 1.25; overflow-wrap: break-word; }
+.pv-card__oculto {
+  font-size: 0.8rem;
+  color: #7e22ce;
+  margin: 0 0 6px;
+}

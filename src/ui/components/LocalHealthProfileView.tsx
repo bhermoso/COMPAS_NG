@@ -974,12 +974,21 @@ export function LocalHealthProfileView({
         <section id="psl-sintesis" className="psl-doc-section workspace-panel psl-sintesis">
           <SectionHeader num="◆" title="Salud en síntesis" />
           <ul className="psl-sintesis__mensajes">
-            {sintesis.mensajes.map((m) => (
+            {sintesis.mensajes.slice(0, 3).map((m) => (
               <li key={m.id} className="psl-sintesis__mensaje">
                 {m.texto}
               </li>
             ))}
           </ul>
+          {sintesis.mensajes.length > 3 && (
+            <ul className="psl-sintesis__mensajes psl-sintesis__mensajes--secundarios">
+              {sintesis.mensajes.slice(3).map((m) => (
+                <li key={m.id} className="psl-sintesis__mensaje psl-sintesis__mensaje--secundario">
+                  {m.texto}
+                </li>
+              ))}
+            </ul>
+          )}
           <h3 className="psl-sintesis__subtitulo">
             Señales principales para deliberación
           </h3>
@@ -1058,6 +1067,10 @@ export function LocalHealthProfileView({
                       </tbody>
                     </table>
                   </div>
+                  <p className="panel-note">
+                    Los 23 indicadores completos, con procedencia y cautelas,
+                    están en la <a className="pslc-checklist__action" href="#psl-anexo">trazabilidad del anexo técnico</a>.
+                  </p>
                 </>
               )}
 
@@ -1073,6 +1086,9 @@ export function LocalHealthProfileView({
                         <p className="pv-card__senal">{c.senal}</p>
                         <p className="pv-card__mecanismo">
                           Mecanismo plausible: {c.mecanismo}
+                        </p>
+                        <p className="pv-card__oculto">
+                          Quién puede quedar fuera: {c.oculto}
                         </p>
                         <p className="pv-card__pregunta">{c.pregunta}</p>
                       </article>

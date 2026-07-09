@@ -71,6 +71,8 @@ export interface GrupoMotorCard {
   tema: string;
   senal: string;
   mecanismo: string;
+  /** Quién o qué puede quedar fuera de los datos (formulación prudente). */
+  oculto: string;
   pregunta: string;
   variant: EvidenceVariant;
 }
@@ -94,6 +96,34 @@ function refDe(answers: DiagnosticAnswers, id: string) {
 function valorDe(answers: DiagnosticAnswers, id: string): string | undefined {
   const r = refDe(answers, id);
   return r ? formatIndicatorValue(r.territorialValue, r.unit) : undefined;
+}
+
+// Lectura sustantiva por fila: donde existe referencia andaluza real, la
+// comparación provincial↔Andalucía es legítima (misma metodología EAS);
+// nunca se formula como posición del distrito.
+function lecturaComparativa(r: {
+  territorialValue?: number | string;
+  andalusiaReference?: number | string;
+  unit?: string;
+  demoProxy: boolean;
+}): string {
+  if (
+    typeof r.territorialValue === "number" &&
+    typeof r.andalusiaReference === "number"
+  ) {
+    const tolerancia = Math.max(0.5, Math.abs(r.andalusiaReference) * 0.05);
+    const diff = r.territorialValue - r.andalusiaReference;
+    const posicion =
+      Math.abs(diff) <= tolerancia
+        ? "en línea con la referencia andaluza"
+        : diff > 0
+          ? "referencia provincial por encima de la andaluza"
+          : "referencia provincial por debajo de la andaluza";
+    return posicion + " (" + formatIndicatorValue(r.andalusiaReference, r.unit) + ")";
+  }
+  return r.demoProxy
+    ? "referencia provincial sin equivalente andaluz calculado"
+    : "medición propia de la muestra local, sin referencia externa equivalente";
 }
 
 // ── Constructor ───────────────────────────────────────────────────────────────
@@ -196,9 +226,7 @@ export function buildDiagnosticVisuals(
           : "no disponible",
       escala: r.demoProxy ? "proxy contextual" : "muestra local",
       esProxy: r.demoProxy,
-      lectura: r.demoProxy
-        ? "coincide con la referencia provincial (comportamiento demo)"
-        : "medición de la muestra local del expediente",
+      lectura: lecturaComparativa(r),
     }));
 
   // ── Tarjetas: qué debe discutir el Grupo Motor ────────────────────────────
@@ -221,6 +249,8 @@ export function buildDiagnosticVisuals(
       "ningún dato del expediente está desagregado por sexo, edad o renta",
     mecanismo:
       "distribución desigual de recursos, exposiciones y poder que los agregados ocultan",
+    oculto:
+      "los grupos que los agregados promedian: quien vive con menos renta, quien cuida, quien no llega a los servicios",
     pregunta:
       "¿Qué grupos del territorio concentran el malestar y cuáles quedan fuera de los datos?",
     variant: "equidad",
@@ -237,6 +267,8 @@ export function buildDiagnosticVisuals(
         dukeVal +
         ") junto a una fuerte concentración de recursos para mayores",
       mecanismo: envejecimiento,
+      oculto:
+        "mayores que viven solos y no aparecen en ningún registro de actividad",
       pregunta:
         "¿A quién no llega la red de apoyo y qué papel juega la soledad no deseada?",
       variant: "activo",
@@ -251,6 +283,8 @@ export function buildDiagnosticVisuals(
       tema: "Sueño, malestar y vida cotidiana",
       senal: "un " + suenoVal + " de la muestra duerme menos de lo recomendado",
       mecanismo: psicosocial,
+      oculto:
+        "quien trabaja a turnos, cuida de noche o comparte vivienda sin descanso posible",
       pregunta:
         preguntaDeBloque("salud-mental-sueno-malestar") ??
         "¿Qué condiciones de vida están detrás del descanso insuficiente?",
@@ -266,6 +300,8 @@ export function buildDiagnosticVisuals(
       tema: "Sedentarismo y entorno urbano",
       senal: "inactividad en tiempo libre del " + inactVal,
       mecanismo: entorno,
+      oculto:
+        "quien no puede usar el espacio público con seguridad o autonomía",
       pregunta:
         preguntaDeBloque("actividad-fisica-sedentarismo-entorno") ??
         "¿El entorno cotidiano facilita o dificulta la vida activa?",
@@ -281,6 +317,8 @@ export function buildDiagnosticVisuals(
       tema: "Consumos y alimentación",
       senal: "adherencia mediterránea media de " + predimedVal,
       mecanismo: consumos,
+      oculto:
+        "hogares donde la dieta la decide el precio, no la preferencia",
       pregunta:
         preguntaDeBloque("consumos-alimentacion-habitos") ??
         "¿Qué contextos de consumo y alimentación operan en el territorio?",
@@ -297,6 +335,7 @@ export function buildDiagnosticVisuals(
         " recursos inventariados, sin validación de acceso y uso",
       mecanismo:
         "un recurso solo se convierte en capacidad si es conocido, accesible y usado por quien lo necesita",
+      oculto: "quien no conoce los recursos o no puede llegar hasta ellos",
       pregunta: "¿Cuáles de estos recursos funcionan hoy de verdad y para quién?",
       variant: "activo",
     });
