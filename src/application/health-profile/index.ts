@@ -78,6 +78,33 @@ export {
   institutionalHealthReportTitle,
   sanitizeHealthReportTitleInText,
 } from "./healthReportSanitaryReading";
+export type {
+  CausalStatus,
+  ScientificPrinciple,
+} from "./profileScientificFramework";
+export {
+  SCIENTIFIC_PRINCIPLES,
+  CAUSAL_STATUS_LABEL,
+} from "./profileScientificFramework";
+export type {
+  IntegratedHealthProfileSignal,
+  IntegratedMatrixRow,
+  DistribucionDesigualdad,
+} from "./integratedProfileSignals";
+export {
+  buildIntegratedProfileSignals,
+  buildIntegratedMatrix,
+} from "./integratedProfileSignals";
+export type {
+  VisualForm,
+  VisualContractRule,
+  VisualProhibition,
+} from "./profileVisualContract";
+export {
+  VISUAL_CONTRACT_RULES,
+  VISUAL_PROHIBITIONS,
+  visualCaption,
+} from "./profileVisualContract";
 export type { WritingContractViolation } from "./profileWritingContract";
 export {
   checkProfileWritingContract,
