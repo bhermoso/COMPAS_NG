@@ -68,6 +68,13 @@ export {
   inferSocialEpidemiologyDeterminants,
   buildSalutogenicReading,
 } from "./diagnosticAnswers";
+export type { WritingContractViolation } from "./profileWritingContract";
+export {
+  checkProfileWritingContract,
+  PROFILE_READING_DIMENSIONS,
+  DIAGNOSTIC_ENGINE_QUESTIONS,
+  POSITIVE_WRITING_CRITERIA,
+} from "./profileWritingContract";
 export type {
   ComplementaryStudiesReading,
   ComplementaryStudyDiagnosticBlock,

@@ -13,6 +13,12 @@
  *    incertidumbres del diagnóstico, nunca se rellenan con contenido inventado.
  *  - El vocabulario territorial procede del ámbito (distrito / municipio /
  *    ámbito territorial), nunca se presupone "municipio".
+ *
+ * La generación se gobierna por las preguntas-motor del contrato de escritura
+ * (profileWritingContract.DIAGNOSTIC_ENGINE_QUESTIONS) y respeta sus
+ * fronteras (checkProfileWritingContract): señal → mecanismo social plausible
+ * → determinante → desigualdad → capacidad → pregunta de contraste →
+ * conclusión sin recomendación.
  */
 
 import type { DiagnosticAnswers, SpaceKnowledge } from "./diagnosticAnswers";
@@ -309,9 +315,11 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     if (input.answers?.healthReport.present && input.answers.healthReport.temas.length > 0) {
       partes.push(
         `La fuente diagnóstica primaria cubre la base oficial del diagnóstico en: ` +
-        `${input.answers.healthReport.temas.join("; ")}. Esta lectura sitúa el ` +
-        `punto de partida sociodemográfico y epidemiológico; su detalle debe ` +
-        `consultarse en el documento original, preservado íntegro.`
+        `${input.answers.healthReport.temas.join("; ")}. Es la fuente que ` +
+        `estructura la lectura de situación de este Perfil: fija la base ` +
+        `sociodemográfica y epidemiológica sobre la que se interpretan las ` +
+        `señales de los estudios complementarios; su detalle debe consultarse ` +
+        `en el documento original, preservado íntegro.`
       );
     }
     partes.push(...redactarConocimiento(input.answers, ["contexto-territorial"]));
@@ -330,6 +338,16 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     const estudios = input.answers?.estudios;
     const bloques = estudios?.diagnosticBlocks ?? [];
     if (bloques.length > 0) {
+      // Contrato de escritura: la situación de salud se lee como expresión de
+      // la vida cotidiana del territorio; los estudios son señales, no el
+      // centro automático del Perfil.
+      partes.push(
+        `La situación de salud se lee aquí como expresión de la vida cotidiana ` +
+        `del ${scopeNoun}: cómo se duerme y se descansa, cuánto apoyo cercano ` +
+        `se tiene, cuánto se mueve la gente, qué se come y cómo se sienten sus ` +
+        `escolares. Los estudios complementarios no son el centro del Perfil: ` +
+        `son señales de esa vida cotidiana que la lectura interpreta.`
+      );
       // Lectura sustantiva: los estudios no se cuentan, se leen por bloques.
       const ordinales = [
         "El primero",
@@ -381,7 +399,10 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `referencia autonómica equivalente queda declarada como no disponible, ` +
           `sin inventarse dato. La trazabilidad completa de los ` +
           `${input.answers!.referencias.coverage.total} indicadores (valor, ` +
-          `referencias, procedencia y cautelas) consta en el anexo técnico.`
+          `referencias, procedencia y cautelas) consta en el anexo técnico. ` +
+          `Cada trazador abre una pregunta diagnóstica más que cierra un dato: ` +
+          `¿qué condiciones de vida del ${scopeNoun} producen este patrón? Esa ` +
+          `pregunta, y no la cifra aislada, es la que pasa a la interpretación.`
         );
       }
     } else if (input.indicatorCount > 0) {
@@ -472,13 +493,14 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
       partes.push(
         `Lectura desde la epidemiología social. La evidencia disponible sugiere, ` +
         `como hipótesis diagnósticas plausibles y pendientes de contraste, que en ` +
-        `el patrón observado pueden estar operando: ` +
+        `el patrón observado pueden estar operando como mecanismos sociales: ` +
         plausibles
           .map((d) => `${d.enunciado} (${d.base})`)
           .join("; ") +
         `. Ninguna de estas lecturas constituye causalidad demostrada: son ` +
-        `hipótesis trazables que el Grupo Motor y las fuentes territoriales ` +
-        `deben contrastar.`
+        `hipótesis trazables, y el conocimiento experiencial del Grupo Motor y ` +
+        `del vecindario —mecanismos, barreras, significados, accesibilidad ` +
+        `real— es la fuente llamada a confirmarlas, matizarlas o desmentirlas.`
       );
       // Trazabilidad hipótesis ← bloques: qué bloque del capítulo III sostiene
       // cada hipótesis (vínculo por identidad textual del enunciado).
@@ -627,6 +649,22 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
           `antes de interpretarse como activos propios del ${scopeNoun}.`
         );
       }
+      // Contrato de escritura: si un activo es capacidad real —accesible,
+      // activa, conocida— solo puede confirmarlo el conocimiento comunitario.
+      partes.push(
+        `Si estos recursos son capacidades reales —accesibles, activas, ` +
+        `conocidas por quienes los necesitan— es algo que solo el conocimiento ` +
+        `comunitario puede confirmar: se presentan como capacidades potenciales, ` +
+        `reconocidas o pendientes de validación, conectadas con los desafíos ` +
+        `del capítulo IV.` +
+        (input.qualitativeCount < 2
+          ? ` La experiencia vivida del vecindario apenas está representada en ` +
+            `el expediente (${input.qualitativeCount} elemento cualitativo): es ` +
+            `conocimiento pendiente de incorporación —los mecanismos, barreras ` +
+            `y significados que solo la comunidad puede aportar—, no un vacío ` +
+            `del territorio.`
+          : "")
+      );
       partes.push(...redactarConocimiento(input.answers, ["activos"]));
     } else {
       partes.push(
@@ -789,6 +827,19 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
       );
     }
     partes.push(...redactarConocimiento(input.answers, ["sintesis", "preparacion-deliberativa"]));
+
+    // Contrato de escritura: la deliberación produce conocimiento; el texto
+    // anima a la acción futura sin anticiparla ni recomendarla.
+    partes.push(
+      `Este diagnóstico no es un expediente cerrado sino una lectura viva del ` +
+      `territorio: cada hipótesis y cada pregunta abierta invitan a mirar de ` +
+      `cerca la vida cotidiana del ${scopeNoun}. La deliberación que sigue es ` +
+      `producción de conocimiento, no un trámite de validación: el Grupo Motor ` +
+      `aporta lo que ningún dato contiene —cómo se viven los recursos, qué ` +
+      `barreras operan, qué significan las señales— y prepara la acción futura ` +
+      `sin anticiparla: las decisiones corresponden a la fase posterior de ` +
+      `planificación.`
+    );
 
     // Cierre único: frontera de fase y validación. (Única mención a la autoría
     // pendiente en todo el documento: el Grupo Motor valida y prioriza, no

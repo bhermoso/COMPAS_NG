@@ -1,0 +1,121 @@
+# Contrato de escritura del Perfil Local de Salud
+
+> Documento operativo, no académico. Gobierna cómo COMPÁS NG escribe el
+> Perfil. Versión inicial: 2026-07-09. Implementación testeable:
+> `src/application/health-profile/profileWritingContract.ts` y
+> `tests/profile-writing-contract.test.ts`.
+
+## 1. Propósito del Perfil Local de Salud
+
+El Perfil es el producto esencial de COMPÁS NG. El Informe de Salud viene
+dado; el Plan de Acción pertenece a una fase posterior. Lo que aporta COMPÁS
+es convertir estudios complementarios, documentación territorial, BADEA/IECA,
+activos comunitarios, material cualitativo y el contraste del Grupo Motor en
+una **lectura territorial con sentido**: informar, interesar, suscitar
+preguntas y preparar la deliberación — sin recomendar todavía.
+
+## 2. Escribir con perspectiva de sociología de la salud
+
+No es una capa ornamental: cambia la frase. La fórmula de escritura es:
+
+```
+señal de salud
+→ posible mecanismo social
+→ determinante plausible
+→ desigualdad observable o no observable
+→ activo/capacidad relacionada
+→ pregunta para contraste comunitario
+→ conclusión diagnóstica sin recomendación
+```
+
+Operativamente:
+
+- **Conocimiento lego/experiencial (Popay)**: la comunidad y el Grupo Motor
+  son *fuente de conocimiento* sobre mecanismos, barreras, significados y
+  relación estructura/agencia — no un trámite de validación posterior. Si no
+  hay material cualitativo, esa experiencia es *conocimiento pendiente de
+  incorporación*, nunca se inventa.
+- **Determinantes y desigualdades (Graham; Borrell/Benach)**: las señales se
+  leen como distribución desigual de recursos, exposiciones y poder. La falta
+  de desagregación se escribe como *desigualdad no observable*, no como
+  ausencia de desigualdad.
+- **Salutogénesis y activos (Antonovsky; Hernán/Cofiño)**: los activos son
+  capacidades reales o potenciales conectadas con los desafíos — reconocidas
+  o pendientes de validación, accesibles o pendientes de contraste — no un
+  inventario decorativo ni cobertura demostrada.
+- **Participación (Cassetti/Paredes-Carbonell)**: la deliberación produce
+  conocimiento; el texto debe dejar preguntas vivas que el Grupo Motor pueda
+  trabajar.
+- **Lugar y vida cotidiana (Macintyre/Ellaway; Bambra)**: el barrio, el
+  entorno cotidiano y las condiciones de vida son la clave de lectura: cómo
+  se duerme, cuánto apoyo se tiene, cuánto se camina, qué se come.
+
+## 3. Reglas de escritura
+
+1. Abrir por la comprensión del territorio, no por la lista de fuentes.
+2. El Informe de Salud estructura la lectura de situación (función
+   analítica), además de preservarse como documento.
+3. Los estudios complementarios son señales de vida cotidiana y bienestar,
+   no el centro automático del Perfil.
+4. Cada indicador trazador abre una pregunta diagnóstica, no cierra un dato.
+5. Los determinantes se formulan como mecanismos sociales plausibles,
+   siempre pendientes de contraste.
+6. Distinguir siempre evidencia directa / proxy-contexto / ausencia de dato.
+7. Los activos se interpretan como capacidades potenciales conectadas con
+   los desafíos.
+8. BADEA/IECA es contexto municipal (proxy para ámbitos inframunicipales):
+   sitúa el contexto urbano, no resuelve desigualdades internas.
+9. El cierre invita a deliberar y prepara la acción futura sin anticiparla.
+10. Tono: institucional con calor humano; prosa, no listado.
+
+## 4. Fronteras (inviolables)
+
+- **No recomendaciones**, actuaciones, programas ni objetivos estratégicos.
+- **No Plan de Acción** como contenido del Perfil (es fase posterior).
+- **No causalidad falsa**: hipótesis y mecanismos plausibles, nunca
+  «demuestra que» ni «causa directa».
+- **No proxy como estimación distrital**: todo dato municipal, provincial o
+  autonómico se etiqueta como contexto de referencia.
+- **No inventar experiencia comunitaria** si no hay material cualitativo.
+
+## 5. Criterios de aceptación de una buena lectura territorial
+
+Una lectura es aceptable si: (a) un lector institucional entiende en la
+apertura la imagen del territorio, sus señales, desafíos, capacidades e
+incertidumbres; (b) cada señal queda conectada con al menos un mecanismo
+plausible o una pregunta; (c) las desigualdades no observables están
+declaradas; (d) los activos aparecen conectados con desafíos; (e) hay
+preguntas vivas para el Grupo Motor formuladas como producción de
+conocimiento; (f) el texto anima a la deliberación sin formular ninguna
+recomendación; (g) supera `checkProfileWritingContract` sin violaciones.
+
+## 6. Bibliografía orientadora mínima
+
+Solo referencias (no se ha descargado material: sin verificación de licencia
+en este entorno, se registra la cita y se localiza desde fuentes oficiales).
+
+- Popay J, Williams G. *Public health research and lay knowledge*. Soc Sci
+  Med 1996;42(5):759-768.
+- Popay J, Williams G, Thomas C, Gatrell A. *Theorising inequalities in
+  health: the place of lay knowledge*. Sociol Health Illn 1998;20(5):619-644.
+- Graham H. *Social determinants and their unequal distribution: clarifying
+  policy understandings*. Milbank Q 2004;82(1):101-124.
+- Borrell C, Artazcoz L. *Las desigualdades sociales en salud y sus
+  políticas* (Informe SESPAS). Gac Sanit 2008;22(Supl 1). Benach J, Muntaner
+  C. *Aprender a mirar la salud*. El Viejo Topo, 2005.
+- Antonovsky A. *Unraveling the Mystery of Health*. Jossey-Bass, 1987; y
+  *The salutogenic model as a theory to guide health promotion*. Health
+  Promot Int 1996;11(1):11-18.
+- Hernán M, Morgan A, Mena ÁL. *Formación en salutogénesis y activos para la
+  salud*. Escuela Andaluza de Salud Pública (acceso abierto en easp.es).
+- Cofiño R, Aviñó D, Benedé CB, et al. *Promoción de la salud basada en
+  activos: ¿cómo trabajar con esta perspectiva en intervenciones locales?*
+  Gac Sanit 2016;30(S1):93-98 (acceso abierto).
+- Cassetti V, Paredes-Carbonell JJ, et al. *Evidencia sobre la participación
+  comunitaria en salud en el contexto español*. Gac Sanit 2020;34(4):388-394
+  (acceso abierto). AdaptA GPS: adaptación al contexto español de la guía
+  NICE NG44 de participación comunitaria (2019).
+- Macintyre S, Ellaway A, Cummins S. *Place effects on health: how can we
+  conceptualise, operationalise and measure them?* Soc Sci Med
+  2002;55(1):125-139.
+- Bambra C. *Health Divides: Where You Live Can Kill You*. Policy Press, 2016.
