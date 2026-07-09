@@ -90,8 +90,8 @@ beforeAll(() => {
 // Gráficos seguros
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("gráficos diagnósticos — contrato visual", () => {
-  it("existen al menos dos gráficos en pantalla, cada uno con Fuente · Escala · Cautela", () => {
+describe("gráficos diagnósticos seguros — contrato visual", () => {
+  it("los gráficos del modelo llevan Fuente · Escala · Cautela y alimentan la vista integrada", () => {
     const graficos = [
       visuales.informeChart,
       visuales.bloquesChart,
@@ -103,11 +103,12 @@ describe("gráficos diagnósticos — contrato visual", () => {
       expect(g!.caption).toContain("Escala:");
       expect(g!.caption).toContain("Cautela:");
     }
-    // Renderizados en pantalla como barras CSS
-    const barras = html.match(/pv-bar__relleno/g) ?? [];
-    expect(barras.length).toBeGreaterThanOrEqual(15);
-    const pies = html.match(/Cautela:/g) ?? [];
-    expect(pies.length).toBeGreaterThanOrEqual(3);
+    // La lectura visual en pantalla es la Vista editorial integrada (una sola
+    // composición): imagen general y señales por fuente sustituyen la antigua
+    // rejilla de barras de «Salud en síntesis».
+    expect(html).toContain("Vista editorial integrada");
+    expect(html).toContain("Imagen general");
+    expect(html).toContain("Señales principales por fuente");
   });
 
   it("el gráfico del Informe usa peso textual/menciones, nunca prevalencia", () => {
@@ -156,9 +157,9 @@ describe("gráficos diagnósticos — contrato visual", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("tabla diagnóstica central — trazadores con referencias", () => {
-  it("existe en pantalla (no solo en anexo) con valores y referencias", () => {
+  it("existe en la vista integrada (no solo en anexo) con valores y referencias", () => {
     expect(html).toContain("Indicadores trazadores: valores y referencias");
-    // Aparece dentro de «Salud en síntesis», antes del anexo
+    // Aparece dentro de la Vista editorial integrada, antes del anexo técnico.
     expect(html.indexOf("Indicadores trazadores: valores y referencias")).toBeLessThan(
       html.indexOf("Trazabilidad técnica del diagnóstico")
     );
@@ -184,21 +185,21 @@ describe("tabla diagnóstica central — trazadores con referencias", () => {
       expect(l).not.toContain("comportamiento demo");
       expect(l).not.toContain("no constituye");
     }
-    // Y desde la tabla se llega a los 23 completos del anexo
-    expect(html).toContain("Los 23 indicadores completos");
-    expect(html).toContain('href="#psl-anexo"');
+    // Los 23 indicadores completos siguen en la trazabilidad del anexo técnico.
+    expect(html).toContain("Trazabilidad técnica del diagnóstico");
   });
 
-  it("los proxies llevan badge de contexto, nunca estimación distrital", () => {
+  it("los proxies se presentan como contexto, nunca como estimación distrital", () => {
     const proxies = visuales.tablaTrazadores.filter((f) => f.esProxy);
     expect(proxies.length).toBeGreaterThan(0);
-    expect(html).toContain("proxy contextual — no estimación distrital");
     for (const f of visuales.tablaTrazadores) {
       expect(["proxy contextual", "muestra local"]).toContain(f.escala);
     }
-    // Badges de escala renderizados con variante semántica
-    expect(html).toContain("pv-escala");
-    expect(html).toContain("pv--proxy");
+    // La vista integrada renderiza la escala como contexto declarado.
+    expect(html).toContain("proxy contextual");
+    expect(html).toContain("muestra local");
+    // Y nunca como estimación específica del distrito.
+    expect(html).not.toMatch(/estimaci[óo]n distrital real|estimaci[óo]n espec[íi]fica del distrito/i);
   });
 });
 
@@ -207,18 +208,17 @@ describe("tabla diagnóstica central — trazadores con referencias", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("gramática visual semántica y Grupo Motor", () => {
-  it("existen variantes de color por tipo de evidencia", () => {
-    for (const variant of ["pv--informe", "pv--estudio", "pv--activo", "pv--equidad"]) {
+  it("existen variantes de color por tipo de evidencia (pie-variant--*)", () => {
+    // La vista integrada expresa la gramática de evidencia con pie-variant--*.
+    for (const variant of ["pie-variant--informe", "pie-variant--estudio", "pie-variant--activo"]) {
       expect(html).toContain(variant);
     }
   });
 
-  it("jerarquía de mensajes: 3 principales destacados y el resto en bloque compacto", () => {
-    expect(html).toContain("psl-sintesis__mensajes--secundarios");
-    const destacados = html.match(/psl-sintesis__mensaje"/g) ?? [];
-    expect(destacados.length).toBe(3);
-    const secundarios = html.match(/psl-sintesis__mensaje psl-sintesis__mensaje--secundario/g) ?? [];
-    expect(secundarios.length).toBeGreaterThanOrEqual(2);
+  it("la imagen general presenta tres mensajes principales con dato y fuente", () => {
+    expect(html).toContain("Imagen general");
+    const items = html.match(/pie-overview__item/g) ?? [];
+    expect(items.length).toBe(3);
   });
 
   it("el bloque «Qué debe discutir el Grupo Motor» conecta señal, mecanismo y pregunta", () => {
@@ -252,8 +252,8 @@ describe("gramática visual semántica y Grupo Motor", () => {
       /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|plan de acci[óo]n/i
     );
     const seccion = html.slice(
-      html.indexOf("Salud en síntesis"),
-      html.indexOf("I · Alcance y fuentes")
+      html.indexOf("Vista editorial integrada"),
+      html.indexOf('id="psl-resumen"')
     );
     expect(seccion).not.toMatch(
       /se recomienda|recomendamos|debe implantarse|programa de|plan de acci[óo]n/i

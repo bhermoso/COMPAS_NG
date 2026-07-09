@@ -106,7 +106,7 @@ beforeAll(() => {
   );
   proposalHtml = html.slice(
     html.indexOf("Vista editorial integrada"),
-    html.indexOf("Salud en síntesis")
+    html.indexOf('id="psl-resumen"')
   );
 }, 60000);
 
@@ -177,25 +177,28 @@ describe("modelo puro — Vista editorial integrada", () => {
   });
 });
 
-describe("render — propuesta editorial integrada", () => {
-  it("aparece antes de Salud en síntesis y antes del desarrollo capitular", () => {
+describe("render — vista editorial integrada canónica", () => {
+  it("es la lectura canónica: retira la síntesis autónoma y el desarrollo capitular", () => {
     expect(html).toContain("Vista editorial integrada");
     expect(html).toContain("Propuesta de composición del Perfil de Salud Local");
-    expect(html).toContain("Salud en síntesis");
-    expect(html).toContain("I · Alcance y fuentes");
-
+    // La resolución editorial retira la sección autónoma «Salud en síntesis»
+    // y el desarrollo capitular largo de la experiencia principal.
+    expect(html).not.toContain("Salud en síntesis");
+    expect(html).not.toContain("I · Alcance y fuentes");
+    // La composición canónica precede al anexo técnico de trazabilidad.
     expect(html.indexOf("Vista editorial integrada")).toBeLessThan(
-      html.indexOf("Salud en síntesis")
-    );
-    expect(html.indexOf("Vista editorial integrada")).toBeLessThan(
-      html.indexOf("I · Alcance y fuentes")
+      html.indexOf("Trazabilidad técnica del diagnóstico")
     );
   });
 
-  it("mantiene la sección vigente y sus piezas centrales", () => {
-    expect(html).toContain("Salud en síntesis");
+  it("concentra las piezas centrales en una sola composición, sin duplicarlas", () => {
     expect(html).toContain("Indicadores trazadores: valores y referencias");
     expect(html).toContain("Qué debe discutir el Grupo Motor");
+    // Cada pieza aparece una sola vez: no hay dos composiciones compitiendo.
+    expect(
+      html.match(/Indicadores trazadores: valores y referencias/g)
+    ).toHaveLength(1);
+    expect(html.match(/Qué debe discutir el Grupo Motor/g)).toHaveLength(1);
   });
 
   it("subordina la lectura ampliada y el anexo técnico en details", () => {

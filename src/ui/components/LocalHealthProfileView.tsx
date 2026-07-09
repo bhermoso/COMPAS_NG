@@ -3,7 +3,6 @@ import type { LocalHealthProfile, PSLScaffoldChapter } from "../../domain/health
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
 import {
   buildInstitutionalProfileViewModel,
-  INSTITUTIONAL_NAV,
   CONTRAST_TOPICS_LABEL,
   PENDING_CONTRAST_LABEL,
   formatIndicatorValue,
@@ -16,12 +15,9 @@ import type {
 import { PSLCArtifactViewer } from "./PSLCArtifactViewer";
 import type { DiagnosticAnswers } from "../../application/health-profile";
 import {
-  buildProfileSynthesis,
   buildMatrizAnexo,
-  buildDiagnosticVisuals,
   buildProfileIntegratedEditorialView,
 } from "../../application/health-profile";
-import type { DiagnosticBarChart } from "../../application/health-profile";
 import {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToPdfBlob,
@@ -132,51 +128,6 @@ function SectionHeader({ num, title }: { num: string; title: string }) {
 
 function ScaffoldBadge({ text }: { text: string }) {
   return <span className="psl-doc-scaffold-badge">{text}</span>;
-}
-
-// Gráfico de barras CSS (sin dependencias) del contrato visual: cada barra
-// lleva variante semántica por tipo de evidencia y el pie declara
-// Fuente · Escala · Cautela.
-function PvBarChart({ chart }: { chart: DiagnosticBarChart }) {
-  return (
-    <figure className="pv-chart">
-      <figcaption className="pv-chart__titulo">{chart.titulo}</figcaption>
-      <p className="pv-chart__unidad">{chart.unidad}</p>
-      <div className="pv-chart__barras">
-        {chart.items.map((item) => (
-          <div key={item.etiqueta} className="pv-bar">
-            <span className="pv-bar__etiqueta">{item.etiqueta}</span>
-            <span className="pv-bar__pista">
-              <span
-                className={"pv-bar__relleno pv--" + item.variant}
-                style={{ width: Math.max(4, Math.round((item.valor / chart.maxValor) * 100)) + "%" }}
-              />
-            </span>
-            <span className="pv-bar__valor">{item.valor}</span>
-          </div>
-        ))}
-      </div>
-      <p className="pv-chart__pie">{chart.caption}</p>
-    </figure>
-  );
-}
-
-// ── Índice del documento institucional ────────────────────────────────────────
-// La estructura principal del Perfil son los seis capítulos narrativos por
-// determinantes (INSTITUTIONAL_NAV, fuente única en el modelo de aplicación).
-
-function PslChapterNav() {
-  return (
-    <nav className="psl-doc-chapter-nav" aria-label="Capítulos del perfil">
-      <div className="psl-doc-chapter-nav__inner">
-        {INSTITUTIONAL_NAV.map((ch) => (
-          <a key={ch.href} href={ch.href} className="psl-doc-chapter-nav__link">
-            {ch.label}
-          </a>
-        ))}
-      </div>
-    </nav>
-  );
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -854,21 +805,13 @@ export function LocalHealthProfileView({
 }: LocalHealthProfileViewProps) {
   const isEmpty = psl.totalEvidenceAtoms === 0;
   const doc = buildInstitutionalProfileViewModel(psl);
-  const sintesis =
-    diagnosticAnswers !== undefined
-      ? buildProfileSynthesis(diagnosticAnswers, {
-          informeTitulo: doc.primarySource.title,
-          scopeNoun: "territorio",
-        })
-      : null;
+  // La Vista editorial integrada es la lectura canónica del Perfil: consume las
+  // capas puras (síntesis, visuales, señales integradas) internamente. La
+  // pantalla no recalcula ni vuelve a renderizar esas estructuras por separado.
+  // La matriz epistemológica completa se conserva solo como trazabilidad del
+  // anexo técnico.
   const matrizAnexo =
     diagnosticAnswers !== undefined ? buildMatrizAnexo(diagnosticAnswers) : null;
-  const visuales =
-    diagnosticAnswers !== undefined
-      ? buildDiagnosticVisuals(diagnosticAnswers, {
-          informeTitulo: doc.primarySource.title,
-        })
-      : null;
   const generatedDate = new Date(psl.generatedAt).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "long",
@@ -994,144 +937,12 @@ export function LocalHealthProfileView({
         <PSLValidationAction onValidate={onValidate} />
       )}
 
-      {/* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */}
-      {/* ── Salud en síntesis: la lectura antes que la metodología ──────── */}
+      {/* ── Vista editorial integrada: lectura canónica del Perfil ────────── */}
+      {/* Composición oficial única. Absorbe la antigua «Salud en síntesis» y */}
+      {/* deja el desarrollo capitular fuera de la experiencia principal.     */}
       {!isEmpty && integratedEditorialView !== null && (
         <ProfileIntegratedEditorialPreview view={integratedEditorialView} />
       )}
-
-      {!isEmpty && sintesis !== null && sintesis.mensajes.length >= 4 && (
-        <section id="psl-sintesis" className="psl-doc-section workspace-panel psl-sintesis">
-          <SectionHeader num="◆" title="Salud en síntesis" />
-          <ul className="psl-sintesis__mensajes">
-            {sintesis.mensajes.slice(0, 3).map((m) => (
-              <li key={m.id} className="psl-sintesis__mensaje">
-                {m.texto}
-              </li>
-            ))}
-          </ul>
-          {sintesis.mensajes.length > 3 && (
-            <ul className="psl-sintesis__mensajes psl-sintesis__mensajes--secundarios">
-              {sintesis.mensajes.slice(3).map((m) => (
-                <li key={m.id} className="psl-sintesis__mensaje psl-sintesis__mensaje--secundario">
-                  {m.texto}
-                </li>
-              ))}
-            </ul>
-          )}
-          <h3 className="psl-sintesis__subtitulo">
-            Señales principales para deliberación
-          </h3>
-          <div style={{ overflowX: "auto" }}>
-            <table className="psl-sintesis__tabla">
-              <thead>
-                <tr>
-                  <th>Ámbito</th>
-                  <th>Señal</th>
-                  <th>Fuente</th>
-                  <th>Escala</th>
-                  <th>Lectura</th>
-                  <th>Pregunta para contraste</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sintesis.senalesPrincipales.map((r) => (
-                  <tr key={r.grupo}>
-                    <td>{r.grupo}</td>
-                    <td>{r.senal}</td>
-                    <td>{r.fuente}</td>
-                    <td>{r.escala}</td>
-                    <td>{r.lectura}</td>
-                    <td>{r.pregunta}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="panel-note">{sintesis.notaEscala}</p>
-
-          {visuales !== null && (
-            <>
-              <div className="pv-charts-grid">
-                {visuales.informeChart && <PvBarChart chart={visuales.informeChart} />}
-                {visuales.bloquesChart && <PvBarChart chart={visuales.bloquesChart} />}
-                {visuales.activosChart && <PvBarChart chart={visuales.activosChart} />}
-              </div>
-
-              {visuales.tablaTrazadores.length > 0 && (
-                <>
-                  <h3 className="psl-sintesis__subtitulo">
-                    Indicadores trazadores: valores y referencias
-                  </h3>
-                  <div style={{ overflowX: "auto" }}>
-                    <table className="psl-sintesis__tabla pv-tabla-central">
-                      <thead>
-                        <tr>
-                          <th>Bloque</th>
-                          <th>Indicador</th>
-                          <th>Valor</th>
-                          <th>Ref. Granada</th>
-                          <th>Ref. Andalucía</th>
-                          <th>Escala</th>
-                          <th>Lectura</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visuales.tablaTrazadores.map((f) => (
-                          <tr key={f.indicador}>
-                            <td>{f.bloque}</td>
-                            <td>{f.indicador}</td>
-                            <td className="pv-tabla-central__valor">{f.valor}</td>
-                            <td>{f.refGranada}</td>
-                            <td>{f.refAndalucia}</td>
-                            <td>
-                              <span className={"pv-escala pv--" + (f.esProxy ? "proxy" : "estudio")}>
-                                {f.esProxy
-                                  ? "proxy contextual — no estimación distrital"
-                                  : "muestra local"}
-                              </span>
-                            </td>
-                            <td>{f.lectura}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="panel-note">
-                    Los 23 indicadores completos, con procedencia y cautelas,
-                    están en la <a className="pslc-checklist__action" href="#psl-anexo">trazabilidad del anexo técnico</a>.
-                  </p>
-                </>
-              )}
-
-              {visuales.grupoMotorCards.length >= 4 && (
-                <>
-                  <h3 className="psl-sintesis__subtitulo">
-                    Qué debe discutir el Grupo Motor
-                  </h3>
-                  <div className="pv-cards">
-                    {visuales.grupoMotorCards.map((c) => (
-                      <article key={c.id} className={"pv-card pv--" + c.variant}>
-                        <h4 className="pv-card__tema">{c.tema}</h4>
-                        <p className="pv-card__senal">{c.senal}</p>
-                        <p className="pv-card__mecanismo">
-                          Mecanismo plausible: {c.mecanismo}
-                        </p>
-                        <p className="pv-card__oculto">
-                          Quién puede quedar fuera: {c.oculto}
-                        </p>
-                        <p className="pv-card__pregunta">{c.pregunta}</p>
-                      </article>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-        </section>
-      )}
-
-      <PslChapterNav />
 
       {/* ── Resumen ejecutivo ─────────────────────────────────────────────── */}
       <section id="psl-resumen" className="psl-doc-section workspace-panel">
@@ -1227,39 +1038,10 @@ export function LocalHealthProfileView({
         )}
       </section>
 
-      {/* ── Documento principal: seis capítulos narrativos por determinantes ─ */}
-      {!isEmpty && doc.isDraft && (
-        <div className="psl-doc-draft-notice">
-          <span className="psl-doc-draft-notice__label">Borrador asistido</span>{" "}
-          Documento de trabajo elaborado con apoyo de COMPÁS NG a partir de la
-          evidencia del repositorio. El equipo técnico debe revisarlo, completarlo
-          y asumir su autoría antes del uso institucional.
-        </div>
-      )}
-
-      {doc.chapters.length > 0 ? (
-        doc.chapters.map((chapter, index) => (
-          <section
-            key={chapter.numeral}
-            id={INSTITUTIONAL_NAV[index + 1]?.href.slice(1) ?? `psl-cap-${chapter.numeral.toLowerCase()}`}
-            className="psl-doc-section workspace-panel"
-          >
-            <SectionHeader num={chapter.numeral} title={chapter.title} />
-            <div className="psl-doc-narrative-chapter">
-              {chapter.content.split("\n\n").map((paragraph, i) => (
-                <p key={i} className="psl-doc-narrative-chapter__paragraph">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </section>
-        ))
-      ) : (
-        <section id="psl-cap-i" className="psl-doc-section workspace-panel">
-          <SectionHeader num="I" title="Documento del Perfil" />
-          <p className="psl-doc-narrative-chapter__paragraph">{doc.fallbackContent}</p>
-        </section>
-      )}
+      {/* El desarrollo capitular largo ya no se muestra como cuerpo del Perfil */}
+      {/* (resolución editorial): su contenido, transformado, vive en la Vista  */}
+      {/* editorial integrada. El texto capitular subyacente (doc.chapters) se   */}
+      {/* conserva como base de autoría para el documento institucional PSL-C.   */}
 
       {/* Edición del documento (autoría técnica sobre el texto completo) */}
       {psl.status === "validated" && onEditConclusion && (

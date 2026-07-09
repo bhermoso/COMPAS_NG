@@ -174,14 +174,17 @@ describe("Salud en síntesis — señales principales para deliberación", () =>
 // Render en pantalla y matriz en anexo
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pantalla — síntesis delante, matriz en anexo", () => {
-  it("la sección aparece antes del desarrollo capitular", () => {
-    expect(html).toContain("Salud en síntesis");
-    expect(html).toContain("Señales principales para deliberación");
-    const sintesisIdx = html.indexOf("Salud en síntesis");
-    const capIIdx = html.indexOf("I · Alcance y fuentes");
-    expect(sintesisIdx).toBeGreaterThan(-1);
-    expect(sintesisIdx).toBeLessThan(capIIdx);
+describe("pantalla — la síntesis se absorbe en la vista integrada; matriz en anexo", () => {
+  it("la sección autónoma «Salud en síntesis» ya no se muestra: su lectura vive en la vista integrada", () => {
+    // Resolución editorial: la composición canónica es la Vista editorial integrada.
+    expect(html).toContain("Vista editorial integrada");
+    expect(html).not.toContain("Salud en síntesis");
+    // La deliberación con el Grupo Motor sigue presente, ahora en la vista integrada.
+    expect(html).toContain("Qué debe discutir el Grupo Motor");
+    // El desarrollo capitular largo ya no es cuerpo de la pantalla.
+    expect(html).not.toContain("I · Alcance y fuentes");
+    // El modelo puro de síntesis sigue siendo la fuente (alimenta la vista integrada).
+    expect(sintesis.mensajes.length).toBeGreaterThanOrEqual(4);
   });
 
   it("la matriz epistemológica completa queda plegada en el anexo con notas de bloque", () => {
@@ -192,16 +195,16 @@ describe("pantalla — síntesis delante, matriz en anexo", () => {
     // Sin repetición mecánica: la cautela de desigualdad no va fila a fila
     expect(matriz.filas.every((f) => f.desigualdad === undefined)).toBe(true);
     expect(matriz.notasBloque[0]).toContain("todas las señales");
-    // Y la matriz aparece después de la síntesis, nunca como apertura
-    expect(html.indexOf("Salud en síntesis")).toBeLessThan(
+    // Y la matriz aparece después de la vista integrada, nunca como apertura
+    expect(html.indexOf("Vista editorial integrada")).toBeLessThan(
       html.indexOf("Matriz epistemológica completa")
     );
   });
 
-  it("sin recomendaciones ni Plan de Acción en la nueva sección", () => {
+  it("la composición canónica no introduce recomendaciones ni Plan de Acción", () => {
     const seccion = html.slice(
-      html.indexOf("Salud en síntesis"),
-      html.indexOf("I · Alcance y fuentes")
+      html.indexOf("Vista editorial integrada"),
+      html.indexOf('id="psl-resumen"')
     );
     expect(seccion).not.toMatch(
       /se recomienda|recomendamos|debe implantarse|programa de|plan de acci[óo]n|objetivo estrat[ée]gico/i
