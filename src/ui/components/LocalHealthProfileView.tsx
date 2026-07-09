@@ -350,13 +350,18 @@ function PSLCCompilationChecklist({
         ))}
       {!compilado && (
         <p className="panel-note pslc-checklist__opcional">
-          Opcional:{" "}
+          Opcional: revisar si el Perfil necesita{" "}
+          <a className="pslc-checklist__action" href="#psl-enriquecimiento-fuentes">
+            incorporar nuevas fuentes territoriales
+          </a>{" "}
+          o{" "}
           <a className="pslc-checklist__action" href="#psl-espacio-interpretativo">
             enriquecer la lectura técnica del Perfil
           </a>{" "}
-          antes de compilar — las interpretaciones, hipótesis, preguntas y
-          síntesis del equipo se incorporan al documento institucional. No es
-          un requisito para compilar.
+          antes de compilar — las fuentes amplían la base de evidencia y las
+          interpretaciones, hipótesis, preguntas y síntesis del equipo se
+          incorporan al documento institucional. No es un requisito para
+          compilar.
         </p>
       )}
     </section>

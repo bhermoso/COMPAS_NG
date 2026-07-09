@@ -443,7 +443,12 @@ export function PerfilLocalDeSaludPanel({
         cuando existen. No son recomendaciones ni actuaciones. Es opcional y no
         es un requisito para compilar: si queda vacío, el PSL-C se compila con
         la lectura generada y declara la ausencia de espacio interpretativo
-        técnico registrado.
+        técnico registrado. Antes de redactar interpretaciones, el equipo
+        puede revisar si el Perfil necesita{" "}
+        <a className="pslc-checklist__action" href="#psl-enriquecimiento-fuentes">
+          incorporar nuevas fuentes territoriales
+        </a>
+        .
       </p>
 
       {estaVacio ? (

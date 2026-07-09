@@ -100,6 +100,7 @@ import {
   PAIView,
   GESPanel,
   PerfilLocalDeSaludPanel,
+  PerfilFuentesPanel,
 } from "./ui/components";
 import "./App.css";
 
@@ -2964,6 +2965,7 @@ export default function App() {
               onCompile={handleCompilePSL}
               onApprove={handleApprovePSL}
             />
+            <PerfilFuentesPanel workspace={workspace} />
             <PerfilLocalDeSaludPanel
               perfil={workspace.perfilLocalDeSalud}
               municipalityId={municipality.id}

@@ -153,14 +153,17 @@ describe("ruta operativa — checklist de compilación PSL-C", () => {
     expect(render(generado)).not.toContain("Crear documento institucional PSL-C");
   });
 
-  it("ofrece el enriquecimiento interpretativo como opcional, nunca como requisito", () => {
+  it("ofrece fuentes e interpretación como opcionales, nunca como requisito", () => {
     const html = render(validado);
     expect(html).toContain("Opcional:");
+    expect(html).toContain("incorporar nuevas fuentes territoriales");
+    expect(html).toContain('href="#psl-enriquecimiento-fuentes"');
     expect(html).toContain("enriquecer la lectura técnica del Perfil");
     expect(html).toContain('href="#psl-espacio-interpretativo"');
     expect(html).toContain("No es un requisito para compilar");
-    // No aparece entre los requisitos del checklist
+    // Ninguno aparece entre los requisitos del checklist
     expect(html).not.toContain("falta enriquecer la lectura técnica");
+    expect(html).not.toContain("falta incorporar nuevas fuentes");
   });
 
   it("con requisitos cumplidos ofrece la acción de compilar", () => {

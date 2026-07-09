@@ -9268,3 +9268,10 @@ h3 {
   border-top: 3px solid #64748b !important;
   background: #f8fafc;
 }
+
+/* ── Perfil: enriquecimiento de fuentes ────────────────────────────────────── */
+.ekc-panel__subtitle {
+  font-size: 1rem;
+  color: #1e293b;
+  margin: 18px 0 6px;
+}
