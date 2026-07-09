@@ -24,6 +24,8 @@ import {
   PROFILE_READING_DIMENSIONS,
   POSITIVE_WRITING_CRITERIA,
   LOCAL_PRIMACY_RULE,
+  SANITARY_THREAD_RULE,
+  NARRATIVE_GENERATOR_VERSION,
 } from "../src/application/health-profile";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
 import type { LocalHealthProfile } from "../src/domain/health-profile";
@@ -94,6 +96,38 @@ describe("contrato de escritura — definición operativa", () => {
         "Este capítulo no formula recomendaciones, actuaciones ni programas."
       )
     ).toHaveLength(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Regeneración: la narrativa nueva llega de verdad al Perfil generado
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("contrato de escritura — regeneración narrativa", () => {
+  it("una generación nueva queda sellada con la versión actual del generador", () => {
+    expect(psl.narrativeGeneratorVersion).toBe(NARRATIVE_GENERATOR_VERSION);
+    expect(NARRATIVE_GENERATOR_VERSION).toContain("contrato-escritura");
+  });
+
+  it("la situación de salud abre por la vida cotidiana, no por «Los 13 estudios…»", () => {
+    const vidaCotidiana = texto.indexOf("La situación de salud se lee aquí como expresión de la vida cotidiana");
+    const conteo = texto.indexOf("no aportan solo");
+    expect(vidaCotidiana).toBeGreaterThan(-1);
+    expect(conteo).toBeGreaterThan(-1);
+    expect(vidaCotidiana).toBeLessThan(conteo);
+  });
+
+  it("el matiz de hilo sanitario queda declarado en el contrato", () => {
+    expect(SANITARY_THREAD_RULE).toContain("hilo sanitario");
+    expect(SANITARY_THREAD_RULE).toContain("ni en informe epidemiológico estrecho ni en");
+    const doc = readFileSync(
+      resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "../docs/architecture/PROFILE-WRITING-CONTRACT.md"
+      ),
+      "utf8"
+    );
+    expect(doc).toContain("Hilo sanitario y contextualización social");
   });
 });
 

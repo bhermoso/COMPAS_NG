@@ -199,6 +199,25 @@ describe("ruta operativa — checklist de compilación PSL-C", () => {
   });
 });
 
+describe("narrativa obsoleta — aviso de regeneración", () => {
+  it("un PSL validado con generador anterior muestra el aviso; uno actual, no", () => {
+    // El PSL validado del arnés procede del generador actual → sin aviso
+    expect(render(validado)).not.toContain("Narrativa anterior");
+    // Un PSL validado antes de la versión narrativa (campo ausente) → aviso
+    const antiguo: LocalHealthProfile = {
+      ...validado,
+      narrativeGeneratorVersion: undefined,
+    };
+    const html = render(antiguo);
+    expect(html).toContain("Narrativa anterior");
+    expect(html).toContain("conserva la narrativa anterior");
+    expect(html).toContain("revierte a borrador");
+    expect(html).toContain("compilar un nuevo PSL-C");
+    // No se invalida ni se sobrescribe nada automáticamente
+    expect(html).toContain("pedirá confirmación antes de");
+  });
+});
+
 describe("ruta operativa — navegación por anclas", () => {
   it("la caja de ruta tiene ancla estable y los enlaces apuntan a anclas existentes", () => {
     const html = render(validado);

@@ -68,6 +68,18 @@ Consecuencia de orden: en cada capítulo, la evidencia local precede al
 contexto externo (p. ej., el Informe de Salud se comenta antes que el
 contexto BADEA del municipio matriz).
 
+### Hilo sanitario y contextualización social
+
+La primacía local tiene un matiz de objeto: el Perfil mantiene el **hilo
+sanitario**. El Informe de Salud sostiene el objeto salud del documento
+—situación epidemiológica, problemas de salud, factores de riesgo,
+condiciones sanitarias y lectura de enfermedad/bienestar—; los estudios
+complementarios **amplían ese hilo** hacia bienestar, hábitos y vida
+cotidiana; BADEA/IECA y las fuentes externas **contextualizan** determinantes
+y desigualdades. El Perfil no debe convertirse ni en un informe
+epidemiológico estrecho ni en un informe social general: es una lectura de
+salud socialmente contextualizada.
+
 ## 3. Reglas de escritura
 
 1. Abrir por la comprensión del territorio, no por la lista de fuentes.

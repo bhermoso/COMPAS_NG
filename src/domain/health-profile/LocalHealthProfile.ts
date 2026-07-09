@@ -100,6 +100,9 @@ export interface LocalHealthProfile {
   version: string;                // ISO timestamp del momento de generación
   evidenceStoreVersion: string;   // = evidenceStore.updatedAt en el momento de captura;
                                   // detecta si la evidencia ha cambiado desde la validación
+  narrativeGeneratorVersion?: string; // versión del generador narrativo en el momento
+                                      // de la generación; ausente en PSL anteriores.
+                                      // Detecta narrativa obsoleta sin sobrescribirla.
 
   // ── Bloque: Marco Estratégico ─────────────────────────────────────────
   // Referencia los IDs de sección del StrategicFramework canónico.

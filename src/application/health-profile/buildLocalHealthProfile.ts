@@ -35,7 +35,11 @@ import type {
   PSLPriorizacionStatus,
 } from "../../domain/health-profile";
 import { THEMATIC_TOPICS } from "../../domain/thematic-prioritisation";
-import { buildNarrativeChapters, renderNarrativeChapters } from "./narrativeChapters";
+import {
+  buildNarrativeChapters,
+  renderNarrativeChapters,
+  NARRATIVE_GENERATOR_VERSION,
+} from "./narrativeChapters";
 import { buildDiagnosticAnswers } from "./diagnosticAnswers";
 
 // ── Secciones del Marco Estratégico (Capítulo I) ──────────────────────────────
@@ -203,6 +207,7 @@ export function buildLocalHealthProfile(
     status: "generated",
     version: now,
     evidenceStoreVersion: sanitizedStore.updatedAt,
+    narrativeGeneratorVersion: NARRATIVE_GENERATOR_VERSION,
 
     // ── I: Marco Estratégico ───────────────────────────────────────────────
     strategicFrameworkSectionIds: STRATEGIC_FRAMEWORK_SECTION_IDS,

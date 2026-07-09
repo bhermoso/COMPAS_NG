@@ -7,6 +7,7 @@ import {
   CONTRAST_TOPICS_LABEL,
   PENDING_CONTRAST_LABEL,
   formatIndicatorValue,
+  NARRATIVE_GENERATOR_VERSION,
 } from "../../application/health-profile";
 import type {
   IndicatorComparisonReference,
@@ -863,6 +864,25 @@ export function LocalHealthProfileView({
           </button>
         </div>
       )}
+
+      {/* ── Narrativa obsoleta: el generador evolucionó tras la validación ── */}
+      {psl.status === "validated" &&
+        !pslIsStale &&
+        psl.narrativeGeneratorVersion !== NARRATIVE_GENERATOR_VERSION && (
+          <div className="psl-doc-stale-notice">
+            <span className="psl-doc-stale-notice__label">
+              Narrativa anterior
+            </span>
+            La escritura del Perfil ha evolucionado desde esta validación
+            (contrato de escritura territorial). El texto mostrado —y cualquier
+            PSL-C compilado a partir de él— conserva la narrativa anterior.
+            Para incorporar la nueva escritura: revierte a borrador y deja que
+            el Perfil se regenere; después vuelve a asumir la autoría, validar,
+            documentar el consenso y compilar un nuevo PSL-C. Si hay contenido
+            de autoría propia, la reversión pedirá confirmación antes de
+            descartarlo.
+          </div>
+        )}
 
       {/* ── Ruta operativa hacia el documento institucional ──────────────── */}
       {psl.status === "validated" && !pslIsStale && (

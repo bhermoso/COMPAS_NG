@@ -39,6 +39,14 @@ export interface NarrativeChapter {
 // deliberativa) son BLOQUES INSTITUCIONALES NO CAPITULARES: acompañan al
 // documento sin numerarse como capítulos. No existe un séptimo capítulo.
 
+/**
+ * Versión del generador narrativo. Se incrementa manualmente cuando cambia
+ * la escritura sustantiva de los capítulos (contrato de escritura). Un PSL
+ * validado con una versión anterior conserva su texto (no se sobrescribe),
+ * pero la UI avisa de que la narrativa ha evolucionado y de cómo regenerar.
+ */
+export const NARRATIVE_GENERATOR_VERSION = "2026-07-09-contrato-escritura-1";
+
 export const NARRATIVE_CHAPTER_TITLES = [
   "Alcance, fuentes y escala de la evidencia",
   "Contexto territorial y sociodemográfico",

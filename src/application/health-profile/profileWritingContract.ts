@@ -105,6 +105,15 @@ export const LOCAL_PRIMACY_RULE =
   "deben aparecer con cautela de escala. No pueden convertirse en la " +
   "historia principal del Perfil.";
 
+/** Matiz de objeto de la primacía local: el Perfil mantiene el hilo sanitario. */
+export const SANITARY_THREAD_RULE =
+  "El Informe de Salud mantiene el objeto salud del Perfil (situación " +
+  "epidemiológica, problemas de salud, factores de riesgo); los estudios " +
+  "complementarios amplían el hilo sanitario hacia bienestar, hábitos y vida " +
+  "cotidiana; BADEA/IECA contextualiza determinantes y desigualdades. El " +
+  "Perfil no debe convertirse ni en informe epidemiológico estrecho ni en " +
+  "informe social general.";
+
 // ── Criterios positivos (verificables sobre el texto generado) ───────────────
 
 export const POSITIVE_WRITING_CRITERIA = [

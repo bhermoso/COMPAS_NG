@@ -42,6 +42,7 @@ export {
   buildNarrativeChapters,
   renderNarrativeChapters,
   NARRATIVE_CHAPTER_TITLES,
+  NARRATIVE_GENERATOR_VERSION,
 } from "./narrativeChapters";
 export { parseNarrativeChapters } from "./narrativeChapters";
 export type {
@@ -75,6 +76,7 @@ export {
   DIAGNOSTIC_ENGINE_QUESTIONS,
   POSITIVE_WRITING_CRITERIA,
   LOCAL_PRIMACY_RULE,
+  SANITARY_THREAD_RULE,
 } from "./profileWritingContract";
 export type {
   ComplementaryStudiesReading,
