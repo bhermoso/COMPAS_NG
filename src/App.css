@@ -9272,6 +9272,65 @@ h3 {
   background: #f8fafc;
 }
 
+/* ── PSL-C: secciones estructuradas del contrato visual en el visor ────────── */
+.pslc-viewer__cards { margin: 6px 0 10px; }
+.pslc-viewer__card {
+  padding: 8px 0 8px 16px;
+  border-left: 3px solid #cbd5e1;
+  margin-bottom: 7px;
+  color: #33404e;
+  line-height: 1.6;
+}
+.pslc-viewer__card--destacado {
+  border-left-color: #1d4ed8;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 600;
+}
+.pslc-viewer__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 6px 0 8px;
+}
+.pslc-viewer__tabla th {
+  text-align: left;
+  padding: 5px 7px;
+  border-bottom: 2px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.pslc-viewer__tabla td {
+  padding: 6px 7px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+  color: #33404e;
+}
+.pslc-viewer__nota { font-size: 0.82rem; color: #64748b; font-style: italic; }
+.pslc-viewer__ranking { margin: 6px 0 10px; }
+.pslc-viewer__ranking-fila {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 2fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+  color: #33404e;
+}
+.pslc-viewer__ranking-valor { font-variant-numeric: tabular-nums; color: #475569; }
+.pslc-viewer__senales { margin: 6px 0 10px; padding-left: 18px; }
+.pslc-viewer__senales li { margin-bottom: 7px; line-height: 1.55; color: #33404e; }
+.pslc-viewer__agenda { margin: 6px 0 10px; }
+.pslc-viewer__agenda-entrada {
+  border-left: 3px solid #94a3b8;
+  padding: 6px 0 6px 14px;
+  margin-bottom: 12px;
+}
+.pslc-viewer__agenda-entrada p { margin: 2px 0; font-size: 0.9rem; }
+.pslc-viewer__agenda-tema { font-weight: 700; color: #1e293b; }
+
 /* ── Perfil: enriquecimiento de fuentes ────────────────────────────────────── */
 .ekc-panel__subtitle {
   font-size: 1rem;

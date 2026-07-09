@@ -37,9 +37,55 @@ import {
   parseNarrativeChapters,
   institutionalHealthReportTitle,
   sanitizeHealthReportTitleInText,
+  buildProfileSynthesis,
+  buildDiagnosticVisuals,
+  buildMatrizAnexo,
+  formatIndicatorValue,
 } from "../health-profile";
+import type { DiagnosticAnswers } from "../health-profile";
 
 // ── Tipos del modelo ──────────────────────────────────────────────────────────
+
+/** Tipo de sección del documento: textual o estructurada (contrato visual). */
+export type PSLCSectionKind =
+  | "text"
+  | "summaryCards"
+  | "table"
+  | "barRanking"
+  | "compactSignalList"
+  | "groupMotorAgenda";
+
+export interface PSLCSummaryCard {
+  destacado: boolean;
+  texto: string;
+}
+
+export interface PSLCTableData {
+  headers: string[];
+  rows: string[][];
+  nota?: string;
+}
+
+export interface PSLCRankingItem {
+  etiqueta: string;
+  valor: number;
+  max: number;
+}
+
+export interface PSLCSignalListItem {
+  grupo: string;
+  senal: string;
+  fuente: string;
+  pregunta: string;
+}
+
+export interface PSLCAgendaEntry {
+  tema: string;
+  senal: string;
+  mecanismo: string;
+  oculto: string;
+  pregunta: string;
+}
 
 export interface PSLCDocumentSection {
   /** Título de la sección (principal o subsección del anexo). */
@@ -47,6 +93,13 @@ export interface PSLCDocumentSection {
   /** 1 = sección principal; 2 = subsección. */
   level: 1 | 2;
   paragraphs: string[];
+  /** "text" por defecto; el resto lleva su carga estructurada. */
+  kind?: PSLCSectionKind;
+  cards?: PSLCSummaryCard[];
+  table?: PSLCTableData;
+  ranking?: PSLCRankingItem[];
+  signalList?: PSLCSignalListItem[];
+  agenda?: PSLCAgendaEntry[];
 }
 
 export interface PSLCDocumentModel {
@@ -104,11 +157,35 @@ const empiezaPor = (p: string, prefijos: string[]): boolean =>
 
 // ── Constructor del modelo ────────────────────────────────────────────────────
 
+export interface BuildPSLCDocumentModelOptions {
+  /**
+   * Respuestas diagnósticas del expediente: activan las secciones
+   * visual-narrativas (síntesis, ranking del Informe, tabla de trazadores,
+   * agenda del Grupo Motor y anexos estructurados). Sin ellas, el documento
+   * se genera en su forma textual clásica.
+   */
+  answers?: DiagnosticAnswers;
+}
+
 export function buildPSLCDocumentModel(
-  artifact: LocalHealthProfileArtifact
+  artifact: LocalHealthProfileArtifact,
+  opts: BuildPSLCDocumentModelOptions = {}
 ): PSLCDocumentModel {
   const sections: PSLCDocumentSection[] = [];
   const ekc = artifact.ekcSnapshot;
+  const informeTitulo = artifact.informeSalud.title
+    ? institutionalHealthReportTitle(
+        artifact.municipalityId,
+        artifact.informeSalud.title
+      )
+    : undefined;
+  const sintesis = opts.answers
+    ? buildProfileSynthesis(opts.answers, { informeTitulo })
+    : undefined;
+  const visuales = opts.answers
+    ? buildDiagnosticVisuals(opts.answers, { informeTitulo })
+    : undefined;
+  const matriz = opts.answers ? buildMatrizAnexo(opts.answers) : undefined;
 
   // ── Portada institucional (sin hash: la trazabilidad vive en el anexo) ────
   const provincia = artifact.portada.municipalityProvince
@@ -141,6 +218,79 @@ export function buildPSLCDocumentModel(
     const c = capitulos.find((x) => x.numeral === numeral);
     return c ? parrafos(c.content) : [];
   };
+
+  // ── Salud en síntesis + visuales (identidad del Perfil integrado) ─────────
+  if (sintesis !== undefined && sintesis.mensajes.length >= 4) {
+    sections.push({
+      title: "Salud en síntesis",
+      level: 1,
+      kind: "summaryCards",
+      cards: sintesis.mensajes.map((m, i) => ({
+        destacado: i < 3,
+        texto: m.texto,
+      })),
+      paragraphs: [sintesis.notaEscala],
+    });
+  }
+  if (visuales?.informeChart !== undefined) {
+    const g = visuales.informeChart;
+    sections.push({
+      title: "Señales sanitarias del Informe de salud",
+      level: 1,
+      kind: "barRanking",
+      ranking: g.items.map((i) => ({
+        etiqueta: i.etiqueta,
+        valor: i.valor,
+        max: g.maxValor,
+      })),
+      paragraphs: [g.unidad + ".", g.caption],
+    });
+  }
+  if (visuales !== undefined && visuales.tablaTrazadores.length > 0) {
+    sections.push({
+      title: "Indicadores trazadores: valores y referencias",
+      level: 1,
+      kind: "table",
+      table: {
+        headers: [
+          "Bloque",
+          "Indicador",
+          "Valor",
+          "Granada",
+          "Andalucía",
+          "Escala",
+          "Lectura",
+        ],
+        rows: visuales.tablaTrazadores.map((f) => [
+          f.bloque,
+          f.indicador,
+          f.valor,
+          f.refGranada,
+          f.refAndalucia,
+          f.esProxy ? "proxy contextual — no estimación distrital" : "muestra local",
+          f.lectura,
+        ]),
+        nota:
+          "Los 23 indicadores completos, con procedencia y cautelas, constan " +
+          "en el anexo técnico.",
+      },
+      paragraphs: [],
+    });
+  }
+  if (sintesis !== undefined && sintesis.senalesPrincipales.length >= 4) {
+    sections.push({
+      title: "Señales principales para deliberación",
+      level: 1,
+      kind: "compactSignalList",
+      signalList: sintesis.senalesPrincipales.map((r) => ({
+        grupo: r.grupo,
+        senal: r.senal,
+        fuente: r.fuente,
+        pregunta: r.pregunta,
+      })),
+      paragraphs: [],
+    });
+  }
 
   if (capitulos.length > 0) {
     // 1. Lectura ejecutiva territorial: imagen general + síntesis del técnico
@@ -240,6 +390,28 @@ export function buildPSLCDocumentModel(
       title: "Documento del Perfil",
       level: 1,
       paragraphs: parrafos(conclusionesSaneadas),
+    });
+  }
+
+  // ── Agenda del Grupo Motor (conversación territorial, no recomendaciones) ─
+  if (visuales !== undefined && visuales.grupoMotorCards.length >= 4) {
+    sections.push({
+      title: "Agenda para el Grupo Motor",
+      level: 1,
+      kind: "groupMotorAgenda",
+      agenda: visuales.grupoMotorCards.map((c) => ({
+        tema: c.tema,
+        senal: c.senal,
+        mecanismo: c.mecanismo,
+        oculto: c.oculto,
+        pregunta: c.pregunta,
+      })),
+      paragraphs: [
+        "Cada entrada conecta una señal con su mecanismo social plausible, " +
+          "con quién puede quedar fuera de los datos y con la pregunta que el " +
+          "Grupo Motor puede responder mejor que ningún dato. Son materiales " +
+          "de deliberación, no decisiones.",
+      ],
     });
   }
 
@@ -365,6 +537,51 @@ export function buildPSLCDocumentModel(
             : "no disponible"
         }.`,
       ],
+    });
+  }
+
+  // Referencias comparativas completas (23 indicadores) — estructuradas.
+  if (opts.answers !== undefined) {
+    const refs = opts.answers.referencias.references;
+    sections.push({
+      title: "Referencias comparativas de los indicadores",
+      level: 2,
+      kind: "table",
+      table: {
+        headers: ["Indicador", "Valor", "Granada", "Andalucía", "Escala"],
+        rows: refs.map((r) => [
+          r.indicatorTitle,
+          formatIndicatorValue(r.territorialValue, r.unit),
+          r.provinceReference !== undefined
+            ? formatIndicatorValue(r.provinceReference, r.unit)
+            : "no disponible",
+          r.andalusiaReference !== undefined
+            ? formatIndicatorValue(r.andalusiaReference, r.unit)
+            : "no disponible",
+          r.demoProxy ? "proxy contextual" : "muestra local",
+        ]),
+        nota:
+          "Procedencia y cautelas completas por indicador en la capa de " +
+          "referencias comparativas del expediente.",
+      },
+      paragraphs: [],
+    });
+  }
+  if (matriz !== undefined && matriz.filas.length > 0) {
+    sections.push({
+      title: "Matriz epistemológica",
+      level: 2,
+      kind: "table",
+      table: {
+        headers: ["Señal", "Escala", "Estatus causal", "Pregunta"],
+        rows: matriz.filas.map((f) => [
+          f.senal,
+          f.escala,
+          f.estatusCausal,
+          f.pregunta,
+        ]),
+      },
+      paragraphs: [...matriz.notasBloque],
     });
   }
 

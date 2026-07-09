@@ -12,7 +12,13 @@
 
 import { jsPDF } from "jspdf";
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
-import type { PSLCDocumentModel } from "./pslcDocumentModel";
+import type {
+  PSLCDocumentModel,
+  PSLCDocumentSection,
+  PSLCRankingItem,
+  PSLCTableData,
+  BuildPSLCDocumentModelOptions,
+} from "./pslcDocumentModel";
 import { buildPSLCDocumentModel, pslcDocxFileName } from "./pslcDocumentModel";
 
 // ── Nombre de archivo estable ─────────────────────────────────────────────────
@@ -76,6 +82,164 @@ function addText(
   cursor.y += lines.length * lineHeight + (opts.spacingAfter ?? 2);
 }
 
+// ── Secciones estructuradas (contrato visual) ─────────────────────────────────
+
+// Ranking del Informe: la visualización compacta obligada del PDF.
+// Barras horizontales reales (rectángulos rellenos) proporcionales al peso
+// textual; nunca porcentajes ni prevalencia.
+function addRanking(
+  doc: jsPDF,
+  cursor: Cursor,
+  items: PSLCRankingItem[]
+): void {
+  const labelWidth = 62;
+  const barMax = CONTENT_WIDTH - labelWidth - 16;
+  const rowH = 6;
+  for (const item of items) {
+    ensureSpace(doc, cursor, rowH + 1);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    const label = doc.splitTextToSize(toWinAnsi(item.etiqueta), labelWidth - 2);
+    doc.text(label[0] ?? "", MARGIN.left, cursor.y + 3.4);
+    const barW = Math.max(1.5, (item.valor / Math.max(1, item.max)) * barMax);
+    doc.setFillColor(90, 105, 120);
+    doc.rect(MARGIN.left + labelWidth, cursor.y + 0.6, barW, 3.6, "F");
+    doc.text(
+      String(item.valor),
+      MARGIN.left + labelWidth + barW + 2,
+      cursor.y + 3.4
+    );
+    cursor.y += rowH;
+  }
+  cursor.y += 2;
+}
+
+// Tabla sobria con anchos ponderados por contenido y salto de página por fila.
+function addTable(doc: jsPDF, cursor: Cursor, table: PSLCTableData): void {
+  const fontSize = 7;
+  const lineH = 2.9;
+  const padding = 1.2;
+  const cols = table.headers.length;
+  const pesos = table.headers.map((h, c) => {
+    let max = h.length;
+    for (const row of table.rows) {
+      max = Math.max(max, Math.min((row[c] ?? "").length, 60));
+    }
+    return Math.max(8, max);
+  });
+  const sumaPesos = pesos.reduce((a, b) => a + b, 0);
+  const widths = pesos.map((p) =>
+    Math.max(14, (p / sumaPesos) * CONTENT_WIDTH)
+  );
+  const factor = CONTENT_WIDTH / widths.reduce((a, b) => a + b, 0);
+  for (let c = 0; c < cols; c++) widths[c] *= factor;
+
+  const drawRow = (cells: string[], bold: boolean): void => {
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(fontSize);
+    const wrapped = cells.map((cell, c) =>
+      doc.splitTextToSize(toWinAnsi(cell ?? ""), widths[c] - padding * 2)
+    );
+    const rowH =
+      Math.max(...wrapped.map((w) => w.length)) * lineH + padding * 2;
+    ensureSpace(doc, cursor, rowH + 1);
+    let x = MARGIN.left;
+    for (let c = 0; c < cols; c++) {
+      doc.text(wrapped[c], x + padding, cursor.y + padding, {
+        baseline: "top",
+      });
+      x += widths[c];
+    }
+    cursor.y += rowH;
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.15);
+    doc.line(MARGIN.left, cursor.y, MARGIN.left + CONTENT_WIDTH, cursor.y);
+    cursor.y += 0.8;
+  };
+
+  drawRow(table.headers, true);
+  for (const row of table.rows) drawRow(row, false);
+  if (table.nota !== undefined) {
+    addText(doc, cursor, table.nota, { size: 7.5, italic: true, spacingAfter: 3 });
+  }
+  cursor.y += 2;
+}
+
+function addStructuredSection(
+  doc: jsPDF,
+  cursor: Cursor,
+  section: PSLCDocumentSection
+): void {
+  switch (section.kind ?? "text") {
+    case "summaryCards": {
+      for (const card of section.cards ?? []) {
+        addText(doc, cursor, card.texto, {
+          size: card.destacado ? 10.5 : 9,
+          bold: card.destacado,
+          spacingAfter: 2.5,
+        });
+      }
+      break;
+    }
+    case "table": {
+      if (section.table !== undefined) addTable(doc, cursor, section.table);
+      break;
+    }
+    case "barRanking": {
+      addRanking(doc, cursor, section.ranking ?? []);
+      break;
+    }
+    case "compactSignalList": {
+      for (const item of section.signalList ?? []) {
+        addText(doc, cursor, item.grupo, {
+          size: 9,
+          bold: true,
+          spacingAfter: 0.5,
+        });
+        addText(doc, cursor, `${item.senal} (${item.fuente})`, {
+          size: 9,
+          spacingAfter: 0.5,
+        });
+        addText(doc, cursor, item.pregunta, {
+          size: 9,
+          italic: true,
+          spacingAfter: 2.5,
+        });
+      }
+      break;
+    }
+    case "groupMotorAgenda": {
+      for (const entrada of section.agenda ?? []) {
+        addText(doc, cursor, entrada.tema, {
+          size: 10,
+          bold: true,
+          spacingAfter: 1,
+        });
+        addText(doc, cursor, `Señal: ${entrada.senal}`, {
+          size: 9,
+          spacingAfter: 0.5,
+        });
+        addText(doc, cursor, `Mecanismo plausible: ${entrada.mecanismo}`, {
+          size: 9,
+          spacingAfter: 0.5,
+        });
+        addText(doc, cursor, `Quién puede quedar fuera: ${entrada.oculto}`, {
+          size: 9,
+          spacingAfter: 0.5,
+        });
+        addText(doc, cursor, entrada.pregunta, {
+          size: 9,
+          italic: true,
+          spacingAfter: 3,
+        });
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 export function buildPSLCPdf(model: PSLCDocumentModel): jsPDF {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const cursor: Cursor = { y: MARGIN.top + 30 };
@@ -108,6 +272,7 @@ export function buildPSLCPdf(model: PSLCDocumentModel): jsPDF {
       bold: true,
       spacingAfter: 3,
     });
+    addStructuredSection(doc, cursor, section);
     for (const p of section.paragraphs) {
       addText(doc, cursor, p, { size: 10, spacingAfter: 2.5 });
     }
@@ -131,9 +296,10 @@ export function buildPSLCPdf(model: PSLCDocumentModel): jsPDF {
 
 /** Serializa el artefacto congelado a un Blob PDF (navegador). */
 export async function exportPSLCArtifactToPdfBlob(
-  artifact: LocalHealthProfileArtifact
+  artifact: LocalHealthProfileArtifact,
+  opts: BuildPSLCDocumentModelOptions = {}
 ): Promise<{ blob: Blob; fileName: string }> {
-  const model = buildPSLCDocumentModel(artifact);
+  const model = buildPSLCDocumentModel(artifact, opts);
   const doc = buildPSLCPdf(model);
   const blob = doc.output("blob");
   return { blob, fileName: pslcPdfFileName(artifact) };
@@ -141,9 +307,10 @@ export async function exportPSLCArtifactToPdfBlob(
 
 /** Serializa el artefacto congelado a Uint8Array (Node: tests, scripts). */
 export async function exportPSLCArtifactToPdfBuffer(
-  artifact: LocalHealthProfileArtifact
+  artifact: LocalHealthProfileArtifact,
+  opts: BuildPSLCDocumentModelOptions = {}
 ): Promise<Uint8Array> {
-  const model = buildPSLCDocumentModel(artifact);
+  const model = buildPSLCDocumentModel(artifact, opts);
   const doc = buildPSLCPdf(model);
   return new Uint8Array(doc.output("arraybuffer"));
 }

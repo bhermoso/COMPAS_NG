@@ -1,4 +1,14 @@
-export type { PSLCDocumentModel, PSLCDocumentSection } from "./pslcDocumentModel";
+export type {
+  PSLCDocumentModel,
+  PSLCDocumentSection,
+  PSLCSectionKind,
+  PSLCSummaryCard,
+  PSLCTableData,
+  PSLCRankingItem,
+  PSLCSignalListItem,
+  PSLCAgendaEntry,
+  BuildPSLCDocumentModelOptions,
+} from "./pslcDocumentModel";
 export { buildPSLCDocumentModel, pslcDocxFileName } from "./pslcDocumentModel";
 export {
   buildPSLCDocx,
