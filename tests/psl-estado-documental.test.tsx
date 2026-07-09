@@ -153,6 +153,16 @@ describe("ruta operativa — checklist de compilación PSL-C", () => {
     expect(render(generado)).not.toContain("Crear documento institucional PSL-C");
   });
 
+  it("ofrece el enriquecimiento interpretativo como opcional, nunca como requisito", () => {
+    const html = render(validado);
+    expect(html).toContain("Opcional:");
+    expect(html).toContain("enriquecer la lectura técnica del Perfil");
+    expect(html).toContain('href="#psl-espacio-interpretativo"');
+    expect(html).toContain("No es un requisito para compilar");
+    // No aparece entre los requisitos del checklist
+    expect(html).not.toContain("falta enriquecer la lectura técnica");
+  });
+
   it("con requisitos cumplidos ofrece la acción de compilar", () => {
     const listo: LocalHealthProfile = {
       ...validado,

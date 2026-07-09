@@ -35,7 +35,7 @@ export function InterpretacionesSection({
         <p className="ekc-interp-section__label">Interpretaciones</p>
         {activeForm?.type !== "create" && (
           <button className="ekc-interp-add-btn" onClick={onOpenCreate}>
-            + Nueva interpretación
+            + Añadir interpretación técnica
           </button>
         )}
       </div>

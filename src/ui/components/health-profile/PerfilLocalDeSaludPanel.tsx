@@ -7,6 +7,7 @@ import type {
 } from "../../../domain/health-profile";
 import {
   computeEstadoDelConocimiento,
+  computePerfilEpistemicMetrics,
   createPerfilLocalDeSalud,
   addInterpretation,
   updateInterpretation,
@@ -327,11 +328,20 @@ export function PerfilLocalDeSaludPanel({
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
-  return (
-    <section className="workspace-panel ekc-panel">
-      <p className="eyebrow">Espacio interpretativo · {municipalityName}</p>
-      <h2 className="ekc-panel__title">Perfil Local de Salud</h2>
+  const metrics = perfil ? computePerfilEpistemicMetrics(perfil) : null;
+  const estaVacio =
+    metrics === null ||
+    (metrics.interpretaciones === 0 &&
+      metrics.interpretacionesSuperadas === 0 &&
+      metrics.hipotesisAbiertas === 0 &&
+      metrics.hipotesisResueltas === 0 &&
+      metrics.hipotesisDescartadas === 0 &&
+      metrics.preguntasAbiertas === 0 &&
+      metrics.preguntasResueltas === 0 &&
+      !metrics.tieneSintesis);
 
+  const secciones = (
+    <>
       <InterpretacionesSection
         interpretaciones={perfil?.interpretaciones ?? []}
         activeForm={activeForm}
@@ -412,6 +422,50 @@ export function PerfilLocalDeSaludPanel({
       />
 
       {estado && <EstadoConocimientoView estado={estado} />}
+    </>
+  );
+
+  return (
+    <section
+      id="psl-espacio-interpretativo"
+      className="workspace-panel ekc-panel"
+    >
+      <p className="eyebrow">
+        Espacio de trabajo del equipo técnico · {municipalityName} — no forma
+        parte del documento institucional
+      </p>
+      <h2 className="ekc-panel__title">Enriquecimiento interpretativo del Perfil</h2>
+      <p className="panel-note">
+        Espacio de trabajo del equipo técnico para añadir lectura humana sobre
+        el diagnóstico: interpretaciones con evidencia, hipótesis de contraste,
+        preguntas abiertas y síntesis. Sus contenidos se incorporan al PSL-C
+        como estado del conocimiento, desafíos, incertidumbres o síntesis,
+        cuando existen. No son recomendaciones ni actuaciones. Es opcional y no
+        es un requisito para compilar: si queda vacío, el PSL-C se compila con
+        la lectura generada y declara la ausencia de espacio interpretativo
+        técnico registrado.
+      </p>
+
+      {estaVacio ? (
+        <details className="psl-doc-annex__details ekc-panel__details">
+          <summary className="psl-doc-annex__summary">
+            Sin lectura técnica registrada todavía — desplegar para añadir
+            interpretaciones, hipótesis, preguntas o síntesis
+          </summary>
+          {secciones}
+        </details>
+      ) : (
+        <>
+          <p className="panel-note ekc-panel__resumen">
+            Lectura técnica registrada: {metrics!.interpretaciones}{" "}
+            interpretación(es) activa(s) · {metrics!.hipotesisAbiertas}{" "}
+            hipótesis en estudio · {metrics!.preguntasAbiertas} pregunta(s)
+            abierta(s) · síntesis{" "}
+            {metrics!.tieneSintesis ? "redactada" : "sin redactar"}.
+          </p>
+          {secciones}
+        </>
+      )}
     </section>
   );
 }

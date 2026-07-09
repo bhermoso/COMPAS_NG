@@ -45,7 +45,7 @@ export function HipotesisSection({
         <p className="ekc-interp-section__label">Hipótesis</p>
         {activeForm?.type !== "create-hip" && (
           <button className="ekc-hip-add-btn" onClick={onOpenCreate}>
-            + Nueva hipótesis
+            + Añadir hipótesis de contraste
           </button>
         )}
       </div>

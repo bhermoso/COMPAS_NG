@@ -25,7 +25,7 @@ export function SynthesisSection({
         <p className="ekc-interp-section__label">Síntesis</p>
         {!isEditing && (
           <button className="ekc-q-add-btn" onClick={onOpenEdit}>
-            {hasSintesis ? "Editar síntesis" : "Redactar síntesis"}
+            {hasSintesis ? "Editar síntesis interpretativa" : "Redactar síntesis interpretativa"}
           </button>
         )}
       </div>

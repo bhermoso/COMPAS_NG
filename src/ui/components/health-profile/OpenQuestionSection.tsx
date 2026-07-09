@@ -40,7 +40,7 @@ export function OpenQuestionSection({
         <p className="ekc-interp-section__label">Preguntas abiertas</p>
         {activeForm?.type !== "create-q" && (
           <button className="ekc-q-add-btn" onClick={onOpenCreate}>
-            + Nueva pregunta
+            + Añadir pregunta abierta
           </button>
         )}
       </div>

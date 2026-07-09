@@ -348,6 +348,17 @@ function PSLCCompilationChecklist({
             La compilación aún no está disponible: falta {pendientes.join("; ")}.
           </p>
         ))}
+      {!compilado && (
+        <p className="panel-note pslc-checklist__opcional">
+          Opcional:{" "}
+          <a className="pslc-checklist__action" href="#psl-espacio-interpretativo">
+            enriquecer la lectura técnica del Perfil
+          </a>{" "}
+          antes de compilar — las interpretaciones, hipótesis, preguntas y
+          síntesis del equipo se incorporan al documento institucional. No es
+          un requisito para compilar.
+        </p>
+      )}
     </section>
   );
 }
