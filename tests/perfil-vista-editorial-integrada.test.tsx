@@ -16,6 +16,7 @@ import { loadWorkspaceFromLocalStorage } from "../src/infrastructure/persistence
 import { createMunicipalityRuntime } from "../src/application/runtime";
 import {
   buildDiagnosticAnswers,
+  buildIntegratedProfileSignals,
   buildProfileIntegratedEditorialView,
   checkProfileWritingContract,
 } from "../src/application/health-profile";
@@ -50,6 +51,22 @@ const EXPORT_PATH = resolve(
   dirname(fileURLToPath(import.meta.url)),
   "../municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
 );
+
+/**
+ * Densidad de un hilo: un párrafo de lectura, nunca un capítulo.
+ *
+ * El tope subió de 150 a 200 palabras cuando la lectura pasó a declarar la
+ * laguna de equidad ESPECÍFICA de cada señal (ejes ausentes + quién puede
+ * quedar fuera) y a citar íntegros el mecanismo, el marco de capacidad y la
+ * pregunta de contraste. Antes cabía en 150 porque usaba una fórmula genérica
+ * —«Sin desagregación disponible: incertidumbre de equidad»— y porque truncaba
+ * mecanismo, marco y pregunta a mitad de frase.
+ *
+ * La brevedad que exige el contrato metodológico se protege por jerarquía
+ * documental (la trazabilidad extensa vive en el anexo), no recortando la
+ * declaración de equidad ni mutilando el argumento.
+ */
+const DENSIDAD_MAX_PALABRAS = 200;
 
 const FORBIDDEN_EDITORIAL_RE =
   /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|actuaciones previstas|plan de acci[óo]n|resulta relevante|se pone de manifiesto|desde una perspectiva integral/i;
@@ -255,7 +272,7 @@ describe("modelo puro — Vista editorial integrada", () => {
       expect(block.groupMotorQuestion).toMatch(/^¿.+\?$/);
       const words = block.reading.trim().split(/\s+/).length;
       expect(words).toBeGreaterThanOrEqual(60);
-      expect(words, block.id).toBeLessThanOrEqual(150);
+      expect(words, block.id).toBeLessThanOrEqual(DENSIDAD_MAX_PALABRAS);
     }
   });
 
@@ -336,8 +353,15 @@ describe("modelo puro — Vista editorial integrada", () => {
 
   it("las preguntas derivan de una incertidumbre, hipótesis o pregunta abierta", () => {
     for (const block of editorialView.territorialReadings) {
-      expect(normalized(block.reading)).toMatch(
-        /pregunta deriva de esa incertidumbre|pregunta abierta/
+      const text = normalized(block.reading);
+      // La pregunta se enuncia como derivación, no como apéndice mecánico…
+      expect(text, block.id).toMatch(
+        /de ahi la pregunta de contraste|pregunta abierta del equipo/
+      );
+      // …y la incertidumbre de la que deriva está declarada justo antes.
+      expect(text, block.id).toContain("incertidumbre de equidad");
+      expect(text.indexOf("incertidumbre de equidad")).toBeLessThan(
+        text.search(/de ahi la pregunta de contraste|pregunta abierta del equipo/)
       );
     }
   });
@@ -367,6 +391,87 @@ describe("modelo puro — Vista editorial integrada", () => {
     const serialized = normalized(JSON.stringify(humanEditorialView.territorialReadings));
     expect(serialized).toContain(
       "que grupos viven peor el descanso, la movilidad cotidiana y el acceso a los recursos"
+    );
+  });
+
+  // ── Conformidad contractual del razonamiento diagnóstico ───────────────────
+
+  it("una hipótesis del equipo no se convierte en el mecanismo del hilo", () => {
+    // La hipótesis se cita CON su estatus; nunca ocupa la ranura de mecanismo,
+    // que procede de la evidencia del propio hilo (marco: Hernán/Robins).
+    for (const block of humanEditorialView.territorialReadings) {
+      expect(normalized(block.mechanism), block.id).not.toContain(
+        "hipotesis activa"
+      );
+    }
+    const apoyo = humanEditorialView.territorialReadings.find(
+      (block) => block.id === "apoyo-social-soledad-envejecimiento"
+    );
+    expect(normalized(apoyo!.reading)).toContain("como posibilidad a contrastar");
+  });
+
+  it("el conocimiento humano no se repite mecánicamente entre hilos", () => {
+    const mecanismos = humanEditorialView.territorialReadings.map((b) => b.mechanism);
+    const exclusiones = humanEditorialView.territorialReadings.map((b) => b.exclusion);
+    const preguntas = humanEditorialView.territorialReadings.map(
+      (b) => b.groupMotorQuestion
+    );
+    // Cada hilo formula su propia exclusión y su propia pregunta.
+    expect(new Set(exclusiones).size).toBe(exclusiones.length);
+    expect(new Set(preguntas).size).toBe(preguntas.length);
+    // Los mecanismos pueden converger (dos hilos pueden compartir determinante
+    // real), pero no colapsar en uno solo.
+    expect(new Set(mecanismos).size).toBeGreaterThan(1);
+  });
+
+  it("quién puede quedar fuera es una cuestión de equidad, no la relevancia de una laguna", () => {
+    for (const block of humanEditorialView.territorialReadings) {
+      expect(normalized(block.exclusion), block.id).not.toContain(
+        "condiciona la lectura"
+      );
+    }
+  });
+
+  it("la laguna de equidad es específica por señal, no una fórmula idéntica", () => {
+    const signals = buildIntegratedProfileSignals(answers);
+    const notas = new Set(signals.map((s) => s.desigualdad.nota));
+    expect(notas.size).toBeGreaterThan(1);
+    for (const s of signals) {
+      expect(s.desigualdad.nota).toContain("no ausencia de desigualdad");
+      expect(s.desigualdad.ejesAusentes).toContain("sexo");
+      expect(s.desigualdad.loQueNoSeSabe.length).toBeGreaterThan(10);
+    }
+    // Ruiz Cantero / García-Calvente: la carga de cuidados es eje propio cuando
+    // la señal la interpela (descanso, apoyo, soledad, envejecimiento).
+    const sueno = signals.find((s) => s.id === "trazador-sueno-insuficiente");
+    expect(sueno!.desigualdad.ejesAusentes).toContain("carga de cuidados");
+    const alimentacion = signals.find((s) => s.id === "trazador-predimed-adherencia");
+    expect(alimentacion!.desigualdad.ejesAusentes).not.toContain("carga de cuidados");
+  });
+
+  it("el Informe abre el hilo sanitario sin convertir menciones en prevalencia", () => {
+    const sanitaria = editorialView.territorialReadings.find(
+      (b) => b.id === "salud-sanitaria-partida"
+    );
+    const text = sanitaria!.reading;
+    expect(text).toContain("presencia textual");
+    expect(text).toContain("no prevalencia");
+    expect(text).toContain("carga de enfermedad");
+    expect(text).toContain("prioridad territorial demostrada");
+    // Y el mensaje de apertura declara qué aporta, qué no y cómo se amplía.
+    const apertura = editorialView.overview.find((m) => m.id === "hilo-sanitario");
+    expect(apertura!.text).toContain("agenda sanitaria de partida");
+    expect(apertura!.text).toContain("amplían");
+  });
+
+  it("Popay: la experiencia comunitaria ausente se declara pendiente, no se inventa", () => {
+    const contrastar = editorialView.closing.find((c) => c.id === "contrastar");
+    const texto = contrastar!.items.join(" ");
+    expect(texto).toContain("pendiente de incorporación");
+    expect(texto).toContain("conocimiento pendiente, no ausencia de conocimiento");
+    // No se fabrica testimonio ni percepción vecinal.
+    expect(normalized(JSON.stringify(editorialView))).not.toMatch(
+      /los vecinos declaran|segun la comunidad|las personas mayores senalan que/
     );
   });
 
@@ -484,10 +589,15 @@ describe("composición documental — estructura editorial", () => {
     // Fuente y escala siguen presentes (en los hilos, no como etiqueta "Fuente y escala:")
     expect(beforeTechnical).not.toContain("Fuente y escala:");
     expect(beforeTechnical).toContain("proxy contextual");
-    // Mecanismo plausible: integrado en los hilos
-    expect(beforeTechnical).toContain("Mecanismo plausible:");
-    // Quién puede quedar fuera: integrado en los hilos
-    expect(beforeTechnical).toContain("Quién puede quedar fuera:");
+    // La cadena diagnóstica se lee como progresión argumental dentro de la
+    // prosa: mecanismo, desigualdad y quién queda fuera, no como campos sueltos.
+    expect(beforeTechnical).toContain("Mecanismo plausible, sin causalidad demostrada:");
+    expect(beforeTechnical).toContain("incertidumbre de equidad");
+    expect(beforeTechnical).toContain("Puede quedar fuera de esa lectura:");
+    // Y no como lista de campos repetida hilo a hilo.
+    expect(beforeTechnical).not.toContain("pie-hilo__mechanism");
+    expect(beforeTechnical).not.toContain("pie-hilo__exclusion");
+    expect(beforeTechnical).not.toContain("pie-hilo__question");
   });
 
   it("los rótulos repetitivos no dominan como etiquetas fijas en todos los hilos", () => {
@@ -599,11 +709,29 @@ describe("calidad documental — textura y formularios", () => {
     expect(beforeTechnical).toContain("56");
   });
 
-  it("los bloques de lectura no superan 150 palabras (contrato de densidad)", () => {
+  it("cada hilo es un párrafo, no un capítulo (contrato de densidad)", () => {
     for (const block of editorialView.territorialReadings) {
       const words = block.reading.trim().split(/\s+/).length;
-      expect(words, block.id).toBeLessThanOrEqual(150);
+      expect(words, block.id).toBeLessThanOrEqual(DENSIDAD_MAX_PALABRAS);
       expect(words, block.id).toBeGreaterThanOrEqual(60);
+    }
+    // Jerarquía documental: la trazabilidad extensa vive en el anexo, no en el
+    // cuerpo de lectura (el anexo supera con creces cualquier hilo).
+    expect(editorialView.technicalAnnex.matrix.filas.length).toBeGreaterThan(
+      editorialView.territorialReadings.length
+    );
+  });
+
+  it("ninguna lectura generada queda mutilada por recorte", () => {
+    // La brevedad nunca se consigue truncando: ni elipsis a mitad de frase, ni
+    // paréntesis sin cerrar, ni preguntas que pierden el signo de cierre.
+    for (const block of editorialView.territorialReadings) {
+      expect(block.reading, block.id).not.toContain("…");
+      expect(block.reading, block.id).not.toMatch(/[.…]\s*\./);
+      const abre = (block.reading.match(/\(/g) ?? []).length;
+      const cierra = (block.reading.match(/\)/g) ?? []).length;
+      expect(abre, block.id).toBe(cierra);
+      expect(block.reading, block.id).toContain("?");
     }
   });
 });

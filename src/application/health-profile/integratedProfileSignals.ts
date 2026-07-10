@@ -31,6 +31,21 @@ export type DistribucionDesigualdad =
   | "conocida"
   | "desconocida-sin-desagregacion";
 
+/**
+ * Laguna de equidad de una señal. El marco científico exige declararla como
+ * laguna ESPECÍFICA (no una fórmula genérica repetida): qué ejes de
+ * desagregación faltan y qué no puede saberse de esta señal en concreto.
+ */
+export interface DesigualdadNoObservable {
+  distribucion: DistribucionDesigualdad;
+  /** Ejes de desagregación ausentes para esta señal. */
+  ejesAusentes: string[];
+  /** Lo que esta señal, así medida, no permite saber. */
+  loQueNoSeSabe: string;
+  /** Declaración completa (matriz y anexo). */
+  nota: string;
+}
+
 export interface IntegratedHealthProfileSignal {
   id: string;
   /** Señal sanitaria o de bienestar. */
@@ -44,7 +59,7 @@ export interface IntegratedHealthProfileSignal {
   esMencionTextual: boolean;
   /** true cuando el dato es proxy/contexto de escala superior. */
   esProxy: boolean;
-  desigualdad: { distribucion: DistribucionDesigualdad; nota: string };
+  desigualdad: DesigualdadNoObservable;
   /** Mecanismo social plausible (hipótesis trazable), si existe. */
   mecanismoPlausible?: string;
   /** Ámbito de capacidad comunitaria relacionado, si existe. */
@@ -57,12 +72,66 @@ export interface IntegratedHealthProfileSignal {
 
 // ── Correspondencias conservadoras (por identidad de estructuras existentes) ──
 
-const DESIGUALDAD_DESCONOCIDA = {
-  distribucion: "desconocida-sin-desagregacion" as const,
-  nota:
-    "sin desagregación por sexo, edad ni condición socioeconómica: " +
-    "incertidumbre de equidad, no ausencia de desigualdad",
-};
+// ── Laguna de equidad específica por señal ────────────────────────────────────
+// Marco científico (Whitehead/Graham/Borrell/Benach/Bambra + Ruiz Cantero/
+// García-Calvente): la ausencia de desagregación se declara como incertidumbre
+// de equidad —jamás como ausencia de desigualdad— y como laguna ESPECÍFICA, no
+// como fórmula genérica idéntica en todas las señales. La carga de cuidados es
+// un eje propio cuando la señal interpela descanso, apoyo, soledad o
+// envejecimiento.
+
+const EJES_BASE = ["sexo", "edad", "posición socioeconómica"];
+
+function sinTildes(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+function ejesAusentesDe(senal: string): string[] {
+  const s = sinTildes(senal);
+  const interpelaCuidados =
+    /sueno|apoyo|soledad|envejec|cuidad|mental|malestar|depend/.test(s);
+  return interpelaCuidados ? [...EJES_BASE, "carga de cuidados"] : [...EJES_BASE];
+}
+
+function enumerar(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} ni ${items[items.length - 1]}`;
+}
+
+type TipoSenal = "informe" | "trazador" | "contexto";
+
+function desigualdadNoObservable(
+  senal: string,
+  tipo: TipoSenal
+): DesigualdadNoObservable {
+  const ejesAusentes = ejesAusentesDe(senal);
+  // Forma breve, para la prosa: el hilo ya ha nombrado la señal.
+  const loQueNoSeSabe =
+    tipo === "informe"
+      ? "en qué grupos del territorio pesa"
+      : tipo === "contexto"
+        ? "cómo se distribuye dentro del distrito"
+        : "quién la presenta en peor situación";
+  const sujeto =
+    tipo === "informe"
+      ? "el Informe no desagrega esta dimensión"
+      : tipo === "contexto"
+        ? "el contexto municipal no informa de la distribución interna"
+        : "la medición no está desagregada";
+  return {
+    distribucion: "desconocida-sin-desagregacion",
+    ejesAusentes,
+    loQueNoSeSabe,
+    // Forma completa, para matriz y anexo: nombra la señal.
+    nota:
+      `${sujeto} por ${enumerar(ejesAusentes)}: no puede saberse ` +
+      `${loQueNoSeSabe} («${senal}»). Incertidumbre de equidad, ` +
+      `no ausencia de desigualdad`,
+  };
+}
 
 // dimensión sanitaria del Informe → clave de mecanismo (enunciados reales de
 // la lectura epidemiológico-social, enlazados por búsqueda de subcadena).
@@ -127,7 +196,7 @@ export function buildIntegratedProfileSignals(
       valor: `presencia textual: ${s.menciones} mención(es) [${s.terminos.join(", ")}]`,
       esMencionTextual: true,
       esProxy: false,
-      desigualdad: DESIGUALDAD_DESCONOCIDA,
+      desigualdad: desigualdadNoObservable(s.dimension, "informe"),
       mecanismoPlausible: buscarMecanismo(s.dimension, answers),
       activoRelacionado: buscarAmbito(s.dimension, answers),
       validacionComunitariaPendiente: true,
@@ -158,7 +227,7 @@ export function buildIntegratedProfileSignals(
       valor: formatIndicatorValue(r.territorialValue, r.unit),
       esMencionTextual: false,
       esProxy: r.demoProxy,
-      desigualdad: DESIGUALDAD_DESCONOCIDA,
+      desigualdad: desigualdadNoObservable(r.narrativeLabel, "trazador"),
       mecanismoPlausible: mecanismo,
       activoRelacionado: buscarAmbito(bloque?.title ?? r.narrativeLabel, answers),
       validacionComunitariaPendiente: true,
@@ -184,7 +253,10 @@ export function buildIntegratedProfileSignals(
         valor: `«${String(grado.valor)}» (${grado.anio})`,
         esMencionTextual: false,
         esProxy: badea.esProxyMunicipioMatriz,
-        desigualdad: DESIGUALDAD_DESCONOCIDA,
+        desigualdad: desigualdadNoObservable(
+          "grado de urbanización del municipio de referencia",
+          "contexto"
+        ),
         mecanismoPlausible: buscarMecanismo("actividad física", answers),
         activoRelacionado: undefined,
         validacionComunitariaPendiente: true,

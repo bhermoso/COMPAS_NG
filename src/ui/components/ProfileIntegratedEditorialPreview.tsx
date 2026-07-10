@@ -88,17 +88,11 @@ export function ProfileIntegratedEditorialPreview({
               </h4>
             </header>
             <p className="pie-hilo__signal">{block.signal}</p>
+            {/* La cadena diagnóstica (mecanismo → desigualdad → quién queda
+                fuera → pregunta → conclusión) se lee como progresión argumental
+                dentro de la prosa, no como lista de campos repetidos. */}
             <p className="pie-hilo__reading">{block.reading}</p>
             <p className="pie-hilo__context">{block.source} · {block.scale}</p>
-            <p className="pie-hilo__mechanism">
-              <strong>Mecanismo plausible: </strong>
-              {block.mechanism}
-            </p>
-            <p className="pie-hilo__exclusion">
-              <strong>Quién puede quedar fuera: </strong>
-              {block.exclusion}
-            </p>
-            <p className="pie-hilo__question">{block.groupMotorQuestion}</p>
           </article>
         ))}
       </section>

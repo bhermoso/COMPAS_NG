@@ -191,10 +191,19 @@ describe("pantalla — la síntesis se absorbe en la vista integrada; matriz en 
     expect(html).toContain("Matriz epistemológica completa");
     const matriz = buildMatrizAnexo(answers);
     expect(matriz.filas.length).toBeGreaterThanOrEqual(15);
-    expect(matriz.notasBloque.length).toBe(2);
-    // Sin repetición mecánica: la cautela de desigualdad no va fila a fila
-    expect(matriz.filas.every((f) => f.desigualdad === undefined)).toBe(true);
+    // La nota de bloque queda para lo que SÍ es común a todas las señales: la
+    // validación comunitaria pendiente (Popay).
+    expect(matriz.notasBloque.length).toBe(1);
+    expect(matriz.notasBloque[0]).toContain("Validación comunitaria");
     expect(matriz.notasBloque[0]).toContain("todas las señales");
+    // La desigualdad NO es común: el marco científico exige laguna específica,
+    // así que cada fila declara la suya y ninguna repite la fórmula genérica.
+    expect(matriz.filas.every((f) => f.desigualdad !== undefined)).toBe(true);
+    expect(
+      matriz.filas.every((f) => f.desigualdad!.includes("no ausencia de desigualdad"))
+    ).toBe(true);
+    const lagunas = new Set(matriz.filas.map((f) => f.desigualdad));
+    expect(lagunas.size).toBeGreaterThan(1);
     // Y la matriz aparece después de la lectura canónica, nunca como apertura
     expect(html.indexOf("Lectura territorial del diagnóstico")).toBeLessThan(
       html.indexOf("Matriz epistemológica completa")

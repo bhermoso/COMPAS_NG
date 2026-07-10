@@ -345,16 +345,109 @@ function shortText(text: string, maxLength = 220): string {
   return compact.slice(0, maxLength - 1).replace(/\s+\S*$/, "") + "…";
 }
 
-function pickHumanKnowledge(
+function lowerFirst(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+function upperFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** Cierra una frase sin duplicar signos (evita «….» y «?.»). */
+function cerrarFrase(text: string): string {
+  const compact = text.trim();
+  return /[.…?!]$/.test(compact) ? compact : `${compact}.`;
+}
+
+function enumerarEjes(ejes: string[]): string {
+  if (ejes.length <= 1) return ejes[0] ?? "los ejes disponibles";
+  return `${ejes.slice(0, -1).join(", ")} ni ${ejes[ejes.length - 1]}`;
+}
+
+/**
+ * Asignación del conocimiento humano a los hilos.
+ *
+ * Sin asignación, una sola interpretación, hipótesis o laguna del equipo se
+ * repite en todos los hilos que comparten espacio —«determinantes» y
+ * «desigualdades» los comparten cuatro— y la pregunta al Grupo Motor deja de
+ * derivar de la evidencia de cada hilo para convertirse en una fórmula añadida
+ * mecánicamente. Tampoco basta un reparto por orden: el primer hilo se
+ * apropiaría de conocimiento redactado para un espacio que otro hilo tiene como
+ * espacio principal.
+ *
+ * Regla: cada pieza se consume UNA vez. Primero se asigna al hilo cuyo espacio
+ * PRINCIPAL (spaces[0]) coincide con el espacio en que el equipo la redactó;
+ * después, lo no reclamado se ofrece a los hilos que lo tienen como espacio
+ * secundario.
+ */
+type HumanKnowledgeByDefinition = Map<string, HumanKnowledgeSelection>;
+
+function assignByPrimaryThenSecondary<T>(
+  definitions: ReadingDefinition[],
+  itemsBySpace: (space: ProfileSpace) => T[],
+  eligible: (definitionId: string) => boolean,
+  assign: (definitionId: string, item: T) => void
+): void {
+  const claimed = new Set<T>();
+  const passes: Array<(definition: ReadingDefinition) => ProfileSpace[]> = [
+    (definition) => definition.spaces.slice(0, 1),
+    (definition) => definition.spaces.slice(1),
+  ];
+  for (const spacesOfPass of passes) {
+    for (const definition of definitions) {
+      if (!eligible(definition.id)) continue;
+      for (const space of spacesOfPass(definition)) {
+        const item = itemsBySpace(space).find(
+          (candidate) => !claimed.has(candidate)
+        );
+        if (item !== undefined) {
+          claimed.add(item);
+          assign(definition.id, item);
+          break;
+        }
+      }
+    }
+  }
+}
+
+function assignHumanKnowledge(
   answers: DiagnosticAnswers,
-  spaces: ProfileSpace[]
-): HumanKnowledgeSelection {
-  const knowledge = spaces.map((space) => answers.porEspacio[space]).filter(Boolean);
-  return {
-    interpretation: knowledge.flatMap((item) => item?.interpretaciones ?? [])[0],
-    hypothesis: knowledge.flatMap((item) => item?.hipotesis ?? [])[0],
-    openQuestion: knowledge.flatMap((item) => item?.lagunas ?? [])[0],
-  };
+  definitions: ReadingDefinition[]
+): HumanKnowledgeByDefinition {
+  const result: HumanKnowledgeByDefinition = new Map(
+    definitions.map((definition) => [definition.id, {}])
+  );
+
+  assignByPrimaryThenSecondary(
+    definitions,
+    (space) => answers.porEspacio[space]?.interpretaciones ?? [],
+    (id) => result.get(id)?.interpretation === undefined,
+    (id, item) => {
+      result.get(id)!.interpretation = item;
+    }
+  );
+  // La hipótesis solo se ofrece a hilos que no van a citar interpretación: la
+  // frase de conocimiento antepone la interpretación y la hipótesis se perdería.
+  assignByPrimaryThenSecondary(
+    definitions,
+    (space) => answers.porEspacio[space]?.hipotesis ?? [],
+    (id) =>
+      result.get(id)?.interpretation === undefined &&
+      result.get(id)?.hypothesis === undefined,
+    (id, item) => {
+      result.get(id)!.hypothesis = item;
+    }
+  );
+  assignByPrimaryThenSecondary(
+    definitions,
+    (space) => answers.porEspacio[space]?.lagunas ?? [],
+    (id) => result.get(id)?.openQuestion === undefined,
+    (id, item) => {
+      result.get(id)!.openQuestion = item;
+    }
+  );
+
+  return result;
 }
 
 function pickCapacity(
@@ -383,18 +476,19 @@ function buildReasoning(
   definition: ReadingDefinition,
   signal: IntegratedHealthProfileSignal,
   agenda: GrupoMotorCard | undefined,
-  answers: DiagnosticAnswers
+  answers: DiagnosticAnswers,
+  human: HumanKnowledgeSelection
 ): TerritorialDiagnosticReasoning {
-  const human = pickHumanKnowledge(answers, definition.spaces);
+  // El mecanismo procede de la evidencia del hilo (señal, agenda o marco de la
+  // definición). Una hipótesis del equipo NO se convierte en mecanismo: se cita
+  // como hipótesis, con su plausibilidad, en la frase de conocimiento.
   const mechanism =
-    human.hypothesis?.enunciado ??
     signal.mecanismoPlausible ??
-    definition.mechanismFallback ??
-    agenda?.mecanismo;
-  const exclusion =
-    human.openQuestion?.relevancia ??
-    agenda?.oculto ??
-    signal.desigualdad.nota;
+    agenda?.mecanismo ??
+    definition.mechanismFallback;
+  // Quién puede quedar fuera es una cuestión de equidad, no la «relevancia» de
+  // una laguna del equipo (que explica por qué importa, no a quién excluye).
+  const exclusion = agenda?.oculto ?? signal.desigualdad.nota;
   const groupMotorQuestion =
     human.openQuestion?.formulacion ??
     agenda?.pregunta ??
@@ -424,9 +518,13 @@ function evidenceSentence(reasoning: TerritorialDiagnosticReasoning): string {
   const { signal } = reasoning;
   const value = reasoning.value.replace(/\s+\[[^\]]+\]/, "");
   if (signal.esMencionTextual) {
+    // Marco científico (Hernán/Robins): las menciones del Informe son
+    // trazabilidad textual. Ni prevalencia, ni carga de enfermedad, ni
+    // prioridad territorial demostrada.
     return (
-      `El Informe registra «${signal.senal}» (${value}): ` +
-      `presencia textual, no prevalencia local ni distribución interna.`
+      `El Informe registra «${signal.senal}» (${value}): atención documental ` +
+      `del hilo sanitario, no prevalencia, ni carga de enfermedad, ni ` +
+      `prioridad territorial demostrada.`
     );
   }
   const qualifier = signal.esProxy ? "proxy contextual" : "muestra declarada";
@@ -443,7 +541,7 @@ function knowledgeSentence(reasoning: TerritorialDiagnosticReasoning): string {
     const { enunciado, certeza, autorNombre } = human.interpretation;
     return (
       `La interpretación activa del equipo técnico (${certeza}, ${autorNombre}) ` +
-      `orienta este hilo: ${shortText(enunciado)}. ` +
+      `orienta este hilo: ${cerrarFrase(shortText(enunciado))} ` +
       `${reasoning.territorialImplication}`
     );
   }
@@ -451,30 +549,54 @@ function knowledgeSentence(reasoning: TerritorialDiagnosticReasoning): string {
     const { enunciado, plausibilidad, preguntasResolutoras } = human.hypothesis;
     const base =
       `La hipótesis activa del equipo (${plausibilidad}) se incorpora como ` +
-      `posibilidad a contrastar: ${shortText(enunciado)}.`;
+      `posibilidad a contrastar: ${cerrarFrase(shortText(enunciado))}`;
     if (preguntasResolutoras.length > 0) {
-      return `${base} Para resolverla: ${shortText(preguntasResolutoras[0], 110)}.`;
+      return `${base} Para resolverla: ${cerrarFrase(shortText(preguntasResolutoras[0], 110))}`;
     }
     return base;
   }
+  // El mecanismo es el nucleo del argumento: no se trunca.
   return (
     `${reasoning.territorialImplication} Mecanismo plausible, sin causalidad ` +
-    `demostrada: ${shortText(reasoning.mechanism, 150)}.`
+    `demostrada: ${cerrarFrase(reasoning.mechanism)}`
   );
+}
+
+/**
+ * Equidad: laguna ESPECÍFICA de esta señal (ejes ausentes + lo que no puede
+ * saberse) y quién puede quedar fuera. La cadena diagnóstica progresa aquí en
+ * la prosa; no se expone como campo suelto.
+ */
+function equitySentence(reasoning: TerritorialDiagnosticReasoning): string {
+  const { desigualdad } = reasoning.signal;
+  const base =
+    `Sin desagregación por ${enumerarEjes(desigualdad.ejesAusentes)} no puede ` +
+    `saberse ${desigualdad.loQueNoSeSabe}: incertidumbre de equidad, no ` +
+    `ausencia de desigualdad.`;
+  // Cuando no hay una exclusión propia del hilo, la propia laguna ya la enuncia.
+  if (reasoning.exclusion === desigualdad.nota) return base;
+  // Dos puntos: la exclusión puede ser singular («quien cuida») o plural («los
+  // grupos que…») y la frase debe concordar con ambas.
+  return `${base} Puede quedar fuera de esa lectura: ${cerrarFrase(
+    lowerFirst(shortText(reasoning.exclusion, 120))
+  )}`;
 }
 
 function capacitySentence(reasoning: TerritorialDiagnosticReasoning): string {
   const { capacity, capacityFrame } = reasoning;
-  const capacityText =
-    capacity !== undefined
-      ? `${capacity}: capacidad potencial, no cobertura ni resultado. ${shortText(capacityFrame, 90)}.`
-      : `${shortText(capacityFrame, 90)}; sin recurso concreto vinculado.`;
-  return `Sin desagregación disponible: incertidumbre de equidad. ${capacityText}`;
+  // El marco de capacidad se cita íntegro: distingue recurso, capacidad
+  // potencial, conocimiento, acceso y uso. Truncarlo mutilaba la frase.
+  return capacity !== undefined
+    ? `${upperFirst(capacity)}: capacidad potencial, no cobertura ni resultado. ` +
+        `${cerrarFrase(capacityFrame)}`
+    : `${cerrarFrase(capacityFrame)} Sin recurso concreto vinculado.`;
 }
 
 function questionSentence(reasoning: TerritorialDiagnosticReasoning): string {
   const { human, groupMotorQuestion, diagnosticConclusion } = reasoning;
-  const question = shortText(groupMotorQuestion, 130);
+  // La pregunta ya termina en «?»: no se le añade otro punto.
+  // La pregunta de contraste no se trunca: truncarla le quitaba el «?».
+  const question = groupMotorQuestion.trim().replace(/[.\s]+$/, "");
   const conclusion =
     diagnosticConclusion.charAt(0).toUpperCase() + diagnosticConclusion.slice(1);
 
@@ -482,19 +604,23 @@ function questionSentence(reasoning: TerritorialDiagnosticReasoning): string {
     const { urgencia } = human.openQuestion;
     const urgenciaStr = urgencia.trim().length > 0 ? ` (${urgencia})` : "";
     return (
-      `La pregunta abierta del equipo${urgenciaStr}: ${question}. ${conclusion}.`
+      `La pregunta abierta del equipo${urgenciaStr}: ${question} ${conclusion}.`
     );
   }
-  return (
-    `La pregunta deriva de esa incertidumbre y del mecanismo: ${question}. ` +
-    `${conclusion}.`
-  );
+  return `De ahí la pregunta de contraste: ${question} ${conclusion}.`;
 }
 
+/**
+ * Progresión argumental (contrato de escritura): señal → mecanismo social
+ * plausible → desigualdad observable o no + quién puede quedar fuera →
+ * capacidad relacionada → pregunta de contraste → conclusión diagnóstica.
+ * No es una lista de campos: la cadena se lee como argumento.
+ */
 function composeReading(reasoning: TerritorialDiagnosticReasoning): string {
   return [
     evidenceSentence(reasoning),
     knowledgeSentence(reasoning),
+    equitySentence(reasoning),
     capacitySentence(reasoning),
     questionSentence(reasoning),
   ].join(" ");
@@ -504,9 +630,10 @@ function buildReadingBlock(
   definition: ReadingDefinition,
   signal: IntegratedHealthProfileSignal,
   agenda: GrupoMotorCard | undefined,
-  answers: DiagnosticAnswers
+  answers: DiagnosticAnswers,
+  human: HumanKnowledgeSelection
 ): ProfileIntegratedEditorialReadingBlock {
-  const reasoning = buildReasoning(definition, signal, agenda, answers);
+  const reasoning = buildReasoning(definition, signal, agenda, answers, human);
   return {
     id: reasoning.id,
     title: reasoning.title,
@@ -561,10 +688,13 @@ function overviewFromMessage(
       title,
       text:
         `${context.informeTitulo ?? "El Informe de salud"} sostiene el hilo ` +
-        `sanitario del Perfil: ${informeRow?.senal ?? informeSignal?.senal ?? "sus dimensiones principales"} ` +
-        `aparecen como presencia textual del documento. Esa entrada fija el objeto ` +
-        `salud, pero no convierte menciones en prevalencia ni sustituye la lectura ` +
-        `de estudios, activos y contraste comunitario.`,
+        `sanitario del Perfil y fija su objeto salud: ` +
+        `${informeRow?.senal ?? informeSignal?.senal ?? "sus dimensiones principales"} ` +
+        `constan como presencia textual del documento. Eso aporta la agenda ` +
+        `sanitaria de partida; no permite conocer prevalencia local, carga de ` +
+        `enfermedad ni distribución interna. Los estudios complementarios amplían ` +
+        `ese hilo hacia la vida cotidiana y el bienestar, y los activos añaden las ` +
+        `capacidades del territorio, sin sustituirlo.`,
       signal: informeRow?.senal ?? "dimensiones sanitarias principales del Informe",
       source: context.informeTitulo ?? informeRow?.fuente ?? "Informe de salud",
       variant: "informe",
@@ -654,6 +784,7 @@ function buildClosingColumns(input: {
   synthesis: ReturnType<typeof buildProfileSynthesis>;
   matrix: MatrizAnexo;
   territorialReadings: ProfileIntegratedEditorialReadingBlock[];
+  communityKnowledgePending: boolean;
 }): ProfileIntegratedEditorialClosingColumn[] {
   const { answers, synthesis, matrix, territorialReadings } = input;
   const sanitarySignal = synthesis.senalesPrincipales.find((row) =>
@@ -682,12 +813,28 @@ function buildClosingColumns(input: {
     {
       id: "contrastar",
       title: "Qué hipótesis merecen contraste",
-      items: unique([
-        humanQuestion !== undefined
-          ? `Pregunta abierta del equipo: ${humanQuestion}`
-          : undefined,
-        ...territorialReadings.map((block) => block.groupMotorQuestion),
-      ].filter((item): item is string => item !== undefined)).slice(0, 3),
+      items: unique(
+        [
+          humanQuestion !== undefined
+            ? `Pregunta abierta del equipo: ${humanQuestion}`
+            : undefined,
+          ...territorialReadings.map((block) => block.groupMotorQuestion),
+        ].filter((item): item is string => item !== undefined)
+      )
+        .slice(0, input.communityKnowledgePending ? 2 : 3)
+        .concat(
+          // Popay: mientras no haya material cualitativo ni deliberación
+          // registrada, la experiencia del vecindario es conocimiento pendiente
+          // de incorporación. No se inventa; se declara.
+          input.communityKnowledgePending
+            ? [
+                "La experiencia del vecindario y del Grupo Motor está pendiente " +
+                  "de incorporación: confirmará mecanismos, barreras, " +
+                  "significados y acceso real. Es conocimiento pendiente, no " +
+                  "ausencia de conocimiento.",
+              ]
+            : []
+        ),
     },
     {
       id: "no-confundir",
@@ -727,6 +874,7 @@ export function buildProfileIntegratedEditorialView(
     })
   );
 
+  const humanByDefinition = assignHumanKnowledge(answers, READING_DEFINITIONS);
   const territorialReadings = READING_DEFINITIONS.flatMap((definition) => {
     const signal = pickSignal(signals, usedSignals, definition);
     if (signal === undefined) return [];
@@ -736,7 +884,8 @@ export function buildProfileIntegratedEditorialView(
         definition,
         signal,
         pickAgenda(visuals.grupoMotorCards, definition),
-        answers
+        answers,
+        humanByDefinition.get(definition.id) ?? {}
       ),
     ];
   });
@@ -776,6 +925,11 @@ export function buildProfileIntegratedEditorialView(
     synthesis,
     matrix,
     territorialReadings,
+    // Popay: la validación comunitaria consta como pendiente mientras ninguna
+    // señal la tenga resuelta (material cualitativo o deliberación registrada).
+    communityKnowledgePending:
+      signals.length > 0 &&
+      signals.every((signal) => signal.validacionComunitariaPendiente),
   });
 
   return {
