@@ -12,129 +12,116 @@ export function ProfileIntegratedEditorialPreview({
   view,
 }: ProfileIntegratedEditorialPreviewProps) {
   return (
-    <section className="pie-preview workspace-panel" aria-labelledby="pie-title">
-      <header className="pie-header">
-        <div>
-          <p className="pie-header__meta">
+    <section className="pie-doc workspace-panel" aria-labelledby="pie-title">
+
+      {/* ── Apertura documental ─────────────────────────────────────────── */}
+      <header className="pie-doc-open">
+        <div className="pie-doc-open__identity">
+          <p className="pie-doc-open__meta">
             {view.header.territory} · {view.header.status}
             {view.header.generatedDate !== undefined
               ? " · " + view.header.generatedDate
               : ""}
           </p>
-          <h2 id="pie-title" className="pie-header__title">
+          <h2 id="pie-title" className="pie-doc-open__title">
             {view.header.title}
           </h2>
-          <p className="pie-header__subtitle">
-            {view.header.subtitle}
-          </p>
+          <p className="pie-doc-open__subtitle">{view.header.subtitle}</p>
         </div>
-        <div className="pie-header__scale">
-          <span>Escala</span>
-          <strong>{view.header.scale}</strong>
+        <div className="pie-doc-open__sources" aria-label="Fuentes principales">
+          {view.header.sources.map((source) => (
+            <span key={source}>{source}</span>
+          ))}
         </div>
+        <p className="pie-doc-open__scale">{view.header.scale}</p>
       </header>
 
-      <div className="pie-sources-line" aria-label="Fuentes principales">
-        {view.header.sources.map((source) => (
-          <span key={source}>{source}</span>
-        ))}
-      </div>
-
-      <section className="pie-section" aria-labelledby="pie-overview-title">
+      {/* ── Imagen general ──────────────────────────────────────────────── */}
+      <section className="pie-doc-section" aria-labelledby="pie-overview-title">
         <h3 id="pie-overview-title" className="pie-section__title">
           Imagen general
         </h3>
         <div className="pie-overview">
           {view.overview.map((message) => (
             <article key={message.id} className="pie-overview__item">
-              <span className={variantClass(message.variant)} />
-              <h4>{message.title}</h4>
-              <p>{message.text}</p>
-              <dl className="pie-mini-meta">
-                <div>
-                  <dt>Señal</dt>
-                  <dd>{message.signal}</dd>
-                </div>
-                <div>
-                  <dt>Fuente</dt>
-                  <dd>{message.source}</dd>
-                </div>
-              </dl>
+              <div className="pie-overview__head">
+                <span className={variantClass(message.variant)} aria-hidden="true" />
+                <strong className="pie-overview__label">{message.title}</strong>
+              </div>
+              <p className="pie-overview__body">{message.text}</p>
+              <p className="pie-overview__source">{message.source}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="pie-section" aria-labelledby="pie-source-title">
-        <h3 id="pie-source-title" className="pie-section__title">
+      {/* ── Señales principales por fuente ──────────────────────────────── */}
+      <section className="pie-doc-section" aria-labelledby="pie-sources-title">
+        <h3 id="pie-sources-title" className="pie-section__title">
           Señales principales por fuente
         </h3>
-        <div className="pie-source-grid">
+        <div className="pie-base-doc">
           {view.sourceBlocks.map((block) => (
-            <article key={block.id} className="pie-source-card">
-              <div className="pie-source-card__top">
-                <span className={variantClass(block.variant)} />
-                <h4>{block.title}</h4>
+            <div key={block.id} className="pie-base-doc__entry">
+              <span className={variantClass(block.variant)} aria-hidden="true" />
+              <div className="pie-base-doc__body">
+                <strong className="pie-base-doc__name">{block.title}</strong>
+                <span className="pie-base-doc__adds"> — {block.whatItAdds}.</span>
+                <span className="pie-base-doc__limit"> {block.whatItDoesNotAllow}.</span>
               </div>
-              <p>
-                <strong>Aporta: </strong>
-                {block.whatItAdds}
-              </p>
-              <p>
-                <strong>No permite: </strong>
-                {block.whatItDoesNotAllow}
-              </p>
-            </article>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="pie-section" aria-labelledby="pie-reading-title">
+      {/* ── Lectura integrada del territorio ────────────────────────────── */}
+      <section className="pie-doc-section" aria-labelledby="pie-reading-title">
         <h3 id="pie-reading-title" className="pie-section__title">
           Lectura integrada del territorio
         </h3>
-        <div className="pie-reading-grid">
-          {view.territorialReadings.map((block) => (
-            <article key={block.id} className="pie-reading-card">
-              <div className="pie-reading-card__head">
-                <span className={variantClass(block.variant)} />
-                <h4>{block.title}</h4>
-              </div>
-              <p className="pie-reading-card__signal">{block.signal}</p>
-              <p className="pie-reading-card__meta">
-                {block.source} · {block.scale}
-              </p>
-              <p>{block.reading}</p>
-              <p className="pie-reading-card__mechanism">
-                <strong>Mecanismo plausible: </strong>
-                {block.mechanism}
-              </p>
-              <p className="pie-reading-card__exclusion">
-                <strong>Quién puede quedar fuera: </strong>
-                {block.exclusion}
-              </p>
-              <p className="pie-reading-card__question">
-                {block.groupMotorQuestion}
-              </p>
-            </article>
-          ))}
-        </div>
+        {view.territorialReadings.map((block) => (
+          <article key={block.id} className="pie-hilo" aria-labelledby={`pie-h-${block.id}`}>
+            <header className="pie-hilo__header">
+              <span className={variantClass(block.variant)} aria-hidden="true" />
+              <h4 id={`pie-h-${block.id}`} className="pie-hilo__title">
+                {block.title}
+              </h4>
+            </header>
+            <p className="pie-hilo__signal">{block.signal}</p>
+            <p className="pie-hilo__reading">{block.reading}</p>
+            <p className="pie-hilo__context">{block.source} · {block.scale}</p>
+            <p className="pie-hilo__mechanism">
+              <strong>Mecanismo plausible: </strong>
+              {block.mechanism}
+            </p>
+            <p className="pie-hilo__exclusion">
+              <strong>Quién puede quedar fuera: </strong>
+              {block.exclusion}
+            </p>
+            <p className="pie-hilo__question">{block.groupMotorQuestion}</p>
+          </article>
+        ))}
       </section>
 
+      {/* ── Indicadores trazadores ──────────────────────────────────────── */}
       {view.tracerTable.length > 0 && (
-        <section className="pie-section" aria-labelledby="pie-tracer-title">
+        <section className="pie-doc-section" aria-labelledby="pie-tracer-title">
           <h3 id="pie-tracer-title" className="pie-section__title">
             Indicadores trazadores: valores y referencias
           </h3>
           <div className="pie-table-wrap">
             <table className="pie-table">
+              <caption className="pie-table__caption">
+                Valores por bloque temático con referencias provinciales y autonómicas.
+                Los valores «proxy contextual» son datos de ámbito provincial usados como referencia de contexto.
+              </caption>
               <thead>
                 <tr>
                   <th>Bloque</th>
                   <th>Indicador</th>
                   <th>Valor</th>
-                  <th>Granada</th>
-                  <th>Andalucía</th>
+                  <th>Ref. Granada</th>
+                  <th>Ref. Andalucía</th>
                   <th>Escala</th>
                   <th>Lectura</th>
                 </tr>
@@ -157,50 +144,58 @@ export function ProfileIntegratedEditorialPreview({
         </section>
       )}
 
+      {/* ── Agenda del Grupo Motor ───────────────────────────────────────── */}
       {view.groupMotorAgenda.length > 0 && (
-        <section className="pie-section" aria-labelledby="pie-agenda-title">
+        <section className="pie-doc-section" aria-labelledby="pie-agenda-title">
           <h3 id="pie-agenda-title" className="pie-section__title">
             Qué debe discutir el Grupo Motor
           </h3>
-          <div className="pie-agenda">
+          <p className="pie-agenda-intro">
+            Cuestiones para contrastar con la experiencia territorial. El Grupo
+            Motor delibera; no recibe prioridades cerradas.
+          </p>
+          <ol className="pie-delibera">
             {view.groupMotorAgenda.map((card) => (
-              <article key={card.id} className="pie-agenda-card">
-                <span className={variantClass(card.variant)} />
-                <h4>{card.tema}</h4>
-                <p>{card.senal}</p>
-                <p>
-                  <strong>Mecanismo: </strong>
+              <li key={card.id} className="pie-delibera__item">
+                <div className="pie-delibera__head">
+                  <span className={variantClass(card.variant)} aria-hidden="true" />
+                  <strong className="pie-delibera__tema">{card.tema}</strong>
+                </div>
+                <p className="pie-delibera__senal">{card.senal}</p>
+                <p className="pie-delibera__tension">
+                  <span className="pie-delibera__mechanism-label">Tensión: </span>
                   {card.mecanismo}
-                </p>
-                <p>
-                  <strong>Zona ciega: </strong>
+                  {" — "}
+                  <span className="pie-delibera__oculto-label">Quién puede quedar fuera: </span>
                   {card.oculto}
                 </p>
-                <p className="pie-agenda-card__question">{card.pregunta}</p>
-              </article>
+                <p className="pie-delibera__pregunta">{card.pregunta}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
       )}
 
-      <section className="pie-section" aria-labelledby="pie-closing-title">
+      {/* ── Cierre interpretativo ────────────────────────────────────────── */}
+      <section className="pie-doc-section" aria-labelledby="pie-closing-title">
         <h3 id="pie-closing-title" className="pie-section__title">
           Cierre interpretativo
         </h3>
-        <div className="pie-closing">
+        <div className="pie-cierre">
           {view.closing.map((column) => (
-            <article key={column.id} className="pie-closing-column">
-              <h4>{column.title}</h4>
-              <ul>
+            <div key={column.id} className="pie-cierre__bloque">
+              <h4 className="pie-cierre__titulo">{column.title}</h4>
+              <ul className="pie-cierre__items">
                 {column.items.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-            </article>
+            </div>
           ))}
         </div>
       </section>
 
+      {/* ── Lectura territorial ampliada y anexo técnico (colapsado) ────── */}
       <details className="pie-annex">
         <summary>{view.technicalAnnex.title}</summary>
         <p>{view.technicalAnnex.summary}</p>

@@ -285,6 +285,74 @@ describe("render — perfil de salud local canónico", () => {
   });
 });
 
+describe("composición documental — estructura editorial", () => {
+  it("conserva los cinco hilos territoriales", () => {
+    expect(editorialView.territorialReadings).toHaveLength(5);
+    const ids = editorialView.territorialReadings.map((b) => b.id);
+    expect(ids).toContain("salud-sanitaria-partida");
+    expect(ids).toContain("sueno-malestar-vida-cotidiana");
+    expect(ids).toContain("actividad-sedentarismo-entorno");
+    expect(ids).toContain("apoyo-social-soledad-envejecimiento");
+    expect(ids).toContain("alimentacion-consumos-condiciones");
+  });
+
+  it("los hilos están presentes en el HTML canónico con título y pregunta", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    for (const block of editorialView.territorialReadings) {
+      expect(beforeTechnical).toContain(block.title);
+      expect(beforeTechnical).toContain(block.groupMotorQuestion);
+    }
+  });
+
+  it("conserva las preguntas del Grupo Motor en la agenda deliberativa", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(editorialView.groupMotorAgenda.length).toBeGreaterThanOrEqual(5);
+    for (const card of editorialView.groupMotorAgenda) {
+      expect(beforeTechnical).toContain(card.pregunta);
+    }
+  });
+
+  it("conserva las cifras clave en la lectura canónica", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).toContain("32.8 %");
+    expect(beforeTechnical).toContain("34.2 %");
+    expect(beforeTechnical).toContain("49.2/55");
+    expect(beforeTechnical).toContain("56");
+  });
+
+  it("conserva la tabla de indicadores trazadores", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).toContain("Indicadores trazadores: valores y referencias");
+    expect(beforeTechnical).toContain("<table");
+    // Tabla de trazadores no duplicada
+    expect(
+      beforeTechnical.match(/Indicadores trazadores: valores y referencias/g)
+    ).toHaveLength(1);
+  });
+
+  it("conserva límites epistemológicos: fuente, escala, mecanismo y exclusión en los hilos", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    // Fuente y escala siguen presentes (en los hilos, no como etiqueta "Fuente y escala:")
+    expect(beforeTechnical).not.toContain("Fuente y escala:");
+    expect(beforeTechnical).toContain("proxy contextual");
+    // Mecanismo plausible: integrado en los hilos
+    expect(beforeTechnical).toContain("Mecanismo plausible:");
+    // Quién puede quedar fuera: integrado en los hilos
+    expect(beforeTechnical).toContain("Quién puede quedar fuera:");
+  });
+
+  it("los rótulos repetitivos no dominan como etiquetas fijas en todos los hilos", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    // "Señal" y "Zona ciega" no aparecen como etiquetas de campo repetidas
+    const zonaCiegaMatches = (beforeTechnical.match(/Zona ciega:/g) ?? []).length;
+    const senalMatches = (beforeTechnical.match(/class="[^"]*signal[^"]*"/g) ?? []).length;
+    // Zona ciega no debe ser el rótulo repetido en todos los bloques (sí puede aparecer en deliberación)
+    expect(zonaCiegaMatches).toBeLessThanOrEqual(editorialView.groupMotorAgenda.length);
+    // Las clases de señal están en los hilos territoriales, no en un grid de fichas idénticas
+    expect(senalMatches).toBeGreaterThan(0);
+  });
+});
+
 describe("separación lectura canónica / espacio técnico", () => {
   it("el espacio técnico existe y está separado de la lectura canónica", () => {
     expect(html).toContain("Espacio técnico del Perfil");
