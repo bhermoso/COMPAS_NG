@@ -1,9 +1,9 @@
 /**
  * Vista editorial integrada del Perfil de Salud Local.
  *
- * Verifica que el prototipo editorial se construye desde capas puras ya
- * existentes, aparece antes de la lectura vigente "Salud en síntesis" y no
- * reintroduce lenguaje de decisión, objetivos o actuación.
+ * Verifica que la lectura canónica se construye desde capas puras ya
+ * existentes, aparece antes del espacio técnico del Perfil y no reintroduce
+ * lenguaje de decisión, objetivos o actuación.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
@@ -106,7 +106,7 @@ beforeAll(() => {
   );
   proposalHtml = html.slice(
     html.indexOf("Vista editorial integrada"),
-    html.indexOf('id="psl-resumen"')
+    html.indexOf("Espacio técnico del Perfil")
   );
 }, 60000);
 
@@ -185,9 +185,9 @@ describe("render — vista editorial integrada canónica", () => {
     // y el desarrollo capitular largo de la experiencia principal.
     expect(html).not.toContain("Salud en síntesis");
     expect(html).not.toContain("I · Alcance y fuentes");
-    // La composición canónica precede al anexo técnico de trazabilidad.
+    // La composición canónica precede al espacio técnico de trabajo.
     expect(html.indexOf("Vista editorial integrada")).toBeLessThan(
-      html.indexOf("Trazabilidad técnica del diagnóstico")
+      html.indexOf("Espacio técnico del Perfil")
     );
   });
 
@@ -217,6 +217,9 @@ describe("render — vista editorial integrada canónica", () => {
 describe("separación lectura canónica / espacio técnico", () => {
   it("el espacio técnico existe y está separado de la lectura canónica", () => {
     expect(html).toContain("Espacio técnico del Perfil");
+    expect(html).toContain(
+      "Validación, compilación, enriquecimiento y trazabilidad interna. No forma parte de la lectura canónica del Perfil."
+    );
   });
 
   it("la vista editorial integrada precede al espacio técnico", () => {
@@ -227,16 +230,34 @@ describe("separación lectura canónica / espacio técnico", () => {
     expect(editorialPos).toBeLessThan(technicalPos);
   });
 
-  it("Resumen y PSL-C quedan dentro del espacio técnico, no antes", () => {
-    const technicalPos = html.indexOf("Espacio técnico del Perfil");
-    // ">Resumen<" porque la cadena aparece como texto de span, no como id
-    const resumenPos = html.indexOf(">Resumen<");
-    expect(technicalPos).toBeGreaterThan(-1);
-    expect(resumenPos).toBeGreaterThan(-1);
-    expect(resumenPos).toBeGreaterThan(technicalPos);
+  it("el espacio técnico queda cerrado por defecto", () => {
+    const technicalDetailsPos = html.indexOf('<details class="psl-technical-space"');
+    expect(technicalDetailsPos).toBeGreaterThan(-1);
+    const technicalDetailsTag = html.slice(
+      technicalDetailsPos,
+      html.indexOf(">", technicalDetailsPos)
+    );
+    expect(technicalDetailsTag).not.toContain("open");
   });
 
-  it("los bloques técnicos no aparecen antes de la vista editorial integrada", () => {
+  it("Resumen, PSL-C y enriquecimiento no aparecen antes del espacio técnico", () => {
+    const technicalPos = html.indexOf("Espacio técnico del Perfil");
+    expect(technicalPos).toBeGreaterThan(-1);
+    const beforeTechnical = html.slice(0, technicalPos);
+
+    expect(beforeTechnical).not.toContain(">Resumen<");
+    expect(beforeTechnical).not.toContain("Elementos de diagnóstico");
+    expect(beforeTechnical).not.toContain("Crear documento institucional PSL-C");
+    expect(beforeTechnical).not.toContain("Perfiles de Salud Local Compilados");
+    expect(beforeTechnical).not.toContain("PSL-C/v1");
+    expect(beforeTechnical).not.toContain("Descargar DOCX");
+    expect(beforeTechnical).not.toContain("Descargar PDF");
+    expect(beforeTechnical).not.toContain("Ver documento institucional completo");
+    expect(beforeTechnical).not.toContain("Enriquecimiento de fuentes del Perfil");
+    expect(beforeTechnical).not.toContain("Enriquecimiento interpretativo");
+  });
+
+  it("los bloques técnicos quedan después de la vista editorial integrada", () => {
     const editorialPos = html.indexOf("Vista editorial integrada");
     // La ruta operativa y el espacio de trabajo no deben preceder a la lectura canónica
     const compilacionPos = html.indexOf("Crear documento institucional PSL-C");
@@ -244,6 +265,11 @@ describe("separación lectura canónica / espacio técnico", () => {
     // Si aparecen, deben ser después de la vista editorial
     if (compilacionPos >= 0) expect(compilacionPos).toBeGreaterThan(editorialPos);
     if (espacioPos >= 0) expect(espacioPos).toBeGreaterThan(editorialPos);
+  });
+
+  it("mantiene ausentes PslChapterNav y el desarrollo capitular largo", () => {
+    expect(html).not.toContain("Capítulos del perfil");
+    expect(html).not.toContain("I · Alcance y fuentes");
   });
 });
 

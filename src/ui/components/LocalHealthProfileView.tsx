@@ -65,7 +65,7 @@ interface LocalHealthProfileViewProps {
   indicatorReferences?: IndicatorComparisonReference[];
   /** Métricas epistémicas del espacio de conocimiento (computePerfilEpistemicMetrics). */
   epistemicMetrics?: PerfilEpistemicMetrics;
-  /** Respuestas diagnósticas para «Salud en síntesis» y la matriz del anexo. */
+  /** Respuestas diagnósticas para la vista integrada y la trazabilidad técnica. */
   diagnosticAnswers?: DiagnosticAnswers;
   compiledProfiles?: LocalHealthProfileArtifact[];
   onValidate: (validatedBy: string) => void;
@@ -917,11 +917,6 @@ export function LocalHealthProfileView({
         </div>
       )}
 
-      {/* ── Acción de validación (solo cuando el PSL está en borrador) ───── */}
-      {psl.status === "generated" && (
-        <PSLValidationAction onValidate={onValidate} />
-      )}
-
       {/* ── Vista editorial integrada: lectura canónica del Perfil ────────── */}
       {/* Composición oficial única. Absorbe la antigua «Salud en síntesis» y */}
       {/* deja el desarrollo capitular fuera de la experiencia principal.     */}
@@ -935,6 +930,11 @@ export function LocalHealthProfileView({
         <p className="psl-technical-space__help">
           Validación, compilación, enriquecimiento y trazabilidad interna. No forma parte de la lectura canónica del Perfil.
         </p>
+
+        {/* ── Acción de validación (solo cuando el PSL está en borrador) ─── */}
+        {psl.status === "generated" && (
+          <PSLValidationAction onValidate={onValidate} />
+        )}
 
         {psl.status === "validated" && !pslIsStale && (
           <>

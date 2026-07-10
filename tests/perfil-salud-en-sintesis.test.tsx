@@ -1,11 +1,11 @@
 /**
  * tests/perfil-salud-en-sintesis.test.tsx
  *
- * «Salud en síntesis»: primera lectura visual del Perfil en pantalla.
- * Verifica sobre datos reales del vigente 56/92 que la sección cuenta la
+ * «Salud en síntesis»: modelo puro que alimenta la vista integrada.
+ * Verifica sobre datos reales del vigente 56/92 que la lectura cuenta la
  * salud del territorio antes que la metodología, agrupa señales para
- * deliberar sin volcar la matriz completa, y supera el contrato
- * anti-plantilla (sin fórmulas de cautela repetidas ni tono generado).
+ * deliberar sin volcar la matriz completa en la apertura, y supera el
+ * contrato anti-plantilla.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
