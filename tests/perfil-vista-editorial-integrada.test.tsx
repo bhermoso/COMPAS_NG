@@ -65,6 +65,14 @@ function overviewById(id: string) {
   return message;
 }
 
+function readingById(id: string) {
+  const block = editorialView.territorialReadings.find((item) => item.id === id);
+  if (block === undefined) {
+    throw new Error(`No existe el bloque territorial ${id}`);
+  }
+  return block;
+}
+
 let ws: MunicipalityWorkspace;
 let psl: LocalHealthProfile;
 let answers: DiagnosticAnswers;
@@ -168,8 +176,68 @@ describe("modelo puro — Vista editorial integrada", () => {
       expect(block.groupMotorQuestion).toMatch(/^¿.+\?$/);
       const words = block.reading.trim().split(/\s+/).length;
       expect(words).toBeGreaterThanOrEqual(60);
-      expect(words).toBeLessThanOrEqual(150);
+      expect(words, block.id).toBeLessThanOrEqual(150);
     }
+  });
+
+  it("retira la plantilla metodológica repetida de los bloques integrados", () => {
+    const serialized = JSON.stringify(editorialView.territorialReadings);
+    for (const oldPattern of [
+      "La señal disponible es",
+      "Su valor declarado es",
+      "La escala real es",
+      "El mecanismo a contrastar es",
+      "La principal zona ciega es",
+    ]) {
+      expect(serialized).not.toContain(oldPattern);
+      expect(html).not.toContain(oldPattern);
+    }
+  });
+
+  it("usa sueño insuficiente como lectura de vida cotidiana, no como presencia textual", () => {
+    const block = readingById("sueno-malestar-vida-cotidiana");
+    const text = normalized(block.reading);
+
+    expect(block.reading).toContain("32.8 %");
+    expect(text).toContain("descanso");
+    expect(text).toContain("vida diaria");
+    expect(text).toMatch(/turnos|cuidados nocturnos|vivienda|ruido|tiempo/);
+    expect(text).toContain("no estan desagregados");
+    expect(text).not.toContain("presencia textual");
+  });
+
+  it("usa actividad física como lectura de entorno y no hereda la zona ciega del sueño", () => {
+    const block = readingById("actividad-sedentarismo-entorno");
+    const text = normalized(block.reading + " " + block.exclusion);
+
+    expect(block.reading).toContain("34.2 %");
+    expect(text).toContain("espacio publico");
+    expect(text).toMatch(/seguridad|accesibilidad|autonomia/);
+    expect(text).toContain("no estan desagregados");
+    expect(text).not.toContain("cuida de noche");
+    expect(text).not.toContain("turnos");
+    expect(text).not.toContain("vivienda sin descanso");
+  });
+
+  it("lee DUKE, soledad y envejecimiento como tensión territorial abierta", () => {
+    const block = readingById("apoyo-social-soledad-envejecimiento");
+    const text = normalized(block.reading);
+
+    expect(block.reading).toContain("49.2/55");
+    expect(text).toContain("tension territorial");
+    expect(text).toContain("soledad");
+    expect(text).toContain("envejecimiento");
+    expect(text).toContain("capacidad comunitaria");
+    expect(text).toContain("personas mayores");
+  });
+
+  it("presenta activos como capacidad potencial y desigualdad como incertidumbre central", () => {
+    const serialized = normalized(JSON.stringify(editorialView));
+
+    expect(serialized).toContain("capacidad potencial");
+    expect(serialized).toContain("no cobertura ni resultado");
+    expect(serialized).toContain("incertidumbre de equidad");
+    expect(serialized).toContain("no estan desagregados");
   });
 
   it("no formula recomendaciones, objetivos ni actuaciones", () => {

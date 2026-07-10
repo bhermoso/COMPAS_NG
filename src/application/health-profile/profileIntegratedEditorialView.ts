@@ -89,6 +89,8 @@ interface ReadingDefinition {
   id: string;
   title: string;
   variant: EvidenceVariant;
+  preferredSignalIds?: string[];
+  preferredAgendaId?: string;
   signalMatches: string[];
   agendaMatches: string[];
   frame: string;
@@ -108,6 +110,8 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     id: "sueno-malestar-vida-cotidiana",
     title: "Sueño, malestar y vida cotidiana",
     variant: "estudio",
+    preferredSignalIds: ["trazador-sueno-insuficiente"],
+    preferredAgendaId: "sueno-malestar",
     signalMatches: ["sueno", "sf12", "ghq", "phq", "malestar"],
     agendaMatches: ["sueno", "malestar"],
     frame:
@@ -117,6 +121,8 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     id: "actividad-sedentarismo-entorno",
     title: "Actividad física, sedentarismo y entorno urbano",
     variant: "estudio",
+    preferredSignalIds: ["trazador-ipaq-inactividad", "trazador-sbq-sedentarismo"],
+    preferredAgendaId: "sedentarismo-entorno",
     signalMatches: ["actividad", "sedentarismo", "ipaq", "sbq", "entorno"],
     agendaMatches: ["sedentarismo", "entorno", "actividad"],
     frame:
@@ -126,6 +132,8 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     id: "apoyo-social-soledad-envejecimiento",
     title: "Apoyo social, soledad y envejecimiento",
     variant: "activo",
+    preferredSignalIds: ["trazador-duke-apoyo-global"],
+    preferredAgendaId: "soledad-envejecimiento",
     signalMatches: ["apoyo", "duke", "soledad", "envejecimiento"],
     agendaMatches: ["soledad", "envejecimiento", "apoyo"],
     frame:
@@ -135,6 +143,8 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     id: "alimentacion-consumos-condiciones",
     title: "Alimentación, consumos y condiciones materiales",
     variant: "estudio",
+    preferredSignalIds: ["trazador-predimed-adherencia", "trazador-cage-r"],
+    preferredAgendaId: "consumos-alimentacion",
     signalMatches: ["aliment", "consumo", "predimed", "audit", "cage"],
     agendaMatches: ["consumo", "aliment"],
     frame:
@@ -198,6 +208,21 @@ function pickSignal(
   used: Set<string>,
   definition: ReadingDefinition
 ): IntegratedHealthProfileSignal | undefined {
+  const preferredById = definition.preferredSignalIds
+    ?.map((id) => signals.find((signal) => signal.id === id && !used.has(signal.id)))
+    .find((signal): signal is IntegratedHealthProfileSignal => signal !== undefined);
+  if (preferredById !== undefined) return preferredById;
+
+  if (definition.variant !== "informe") {
+    const quantitative = signals.find(
+      (signal) =>
+        !used.has(signal.id) &&
+        !signal.esMencionTextual &&
+        includesAny(signalText(signal), definition.signalMatches)
+    );
+    if (quantitative !== undefined) return quantitative;
+  }
+
   const preferred = signals.find(
     (signal) =>
       !used.has(signal.id) &&
@@ -211,7 +236,21 @@ function pickAgenda(
   cards: GrupoMotorCard[],
   definition: ReadingDefinition
 ): GrupoMotorCard | undefined {
+  if (definition.preferredAgendaId !== undefined) {
+    const preferred = cards.find((card) => card.id === definition.preferredAgendaId);
+    if (preferred !== undefined) return preferred;
+  }
   return cards.find((card) => includesAny(agendaText(card), definition.agendaMatches));
+}
+
+function equityUncertainty(signal: IntegratedHealthProfileSignal): string {
+  if (signal.desigualdad.distribucion === "desconocida-sin-desagregacion") {
+    return (
+      "Los datos no están desagregados por sexo, edad ni renta: la desigualdad " +
+      "queda como incertidumbre central, no como ausencia demostrada."
+    );
+  }
+  return signal.desigualdad.nota;
 }
 
 function readingText(
@@ -220,13 +259,73 @@ function readingText(
   mechanism: string,
   exclusion: string
 ): string {
+  const sourceAndScale = `Fuente y escala: ${signal.fuente}; ${signal.escala}.`;
+  const equity = equityUncertainty(signal);
+
+  if (definition.id === "salud-sanitaria-partida") {
+    return (
+      `${definition.frame} En este expediente, «${signal.senal}» abre la ` +
+      `conversación sanitaria como ${signal.valor}; no funciona como prevalencia ` +
+      `local ni como orden de intervención. ${sourceAndScale} Leída junto al ` +
+      `resto del expediente, esa agenda desplaza la pregunta hacia las condiciones ` +
+      `que producen salud o malestar en el territorio. ${equity} El Grupo Motor ` +
+      `debe contrastar cómo aparece esta preocupación en la vida cotidiana y qué ` +
+      `grupos pueden quedar menos visibles: ${exclusion}.`
+    );
+  }
+
+  if (definition.id === "sueno-malestar-vida-cotidiana") {
+    return (
+      `${definition.frame} El ${signal.valor} asociado a «${signal.senal}» ` +
+      `permite leer el descanso y el malestar como parte de la organización ` +
+      `cotidiana del tiempo, no como una conducta individual aislada. ${sourceAndScale} ` +
+      `La lectura territorial debe preguntarse por turnos, cuidados nocturnos, ` +
+      `vivienda, ruido, preocupación económica y control real sobre el tiempo. ` +
+      `${mechanism}. ${equity} La zona que requiere contraste es quién descansa ` +
+      `peor y bajo qué condiciones: ${exclusion}.`
+    );
+  }
+
+  if (definition.id === "actividad-sedentarismo-entorno") {
+    return (
+      `${definition.frame} El ${signal.valor} vinculado a «${signal.senal}» ` +
+      `sitúa la actividad física en la relación entre rutinas, cuidados, horarios ` +
+      `y espacio público. ${sourceAndScale} No basta con nombrar inactividad o ` +
+      `sedentarismo: el Perfil debe leer seguridad, accesibilidad, autonomía, ` +
+      `tiempos disponibles y facilidad para moverse en la vida diaria. ${mechanism}. ` +
+      `${equity} La zona ciega propia del bloque es quién no puede usar el ` +
+      `entorno con seguridad o continuidad: ${exclusion}.`
+    );
+  }
+
+  if (definition.id === "apoyo-social-soledad-envejecimiento") {
+    return (
+      `${definition.frame} El valor ${signal.valor} en «${signal.senal}» abre una ` +
+      `tensión territorial entre red declarada, soledad, envejecimiento y capacidad ` +
+      `comunitaria. ${sourceAndScale} Los activos son capacidad potencial, no cobertura ` +
+      `ni resultado: importa quién los conoce, quién puede llegar y quién queda fuera. ` +
+      `${mechanism}. ${equity} La pregunta crítica es dónde se rompe el apoyo cotidiano ` +
+      `y qué personas mayores, cuidadoras o aisladas no aparecen: ${exclusion}.`
+    );
+  }
+
+  if (definition.id === "alimentacion-consumos-condiciones") {
+    return (
+      `${definition.frame} El ${signal.valor} observado en «${signal.senal}» debe ` +
+      `leerse junto a precio, disponibilidad, renta, hogares con menos margen y ` +
+      `contextos de consumo. ${sourceAndScale} La lectura no convierte alimentación ` +
+      `o consumos en juicio individual: los sitúa en condiciones materiales que ` +
+      `pueden facilitar o limitar opciones reales. ${mechanism}. ${equity} La zona ` +
+      `a contrastar es qué hogares deciden desde la restricción y qué prácticas no ` +
+      `aparecen en el indicador agregado: ${exclusion}.`
+    );
+  }
+
   return (
-    `${definition.frame} La señal disponible es «${signal.senal}» y procede de ` +
-    `${signal.fuente}. Su valor declarado es ${signal.valor}; la escala real es ` +
-    `${signal.escala}. La lectura territorial no convierte ese dato en mandato: lo ` +
-    `usa para preguntar cómo se manifiesta en el municipio, qué condiciones pueden ` +
-    `explicarlo y qué voces faltan. El mecanismo a contrastar es: ${mechanism}. ` +
-    `La principal zona ciega es: ${exclusion}.`
+    `${definition.frame} «${signal.senal}» aporta ${signal.valor} desde ${signal.fuente}. ` +
+    `${sourceAndScale} El Perfil lo incorpora como señal territorial prudente, vinculada ` +
+    `a condiciones de vida, mecanismo social plausible e incertidumbre explícita. ` +
+    `${mechanism}. ${equity} Debe contrastarse quién queda fuera del agregado: ${exclusion}.`
   );
 }
 
