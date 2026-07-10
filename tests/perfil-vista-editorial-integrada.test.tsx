@@ -214,6 +214,39 @@ describe("render — vista editorial integrada canónica", () => {
   });
 });
 
+describe("separación lectura canónica / espacio técnico", () => {
+  it("el espacio técnico existe y está separado de la lectura canónica", () => {
+    expect(html).toContain("Espacio técnico del Perfil");
+  });
+
+  it("la vista editorial integrada precede al espacio técnico", () => {
+    const editorialPos = html.indexOf("Vista editorial integrada");
+    const technicalPos = html.indexOf("Espacio técnico del Perfil");
+    expect(editorialPos).toBeGreaterThan(-1);
+    expect(technicalPos).toBeGreaterThan(-1);
+    expect(editorialPos).toBeLessThan(technicalPos);
+  });
+
+  it("Resumen y PSL-C quedan dentro del espacio técnico, no antes", () => {
+    const technicalPos = html.indexOf("Espacio técnico del Perfil");
+    // ">Resumen<" porque la cadena aparece como texto de span, no como id
+    const resumenPos = html.indexOf(">Resumen<");
+    expect(technicalPos).toBeGreaterThan(-1);
+    expect(resumenPos).toBeGreaterThan(-1);
+    expect(resumenPos).toBeGreaterThan(technicalPos);
+  });
+
+  it("los bloques técnicos no aparecen antes de la vista editorial integrada", () => {
+    const editorialPos = html.indexOf("Vista editorial integrada");
+    // La ruta operativa y el espacio de trabajo no deben preceder a la lectura canónica
+    const compilacionPos = html.indexOf("Crear documento institucional PSL-C");
+    const espacioPos = html.indexOf("Espacio de trabajo del equipo técnico");
+    // Si aparecen, deben ser después de la vista editorial
+    if (compilacionPos >= 0) expect(compilacionPos).toBeGreaterThan(editorialPos);
+    if (espacioPos >= 0) expect(espacioPos).toBeGreaterThan(editorialPos);
+  });
+});
+
 describe("CSS pie-* — paleta COMPÁS", () => {
   const css = readFileSync(
     resolve(dirname(fileURLToPath(import.meta.url)), "../src/App.css"),

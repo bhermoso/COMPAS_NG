@@ -902,21 +902,6 @@ export function LocalHealthProfileView({
           </div>
         )}
 
-      {/* ── Ruta operativa hacia el documento institucional ──────────────── */}
-      {psl.status === "validated" && !pslIsStale && (
-        <>
-          <PSLCCompilationChecklist
-            psl={psl}
-            compiledCount={compiledProfiles?.length ?? 0}
-            onCompile={onCompile}
-          />
-          <PSLCSalidasInstitucionales
-            compiledProfiles={compiledProfiles}
-            diagnosticAnswers={diagnosticAnswers}
-          />
-        </>
-      )}
-
       {psl.status === "validated" && pslIsStale && (
         <div className="psl-doc-stale-notice">
           <span className="psl-doc-stale-notice__label">Perfil desactualizado</span>
@@ -943,6 +928,27 @@ export function LocalHealthProfileView({
       {!isEmpty && integratedEditorialView !== null && (
         <ProfileIntegratedEditorialPreview view={integratedEditorialView} />
       )}
+
+      {/* ── Espacio técnico del Perfil ──────────────────────────────────── */}
+      <details className="psl-technical-space">
+        <summary className="psl-technical-space__summary">Espacio técnico del Perfil</summary>
+        <p className="psl-technical-space__help">
+          Validación, compilación, enriquecimiento y trazabilidad interna. No forma parte de la lectura canónica del Perfil.
+        </p>
+
+        {psl.status === "validated" && !pslIsStale && (
+          <>
+            <PSLCCompilationChecklist
+              psl={psl}
+              compiledCount={compiledProfiles?.length ?? 0}
+              onCompile={onCompile}
+            />
+            <PSLCSalidasInstitucionales
+              compiledProfiles={compiledProfiles}
+              diagnosticAnswers={diagnosticAnswers}
+            />
+          </>
+        )}
 
       {/* ── Resumen ejecutivo ─────────────────────────────────────────────── */}
       <section id="psl-resumen" className="psl-doc-section workspace-panel">
@@ -1562,6 +1568,8 @@ export function LocalHealthProfileView({
           </div>
         </section>
       )}
+
+      </details>
 
     </div>
   );
