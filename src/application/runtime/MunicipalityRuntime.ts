@@ -14,6 +14,9 @@ import type { AgendaDraft } from "../agenda";
 import { generateAgendaDraft } from "../agenda";
 import type { MonitoringDraft } from "../monitoring";
 import { generateMonitoringDraft } from "../monitoring";
+import { compileLocalHealthPlan } from "../local-health-plan-compiler/LocalHealthPlanCompiler";
+import type { LocalHealthPlanDocument } from "../../domain/health-plan/LocalHealthPlanDocument";
+import type { CompilationManifest } from "../../domain/compilation/CompilationManifest";
 import {
   runEvidenceStoreIntegrityGuard,
   type IntegrityGuardResult,
@@ -74,6 +77,9 @@ export interface MunicipalityRuntime {
   // Producto 6 — Plan de Acción Inteligente
   // Disponible solo cuando la lectura estratégica está disponible.
   pai: BorradorPAI | undefined;
+  // PLS compilado (si existe y pasó gates) — producto institucional final
+  localHealthPlan?: LocalHealthPlanDocument;
+  localHealthPlanManifest?: CompilationManifest;
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -180,6 +186,51 @@ export function createMunicipalityRuntime(
     pai = paiResult.ok ? paiResult.borrador : undefined;
   }
 
+  // ── Intento de compilación del PLS (H-06)
+  let localHealthPlan: LocalHealthPlanDocument | undefined;
+  let localHealthPlanManifest: CompilationManifest | undefined;
+
+  const shouldCompilePLS = psl.status === "approved" && !pslIsStale;
+  if (shouldCompilePLS) {
+    const compiledProfiles = input.workspace.compiledProfiles ?? [];
+    const matchingPSLC = compiledProfiles
+      .slice()
+      .reverse()
+      .find((c) => c.sourcePSLId === psl.id);
+
+    if (matchingPSLC) {
+      const year = new Date().getFullYear();
+      const planningPeriod = {
+        start: `${year}-01-01`,
+        end: `${year + 3}-12-31`,
+        label: `${year}–${year + 3}`,
+      };
+
+      const compileResult = compileLocalHealthPlan({
+        psl,
+        pslc: matchingPSLC,
+        actionPlan,
+        agenda,
+        monitoring,
+        municipalityName: input.workspace.municipality.name,
+        municipalityProvince: input.workspace.municipality.province,
+        planningPeriod,
+        compiledBy: "system",
+        existingArtifactCount: compiledProfiles.length,
+        unaddressedNeeds: [],
+      });
+
+      if (compileResult.ok) {
+        localHealthPlan = compileResult.document;
+        localHealthPlanManifest = compileResult.manifest;
+
+        // Persistir el PLS compilado en el workspace (historial acumulativo)
+        input.workspace.compiledPlans = input.workspace.compiledPlans ?? [];
+        input.workspace.compiledPlans.push(localHealthPlan);
+      }
+    }
+  }
+
   return {
     workspace: input.workspace,
     integrityGuard,
@@ -203,6 +254,8 @@ export function createMunicipalityRuntime(
     monitoring,
     lectura,
     pai,
+    localHealthPlan,
+    localHealthPlanManifest,
   };
 }
 

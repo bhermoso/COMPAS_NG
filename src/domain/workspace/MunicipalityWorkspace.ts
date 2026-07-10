@@ -86,6 +86,8 @@ export interface MunicipalityWorkspace {
    * Ordenados cronológicamente por compiledAt (el más reciente es el último).
    */
   compiledProfiles?: LocalHealthProfileArtifact[];
+  /** Planes locales de salud (PLS) compilados por el sistema. Inmutables, acumulativos. */
+  compiledPlans?: LocalHealthPlanDocument[];
   /**
    * Perfil Comparativo tipo NHS (PSL-NHS) compilado más reciente.
    * Se sobreescribe en cada compilación (solo se conserva la última versión activa).
