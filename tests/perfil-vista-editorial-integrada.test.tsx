@@ -427,6 +427,72 @@ describe("CSS pie-* — paleta COMPÁS", () => {
   });
 });
 
+describe("CSS pantalla — lectura documental del Perfil", () => {
+  const css = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../src/App.css"),
+    "utf8"
+  );
+
+  it("la lectura territorial usa columna única en pantalla", () => {
+    const gridRule = css.match(/\.pie-reading-grid\s*\{([^}]*)\}/s)?.[1] ?? "";
+    expect(gridRule).toContain("1fr");
+    expect(gridRule).not.toContain("auto-fit");
+  });
+
+  it("la prosa de lectura tiene anchura de línea limitada", () => {
+    expect(css).toContain(".pie-reading-card > p:");
+    expect(css).toMatch(/max-width\s*:\s*\d+ch/);
+  });
+
+  it("el espacio técnico tiene estilo de separador, no de contenido principal", () => {
+    expect(css).toContain(".psl-technical-space__label");
+    expect(css).toContain(".psl-technical-space__summary");
+  });
+});
+
+describe("CSS impresión — lectura canónica del Perfil", () => {
+  const css = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../src/App.css"),
+    "utf8"
+  );
+
+  it("contiene un bloque @media print para la lectura canónica del Perfil", () => {
+    const lastPrintBlock = css.slice(css.lastIndexOf("@media print"));
+    expect(lastPrintBlock).toContain(".pie-preview");
+    expect(lastPrintBlock).toContain(".app-nav");
+  });
+
+  it("oculta el espacio técnico en impresión normal del Perfil", () => {
+    const lastPrintBlock = css.slice(css.lastIndexOf("@media print"));
+    expect(lastPrintBlock).toContain(".psl-technical-space");
+    expect(lastPrintBlock).toMatch(/display\s*:\s*none/);
+  });
+
+  it("incluye break-inside:avoid para tarjetas de lectura en impresión", () => {
+    const lastPrintBlock = css.slice(css.lastIndexOf("@media print"));
+    expect(lastPrintBlock).toContain(".pie-reading-card");
+    expect(lastPrintBlock).toContain("break-inside: avoid");
+  });
+
+  it("oculta la barra de navegación en impresión", () => {
+    const lastPrintBlock = css.slice(css.lastIndexOf("@media print"));
+    expect(lastPrintBlock).toContain(".app-nav");
+    expect(lastPrintBlock).toMatch(/display\s*:\s*none/);
+  });
+
+  it("oculta el anexo técnico colapsado en impresión", () => {
+    const lastPrintBlock = css.slice(css.lastIndexOf("@media print"));
+    expect(lastPrintBlock).toContain(".pie-annex");
+    expect(lastPrintBlock).toMatch(/display\s*:\s*none/);
+  });
+
+  it("asegura lectura en blanco y negro: preguntas sin azul", () => {
+    const lastPrintBlock = css.slice(css.lastIndexOf("@media print"));
+    expect(lastPrintBlock).toContain(".pie-reading-card__question");
+    expect(lastPrintBlock).toContain("color: #000");
+  });
+});
+
 describe("línea vigente", () => {
   it("el expediente 56/92 permanece intacto", () => {
     expect(ws.repository.documents.length).toBe(20);

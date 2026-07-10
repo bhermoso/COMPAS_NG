@@ -9588,7 +9588,8 @@ h3 {
 
 .pie-reading-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
+  max-width: 720px;
   gap: 14px;
 }
 
@@ -9789,4 +9790,138 @@ h3 {
     margin-top: 12px;
     min-width: 0;
   }
+}
+
+/* ── Perfil canónico — lectura en pantalla ───────────────────────────────── */
+
+/* Anchura de línea cómoda para la prosa de cada bloque territorial.
+   El selector excluye los campos meta breves (señal, escala). */
+.pie-reading-card > p:not(.pie-reading-card__signal):not(.pie-reading-card__meta) {
+  max-width: 68ch;
+}
+
+/* Altura de línea legible en la tabla de trazadores. */
+.pie-table td { line-height: 1.5; }
+
+/* Espacio técnico del Perfil — separador visual y resumen en pantalla. */
+.psl-technical-space__label {
+  max-width: 1120px;
+  margin: 0 auto 4px;
+  padding: 0 44px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.psl-technical-space {
+  max-width: 1120px;
+  margin: 0 auto 40px;
+}
+
+.psl-technical-space__summary {
+  cursor: pointer;
+  display: block;
+  padding: 10px 44px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  list-style: none;
+}
+
+.psl-technical-space__summary::-webkit-details-marker { display: none; }
+
+.psl-technical-space__help {
+  padding: 8px 44px 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* ── Perfil canónico — reglas de impresión ───────────────────────────────── */
+@media print {
+  /* Shell: sin padding en papel. */
+  .app-shell { padding: 0 !important; }
+
+  /* Navegación global: no forma parte del documento imprimible. */
+  .app-nav { display: none !important; }
+
+  /* Paneles de workspace: sin borde ni sombra decorativa en papel. */
+  .workspace-panel {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 8pt 0 !important;
+    max-width: 100% !important;
+    margin: 0 0 16pt !important;
+  }
+
+  /* Lectura canónica: borde superior identifica el inicio del Perfil. */
+  .pie-preview { border-top: 2pt solid #1e293b !important; }
+
+  /* Espacio técnico: oculto en impresión normal del Perfil.
+     El selector :not() garantiza que no interfiere con el visor PSL-C
+     institucional, que tiene su propia regla de impresión por encima. */
+  body:not(:has(details[open] .pslc-viewer)) .psl-technical-space,
+  body:not(:has(details[open] .pslc-viewer)) .psl-technical-space__label {
+    display: none !important;
+  }
+
+  /* Avisos operativos y acciones técnicas: no se imprimen. */
+  .psl-doc-draft-notice,
+  .psl-doc-validated-notice,
+  .psl-doc-stale-notice,
+  .psl-validate-action { display: none !important; }
+
+  /* Encabezados: no separados de su primer párrafo. */
+  .pie-section__title,
+  .pie-reading-card h4,
+  .pie-agenda-card h4,
+  .pie-closing-column h4 { break-after: avoid; }
+
+  /* Tarjetas individuales: no se cortan entre páginas. */
+  .pie-overview__item,
+  .pie-source-card,
+  .pie-reading-card,
+  .pie-agenda-card,
+  .pie-closing-column {
+    break-inside: avoid;
+    border: 1px solid #c0c8d4 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Lectura territorial: columna lineal en papel (ya es 1fr en pantalla). */
+  .pie-reading-grid { display: block !important; }
+  .pie-reading-card { margin-bottom: 14pt; }
+
+  /* Cierre interpretativo: columnas lineales en papel. */
+  .pie-closing { display: block !important; }
+  .pie-closing-column { margin-bottom: 14pt; }
+
+  /* Tabla de trazadores: texto completo sin scroll en papel. */
+  .pie-table-wrap { overflow: visible !important; }
+  .pie-table { font-size: 9pt; }
+  .pie-table th { font-size: 8pt; color: #000; }
+
+  /* Anexo técnico colapsado: no se imprime (no es la lectura canónica). */
+  .pie-annex { display: none !important; }
+
+  /* Puntos de variante: negros en impresión B/N. */
+  .pie-variant { background: #000 !important; }
+
+  /* Preguntas para el Grupo Motor: negrita, sin azul. */
+  .pie-reading-card__question,
+  .pie-agenda-card__question { color: #000 !important; }
+
+  /* Chips de fuentes: texto plano en papel. */
+  .pie-sources-line span { border: none; background: none; padding: 0; }
+
+  /* Párrafos: evitar huérfanas y viudas. */
+  .pie-reading-card p,
+  .pie-agenda-card p,
+  .pie-closing-column li { orphans: 3; widows: 3; }
 }
