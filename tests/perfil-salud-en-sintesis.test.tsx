@@ -175,9 +175,9 @@ describe("Salud en síntesis — señales principales para deliberación", () =>
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("pantalla — la síntesis se absorbe en la vista integrada; matriz en anexo", () => {
-  it("la sección autónoma «Salud en síntesis» ya no se muestra: su lectura vive en la vista integrada", () => {
-    // Resolución editorial: la composición canónica es la Vista editorial integrada.
-    expect(html).toContain("Vista editorial integrada");
+  it("la sección autónoma «Salud en síntesis» ya no se muestra: su lectura vive en el Perfil canónico", () => {
+    // Resolución editorial: la composición canónica es el Perfil de Salud Local.
+    expect(html).toContain("Lectura territorial del diagnóstico");
     expect(html).not.toContain("Salud en síntesis");
     // La deliberación con el Grupo Motor sigue presente, ahora en la vista integrada.
     expect(html).toContain("Qué debe discutir el Grupo Motor");
@@ -195,15 +195,15 @@ describe("pantalla — la síntesis se absorbe en la vista integrada; matriz en 
     // Sin repetición mecánica: la cautela de desigualdad no va fila a fila
     expect(matriz.filas.every((f) => f.desigualdad === undefined)).toBe(true);
     expect(matriz.notasBloque[0]).toContain("todas las señales");
-    // Y la matriz aparece después de la vista integrada, nunca como apertura
-    expect(html.indexOf("Vista editorial integrada")).toBeLessThan(
+    // Y la matriz aparece después de la lectura canónica, nunca como apertura
+    expect(html.indexOf("Lectura territorial del diagnóstico")).toBeLessThan(
       html.indexOf("Matriz epistemológica completa")
     );
   });
 
   it("la composición canónica no introduce recomendaciones ni Plan de Acción", () => {
     const seccion = html.slice(
-      html.indexOf("Vista editorial integrada"),
+      html.indexOf("Lectura territorial del diagnóstico"),
       html.indexOf('id="psl-resumen"')
     );
     expect(seccion).not.toMatch(

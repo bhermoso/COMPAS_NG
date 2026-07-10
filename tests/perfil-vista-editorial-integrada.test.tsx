@@ -113,7 +113,7 @@ beforeAll(() => {
     />
   );
   proposalHtml = html.slice(
-    html.indexOf("Vista editorial integrada"),
+    html.indexOf("Lectura territorial del diagnóstico"),
     html.indexOf("Espacio técnico del Perfil")
   );
 }, 60000);
@@ -135,7 +135,8 @@ describe("navegación principal visible", () => {
 describe("modelo puro — Vista editorial integrada", () => {
   it("devuelve la estructura editorial completa", () => {
     expect(editorialView.header.territory).toBe("Granada-Zaidín");
-    expect(editorialView.header.title).toBe("Vista editorial integrada");
+    expect(editorialView.header.title).toBe("Perfil de Salud Local");
+    expect(editorialView.header.subtitle).toBe("Lectura territorial del diagnóstico");
     expect(editorialView.overview).toHaveLength(3);
     expect(editorialView.sourceBlocks).toHaveLength(3);
     expect(editorialView.territorialReadings).toHaveLength(5);
@@ -202,7 +203,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(text).toContain("descanso");
     expect(text).toContain("vida diaria");
     expect(text).toMatch(/turnos|cuidados nocturnos|vivienda|ruido|tiempo/);
-    expect(text).toContain("no estan desagregados");
+    expect(text).toMatch(/contexto|referencia|no como estimacion/);
     expect(text).not.toContain("presencia textual");
   });
 
@@ -213,7 +214,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(block.reading).toContain("34.2 %");
     expect(text).toContain("espacio publico");
     expect(text).toMatch(/seguridad|accesibilidad|autonomia/);
-    expect(text).toContain("no estan desagregados");
+    expect(text).toMatch(/contexto|referencia|no como medicion/);
     expect(text).not.toContain("cuida de noche");
     expect(text).not.toContain("turnos");
     expect(text).not.toContain("vivienda sin descanso");
@@ -245,16 +246,18 @@ describe("modelo puro — Vista editorial integrada", () => {
   });
 });
 
-describe("render — vista editorial integrada canónica", () => {
-  it("es la lectura canónica: retira la síntesis autónoma y el desarrollo capitular", () => {
-    expect(html).toContain("Vista editorial integrada");
-    expect(html).toContain("Propuesta de composición del Perfil de Salud Local");
+describe("render — perfil de salud local canónico", () => {
+  it("usa título documental y retira la síntesis autónoma y el desarrollo capitular", () => {
+    // Título documental, no etiqueta de sistema
+    expect(html).toContain("Lectura territorial del diagnóstico");
+    expect(html).not.toContain("Vista editorial integrada");
+    expect(html).not.toContain("Propuesta de composición del Perfil de Salud Local");
     // La resolución editorial retira la sección autónoma «Salud en síntesis»
     // y el desarrollo capitular largo de la experiencia principal.
     expect(html).not.toContain("Salud en síntesis");
     expect(html).not.toContain("I · Alcance y fuentes");
     // La composición canónica precede al espacio técnico de trabajo.
-    expect(html.indexOf("Vista editorial integrada")).toBeLessThan(
+    expect(html.indexOf("Lectura territorial del diagnóstico")).toBeLessThan(
       html.indexOf("Espacio técnico del Perfil")
     );
   });
@@ -290,8 +293,8 @@ describe("separación lectura canónica / espacio técnico", () => {
     );
   });
 
-  it("la vista editorial integrada precede al espacio técnico", () => {
-    const editorialPos = html.indexOf("Vista editorial integrada");
+  it("la lectura canónica precede al espacio técnico", () => {
+    const editorialPos = html.indexOf("Lectura territorial del diagnóstico");
     const technicalPos = html.indexOf("Espacio técnico del Perfil");
     expect(editorialPos).toBeGreaterThan(-1);
     expect(technicalPos).toBeGreaterThan(-1);
@@ -325,12 +328,12 @@ describe("separación lectura canónica / espacio técnico", () => {
     expect(beforeTechnical).not.toContain("Enriquecimiento interpretativo");
   });
 
-  it("los bloques técnicos quedan después de la vista editorial integrada", () => {
-    const editorialPos = html.indexOf("Vista editorial integrada");
+  it("los bloques técnicos quedan después de la lectura canónica", () => {
+    const editorialPos = html.indexOf("Lectura territorial del diagnóstico");
     // La ruta operativa y el espacio de trabajo no deben preceder a la lectura canónica
     const compilacionPos = html.indexOf("Crear documento institucional PSL-C");
     const espacioPos = html.indexOf("Espacio de trabajo del equipo técnico");
-    // Si aparecen, deben ser después de la vista editorial
+    // Si aparecen, deben ser después de la lectura canónica
     if (compilacionPos >= 0) expect(compilacionPos).toBeGreaterThan(editorialPos);
     if (espacioPos >= 0) expect(espacioPos).toBeGreaterThan(editorialPos);
   });
@@ -338,6 +341,53 @@ describe("separación lectura canónica / espacio técnico", () => {
   it("mantiene ausentes PslChapterNav y el desarrollo capitular largo", () => {
     expect(html).not.toContain("Capítulos del perfil");
     expect(html).not.toContain("I · Alcance y fuentes");
+  });
+});
+
+describe("calidad documental — textura y formularios", () => {
+  it("la lectura canónica tiene título documental y no etiqueta de sistema", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).toContain("Perfil de Salud Local");
+    expect(beforeTechnical).toContain("Lectura territorial del diagnóstico");
+    expect(beforeTechnical).not.toContain("Vista editorial integrada");
+    expect(beforeTechnical).not.toContain("Propuesta de composición del Perfil de Salud Local");
+  });
+
+  it("la lectura canónica no contiene nombres de fichero CSV", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).not.toMatch(/\.csv\b/);
+  });
+
+  it("la lectura canónica no contiene el campo Fuente y escala: como etiqueta de plantilla", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).not.toContain("Fuente y escala:");
+  });
+
+  it("la nota de equidad no se repite más de dos veces en la lectura canónica", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    const matches = beforeTechnical.match(/no est[aá]n desagregados/gi) ?? [];
+    expect(matches.length).toBeLessThanOrEqual(2);
+  });
+
+  it("la lectura canónica no contiene el formulario de validación técnica", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).not.toContain("Validar técnicamente");
+  });
+
+  it("conserva las señales cuantitativas clave en la lectura canónica", () => {
+    const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
+    expect(beforeTechnical).toContain("32.8 %");
+    expect(beforeTechnical).toContain("34.2 %");
+    expect(beforeTechnical).toContain("49.2/55");
+    expect(beforeTechnical).toContain("56");
+  });
+
+  it("los bloques de lectura no superan 150 palabras (contrato de densidad)", () => {
+    for (const block of editorialView.territorialReadings) {
+      const words = block.reading.trim().split(/\s+/).length;
+      expect(words, block.id).toBeLessThanOrEqual(150);
+      expect(words, block.id).toBeGreaterThanOrEqual(60);
+    }
   });
 });
 

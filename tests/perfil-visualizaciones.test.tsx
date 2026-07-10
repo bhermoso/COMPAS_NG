@@ -103,10 +103,10 @@ describe("gráficos diagnósticos seguros — contrato visual", () => {
       expect(g!.caption).toContain("Escala:");
       expect(g!.caption).toContain("Cautela:");
     }
-    // La lectura visual en pantalla es la Vista editorial integrada (una sola
+    // La lectura visual en pantalla es el Perfil de Salud Local (una sola
     // composición): imagen general y señales por fuente sustituyen la antigua
     // rejilla de barras de «Salud en síntesis».
-    expect(html).toContain("Vista editorial integrada");
+    expect(html).toContain("Lectura territorial del diagnóstico");
     expect(html).toContain("Imagen general");
     expect(html).toContain("Señales principales por fuente");
   });
@@ -252,7 +252,7 @@ describe("gramática visual semántica y Grupo Motor", () => {
       /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|plan de acci[óo]n/i
     );
     const seccion = html.slice(
-      html.indexOf("Vista editorial integrada"),
+      html.indexOf("Lectura territorial del diagnóstico"),
       html.indexOf('id="psl-resumen"')
     );
     expect(seccion).not.toMatch(

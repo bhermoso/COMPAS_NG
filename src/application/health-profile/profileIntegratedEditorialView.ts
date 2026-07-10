@@ -17,6 +17,7 @@ import {
 
 export interface ProfileIntegratedEditorialHeader {
   title: string;
+  subtitle: string;
   territory: string;
   status: string;
   scale: string;
@@ -165,6 +166,10 @@ function unique(values: string[]): string[] {
   return [...new Set(values.filter((v) => v.trim().length > 0))];
 }
 
+function humanSource(fuente: string): string {
+  return fuente.replace(/\s+—\s+\S+\.csv\b/g, "").trim();
+}
+
 function normalized(text: string): string {
   return text
     .normalize("NFD")
@@ -243,34 +248,24 @@ function pickAgenda(
   return cards.find((card) => includesAny(agendaText(card), definition.agendaMatches));
 }
 
-function equityUncertainty(signal: IntegratedHealthProfileSignal): string {
-  if (signal.desigualdad.distribucion === "desconocida-sin-desagregacion") {
-    return (
-      "Los datos no están desagregados por sexo, edad ni renta: la desigualdad " +
-      "queda como incertidumbre central, no como ausencia demostrada."
-    );
-  }
-  return signal.desigualdad.nota;
-}
-
 function readingText(
   definition: ReadingDefinition,
   signal: IntegratedHealthProfileSignal,
-  mechanism: string,
+  _mechanism: string,
   exclusion: string
 ): string {
-  const sourceAndScale = `Fuente y escala: ${signal.fuente}; ${signal.escala}.`;
-  const equity = equityUncertainty(signal);
+  const src = humanSource(signal.fuente);
 
   if (definition.id === "salud-sanitaria-partida") {
     return (
       `${definition.frame} En este expediente, «${signal.senal}» abre la ` +
       `conversación sanitaria como ${signal.valor}; no funciona como prevalencia ` +
-      `local ni como orden de intervención. ${sourceAndScale} Leída junto al ` +
-      `resto del expediente, esa agenda desplaza la pregunta hacia las condiciones ` +
-      `que producen salud o malestar en el territorio. ${equity} El Grupo Motor ` +
-      `debe contrastar cómo aparece esta preocupación en la vida cotidiana y qué ` +
-      `grupos pueden quedar menos visibles: ${exclusion}.`
+      `local ni como orden de intervención. El dato procede del ${src}, documento ` +
+      `de ámbito amplio, sin desagregación distrital. Leída junto al resto del ` +
+      `expediente, esa agenda desplaza la pregunta hacia las condiciones que producen ` +
+      `salud o malestar en el territorio. Los datos no están desagregados por sexo, ` +
+      `edad ni renta: la desigualdad queda como incertidumbre central, no como ` +
+      `ausencia demostrada.`
     );
   }
 
@@ -278,11 +273,11 @@ function readingText(
     return (
       `${definition.frame} El ${signal.valor} asociado a «${signal.senal}» ` +
       `permite leer el descanso y el malestar como parte de la organización ` +
-      `cotidiana del tiempo, no como una conducta individual aislada. ${sourceAndScale} ` +
-      `La lectura territorial debe preguntarse por turnos, cuidados nocturnos, ` +
-      `vivienda, ruido, preocupación económica y control real sobre el tiempo. ` +
-      `${mechanism}. ${equity} La zona que requiere contraste es quién descansa ` +
-      `peor y bajo qué condiciones: ${exclusion}.`
+      `cotidiana del tiempo, no como una conducta individual aislada. El dato ` +
+      `proviene de ${src} y se usa como referencia de contexto provincial, no ` +
+      `como medición cerrada del ámbito. La lectura debe preguntarse por turnos, ` +
+      `cuidados nocturnos, vivienda, ruido, preocupación económica y control real ` +
+      `sobre el tiempo de las personas.`
     );
   }
 
@@ -290,11 +285,10 @@ function readingText(
     return (
       `${definition.frame} El ${signal.valor} vinculado a «${signal.senal}» ` +
       `sitúa la actividad física en la relación entre rutinas, cuidados, horarios ` +
-      `y espacio público. ${sourceAndScale} No basta con nombrar inactividad o ` +
-      `sedentarismo: el Perfil debe leer seguridad, accesibilidad, autonomía, ` +
-      `tiempos disponibles y facilidad para moverse en la vida diaria. ${mechanism}. ` +
-      `${equity} La zona ciega propia del bloque es quién no puede usar el ` +
-      `entorno con seguridad o continuidad: ${exclusion}.`
+      `y espacio público. El dato proviene de ${src} y se usa como referencia de ` +
+      `contexto, no como medición específica del territorio. No basta con nombrar ` +
+      `inactividad o sedentarismo: el Perfil debe leer seguridad, accesibilidad, ` +
+      `autonomía, tiempos disponibles y facilidad para moverse en la vida diaria.`
     );
   }
 
@@ -302,10 +296,11 @@ function readingText(
     return (
       `${definition.frame} El valor ${signal.valor} en «${signal.senal}» abre una ` +
       `tensión territorial entre red declarada, soledad, envejecimiento y capacidad ` +
-      `comunitaria. ${sourceAndScale} Los activos son capacidad potencial, no cobertura ` +
-      `ni resultado: importa quién los conoce, quién puede llegar y quién queda fuera. ` +
-      `${mechanism}. ${equity} La pregunta crítica es dónde se rompe el apoyo cotidiano ` +
-      `y qué personas mayores, cuidadoras o aisladas no aparecen: ${exclusion}.`
+      `comunitaria. El dato proviene de ${src}, escala de contexto provincial. ` +
+      `Los activos son capacidad potencial, no cobertura ni resultado: importa ` +
+      `quién los conoce, quién puede llegar y quién queda fuera. La pregunta ` +
+      `crítica es qué personas mayores, cuidadoras o aisladas no aparecen en los ` +
+      `registros disponibles.`
     );
   }
 
@@ -313,19 +308,19 @@ function readingText(
     return (
       `${definition.frame} El ${signal.valor} observado en «${signal.senal}» debe ` +
       `leerse junto a precio, disponibilidad, renta, hogares con menos margen y ` +
-      `contextos de consumo. ${sourceAndScale} La lectura no convierte alimentación ` +
-      `o consumos en juicio individual: los sitúa en condiciones materiales que ` +
-      `pueden facilitar o limitar opciones reales. ${mechanism}. ${equity} La zona ` +
-      `a contrastar es qué hogares deciden desde la restricción y qué prácticas no ` +
-      `aparecen en el indicador agregado: ${exclusion}.`
+      `contextos de consumo. El dato proviene de ${src}, escala de contexto ` +
+      `provincial. La lectura no convierte alimentación o consumos en juicio ` +
+      `individual: los sitúa en condiciones materiales que pueden facilitar o ` +
+      `limitar opciones reales. La zona a contrastar es qué hogares deciden desde ` +
+      `la restricción y qué prácticas no aparecen en el indicador agregado: ${exclusion}.`
     );
   }
 
   return (
-    `${definition.frame} «${signal.senal}» aporta ${signal.valor} desde ${signal.fuente}. ` +
-    `${sourceAndScale} El Perfil lo incorpora como señal territorial prudente, vinculada ` +
-    `a condiciones de vida, mecanismo social plausible e incertidumbre explícita. ` +
-    `${mechanism}. ${equity} Debe contrastarse quién queda fuera del agregado: ${exclusion}.`
+    `${definition.frame} «${signal.senal}» aporta ${signal.valor} desde ${src}. ` +
+    `El dato debe leerse como señal territorial prudente, vinculada a condiciones ` +
+    `de vida, con incertidumbre explícita sobre su alcance territorial. ` +
+    `Debe contrastarse quién queda fuera del agregado: ${exclusion}.`
   );
 }
 
@@ -343,7 +338,7 @@ function buildReadingBlock(
     id: definition.id,
     title: definition.title,
     signal: signal.senal,
-    source: signal.fuente,
+    source: humanSource(signal.fuente),
     scale: signal.escala,
     reading: readingText(definition, signal, mechanism, exclusion),
     mechanism,
@@ -407,10 +402,10 @@ function overviewFromMessage(
         [sueno?.senal, inactividad?.senal],
         "sueño insuficiente e inactividad en tiempo libre"
       ),
-      source: joinLabels(
+      source: humanSource(joinLabels(
         [sueno?.fuente, inactividad?.fuente],
         "Sueño (EAS) + IPAQ"
-      ),
+      )),
       variant: "estudio",
     };
   }
@@ -432,10 +427,10 @@ function overviewFromMessage(
         [apoyo?.senal, agenda?.tema, activos],
         "apoyo social funcional, envejecimiento y soledad"
       ),
-      source: joinLabels(
+      source: humanSource(joinLabels(
         [apoyo?.fuente, context.totalAssets > 0 ? "Localiza Salud" : undefined],
         "DUKE + Localiza Salud"
-      ),
+      )),
       variant: "activo",
     };
   }
@@ -449,10 +444,11 @@ function overviewFromMessage(
     text: message.texto,
     signal:
       signal?.senal ?? context.synthesis.senalesPrincipales[index]?.senal ?? message.id,
-    source:
+    source: humanSource(
       signal?.fuente ??
       context.synthesis.senalesPrincipales[index]?.fuente ??
-      "Perfil de Salud Local",
+      "Perfil de Salud Local"
+    ),
     variant: signal !== undefined ? signalVariant(signal) : "estudio",
   };
 }
@@ -544,13 +540,14 @@ export function buildProfileIntegratedEditorialView(
 
   return {
     header: {
-      title: "Vista editorial integrada",
+      title: "Perfil de Salud Local",
+      subtitle: "Lectura territorial del diagnóstico",
       territory: opts.territory,
       status: opts.status,
       scale: "escala territorial declarada por cada fuente",
       sources: unique([
         opts.informeTitulo ?? "Informe de salud",
-        ...synthesis.senalesPrincipales.map((row) => row.fuente),
+        ...synthesis.senalesPrincipales.map((row) => humanSource(row.fuente)),
       ]).slice(0, 6),
       generatedDate: opts.generatedDate,
     },
@@ -567,7 +564,10 @@ export function buildProfileIntegratedEditorialView(
         `${matrix.filas.length} fila(s) de matriz y ` +
         `${matrix.notasBloque.length} nota(s) metodológica(s) comunes.`,
       tracerRows: visuals.tablaTrazadores,
-      matrix,
+      matrix: {
+        ...matrix,
+        filas: matrix.filas.map((f) => ({ ...f, fuente: humanSource(f.fuente) })),
+      },
     },
   };
 }

@@ -25,7 +25,7 @@ export function ProfileIntegratedEditorialPreview({
             {view.header.title}
           </h2>
           <p className="pie-header__subtitle">
-            Propuesta de composición del Perfil de Salud Local
+            {view.header.subtitle}
           </p>
         </div>
         <div className="pie-header__scale">
