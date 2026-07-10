@@ -421,62 +421,73 @@ function buildReasoning(
 }
 
 function evidenceSentence(reasoning: TerritorialDiagnosticReasoning): string {
-  const signal = reasoning.signal;
+  const { signal } = reasoning;
   const value = reasoning.value.replace(/\s+\[[^\]]+\]/, "");
   if (signal.esMencionTextual) {
     return (
-      `El expediente local parte del Informe de salud: «${signal.senal}» figura ` +
-      `como ${value}. Es presencia textual, no prevalencia ni distribución interna.`
+      `El Informe registra «${signal.senal}» (${value}): ` +
+      `presencia textual, no prevalencia local ni distribución interna.`
     );
   }
-  const scale = signal.esProxy ? "proxy contextual" : "muestra declarada";
+  const qualifier = signal.esProxy ? "proxy contextual" : "muestra declarada";
   return (
     `El expediente incorpora «${signal.senal}» (${value}) desde ` +
-    `${reasoning.source}. Su escala es ${scale}: contextualiza el análisis y ` +
-    `no sustituye una medición local ausente.`
+    `${reasoning.source} como ${qualifier}: contextualiza el análisis sin ` +
+    `sustituir medición local ausente.`
   );
 }
 
 function knowledgeSentence(reasoning: TerritorialDiagnosticReasoning): string {
   const { human } = reasoning;
   if (human.interpretation !== undefined) {
+    const { enunciado, certeza, autorNombre } = human.interpretation;
     return (
-      `La interpretación activa del equipo técnico (${human.interpretation.certeza}, ` +
-      `${human.interpretation.autorNombre}) orienta este hilo: ` +
-      `${shortText(human.interpretation.enunciado)}.`
+      `La interpretación activa del equipo técnico (${certeza}, ${autorNombre}) ` +
+      `orienta este hilo: ${shortText(enunciado)}. ` +
+      `${reasoning.territorialImplication}`
     );
   }
   if (human.hypothesis !== undefined) {
-    return (
-      `La hipótesis activa del equipo se incorpora como posibilidad a contrastar, ` +
-      `no como hecho: ${shortText(human.hypothesis.enunciado)}.`
-    );
+    const { enunciado, plausibilidad, preguntasResolutoras } = human.hypothesis;
+    const base =
+      `La hipótesis activa del equipo (${plausibilidad}) se incorpora como ` +
+      `posibilidad a contrastar: ${shortText(enunciado)}.`;
+    if (preguntasResolutoras.length > 0) {
+      return `${base} Para resolverla: ${shortText(preguntasResolutoras[0], 110)}.`;
+    }
+    return base;
   }
   return (
     `${reasoning.territorialImplication} Mecanismo plausible, sin causalidad ` +
-    `demostrada: ${shortText(reasoning.mechanism, 170)}.`
+    `demostrada: ${shortText(reasoning.mechanism, 150)}.`
   );
 }
 
 function capacitySentence(reasoning: TerritorialDiagnosticReasoning): string {
-  const capacity =
-    reasoning.capacity !== undefined
-      ? `${reasoning.capacity} es capacidad potencial, no cobertura ni resultado; acceso/uso pendientes.`
-      : `${reasoning.capacityFrame}; aún no hay recurso concreto vinculado a esta señal.`;
-  return (
-    `Sin distribución por sexo, edad, género o renta: incertidumbre de equidad. ${capacity}`
-  );
+  const { capacity, capacityFrame } = reasoning;
+  const capacityText =
+    capacity !== undefined
+      ? `${capacity}: capacidad potencial, no cobertura ni resultado. ${shortText(capacityFrame, 90)}.`
+      : `${shortText(capacityFrame, 90)}; sin recurso concreto vinculado.`;
+  return `Sin desagregación disponible: incertidumbre de equidad. ${capacityText}`;
 }
 
 function questionSentence(reasoning: TerritorialDiagnosticReasoning): string {
-  if (reasoning.human.openQuestion !== undefined) {
+  const { human, groupMotorQuestion, diagnosticConclusion } = reasoning;
+  const question = shortText(groupMotorQuestion, 130);
+  const conclusion =
+    diagnosticConclusion.charAt(0).toUpperCase() + diagnosticConclusion.slice(1);
+
+  if (human.openQuestion !== undefined) {
+    const { urgencia } = human.openQuestion;
+    const urgenciaStr = urgencia.trim().length > 0 ? ` (${urgencia})` : "";
     return (
-      `La pregunta abierta del equipo entra en la lectura: ${shortText(reasoning.groupMotorQuestion, 140)}`
+      `La pregunta abierta del equipo${urgenciaStr}: ${question}. ${conclusion}.`
     );
   }
   return (
-    `La pregunta deriva de esa incertidumbre y del mecanismo: ` +
-    `${shortText(reasoning.groupMotorQuestion, 140)}`
+    `La pregunta deriva de esa incertidumbre y del mecanismo: ${question}. ` +
+    `${conclusion}.`
   );
 }
 
@@ -486,7 +497,6 @@ function composeReading(reasoning: TerritorialDiagnosticReasoning): string {
     knowledgeSentence(reasoning),
     capacitySentence(reasoning),
     questionSentence(reasoning),
-    `Conclusión diagnóstica: ${reasoning.diagnosticConclusion}.`,
   ].join(" ");
 }
 
