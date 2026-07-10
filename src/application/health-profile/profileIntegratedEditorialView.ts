@@ -1,4 +1,5 @@
 import type { DiagnosticAnswers } from "./diagnosticAnswers";
+import type { ProfileSpace } from "../../domain/health-profile";
 import {
   buildIntegratedProfileSignals,
   type IntegratedHealthProfileSignal,
@@ -14,6 +15,7 @@ import {
   buildProfileSynthesis,
   type MatrizAnexo,
 } from "./profileSynthesisView";
+import { DIAGNOSTIC_ENGINE_QUESTIONS } from "./profileWritingContract";
 
 export interface ProfileIntegratedEditorialHeader {
   title: string;
@@ -52,6 +54,7 @@ export interface ProfileIntegratedEditorialReadingBlock {
   mechanism: string;
   exclusion: string;
   groupMotorQuestion: string;
+  motorQuestion: string;
   variant: EvidenceVariant;
 }
 
@@ -90,11 +93,54 @@ interface ReadingDefinition {
   id: string;
   title: string;
   variant: EvidenceVariant;
+  spaces: ProfileSpace[];
+  motorQuestionIndexes: number[];
   preferredSignalIds?: string[];
   preferredAgendaId?: string;
+  capacityMatches: string[];
   signalMatches: string[];
   agendaMatches: string[];
-  frame: string;
+  territorialImplication: string;
+  mechanismFallback: string;
+  capacityFrame: string;
+  diagnosticConclusion: string;
+}
+
+interface HumanKnowledgeSelection {
+  interpretation?: {
+    enunciado: string;
+    certeza: string;
+    autorNombre: string;
+  };
+  hypothesis?: {
+    enunciado: string;
+    plausibilidad: string;
+    preguntasResolutoras: string[];
+  };
+  openQuestion?: {
+    formulacion: string;
+    relevancia: string;
+    urgencia: string;
+  };
+}
+
+interface TerritorialDiagnosticReasoning {
+  id: string;
+  title: string;
+  motorQuestion: string;
+  signal: IntegratedHealthProfileSignal;
+  source: string;
+  scale: string;
+  value: string;
+  mechanism: string;
+  exclusion: string;
+  groupMotorQuestion: string;
+  human: HumanKnowledgeSelection;
+  territorialImplication: string;
+  capacity?: string;
+  capacityFrame: string;
+  diagnosticConclusion: string;
+  variant: EvidenceVariant;
 }
 
 const READING_DEFINITIONS: ReadingDefinition[] = [
@@ -102,54 +148,99 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     id: "salud-sanitaria-partida",
     title: "Salud sanitaria de partida",
     variant: "informe",
+    spaces: ["situacion-salud", "contexto-territorial"],
+    motorQuestionIndexes: [0, 1, 3],
     signalMatches: ["informe-"],
     agendaMatches: ["desigualdad"],
-    frame:
-      "La entrada sanitaria ordena la primera mirada del Perfil: muestra que el expediente ya trae una agenda de salud que debe leerse con su escala propia.",
+    capacityMatches: ["cuidados", "atencion sanitaria", "salud mental"],
+    territorialImplication:
+      "El Informe sostiene el objeto salud del Perfil y coloca la conversación en torno a problemas, factores y necesidades sanitarias antes de abrir la explicación social.",
+    mechanismFallback:
+      "relación entre los problemas tratados por el Informe y las condiciones cotidianas que pueden modular bienestar o malestar",
+    capacityFrame:
+      "Las capacidades sanitarias y comunitarias solo entran aquí como soporte posible del diagnóstico",
+    diagnosticConclusion:
+      "el hilo sanitario queda fijado como punto de partida, no como prevalencia local ni como mandato de intervención",
   },
   {
     id: "sueno-malestar-vida-cotidiana",
     title: "Sueño, malestar y vida cotidiana",
     variant: "estudio",
+    spaces: ["situacion-salud", "determinantes", "desigualdades"],
+    motorQuestionIndexes: [2, 4, 5, 7],
     preferredSignalIds: ["trazador-sueno-insuficiente"],
     preferredAgendaId: "sueno-malestar",
+    capacityMatches: ["salud mental", "bienestar emocional", "cuidados"],
     signalMatches: ["sueno", "sf12", "ghq", "phq", "malestar"],
     agendaMatches: ["sueno", "malestar"],
-    frame:
-      "El descanso, el malestar y la salud percibida conectan la medición sanitaria con las rutinas que organizan la vida diaria.",
+    territorialImplication:
+      "El descanso insuficiente desplaza la lectura desde la conducta individual hacia la organización cotidiana del tiempo, los cuidados, el trabajo y la vivienda.",
+    mechanismFallback:
+      "cargas psicosociales, tiempos de cuidado y condiciones residenciales que pueden afectar al descanso",
+    capacityFrame:
+      "Los recursos de bienestar emocional o cuidados serían capacidad potencial si son conocidos, accesibles y usados",
+    diagnosticConclusion:
+      "el descanso queda como señal de vida diaria que necesita experiencia territorial para entender a quién afecta y por qué",
   },
   {
     id: "actividad-sedentarismo-entorno",
     title: "Actividad física, sedentarismo y entorno urbano",
     variant: "estudio",
+    spaces: ["contexto-territorial", "determinantes", "desigualdades"],
+    motorQuestionIndexes: [2, 4, 5, 7],
     preferredSignalIds: ["trazador-ipaq-inactividad", "trazador-sbq-sedentarismo"],
     preferredAgendaId: "sedentarismo-entorno",
+    capacityMatches: ["vida activa", "actividad fisica", "tejido vecinal"],
     signalMatches: ["actividad", "sedentarismo", "ipaq", "sbq", "entorno"],
     agendaMatches: ["sedentarismo", "entorno", "actividad"],
-    frame:
-      "El movimiento cotidiano no se interpreta solo como conducta individual: depende de seguridad, tiempos, accesibilidad y usos reales del espacio.",
+    territorialImplication:
+      "La inactividad en tiempo libre lleva la pregunta al entorno: seguridad, accesibilidad, autonomía, horarios y posibilidad real de usar el espacio público.",
+    mechanismFallback:
+      "entorno urbano, tiempos disponibles y barreras de movilidad que pueden limitar la vida activa",
+    capacityFrame:
+      "Los activos de vida activa importan como capacidad potencial, no como prueba de que el entorno sea accesible",
+    diagnosticConclusion:
+      "el movimiento cotidiano queda formulado como relación entre cuerpo, tiempo y lugar, pendiente de contraste comunitario",
   },
   {
     id: "apoyo-social-soledad-envejecimiento",
     title: "Apoyo social, soledad y envejecimiento",
     variant: "activo",
+    spaces: ["activos", "determinantes", "desigualdades", "preparacion-deliberativa"],
+    motorQuestionIndexes: [3, 6, 7, 8],
     preferredSignalIds: ["trazador-duke-apoyo-global"],
     preferredAgendaId: "soledad-envejecimiento",
+    capacityMatches: ["mayores", "envejecimiento", "tejido vecinal", "participacion"],
     signalMatches: ["apoyo", "duke", "soledad", "envejecimiento"],
     agendaMatches: ["soledad", "envejecimiento", "apoyo"],
-    frame:
-      "La red social y los recursos de cuidado ayudan a leer quién sostiene la vida cotidiana y quién puede quedar menos visible.",
+    territorialImplication:
+      "Un apoyo social agregado alto puede convivir con soledad no observada; esa tensión territorial cruza red, envejecimiento, cuidados y accesibilidad real a recursos.",
+    mechanismFallback:
+      "envejecimiento y riesgo de soledad no deseada como eje territorial que necesita contraste",
+    capacityFrame:
+      "Los recursos para mayores o tejido comunitario son capacidad potencial mientras no se conozca acceso, uso y reconocimiento",
+    diagnosticConclusion:
+      "el apoyo social no cierra la cuestión: mantiene como hipótesis la relación entre red declarada, aislamiento posible y capacidad comunitaria",
   },
   {
     id: "alimentacion-consumos-condiciones",
     title: "Alimentación, consumos y condiciones materiales",
     variant: "estudio",
+    spaces: ["determinantes", "desigualdades", "situacion-salud"],
+    motorQuestionIndexes: [2, 4, 5, 7],
     preferredSignalIds: ["trazador-predimed-adherencia", "trazador-cage-r"],
     preferredAgendaId: "consumos-alimentacion",
+    capacityMatches: ["adicciones", "educacion", "promocion"],
     signalMatches: ["aliment", "consumo", "predimed", "audit", "cage"],
     agendaMatches: ["consumo", "aliment"],
-    frame:
-      "La alimentación y los consumos permiten mirar hábitos, precios, disponibilidad y condiciones materiales sin convertirlos en juicio individual.",
+    territorialImplication:
+      "Alimentación y consumos conectan hábitos con precio, disponibilidad, renta, redes domésticas y margen real de elección.",
+    mechanismFallback:
+      "condiciones materiales de consumo y alimentación que pueden facilitar o restringir opciones saludables",
+    capacityFrame:
+      "Los recursos educativos o preventivos solo son capacidad si llegan a los hogares y grupos que afrontan más restricción",
+    diagnosticConclusion:
+      "el hilo queda como lectura material de hábitos y consumos, no como juicio sobre decisiones individuales",
   },
 ];
 
@@ -248,103 +339,176 @@ function pickAgenda(
   return cards.find((card) => includesAny(agendaText(card), definition.agendaMatches));
 }
 
-function readingText(
+function shortText(text: string, maxLength = 220): string {
+  const compact = text.trim().replace(/\s+/g, " ");
+  if (compact.length <= maxLength) return compact;
+  return compact.slice(0, maxLength - 1).replace(/\s+\S*$/, "") + "…";
+}
+
+function pickHumanKnowledge(
+  answers: DiagnosticAnswers,
+  spaces: ProfileSpace[]
+): HumanKnowledgeSelection {
+  const knowledge = spaces.map((space) => answers.porEspacio[space]).filter(Boolean);
+  return {
+    interpretation: knowledge.flatMap((item) => item?.interpretaciones ?? [])[0],
+    hypothesis: knowledge.flatMap((item) => item?.hipotesis ?? [])[0],
+    openQuestion: knowledge.flatMap((item) => item?.lagunas ?? [])[0],
+  };
+}
+
+function pickCapacity(
   definition: ReadingDefinition,
   signal: IntegratedHealthProfileSignal,
-  _mechanism: string,
-  exclusion: string
-): string {
-  const src = humanSource(signal.fuente);
+  answers: DiagnosticAnswers
+): string | undefined {
+  for (const match of definition.capacityMatches) {
+    const group = answers.salutogenica.grupos.find((candidate) =>
+      normalized(candidate.ambito).includes(normalized(match))
+    );
+    if (group !== undefined) return group.ambito;
+  }
+  if (signal.activoRelacionado !== undefined) return signal.activoRelacionado;
+  return undefined;
+}
 
-  if (definition.id === "salud-sanitaria-partida") {
+function firstMotorQuestion(definition: ReadingDefinition): string {
+  const question = definition.motorQuestionIndexes
+    .map((index) => DIAGNOSTIC_ENGINE_QUESTIONS[index])
+    .find((item) => item !== undefined);
+  return question ?? "¿Qué queda preparado para deliberar?";
+}
+
+function buildReasoning(
+  definition: ReadingDefinition,
+  signal: IntegratedHealthProfileSignal,
+  agenda: GrupoMotorCard | undefined,
+  answers: DiagnosticAnswers
+): TerritorialDiagnosticReasoning {
+  const human = pickHumanKnowledge(answers, definition.spaces);
+  const mechanism =
+    human.hypothesis?.enunciado ??
+    signal.mecanismoPlausible ??
+    definition.mechanismFallback ??
+    agenda?.mecanismo;
+  const exclusion =
+    human.openQuestion?.relevancia ??
+    agenda?.oculto ??
+    signal.desigualdad.nota;
+  const groupMotorQuestion =
+    human.openQuestion?.formulacion ??
+    agenda?.pregunta ??
+    signal.preguntaGrupoMotor;
+
+  return {
+    id: definition.id,
+    title: definition.title,
+    motorQuestion: firstMotorQuestion(definition),
+    signal,
+    source: humanSource(signal.fuente),
+    scale: signal.escala,
+    value: signal.valor,
+    mechanism,
+    exclusion,
+    groupMotorQuestion,
+    human,
+    territorialImplication: definition.territorialImplication,
+    capacity: pickCapacity(definition, signal, answers),
+    capacityFrame: definition.capacityFrame,
+    diagnosticConclusion: definition.diagnosticConclusion,
+    variant: agenda?.variant ?? signalVariant(signal) ?? definition.variant,
+  };
+}
+
+function evidenceSentence(reasoning: TerritorialDiagnosticReasoning): string {
+  const signal = reasoning.signal;
+  const value = reasoning.value.replace(/\s+\[[^\]]+\]/, "");
+  if (signal.esMencionTextual) {
     return (
-      `${definition.frame} En este expediente, «${signal.senal}» abre la ` +
-      `conversación sanitaria como ${signal.valor}; no funciona como prevalencia ` +
-      `local ni como orden de intervención. El dato procede del ${src}, documento ` +
-      `de ámbito amplio, sin desagregación distrital. Leída junto al resto del ` +
-      `expediente, esa agenda desplaza la pregunta hacia las condiciones que producen ` +
-      `salud o malestar en el territorio. Los datos no están desagregados por sexo, ` +
-      `edad ni renta: la desigualdad queda como incertidumbre central, no como ` +
-      `ausencia demostrada.`
+      `El expediente local parte del Informe de salud: «${signal.senal}» figura ` +
+      `como ${value}. Es presencia textual, no prevalencia ni distribución interna.`
     );
   }
-
-  if (definition.id === "sueno-malestar-vida-cotidiana") {
-    return (
-      `${definition.frame} El ${signal.valor} asociado a «${signal.senal}» ` +
-      `permite leer el descanso y el malestar como parte de la organización ` +
-      `cotidiana del tiempo, no como una conducta individual aislada. El dato ` +
-      `proviene de ${src} y se usa como referencia de contexto provincial, no ` +
-      `como medición cerrada del ámbito. La lectura debe preguntarse por turnos, ` +
-      `cuidados nocturnos, vivienda, ruido, preocupación económica y control real ` +
-      `sobre el tiempo de las personas.`
-    );
-  }
-
-  if (definition.id === "actividad-sedentarismo-entorno") {
-    return (
-      `${definition.frame} El ${signal.valor} vinculado a «${signal.senal}» ` +
-      `sitúa la actividad física en la relación entre rutinas, cuidados, horarios ` +
-      `y espacio público. El dato proviene de ${src} y se usa como referencia de ` +
-      `contexto, no como medición específica del territorio. No basta con nombrar ` +
-      `inactividad o sedentarismo: el Perfil debe leer seguridad, accesibilidad, ` +
-      `autonomía, tiempos disponibles y facilidad para moverse en la vida diaria.`
-    );
-  }
-
-  if (definition.id === "apoyo-social-soledad-envejecimiento") {
-    return (
-      `${definition.frame} El valor ${signal.valor} en «${signal.senal}» abre una ` +
-      `tensión territorial entre red declarada, soledad, envejecimiento y capacidad ` +
-      `comunitaria. El dato proviene de ${src}, escala de contexto provincial. ` +
-      `Los activos son capacidad potencial, no cobertura ni resultado: importa ` +
-      `quién los conoce, quién puede llegar y quién queda fuera. La pregunta ` +
-      `crítica es qué personas mayores, cuidadoras o aisladas no aparecen en los ` +
-      `registros disponibles.`
-    );
-  }
-
-  if (definition.id === "alimentacion-consumos-condiciones") {
-    return (
-      `${definition.frame} El ${signal.valor} observado en «${signal.senal}» debe ` +
-      `leerse junto a precio, disponibilidad, renta, hogares con menos margen y ` +
-      `contextos de consumo. El dato proviene de ${src}, escala de contexto ` +
-      `provincial. La lectura no convierte alimentación o consumos en juicio ` +
-      `individual: los sitúa en condiciones materiales que pueden facilitar o ` +
-      `limitar opciones reales. La zona a contrastar es qué hogares deciden desde ` +
-      `la restricción y qué prácticas no aparecen en el indicador agregado: ${exclusion}.`
-    );
-  }
-
+  const scale = signal.esProxy ? "proxy contextual" : "muestra declarada";
   return (
-    `${definition.frame} «${signal.senal}» aporta ${signal.valor} desde ${src}. ` +
-    `El dato debe leerse como señal territorial prudente, vinculada a condiciones ` +
-    `de vida, con incertidumbre explícita sobre su alcance territorial. ` +
-    `Debe contrastarse quién queda fuera del agregado: ${exclusion}.`
+    `El expediente incorpora «${signal.senal}» (${value}) desde ` +
+    `${reasoning.source}. Su escala es ${scale}: contextualiza el análisis y ` +
+    `no sustituye una medición local ausente.`
   );
+}
+
+function knowledgeSentence(reasoning: TerritorialDiagnosticReasoning): string {
+  const { human } = reasoning;
+  if (human.interpretation !== undefined) {
+    return (
+      `La interpretación activa del equipo técnico (${human.interpretation.certeza}, ` +
+      `${human.interpretation.autorNombre}) orienta este hilo: ` +
+      `${shortText(human.interpretation.enunciado)}.`
+    );
+  }
+  if (human.hypothesis !== undefined) {
+    return (
+      `La hipótesis activa del equipo se incorpora como posibilidad a contrastar, ` +
+      `no como hecho: ${shortText(human.hypothesis.enunciado)}.`
+    );
+  }
+  return (
+    `${reasoning.territorialImplication} Mecanismo plausible, sin causalidad ` +
+    `demostrada: ${shortText(reasoning.mechanism, 170)}.`
+  );
+}
+
+function capacitySentence(reasoning: TerritorialDiagnosticReasoning): string {
+  const capacity =
+    reasoning.capacity !== undefined
+      ? `${reasoning.capacity} es capacidad potencial, no cobertura ni resultado; acceso/uso pendientes.`
+      : `${reasoning.capacityFrame}; aún no hay recurso concreto vinculado a esta señal.`;
+  return (
+    `Sin distribución por sexo, edad, género o renta: incertidumbre de equidad. ${capacity}`
+  );
+}
+
+function questionSentence(reasoning: TerritorialDiagnosticReasoning): string {
+  if (reasoning.human.openQuestion !== undefined) {
+    return (
+      `La pregunta abierta del equipo entra en la lectura: ${shortText(reasoning.groupMotorQuestion, 140)}`
+    );
+  }
+  return (
+    `La pregunta deriva de esa incertidumbre y del mecanismo: ` +
+    `${shortText(reasoning.groupMotorQuestion, 140)}`
+  );
+}
+
+function composeReading(reasoning: TerritorialDiagnosticReasoning): string {
+  return [
+    evidenceSentence(reasoning),
+    knowledgeSentence(reasoning),
+    capacitySentence(reasoning),
+    questionSentence(reasoning),
+    `Conclusión diagnóstica: ${reasoning.diagnosticConclusion}.`,
+  ].join(" ");
 }
 
 function buildReadingBlock(
   definition: ReadingDefinition,
   signal: IntegratedHealthProfileSignal,
-  agenda?: GrupoMotorCard
+  agenda: GrupoMotorCard | undefined,
+  answers: DiagnosticAnswers
 ): ProfileIntegratedEditorialReadingBlock {
-  const mechanism =
-    signal.mecanismoPlausible ??
-    agenda?.mecanismo ??
-    "mecanismo no formulado todavía en las capas diagnósticas disponibles";
-  const exclusion = agenda?.oculto ?? signal.desigualdad.nota;
+  const reasoning = buildReasoning(definition, signal, agenda, answers);
   return {
-    id: definition.id,
-    title: definition.title,
-    signal: signal.senal,
-    source: humanSource(signal.fuente),
-    scale: signal.escala,
-    reading: readingText(definition, signal, mechanism, exclusion),
-    mechanism,
-    exclusion,
-    groupMotorQuestion: agenda?.pregunta ?? signal.preguntaGrupoMotor,
-    variant: agenda?.variant ?? signalVariant(signal) ?? definition.variant,
+    id: reasoning.id,
+    title: reasoning.title,
+    signal: reasoning.signal.senal,
+    source: reasoning.source,
+    scale: reasoning.scale,
+    reading: composeReading(reasoning),
+    mechanism: reasoning.mechanism,
+    exclusion: reasoning.exclusion,
+    groupMotorQuestion: reasoning.groupMotorQuestion,
+    motorQuestion: reasoning.motorQuestion,
+    variant: reasoning.variant,
   };
 }
 
@@ -381,10 +545,16 @@ function overviewFromMessage(
     const informeRow = context.synthesis.senalesPrincipales.find((row) =>
       row.grupo.includes("Informe")
     );
+    const informeSignal = context.signals.find((signal) => signal.esMencionTextual);
     return {
       id: message.id,
       title,
-      text: message.texto,
+      text:
+        `${context.informeTitulo ?? "El Informe de salud"} sostiene el hilo ` +
+        `sanitario del Perfil: ${informeRow?.senal ?? informeSignal?.senal ?? "sus dimensiones principales"} ` +
+        `aparecen como presencia textual del documento. Esa entrada fija el objeto ` +
+        `salud, pero no convierte menciones en prevalencia ni sustituye la lectura ` +
+        `de estudios, activos y contraste comunitario.`,
       signal: informeRow?.senal ?? "dimensiones sanitarias principales del Informe",
       source: context.informeTitulo ?? informeRow?.fuente ?? "Informe de salud",
       variant: "informe",
@@ -397,7 +567,12 @@ function overviewFromMessage(
     return {
       id: message.id,
       title,
-      text: message.texto,
+      text:
+        `La vida cotidiana entra por señales incorporadas al proceso: ` +
+        `${sueno?.valor ?? "sueño insuficiente"} en descanso y ` +
+        `${inactividad?.valor ?? "inactividad"} en tiempo libre. Su escala ` +
+        `contextual no reemplaza el dato local ausente; orienta preguntas sobre ` +
+        `tiempos, cuidados, vivienda, seguridad y uso real del entorno.`,
       signal: joinLabels(
         [sueno?.senal, inactividad?.senal],
         "sueño insuficiente e inactividad en tiempo libre"
@@ -422,7 +597,11 @@ function overviewFromMessage(
     return {
       id: message.id,
       title,
-      text: message.texto,
+      text:
+        `El apoyo social agregado (${apoyo?.valor ?? "DUKE"}) se lee junto al ` +
+        `envejecimiento, la soledad posible y ${context.totalAssets} recursos ` +
+        `comunitarios inventariados. La cuestión no es si hay red en abstracto, ` +
+        `sino quién puede quedar fuera de los vínculos y capacidades disponibles.`,
       signal: joinLabels(
         [apoyo?.senal, agenda?.tema, activos],
         "apoyo social funcional, envejecimiento y soledad"
@@ -451,6 +630,66 @@ function overviewFromMessage(
     ),
     variant: signal !== undefined ? signalVariant(signal) : "estudio",
   };
+}
+
+function firstHumanOpenQuestion(answers: DiagnosticAnswers): string | undefined {
+  return Object.values(answers.porEspacio)
+    .flatMap((knowledge) => knowledge?.lagunas ?? [])
+    .map((question) => question.formulacion)
+    .find((question) => question.trim().length > 0);
+}
+
+function buildClosingColumns(input: {
+  answers: DiagnosticAnswers;
+  synthesis: ReturnType<typeof buildProfileSynthesis>;
+  matrix: MatrizAnexo;
+  territorialReadings: ProfileIntegratedEditorialReadingBlock[];
+}): ProfileIntegratedEditorialClosingColumn[] {
+  const { answers, synthesis, matrix, territorialReadings } = input;
+  const sanitarySignal = synthesis.senalesPrincipales.find((row) =>
+    row.grupo.includes("Informe")
+  );
+  const humanQuestion = firstHumanOpenQuestion(answers);
+  const assetsText =
+    answers.salutogenica.totalAssets > 0
+      ? `${answers.salutogenica.totalAssets} recursos comunitarios quedan como capacidades potenciales, pendientes de acceso, uso y reconocimiento.`
+      : "El expediente no incorpora todavía un mapa de activos suficiente para leer capacidades.";
+
+  return [
+    {
+      id: "sabemos",
+      title: "Qué imagen puede sostenerse",
+      items: unique([
+        answers.sintesisTexto !== undefined
+          ? `Síntesis técnica incorporada: ${shortText(answers.sintesisTexto, 240)}`
+          : undefined,
+        sanitarySignal !== undefined
+          ? `El Informe de salud fija el hilo sanitario mediante presencia textual de ${sanitarySignal.senal}; no aporta por sí solo distribución interna.`
+          : "El hilo sanitario necesita Informe de salud incorporado para sostener la apertura.",
+        `Los estudios trazadores aportan ${synthesis.senalesPrincipales.length} señales para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`,
+      ].filter((item): item is string => item !== undefined)).slice(0, 3),
+    },
+    {
+      id: "contrastar",
+      title: "Qué hipótesis merecen contraste",
+      items: unique([
+        humanQuestion !== undefined
+          ? `Pregunta abierta del equipo: ${humanQuestion}`
+          : undefined,
+        ...territorialReadings.map((block) => block.groupMotorQuestion),
+      ].filter((item): item is string => item !== undefined)).slice(0, 3),
+    },
+    {
+      id: "no-confundir",
+      title: "Qué no debe confundirse",
+      items: unique([
+        "Las menciones del Informe son presencia textual y no prevalencia local.",
+        "Las referencias provinciales, autonómicas o proxy contextualizan; no son medición distrital.",
+        assetsText,
+        ...matrix.notasBloque,
+      ]).slice(0, 3),
+    },
+  ];
 }
 
 export function buildProfileIntegratedEditorialView(
@@ -482,7 +721,14 @@ export function buildProfileIntegratedEditorialView(
     const signal = pickSignal(signals, usedSignals, definition);
     if (signal === undefined) return [];
     usedSignals.add(signal.id);
-    return [buildReadingBlock(definition, signal, pickAgenda(visuals.grupoMotorCards, definition))];
+    return [
+      buildReadingBlock(
+        definition,
+        signal,
+        pickAgenda(visuals.grupoMotorCards, definition),
+        answers
+      ),
+    ];
   });
 
   const sourceBlocks: ProfileIntegratedEditorialSourceBlock[] = [
@@ -490,8 +736,7 @@ export function buildProfileIntegratedEditorialView(
       id: "informe",
       title: "Informe de salud",
       whatItAdds:
-        synthesis.senalesPrincipales.find((row) => row.grupo.includes("Informe"))
-          ?.lectura ?? "agenda sanitaria de partida y magnitudes del documento fuente",
+        "agenda sanitaria de partida, temas tratados y trazabilidad textual del documento fuente",
       whatItDoesNotAllow:
         "no mide por sí solo prevalencia local ni distribución interna de desigualdad",
       variant: "informe",
@@ -516,27 +761,12 @@ export function buildProfileIntegratedEditorialView(
     },
   ];
 
-  const closing: ProfileIntegratedEditorialClosingColumn[] = [
-    {
-      id: "sabemos",
-      title: "Qué sabemos",
-      items: synthesis.mensajes.slice(0, 3).map((message) => message.texto),
-    },
-    {
-      id: "contrastar",
-      title: "Qué falta contrastar",
-      items: visuals.grupoMotorCards.slice(0, 3).map((card) => card.pregunta),
-    },
-    {
-      id: "no-confundir",
-      title: "Qué no debe confundirse",
-      items: unique([
-        synthesis.notaEscala,
-        ...matrix.notasBloque,
-        "Los activos son capacidades potenciales: necesitan validación de acceso, uso y reconocimiento.",
-      ]).slice(0, 3),
-    },
-  ];
+  const closing = buildClosingColumns({
+    answers,
+    synthesis,
+    matrix,
+    territorialReadings,
+  });
 
   return {
     header: {

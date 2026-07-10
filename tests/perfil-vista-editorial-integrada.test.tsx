@@ -17,6 +17,7 @@ import { createMunicipalityRuntime } from "../src/application/runtime";
 import {
   buildDiagnosticAnswers,
   buildProfileIntegratedEditorialView,
+  checkProfileWritingContract,
 } from "../src/application/health-profile";
 import type {
   DiagnosticAnswers,
@@ -24,7 +25,10 @@ import type {
 } from "../src/application/health-profile";
 import { LocalHealthProfileView } from "../src/ui/components/LocalHealthProfileView";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
-import type { LocalHealthProfile } from "../src/domain/health-profile";
+import type {
+  LocalHealthProfile,
+  PerfilLocalDeSalud,
+} from "../src/domain/health-profile";
 
 const store = new Map<string, string>();
 (globalThis as { localStorage?: unknown }).localStorage = {
@@ -77,6 +81,7 @@ let ws: MunicipalityWorkspace;
 let psl: LocalHealthProfile;
 let answers: DiagnosticAnswers;
 let editorialView: ProfileIntegratedEditorialView;
+let humanEditorialView: ProfileIntegratedEditorialView;
 let html: string;
 let proposalHtml: string;
 
@@ -102,6 +107,79 @@ beforeAll(() => {
     informeTitulo: "Informe de salud de El Zaidín",
     generatedDate: "1 de enero de 2027",
   });
+
+  const perfilConocimientoHumano: PerfilLocalDeSalud = {
+    id: "perfil-humano-test",
+    municipalityId: ws.municipality.identity.id,
+    interpretaciones: [
+      {
+        id: "interp-entorno-test",
+        municipalityId: ws.municipality.identity.id,
+        espacio: "contexto-territorial",
+        enunciado:
+          "El equipo técnico interpreta que la autonomía para usar el espacio público condiciona la vida activa cotidiana.",
+        certeza: "moderada",
+        evidenciaIds: [],
+        autorNombre: "Equipo técnico",
+        formuladaEn: "2027-01-01T00:00:00.000Z",
+        status: "activa",
+      },
+    ],
+    hipotesis: [
+      {
+        id: "hip-activos-test",
+        municipalityId: ws.municipality.identity.id,
+        espacio: "activos",
+        enunciado:
+          "La soledad no deseada puede concentrarse en personas mayores que no acceden a los recursos inventariados.",
+        plausibilidad: "moderada",
+        indicios: [],
+        preguntasResolutoras: [
+          "Contraste con Grupo Motor y entidades de mayores.",
+        ],
+        autorNombre: "Equipo técnico",
+        formuladaEn: "2027-01-01T00:00:00.000Z",
+        status: "activa",
+      },
+    ],
+    preguntasAbiertas: [
+      {
+        id: "preg-desigualdad-test",
+        municipalityId: ws.municipality.identity.id,
+        espacio: "desigualdades",
+        formulacion:
+          "¿Qué grupos viven peor el descanso, la movilidad cotidiana y el acceso a los recursos?",
+        relevancia:
+          "La evidencia agregada no muestra distribución interna ni barreras de acceso.",
+        urgencia: "alta",
+        viasResolucion: ["Grupo Motor", "contraste comunitario"],
+        creadaEn: "2027-01-01T00:00:00.000Z",
+        status: "abierta",
+      },
+    ],
+    sintesisTexto:
+      "La lectura técnica prioriza contrastar la relación entre apoyo social, descanso y autonomía cotidiana.",
+    createdAt: "2027-01-01T00:00:00.000Z",
+    updatedAt: "2027-01-01T00:00:00.000Z",
+  };
+  const humanWorkspace: MunicipalityWorkspace = {
+    ...ws,
+    perfilLocalDeSalud: perfilConocimientoHumano,
+  };
+  const humanAnswers = buildDiagnosticAnswers({
+    workspace: humanWorkspace,
+    determinantTitles: [],
+    assets: ws.evidenceStore.atoms
+      .filter((a) => a.kind === "asset")
+      .map((a) => ({ title: a.title, content: a.content })),
+  });
+  humanEditorialView = buildProfileIntegratedEditorialView(humanAnswers, {
+    territory: ws.municipality.identity.name,
+    status: "Documento de trabajo",
+    informeTitulo: "Informe de salud de El Zaidín",
+    generatedDate: "1 de enero de 2027",
+  });
+
   html = renderToStaticMarkup(
     <LocalHealthProfileView
       psl={psl}
@@ -203,7 +281,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(text).toContain("descanso");
     expect(text).toContain("vida diaria");
     expect(text).toMatch(/turnos|cuidados nocturnos|vivienda|ruido|tiempo/);
-    expect(text).toMatch(/contexto|referencia|no como estimacion/);
+    expect(text).toMatch(/proxy contextual|contextualiza|medicion local ausente/);
     expect(text).not.toContain("presencia textual");
   });
 
@@ -214,7 +292,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(block.reading).toContain("34.2 %");
     expect(text).toContain("espacio publico");
     expect(text).toMatch(/seguridad|accesibilidad|autonomia/);
-    expect(text).toMatch(/contexto|referencia|no como medicion/);
+    expect(text).toMatch(/proxy contextual|contextualiza|medicion local ausente/);
     expect(text).not.toContain("cuida de noche");
     expect(text).not.toContain("turnos");
     expect(text).not.toContain("vivienda sin descanso");
@@ -238,11 +316,82 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(serialized).toContain("capacidad potencial");
     expect(serialized).toContain("no cobertura ni resultado");
     expect(serialized).toContain("incertidumbre de equidad");
-    expect(serialized).toContain("no estan desagregados");
+    expect(serialized).toMatch(/sigue sin observarse|sin desagregacion/);
   });
 
   it("no formula recomendaciones, objetivos ni actuaciones", () => {
     expect(JSON.stringify(editorialView)).not.toMatch(FORBIDDEN_EDITORIAL_RE);
+  });
+
+  it("mantiene la escritura dentro del contrato narrativo", () => {
+    const violations = checkProfileWritingContract(JSON.stringify(editorialView));
+    expect(violations).toEqual([]);
+  });
+
+  it("gobierna cada hilo con una pregunta motor existente", () => {
+    for (const block of editorialView.territorialReadings) {
+      expect(block.motorQuestion).toMatch(/^¿.+\?$/);
+    }
+  });
+
+  it("las preguntas derivan de una incertidumbre, hipótesis o pregunta abierta", () => {
+    for (const block of editorialView.territorialReadings) {
+      expect(normalized(block.reading)).toMatch(
+        /pregunta deriva de esa incertidumbre|pregunta abierta/
+      );
+    }
+  });
+
+  it("las interpretaciones activas del técnico gobiernan la lectura correspondiente", () => {
+    const actividad = humanEditorialView.territorialReadings.find(
+      (block) => block.id === "actividad-sedentarismo-entorno"
+    );
+    expect(actividad).toBeDefined();
+    const text = normalized(actividad?.reading ?? "");
+    expect(text).toContain("interpretacion activa del equipo tecnico");
+    expect(text).toContain("autonomia para usar el espacio publico");
+  });
+
+  it("las hipótesis activas modulan la lectura sin convertirse en hechos", () => {
+    const apoyo = humanEditorialView.territorialReadings.find(
+      (block) => block.id === "apoyo-social-soledad-envejecimiento"
+    );
+    expect(apoyo).toBeDefined();
+    const text = normalized(apoyo?.reading ?? "");
+    expect(text).toContain("hipotesis activa");
+    expect(text).toContain("como posibilidad a contrastar");
+    expect(text).toContain("personas mayores");
+  });
+
+  it("las preguntas abiertas humanas llegan a la lectura canónica", () => {
+    const serialized = normalized(JSON.stringify(humanEditorialView.territorialReadings));
+    expect(serialized).toContain(
+      "que grupos viven peor el descanso, la movilidad cotidiana y el acceso a los recursos"
+    );
+  });
+
+  it("la síntesis técnica modula el cierre interpretativo", () => {
+    const closing = normalized(JSON.stringify(humanEditorialView.closing));
+    expect(closing).toContain("sintesis tecnica incorporada");
+    expect(closing).toContain("autonomia cotidiana");
+  });
+
+  it("sin conocimiento humano registrado no inventa experiencia comunitaria", () => {
+    const readings = normalized(JSON.stringify(editorialView.territorialReadings));
+    expect(readings).not.toContain("testimonio");
+    expect(readings).not.toContain("vecindario confirma");
+    expect(readings).not.toContain("grupo motor confirma");
+  });
+
+  it("la proyección editorial no depende de cinco ramas extensas por tema", () => {
+    const source = readFileSync(
+      resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "../src/application/health-profile/profileIntegratedEditorialView.ts"
+      ),
+      "utf8"
+    );
+    expect(source).not.toMatch(/if\s*\(\s*definition\.id\s*===/);
   });
 });
 
