@@ -8,6 +8,13 @@ function variantClass(variant: string): string {
   return "pie-variant pie-variant--" + variant;
 }
 
+// Etiqueta legible del estatus del cruce (Nivel 3), visible junto al hilo.
+const EPISTEMIC_LABEL: Record<string, string> = {
+  "integrated-interpretation": "Interpretación integrada",
+  "plausible-hypothesis": "Hipótesis plausible",
+  "open-question": "Pregunta abierta",
+};
+
 export function ProfileIntegratedEditorialPreview({
   view,
 }: ProfileIntegratedEditorialPreviewProps) {
@@ -86,13 +93,19 @@ export function ProfileIntegratedEditorialPreview({
               <h4 id={`pie-h-${block.id}`} className="pie-hilo__title">
                 {block.title}
               </h4>
+              {block.epistemicStatus !== undefined ? (
+                <span className="pie-hilo__status">
+                  {EPISTEMIC_LABEL[block.epistemicStatus] ?? block.epistemicStatus}
+                </span>
+              ) : null}
             </header>
             <p className="pie-hilo__signal">{block.signal}</p>
-            {/* La cadena diagnóstica (mecanismo → desigualdad → quién queda
-                fuera → pregunta → conclusión) se lee como progresión argumental
-                dentro de la prosa, no como lista de campos repetidos. */}
+            {/* La lectura integrada (Nivel 3) cruza agenda sanitaria, señales
+                locales, contexto, mecanismo plausible, desigualdad y capacidad
+                como razonamiento continuo, no como lista de campos. */}
             <p className="pie-hilo__reading">{block.reading}</p>
             <p className="pie-hilo__context">{block.source} · {block.scale}</p>
+            <p className="pie-hilo__question">{block.groupMotorQuestion}</p>
           </article>
         ))}
       </section>

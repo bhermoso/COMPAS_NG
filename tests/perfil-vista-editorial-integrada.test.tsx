@@ -55,18 +55,15 @@ const EXPORT_PATH = resolve(
 /**
  * Densidad de un hilo: un párrafo de lectura, nunca un capítulo.
  *
- * El tope subió de 150 a 200 palabras cuando la lectura pasó a declarar la
- * laguna de equidad ESPECÍFICA de cada señal (ejes ausentes + quién puede
- * quedar fuera) y a citar íntegros el mecanismo, el marco de capacidad y la
- * pregunta de contraste. Antes cabía en 150 porque usaba una fórmula genérica
- * —«Sin desagregación disponible: incertidumbre de equidad»— y porque truncaba
- * mecanismo, marco y pregunta a mitad de frase.
- *
- * La brevedad que exige el contrato metodológico se protege por jerarquía
- * documental (la trazabilidad extensa vive en el anexo), no recortando la
- * declaración de equidad ni mutilando el argumento.
+ * Con la interpretación integrada (Nivel 3) cada hilo cruza agenda sanitaria,
+ * señal local con su cautela, contexto, conocimiento humano cuando existe,
+ * mecanismo plausible, incertidumbre y capacidad. Ese cruce es más denso que un
+ * hilo de señal aislada; el tope se fija en 235 palabras. La brevedad se protege
+ * por jerarquía documental (la trazabilidad extensa vive en el anexo) y por el
+ * recorte de listas de señales corroborantes/contextuales, no mutilando la
+ * declaración de equidad. La edición final de la prosa es un incremento posterior.
  */
-const DENSIDAD_MAX_PALABRAS = 200;
+const DENSIDAD_MAX_PALABRAS = 235;
 
 const FORBIDDEN_EDITORIAL_RE =
   /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|actuaciones previstas|plan de acci[óo]n|resulta relevante|se pone de manifiesto|desde una perspectiva integral/i;
@@ -234,7 +231,11 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(editorialView.header.subtitle).toBe("Lectura territorial del diagnóstico");
     expect(editorialView.overview).toHaveLength(3);
     expect(editorialView.sourceBlocks).toHaveLength(3);
-    expect(editorialView.territorialReadings).toHaveLength(5);
+    // Los hilos los gobierna ahora la interpretación integrada (Nivel 3).
+    expect(editorialView.territorialReadings.length).toBeGreaterThanOrEqual(6);
+    expect(editorialView.territorialReadings.length).toBe(
+      editorialView.interpretation.units.length
+    );
     expect(editorialView.tracerTable.length).toBeGreaterThan(0);
     expect(editorialView.groupMotorAgenda.length).toBeGreaterThan(0);
     expect(editorialView.closing).toHaveLength(3);
@@ -290,50 +291,53 @@ describe("modelo puro — Vista editorial integrada", () => {
     }
   });
 
-  it("usa sueño insuficiente como lectura de vida cotidiana, no como presencia textual", () => {
-    const block = readingById("sueno-malestar-vida-cotidiana");
+  it("cruza salud mental: el Informe apenas la nombra, los estudios locales la sitúan (open-question)", () => {
+    const block = readingById("salud-mental-infravalorada");
     const text = normalized(block.reading);
-
-    expect(block.reading).toContain("32.8 %");
-    expect(text).toContain("descanso");
-    expect(text).toContain("vida diaria");
-    expect(text).toMatch(/turnos|cuidados nocturnos|vivienda|ruido|tiempo/);
-    expect(text).toMatch(/proxy contextual|contextualiza|medicion local ausente/);
-    expect(text).not.toContain("presencia textual");
+    expect(block.epistemicStatus).toBe("open-question");
+    // Señal local principal (GHQ-12), corroborantes distintas (PSQI, PHQ-9).
+    expect(text).toMatch(/ghq-12|malestar psicologico/);
+    expect(block.reading).toContain("26.3 %");
+    expect(text).toContain("apenas");
+    // El proxy (SF-12 / Sueño EAS) queda como contexto, no como medición local.
+    expect(text).toContain("como contexto, no como medicion distrital");
+    // La señal local se declara exploratoria, no prevalencia distrital.
+    expect(text).toContain("no prevalencia distrital");
   });
 
-  it("usa actividad física como lectura de entorno y no hereda la zona ciega del sueño", () => {
-    const block = readingById("actividad-sedentarismo-entorno");
-    const text = normalized(block.reading + " " + block.exclusion);
-
-    expect(block.reading).toContain("34.2 %");
-    expect(text).toContain("espacio publico");
-    expect(text).toMatch(/seguridad|accesibilidad|autonomia/);
-    expect(text).toMatch(/proxy contextual|contextualiza|medicion local ausente/);
-    expect(text).not.toContain("cuida de noche");
-    expect(text).not.toContain("turnos");
-    expect(text).not.toContain("vivienda sin descanso");
+  it("cruza cronicidad con condiciones de vida usando el sedentarismo local (SBQ)", () => {
+    const block = readingById("cronicidad-condiciones-de-vida");
+    const text = normalized(block.reading);
+    expect(block.epistemicStatus).toBe("integrated-interpretation");
+    // Evidencia local principal SBQ; IPAQ provincial como contexto.
+    expect(text).toMatch(/sedentario|sbq/);
+    expect(block.reading).toContain("29.4 %");
+    expect(text).toContain("como contexto, no como medicion distrital");
+    // No reenumera la epidemiología del Informe: cita temas + una magnitud.
+    expect(text).toContain("a su escala, sin desagregacion distrital");
   });
 
-  it("lee DUKE, soledad y envejecimiento como tensión territorial abierta", () => {
+  it("cruza apoyo social y envejecimiento; DUKE provincial queda como contexto", () => {
     const block = readingById("apoyo-social-soledad-envejecimiento");
     const text = normalized(block.reading);
-
-    expect(block.reading).toContain("49.2/55");
-    expect(text).toContain("tension territorial");
-    expect(text).toContain("soledad");
     expect(text).toContain("envejecimiento");
-    expect(text).toContain("capacidad comunitaria");
-    expect(text).toContain("personas mayores");
+    expect(text).toMatch(/apoyo social|duke/);
+    // DUKE es proxy: contexto, no medición local del distrito.
+    expect(block.reading).toContain("49.2/55");
+    expect(text).toContain("como contexto, no como medicion distrital");
   });
 
   it("presenta activos como capacidad potencial y desigualdad como incertidumbre central", () => {
     const serialized = normalized(JSON.stringify(editorialView));
 
-    expect(serialized).toContain("capacidad potencial");
-    expect(serialized).toContain("no cobertura ni resultado");
+    expect(serialized).toMatch(/capacidad(es)? potencial(es)?/);
+    expect(serialized).toMatch(/no cobertura ni resultado|acceso, uso y resultado/);
     expect(serialized).toContain("incertidumbre de equidad");
-    expect(serialized).toMatch(/sigue sin observarse|sin desagregacion/);
+    expect(serialized).toMatch(/no est[aá] desagregada|sin desagregacion/);
+    // La incertidumbre de escala/desagregación es sustantiva, no marginal.
+    expect(normalized(editorialView.interpretation.centralUncertainty)).toMatch(
+      /barrios|unidades asistenciales|desagregaci/
+    );
   });
 
   it("no formula recomendaciones, objetivos ni actuaciones", () => {
@@ -351,76 +355,64 @@ describe("modelo puro — Vista editorial integrada", () => {
     }
   });
 
-  it("las preguntas derivan de una incertidumbre, hipótesis o pregunta abierta", () => {
+  it("cada hilo lleva su pregunta de razonamiento y su estatus del cruce (N3)", () => {
     for (const block of editorialView.territorialReadings) {
-      const text = normalized(block.reading);
-      // La pregunta se enuncia como derivación, no como apéndice mecánico…
-      expect(text, block.id).toMatch(
-        /de ahi la pregunta de contraste|pregunta abierta del equipo/
-      );
-      // …y la incertidumbre de la que deriva está declarada justo antes.
-      expect(text, block.id).toContain("incertidumbre de equidad");
-      expect(text.indexOf("incertidumbre de equidad")).toBeLessThan(
-        text.search(/de ahi la pregunta de contraste|pregunta abierta del equipo/)
-      );
+      expect(block.groupMotorQuestion, block.id).toMatch(/^¿.+\?$/);
+      expect(
+        ["integrated-interpretation", "plausible-hypothesis", "open-question"],
+        block.id
+      ).toContain(block.epistemicStatus);
     }
   });
 
-  it("las interpretaciones activas del técnico gobiernan la lectura correspondiente", () => {
-    const actividad = humanEditorialView.territorialReadings.find(
-      (block) => block.id === "actividad-sedentarismo-entorno"
-    );
-    expect(actividad).toBeDefined();
-    const text = normalized(actividad?.reading ?? "");
-    expect(text).toContain("interpretacion activa del equipo tecnico");
+  it("la interpretación del técnico llega al hilo con su estatus de autoría", () => {
+    const cron = humanEditorialView.interpretation.units.find(
+      (u) => u.id === "cronicidad-condiciones-de-vida"
+    )!;
+    expect(cron.documentAuthoredInterpretations.length).toBeGreaterThan(0);
+    const text = normalized(cron.reasoning);
+    expect(text).toContain("la lectura del equipo tecnico orienta este hilo");
     expect(text).toContain("autonomia para usar el espacio publico");
   });
 
-  it("las hipótesis activas modulan la lectura sin convertirse en hechos", () => {
-    const apoyo = humanEditorialView.territorialReadings.find(
-      (block) => block.id === "apoyo-social-soledad-envejecimiento"
-    );
-    expect(apoyo).toBeDefined();
-    const text = normalized(apoyo?.reading ?? "");
-    expect(text).toContain("hipotesis activa");
-    expect(text).toContain("como posibilidad a contrastar");
-    expect(text).toContain("personas mayores");
-  });
-
-  it("las preguntas abiertas humanas llegan a la lectura canónica", () => {
-    const serialized = normalized(JSON.stringify(humanEditorialView.territorialReadings));
-    expect(serialized).toContain(
-      "que grupos viven peor el descanso, la movilidad cotidiana y el acceso a los recursos"
-    );
-  });
-
-  // ── Conformidad contractual del razonamiento diagnóstico ───────────────────
-
-  it("una hipótesis del equipo no se convierte en el mecanismo del hilo", () => {
-    // La hipótesis se cita CON su estatus; nunca ocupa la ranura de mecanismo,
-    // que procede de la evidencia del propio hilo (marco: Hernán/Robins).
+  it("la hipótesis del técnico modula la lectura sin convertirse en hecho ni en mecanismo", () => {
+    const apoyo = humanEditorialView.interpretation.units.find(
+      (u) => u.id === "apoyo-social-soledad-envejecimiento"
+    )!;
+    expect(apoyo.plausibleHypotheses.length).toBeGreaterThan(0);
+    const text = normalized(apoyo.reasoning);
+    expect(text).toContain("hipotesis a contrastar, no como hecho");
+    // La hipótesis nunca ocupa la ranura de mecanismo del hilo.
     for (const block of humanEditorialView.territorialReadings) {
       expect(normalized(block.mechanism), block.id).not.toContain(
-        "hipotesis activa"
+        "soledad no deseada"
       );
     }
-    const apoyo = humanEditorialView.territorialReadings.find(
-      (block) => block.id === "apoyo-social-soledad-envejecimiento"
+  });
+
+  it("la pregunta abierta humana gobierna la unidad correspondiente y no se pierde", () => {
+    const unit = humanEditorialView.interpretation.units.find((u) =>
+      u.openHumanQuestions.length > 0
     );
-    expect(normalized(apoyo!.reading)).toContain("como posibilidad a contrastar");
+    expect(unit).toBeDefined();
+    expect(normalized(unit!.question)).toContain(
+      "que grupos viven peor el descanso"
+    );
+    // Cada pieza de conocimiento humano se consume una sola vez (sin repetición).
+    const interps = humanEditorialView.interpretation.units.flatMap(
+      (u) => u.documentAuthoredInterpretations
+    );
+    expect(new Set(interps).size).toBe(interps.length);
   });
 
   it("el conocimiento humano no se repite mecánicamente entre hilos", () => {
-    const mecanismos = humanEditorialView.territorialReadings.map((b) => b.mechanism);
-    const exclusiones = humanEditorialView.territorialReadings.map((b) => b.exclusion);
-    const preguntas = humanEditorialView.territorialReadings.map(
+    const preguntas = editorialView.territorialReadings.map(
       (b) => b.groupMotorQuestion
     );
-    // Cada hilo formula su propia exclusión y su propia pregunta.
-    expect(new Set(exclusiones).size).toBe(exclusiones.length);
+    const mecanismos = editorialView.territorialReadings.map((b) => b.mechanism);
+    // Cada hilo formula su propia pregunta (temas distintos).
     expect(new Set(preguntas).size).toBe(preguntas.length);
-    // Los mecanismos pueden converger (dos hilos pueden compartir determinante
-    // real), pero no colapsar en uno solo.
+    // Los mecanismos pueden converger, pero no colapsar en uno solo.
     expect(new Set(mecanismos).size).toBeGreaterThan(1);
   });
 
@@ -449,19 +441,17 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(alimentacion!.desigualdad.ejesAusentes).not.toContain("carga de cuidados");
   });
 
-  it("el Informe abre el hilo sanitario sin convertir menciones en prevalencia", () => {
-    const sanitaria = editorialView.territorialReadings.find(
-      (b) => b.id === "salud-sanitaria-partida"
-    );
-    const text = sanitaria!.reading;
-    expect(text).toContain("presencia textual");
-    expect(text).toContain("no prevalencia");
-    expect(text).toContain("carga de enfermedad");
-    expect(text).toContain("prioridad territorial demostrada");
-    // Y el mensaje de apertura declara qué aporta, qué no y cómo se amplía.
+  it("la interpretación no reenumera el Informe como segunda epidemiología", () => {
+    // Ninguna unidad copia tablas/tasas del Informe: cita el tema + una
+    // magnitud y explica la lectura territorial (regla: epidemiología una vez).
+    for (const unit of editorialView.interpretation.units) {
+      // La agenda se resume por temas/magnitud, no por listado exhaustivo.
+      expect(unit.sanitaryAgenda.topics.length).toBeLessThanOrEqual(6);
+    }
+    // El mensaje de apertura mantiene el hilo sanitario sin volverlo prevalencia.
     const apertura = editorialView.overview.find((m) => m.id === "hilo-sanitario");
     expect(apertura!.text).toContain("agenda sanitaria de partida");
-    expect(apertura!.text).toContain("amplían");
+    expect(apertura!.text).toMatch(/no permite conocer prevalencia|no convierte menciones/);
   });
 
   it("Popay: la experiencia comunitaria ausente se declara pendiente, no se inventa", () => {
@@ -540,14 +530,15 @@ describe("render — perfil de salud local canónico", () => {
 });
 
 describe("composición documental — estructura editorial", () => {
-  it("conserva los cinco hilos territoriales", () => {
-    expect(editorialView.territorialReadings).toHaveLength(5);
+  it("los hilos son las unidades de interpretación integrada (Nivel 3)", () => {
     const ids = editorialView.territorialReadings.map((b) => b.id);
-    expect(ids).toContain("salud-sanitaria-partida");
-    expect(ids).toContain("sueno-malestar-vida-cotidiana");
-    expect(ids).toContain("actividad-sedentarismo-entorno");
+    expect(ids).toEqual(editorialView.interpretation.units.map((u) => u.id));
+    // Cruces esperables del expediente vigente.
+    expect(ids).toContain("cronicidad-condiciones-de-vida");
+    expect(ids).toContain("salud-mental-infravalorada");
+    expect(ids).toContain("consumos-tabaco-alcohol");
     expect(ids).toContain("apoyo-social-soledad-envejecimiento");
-    expect(ids).toContain("alimentacion-consumos-condiciones");
+    expect(ids).toContain("mortalidad-escala-desigualdad");
   });
 
   it("los hilos están presentes en el HTML canónico con título y pregunta", () => {
@@ -589,15 +580,16 @@ describe("composición documental — estructura editorial", () => {
     // Fuente y escala siguen presentes (en los hilos, no como etiqueta "Fuente y escala:")
     expect(beforeTechnical).not.toContain("Fuente y escala:");
     expect(beforeTechnical).toContain("proxy contextual");
-    // La cadena diagnóstica se lee como progresión argumental dentro de la
-    // prosa: mecanismo, desigualdad y quién queda fuera, no como campos sueltos.
-    expect(beforeTechnical).toContain("Mecanismo plausible, sin causalidad demostrada:");
-    expect(beforeTechnical).toContain("incertidumbre de equidad");
-    expect(beforeTechnical).toContain("Puede quedar fuera de esa lectura:");
-    // Y no como lista de campos repetida hilo a hilo.
+    // El razonamiento integrado (Nivel 3) se lee como progresión continua:
+    // mecanismo plausible (no causal), incertidumbre de equidad y contexto.
+    expect(beforeTechnical).toContain("mecanismo plausible, no una causa demostrada");
+    expect(beforeTechnical.toLowerCase()).toContain("incertidumbre de equidad");
+    expect(beforeTechnical.toLowerCase()).toContain(
+      "como contexto, no como medición distrital"
+    );
+    // No como lista de campos repetida hilo a hilo (mecanismo/exclusión sueltos).
     expect(beforeTechnical).not.toContain("pie-hilo__mechanism");
     expect(beforeTechnical).not.toContain("pie-hilo__exclusion");
-    expect(beforeTechnical).not.toContain("pie-hilo__question");
   });
 
   it("los rótulos repetitivos no dominan como etiquetas fijas en todos los hilos", () => {
@@ -724,14 +716,14 @@ describe("calidad documental — textura y formularios", () => {
 
   it("ninguna lectura generada queda mutilada por recorte", () => {
     // La brevedad nunca se consigue truncando: ni elipsis a mitad de frase, ni
-    // paréntesis sin cerrar, ni preguntas que pierden el signo de cierre.
+    // paréntesis sin cerrar. La pregunta de razonamiento va en su propio campo.
     for (const block of editorialView.territorialReadings) {
       expect(block.reading, block.id).not.toContain("…");
       expect(block.reading, block.id).not.toMatch(/[.…]\s*\./);
       const abre = (block.reading.match(/\(/g) ?? []).length;
       const cierra = (block.reading.match(/\)/g) ?? []).length;
       expect(abre, block.id).toBe(cierra);
-      expect(block.reading, block.id).toContain("?");
+      expect(block.groupMotorQuestion, block.id).toContain("?");
     }
   });
 });

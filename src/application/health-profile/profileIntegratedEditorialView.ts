@@ -16,6 +16,12 @@ import {
   type MatrizAnexo,
 } from "./profileSynthesisView";
 import { DIAGNOSTIC_ENGINE_QUESTIONS } from "./profileWritingContract";
+import {
+  buildIntegratedInterpretation,
+  type IntegratedInterpretation,
+  type IntegratedInterpretationUnit,
+  type IntegratedInterpretationStatus,
+} from "./integratedInterpretation";
 
 export interface ProfileIntegratedEditorialHeader {
   title: string;
@@ -56,6 +62,8 @@ export interface ProfileIntegratedEditorialReadingBlock {
   groupMotorQuestion: string;
   motorQuestion: string;
   variant: EvidenceVariant;
+  /** Estatus del cruce (N3), cuando la lectura procede de la interpretación integrada. */
+  epistemicStatus?: IntegratedInterpretationStatus;
 }
 
 export interface ProfileIntegratedEditorialClosingColumn {
@@ -76,6 +84,8 @@ export interface ProfileIntegratedEditorialView {
   overview: ProfileIntegratedEditorialOverviewMessage[];
   sourceBlocks: ProfileIntegratedEditorialSourceBlock[];
   territorialReadings: ProfileIntegratedEditorialReadingBlock[];
+  /** Interpretación integrada (Nivel 3) que gobierna la lectura principal. */
+  interpretation: IntegratedInterpretation;
   tracerTable: TrazadorRow[];
   groupMotorAgenda: GrupoMotorCard[];
   closing: ProfileIntegratedEditorialClosingColumn[];
@@ -849,6 +859,42 @@ function buildClosingColumns(input: {
   ];
 }
 
+// ── Nivel 3 → bloque de lectura (la interpretación integrada gobierna N4) ──────
+
+function variantForUnit(unit: IntegratedInterpretationUnit): EvidenceVariant {
+  if (unit.localSignals.length > 0) return "estudio";
+  if (unit.epistemicStatus === "open-question") return "equidad";
+  if (unit.contextualSignals.length > 0) return "proxy";
+  return "informe";
+}
+
+function interpretationUnitToReadingBlock(
+  unit: IntegratedInterpretationUnit
+): ProfileIntegratedEditorialReadingBlock {
+  const principal = unit.localSignals[0];
+  const signal =
+    principal?.label ??
+    (unit.sanitaryAgenda.topics[0] ?? "agenda del Informe de salud");
+  const source = principal !== undefined
+    ? `evidencia local + Informe de salud`
+    : "Informe de salud + estudios complementarios";
+  const scale = principal?.scale ?? "escala del Informe · contexto provincial";
+  return {
+    id: unit.id,
+    title: unit.title,
+    signal,
+    source,
+    scale,
+    reading: unit.reasoning,
+    mechanism: unit.plausibleDeterminants[0] ?? "por contrastar con el territorio",
+    exclusion: unit.inequalitiesOrUncertainties[0] ?? "sin desagregación distrital",
+    groupMotorQuestion: unit.question,
+    motorQuestion: unit.question,
+    variant: variantForUnit(unit),
+    epistemicStatus: unit.epistemicStatus,
+  };
+}
+
 export function buildProfileIntegratedEditorialView(
   answers: DiagnosticAnswers,
   opts: BuildProfileIntegratedEditorialViewOptions
@@ -874,21 +920,30 @@ export function buildProfileIntegratedEditorialView(
     })
   );
 
-  const humanByDefinition = assignHumanKnowledge(answers, READING_DEFINITIONS);
-  const territorialReadings = READING_DEFINITIONS.flatMap((definition) => {
-    const signal = pickSignal(signals, usedSignals, definition);
-    if (signal === undefined) return [];
-    usedSignals.add(signal.id);
-    return [
-      buildReadingBlock(
-        definition,
-        signal,
-        pickAgenda(visuals.grupoMotorCards, definition),
-        answers,
-        humanByDefinition.get(definition.id) ?? {}
-      ),
-    ];
-  });
+  // Nivel 3 gobierna la lectura principal: cada unidad de interpretación
+  // integrada es un hilo territorial. El camino por READING_DEFINITIONS se
+  // conserva SOLO como compatibilidad para expedientes sin Informe estructurado
+  // (interpretación sin unidades), no como selección principal.
+  const interpretation = buildIntegratedInterpretation(answers);
+  const territorialReadings: ProfileIntegratedEditorialReadingBlock[] =
+    interpretation.units.length > 0
+      ? interpretation.units.map(interpretationUnitToReadingBlock)
+      : READING_DEFINITIONS.flatMap((definition) => {
+          const signal = pickSignal(signals, usedSignals, definition);
+          if (signal === undefined) return [];
+          usedSignals.add(signal.id);
+          return [
+            buildReadingBlock(
+              definition,
+              signal,
+              pickAgenda(visuals.grupoMotorCards, definition),
+              answers,
+              assignHumanKnowledge(answers, READING_DEFINITIONS).get(
+                definition.id
+              ) ?? {}
+            ),
+          ];
+        });
 
   const sourceBlocks: ProfileIntegratedEditorialSourceBlock[] = [
     {
@@ -948,6 +1003,7 @@ export function buildProfileIntegratedEditorialView(
     overview,
     sourceBlocks,
     territorialReadings,
+    interpretation,
     tracerTable: visuals.tablaTrazadores,
     groupMotorAgenda: visuals.grupoMotorCards,
     closing,

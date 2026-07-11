@@ -98,6 +98,15 @@ export {
   buildIntegratedSignalSets,
 } from "./integratedProfileSignals";
 export type {
+  IntegratedInterpretation,
+  IntegratedInterpretationUnit,
+  IntegratedInterpretationStatus,
+  InterpretationSignalRef,
+  InterpretationTraceability,
+  SanitaryAgendaPresence,
+} from "./integratedInterpretation";
+export { buildIntegratedInterpretation } from "./integratedInterpretation";
+export type {
   VisualForm,
   VisualContractRule,
   VisualProhibition,
