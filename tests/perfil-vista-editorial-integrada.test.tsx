@@ -291,14 +291,18 @@ describe("modelo puro — Vista editorial integrada", () => {
     }
   });
 
-  it("cruza salud mental: el Informe apenas la nombra, los estudios locales la sitúan (open-question)", () => {
-    const block = readingById("salud-mental-infravalorada");
+  it("cruza salud mental de forma defendible: base estructurada escasa vs señal local (open-question)", () => {
+    const block = readingById("salud-mental-señal-local");
     const text = normalized(block.reading);
     expect(block.epistemicStatus).toBe("open-question");
     // Señal local principal (GHQ-12), corroborantes distintas (PSQI, PHQ-9).
     expect(text).toMatch(/ghq-12|malestar psicologico/);
     expect(block.reading).toContain("26.3 %");
-    expect(text).toContain("apenas");
+    // Regla 4: NO se infiere infravaloración del conteo textual; se dice que la
+    // base estructurada ofrece poca información y que el conteo ≠ cobertura.
+    expect(text).toContain("base estructurada disponible ofrece poca informacion");
+    expect(text).toMatch(/no mide cobertura|conteo de menciones/);
+    expect(text).not.toContain("infravalora");
     // El proxy (SF-12 / Sueño EAS) queda como contexto, no como medición local.
     expect(text).toContain("como contexto, no como medicion distrital");
     // La señal local se declara exploratoria, no prevalencia distrital.
@@ -535,7 +539,7 @@ describe("composición documental — estructura editorial", () => {
     expect(ids).toEqual(editorialView.interpretation.units.map((u) => u.id));
     // Cruces esperables del expediente vigente.
     expect(ids).toContain("cronicidad-condiciones-de-vida");
-    expect(ids).toContain("salud-mental-infravalorada");
+    expect(ids).toContain("salud-mental-señal-local");
     expect(ids).toContain("consumos-tabaco-alcohol");
     expect(ids).toContain("apoyo-social-soledad-envejecimiento");
     expect(ids).toContain("mortalidad-escala-desigualdad");

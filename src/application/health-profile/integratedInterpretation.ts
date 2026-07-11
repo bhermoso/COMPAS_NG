@@ -47,11 +47,16 @@ export type IntegratedInterpretationStatus =
   | "plausible-hypothesis" // el cruce descansa en un mecanismo plausible, pendiente de contraste
   | "open-question"; // el Informe calla o solo nombra; la señal local abre la pregunta
 
-/** Presencia del tema en el Informe de Salud. */
+/**
+ * Presencia del tema en la BASE ESTRUCTURADA del Informe (N1), no en el Informe
+ * completo. La base es una extracción parcial: la ausencia de hallazgo
+ * estructurado NO significa ausencia epidemiológica —puede ser tabla no
+ * estructurada, sección no reconocida o contenido no accesible—.
+ */
 export type SanitaryAgendaPresence =
-  | "documented" // hay hallazgo medido o interpretado por el Informe
-  | "textual-only" // el Informe solo lo nombra (presencia textual)
-  | "absent-in-report"; // no aparece en el Informe
+  | "documented" // hay hallazgo estructurado (medido o interpretado) en la base
+  | "textual-only" // solo detectado textualmente (presencia textual), sin estructura
+  | "not-structured"; // sin hallazgo estructurado disponible: no evaluable con la representación actual, no "no documentado"
 
 export interface InterpretationSignalRef {
   id: string;
@@ -107,12 +112,47 @@ export interface IntegratedInterpretationUnit {
   traceability: InterpretationTraceability;
 }
 
+/**
+ * Cobertura de la base epidemiológica estructurada (N1) sobre la que opera N3.
+ * Auditoría (2026-07): N1 recupera principalmente crónicos y cáncer
+ * seleccionados, cribados, mortalidad, intervenciones sobre estilos de vida y
+ * limitaciones territoriales; deja fuera sociodemografía, desigualdad material,
+ * EDO/brotes, estructura de barrios/distritos censales, centros educativos y
+ * gran parte de las tablas. Los recuentos se DERIVAN de la lectura estructurada;
+ * los vacíos son una lista declarada y trazable (no cifras inventadas).
+ */
+export interface EpidemiologicalCoverage {
+  /** Tablas HTML detectadas en el documento original. */
+  detectedTableCount: number;
+  /** Tablas reconocidas por el extractor. */
+  recognizedTableCount: number;
+  /** Tablas reconocidas que llegaron a producir hallazgos estructurados. */
+  structuredTableCount: number;
+  /** Hallazgos estructurados (no meras menciones textuales). */
+  structuredFindingCount: number;
+  /** Señales de presencia textual (agenda por conteo de menciones). */
+  textualPresenceCount: number;
+  /** Dominios epidemiológicos que la base SÍ estructura (derivado). */
+  extractionScope: string[];
+  /** Dominios omitidos o muy incompletos (declarado por auditoría + derivado). */
+  knownGaps: string[];
+  /** Grado de completitud de la base respecto al documento original. */
+  completeness: "partial" | "substantial" | "unknown";
+}
+
 export interface IntegratedInterpretation {
   units: IntegratedInterpretationUnit[];
   /** La desigualdad de escala/desagregación como incertidumbre central. */
   centralUncertainty: string;
   /** Señales locales que no encontraron tema de agenda (no se pierden). */
   unmappedLocalSignalIds: string[];
+  /** Cobertura parcial de N1: N3 opera sobre una base no exhaustiva. */
+  coverage: EpidemiologicalCoverage;
+  /**
+   * Advertencia de no exhaustividad (una sola vez, no por hilo): los hilos son
+   * construibles con la evidencia estructurada, no la agenda sanitaria completa.
+   */
+  nonExhaustiveNotice: string;
 }
 
 // ── Registro declarativo de temas de interpretación ───────────────────────────
@@ -180,10 +220,10 @@ const THEMES: InterpretationTheme[] = [
       "El envejecimiento y la dependencia que nombra el Informe se cruzan con el apoyo social medido en la muestra",
   },
   {
-    id: "salud-mental-infravalorada",
-    title: "Salud mental y malestar: una señal local que el Informe apenas nombra",
+    id: "salud-mental-señal-local",
+    title: "Salud mental y malestar: una señal local que requiere contraste",
     question:
-      "¿La escasa presencia de la salud mental en el Informe se corresponde con lo que sugieren GHQ-12, PHQ-9 y PSQI en la muestra local?",
+      "¿Qué relación hay entre la escasa información estructurada sobre salud mental en la base disponible y la señal que abren GHQ-12, PHQ-9 y PSQI en la muestra local?",
     spaces: ["situacion-salud", "determinantes"],
     agendaUses: [],
     agendaTopicIncludes: ["salud mental"],
@@ -194,7 +234,7 @@ const THEMES: InterpretationTheme[] = [
     mechanismFrame:
       "El malestar emocional y el mal descanso remiten a condiciones psicosociales cotidianas",
     territorialFrame:
-      "El Informe apenas trata la salud mental, pero los estudios locales la sitúan en primer plano",
+      "La base estructurada disponible ofrece poca información específica sobre salud mental —lo que no prueba que el Informe no la trate—, mientras los estudios locales abren una señal",
   },
   {
     id: "consumos-tabaco-alcohol",
@@ -294,13 +334,104 @@ function findingsDelTema(
 function presenciaAgenda(
   findings: HealthReportStructuredFinding[]
 ): SanitaryAgendaPresence {
-  if (findings.length === 0) return "absent-in-report";
+  // Sin hallazgo estructurado NO es "no documentado": es "no evaluable con la
+  // representación disponible" (puede estar en tablas no estructuradas).
+  if (findings.length === 0) return "not-structured";
   const hayDocumentado = findings.some(
     (f) =>
       f.interpretationStatus === "documented-fact" ||
       f.interpretationStatus === "document-authored-interpretation"
   );
   return hayDocumentado ? "documented" : "textual-only";
+}
+
+// ── Cobertura de la base estructurada (derivada, no inventada) ────────────────
+
+// Dominios omitidos o muy incompletos según la auditoría independiente de N1.
+// Es una declaración explícita y trazable de vacíos conocidos, no una cifra.
+const AUDITED_KNOWN_GAPS = [
+  "sociodemografía y estructura poblacional del distrito",
+  "desigualdad material y condiciones socioeconómicas",
+  "envejecimiento como estructura territorial (más allá de la mención)",
+  "EDO, alertas y brotes",
+  "estructura de barrios y distritos censales",
+  "centros educativos y correspondencia centro de salud–distrito–barriada",
+  "recursos presentes en el Informe",
+  "gran parte de las tablas y de las filas de cáncer",
+];
+
+// kind del hallazgo estructurado → etiqueta de dominio cubierto.
+const KIND_A_DOMINIO: Record<string, string> = {
+  "clinical-indicator": "crónicos y cáncer seleccionados",
+  screening: "cribados",
+  mortality: "mortalidad",
+  "territorial-comparison": "comparaciones territoriales",
+  "health-behaviour-intervention": "intervenciones sobre estilos de vida",
+  "declared-limitation": "limitaciones territoriales declaradas",
+};
+
+function buildCoverage(
+  base: HealthReportStructuredReading
+): EpidemiologicalCoverage {
+  const structuredFindings = base.findings.filter(
+    (f) => f.kind !== "textual-agenda"
+  );
+  const textualPresenceCount = base.findings.length - structuredFindings.length;
+  const detectedTableCount = base.originalTableCount ?? base.tables.length;
+  // Reconocida = el extractor le asignó un tema; estructurada = además produjo
+  // hallazgos (su referencia aparece en algún finding). Detectar ≠ reconocer ≠
+  // estructurar.
+  const recognizedTables = base.tables.filter(
+    (t) => t.recognizedTopic !== undefined
+  );
+  const recognizedTableCount = recognizedTables.length;
+  const referenciasConHallazgo = new Set(
+    base.findings
+      .map((f) => f.source.tableReference)
+      .filter((r): r is string => r !== undefined)
+  );
+  const structuredTableCount = recognizedTables.filter((t) =>
+    referenciasConHallazgo.has(t.tableReference)
+  ).length;
+
+  const extractionScope = [
+    ...new Set(
+      structuredFindings
+        .map((f) => KIND_A_DOMINIO[f.kind])
+        .filter((d): d is string => d !== undefined)
+    ),
+  ];
+
+  // Vacío derivado: tablas detectadas que no llegaron a estructurarse.
+  const tablasNoEstructuradas = detectedTableCount - structuredTableCount;
+  const knownGaps = [
+    ...(tablasNoEstructuradas > 0
+      ? [
+          `${tablasNoEstructuradas} de ${detectedTableCount} tablas detectadas no se estructuraron`,
+        ]
+      : []),
+    ...AUDITED_KNOWN_GAPS,
+  ];
+
+  const ratio =
+    detectedTableCount > 0 ? structuredTableCount / detectedTableCount : 0;
+  const completeness: EpidemiologicalCoverage["completeness"] =
+    !base.present || detectedTableCount === 0
+      ? "unknown"
+      : ratio < 0.5
+        ? "partial"
+        : "substantial";
+
+  return {
+    detectedTableCount,
+    recognizedTableCount,
+    structuredTableCount,
+    structuredFindingCount: structuredFindings.length,
+    textualPresenceCount,
+    extractionScope,
+    knownGaps,
+    completeness,
+  };
 }
 
 function toSignalRef(s: IntegratedHealthProfileSignal): InterpretationSignalRef {
@@ -463,7 +594,9 @@ function tramoAgenda(
   if (presence === "textual-only") {
     return frase(
       `${theme.territorialFrame}:`,
-      note !== undefined ? `${note}.` : "el Informe apenas lo nombra."
+      note !== undefined ? `${note}.` : "solo consta como presencia textual.",
+      "El conteo de menciones orienta exploración; no mide cobertura",
+      "epidemiológica ni prevalencia."
     );
   }
   if (presence === "documented") {
@@ -474,7 +607,11 @@ function tramoAgenda(
         : undefined
     );
   }
-  return `${theme.territorialFrame}, aunque el Informe no aporta un hallazgo específico.`;
+  return frase(
+    `${theme.territorialFrame},`,
+    "aunque la base estructurada disponible no aporta un hallazgo específico",
+    "—lo que no equivale a ausencia en el Informe ni a ausencia del problema—."
+  );
 }
 
 function tramoLocal(
@@ -602,8 +739,8 @@ export function buildIntegratedInterpretation(
   for (const theme of THEMES) {
     const findings = findingsDelTema(base, theme);
     const presence = presenciaAgenda(findings);
-    if (presence === "absent-in-report" && theme.n2Dimensions.length === 0) {
-      continue; // sin agenda ni evidencia propia: no se fuerza una unidad vacía
+    if (presence === "not-structured" && theme.n2Dimensions.length === 0) {
+      continue; // sin base estructurada ni evidencia propia: no se fuerza unidad
     }
 
     const sets = theme.n2Dimensions
@@ -756,5 +893,18 @@ export function buildIntegratedInterpretation(
     (id) => !usadas.has(id)
   );
 
-  return { units, centralUncertainty, unmappedLocalSignalIds };
+  const coverage = buildCoverage(base);
+  const nonExhaustiveNotice =
+    "Estos hilos se construyen con la parte del Informe actualmente " +
+    "estructurada y con los estudios incorporados. No son una reproducción " +
+    "exhaustiva de todo el contenido epidemiológico del documento original: " +
+    "la base estructurada es parcial y hay tablas y dominios aún no extraídos.";
+
+  return {
+    units,
+    centralUncertainty,
+    unmappedLocalSignalIds,
+    coverage,
+    nonExhaustiveNotice,
+  };
 }

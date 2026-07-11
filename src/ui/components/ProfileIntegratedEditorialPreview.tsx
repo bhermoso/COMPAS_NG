@@ -86,6 +86,9 @@ export function ProfileIntegratedEditorialPreview({
         <h3 id="pie-reading-title" className="pie-section__title">
           Lectura integrada del territorio
         </h3>
+        {/* Advertencia de no exhaustividad: una sola vez, no por hilo.
+            Reutiliza la clase de nota existente (sin añadir CSS). */}
+        <p className="pie-agenda-intro">{view.interpretation.nonExhaustiveNotice}</p>
         {view.territorialReadings.map((block) => (
           <article key={block.id} className="pie-hilo" aria-labelledby={`pie-h-${block.id}`}>
             <header className="pie-hilo__header">

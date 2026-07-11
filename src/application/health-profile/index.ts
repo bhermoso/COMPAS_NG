@@ -104,6 +104,7 @@ export type {
   InterpretationSignalRef,
   InterpretationTraceability,
   SanitaryAgendaPresence,
+  EpidemiologicalCoverage,
 } from "./integratedInterpretation";
 export { buildIntegratedInterpretation } from "./integratedInterpretation";
 export type {

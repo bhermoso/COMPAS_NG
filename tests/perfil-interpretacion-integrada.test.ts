@@ -94,6 +94,85 @@ beforeAll(() => {
 }, 60000);
 
 // ══════════════════════════════════════════════════════════════════════════════
+// Cobertura parcial de la base epidemiológica (blindaje ante N1 incompleto)
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("cobertura parcial de N1", () => {
+  it("C1+C2. N3 declara cobertura y no la presenta como completa", () => {
+    const c = interp.coverage;
+    expect(c.completeness).toBe("partial");
+    expect(c.completeness).not.toBe("substantial");
+    // Los recuentos se derivan de la lectura estructurada (no cero, no inventados).
+    expect(c.structuredFindingCount).toBeGreaterThan(0);
+    expect(c.detectedTableCount).toBeGreaterThan(0);
+  });
+
+  it("C3. detectar tablas no equivale a estructurarlas", () => {
+    const c = interp.coverage;
+    expect(c.detectedTableCount).toBeGreaterThan(c.recognizedTableCount);
+    expect(c.recognizedTableCount).toBeGreaterThanOrEqual(c.structuredTableCount);
+    // Vacío derivado y trazable: tablas detectadas no estructuradas.
+    expect(c.knownGaps.some((g) => /tablas detectadas no se estructuraron/.test(g))).toBe(
+      true
+    );
+  });
+
+  it("C4. una tabla reconocida sin hallazgos no cuenta como estructurada", () => {
+    const c = interp.coverage;
+    // structuredTableCount cuenta solo tablas con tema reconocido (que estructuran).
+    expect(c.structuredTableCount).toBeLessThanOrEqual(c.recognizedTableCount);
+    expect(c.structuredFindingCount).toBeGreaterThan(c.structuredTableCount);
+  });
+
+  it("C9+C11. los hilos son construibles con lo estructurado, no la agenda exhaustiva", () => {
+    // Advertencia de no exhaustividad presente y sobria (una sola frase).
+    expect(interp.nonExhaustiveNotice.toLowerCase()).toMatch(
+      /no son una reproducción exhaustiva|parcial/
+    );
+    // Las limitaciones de extracción son trazables como vacíos conocidos.
+    expect(interp.coverage.knownGaps.length).toBeGreaterThanOrEqual(5);
+    expect(interp.coverage.extractionScope.length).toBeGreaterThan(0);
+  });
+
+  it("C10. los vacíos conocidos quedan modelados (dominios omitidos)", () => {
+    const gaps = interp.coverage.knownGaps.join(" ").toLowerCase();
+    expect(gaps).toMatch(/sociodemograf/);
+    expect(gaps).toMatch(/edo|brotes/);
+    expect(gaps).toMatch(/barrios|distritos censales/);
+    // Los vacíos NO generan unidades narrativas nuevas.
+    const ids = interp.units.map((u) => u.id);
+    expect(ids).not.toContain("sociodemografia");
+    expect(ids).not.toContain("edo");
+  });
+
+  it("C5. la ausencia de una unidad no implica ausencia epidemiológica", () => {
+    // No hay unidad de EDO/brotes, pero eso NO se afirma como ausencia del
+    // problema: la interpretación nunca dice que el Informe no lo contemple.
+    expect(JSON.stringify(interp)).not.toMatch(
+      /el informe no (contempla|trata|incluye)|no existe el problema|no hay informaci[óo]n epidemiol[óo]gica/i
+    );
+  });
+
+  it("C6+C7+C8. presencia textual no se eleva a hecho ni a prevalencia; salud mental defendible", () => {
+    const sm = unit("salud-mental-señal-local");
+    expect(sm.sanitaryAgenda.presence).toBe("textual-only");
+    const r = sm.reasoning.toLowerCase();
+    // El conteo textual no se interpreta como prevalencia ni cobertura.
+    expect(r).toMatch(/no mide cobertura|conteo de menciones/);
+    expect(r).toContain("base estructurada disponible ofrece poca información");
+    // No se afirma que el Informe "infravalora" la salud mental.
+    expect(r).not.toContain("infravalora");
+    expect(r).not.toContain("el informe apenas trata");
+    // Una mención no se convierte en magnitud.
+    for (const u of interp.units) {
+      if (u.sanitaryAgenda.presence === "textual-only") {
+        expect(u.reasoning.toLowerCase()).not.toMatch(/prevalencia del? \d/);
+      }
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
 // N1 y N2 se consumen conjuntamente; nada queda huérfano
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -142,7 +221,7 @@ describe("N3 consume N1 y N2", () => {
 
 describe("primacía local y contexto", () => {
   it("5. una señal local desplaza al proxy como evidencia principal", () => {
-    const sm = unit("salud-mental-infravalorada");
+    const sm = unit("salud-mental-señal-local");
     expect(localIds(sm)[0]).toBe("trazador-ghq12-positivo");
     // El proxy (SF-12 MCS, Sueño EAS) queda como contexto, no como principal.
     expect(contextIds(sm)).toContain("trazador-sf12-mcs");
@@ -150,7 +229,7 @@ describe("primacía local y contexto", () => {
   });
 
   it("6. el proxy se conserva como contexto declarado, no se descarta", () => {
-    const sm = unit("salud-mental-infravalorada");
+    const sm = unit("salud-mental-señal-local");
     for (const s of sm.contextualSignals) {
       expect(s.esLocal).toBe(false);
       expect(s.caution).toContain("contexto");
@@ -184,14 +263,14 @@ describe("primacía local y contexto", () => {
 
 describe("señales distintas no se fusionan", () => {
   it("7. GHQ-12 y PHQ-9 conviven distintas en salud mental", () => {
-    const ids = allSignalIds(unit("salud-mental-infravalorada"));
+    const ids = allSignalIds(unit("salud-mental-señal-local"));
     expect(ids).toContain("trazador-ghq12-positivo");
     expect(ids).toContain("trazador-phq9-positivo");
     expect(ids.filter((id) => id === "trazador-ghq12-positivo")).toHaveLength(1);
   });
 
   it("8. PSQI y Sueño EAS no se fusionan (local principal, EAS contexto)", () => {
-    const sm = unit("salud-mental-infravalorada");
+    const sm = unit("salud-mental-señal-local");
     const ids = allSignalIds(sm);
     expect(ids).toContain("trazador-psqi-positivo");
     expect(ids).toContain("trazador-sueno-insuficiente");
@@ -304,7 +383,7 @@ describe("trazabilidad y estatus", () => {
   });
 
   it("salud mental sale como open-question: el Informe apenas la nombra", () => {
-    const sm = unit("salud-mental-infravalorada");
+    const sm = unit("salud-mental-señal-local");
     expect(sm.sanitaryAgenda.presence).toBe("textual-only");
     expect(sm.epistemicStatus).toBe("open-question");
   });
