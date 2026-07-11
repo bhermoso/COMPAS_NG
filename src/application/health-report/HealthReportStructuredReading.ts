@@ -6,6 +6,7 @@ import type {
   HealthReportStructuredReading,
   HealthReportStructuredSection,
   HealthReportStructuredTable,
+  HealthReportTerritorialCorrespondence,
 } from "../../domain/health-report";
 
 interface SectionAnchor {
@@ -100,6 +101,7 @@ function emptyReading(): HealthReportStructuredReading {
     sections: [],
     tables: [],
     findings: [],
+    territorialCorrespondences: [],
     limitations: [],
     extractionNotes: [],
   };
@@ -236,6 +238,13 @@ function recognizedTopic(rows: string[][]): string | undefined {
   if (header.includes("tipo cancer") && header.includes("tasas brutas")) return "incidencia de cáncer: tasas brutas";
   if (header.includes("tipo cancer") && header.includes("tasas estandarizadas")) return "incidencia de cáncer: tasas estandarizadas";
   if (header.includes("enfermedades de declaracion obligatoria")) return "enfermedades de declaración obligatoria";
+  // Incremento 4 — tablas de las cinco prioridades.
+  if (header.includes("municipios") && header.includes("tasa envejecimiento")) return "demografía: tasa de envejecimiento por municipio";
+  if (header.includes("municipios") && header.includes("indice dependencia")) return "demografía: índice de dependencia por municipio";
+  if (header.includes("municipios") && header.includes("edad media")) return "demografía: edad media por municipio";
+  if (header.includes("indicador") && header.includes("granada") && header.length < 40) return "desigualdad material: indicadores municipales";
+  if (header.includes("tipo de brote") || header.includes("alerta sanitaria")) return "brotes y alertas sanitarias";
+  if (header.includes("centro salud referencia") && header.includes("distrito censal")) return "correspondencia territorial: centro de salud–distrito–barriada";
   return undefined;
 }
 
@@ -566,7 +575,9 @@ function addCancerFindings(
   if (bruto !== undefined) {
     for (const row of bruto.rows.slice(1)) {
       const topic = row[0];
-      if (!/Mama|Col[oó]n-Recto|Pr[oó]stata|Total todos/i.test(topic)) continue;
+      // Incremento 4 (P5): se estructuran también las filas de cáncer antes
+      // omitidas, siempre que tengan tipo identificable y tasa bruta clara.
+      if (topic === undefined || /^\s*$/.test(topic) || /TIPO C[ÁA]NCER/i.test(topic)) continue;
       const rate = firstNumber(row[row.length - 1]);
       if (rate === undefined) continue;
       addFinding(findings, {
@@ -810,6 +821,252 @@ function addLimitationFindings(
   }
 }
 
+// ── Incremento 4 — Prioridad 1: envejecimiento y estructura demográfica ───────
+// Datos por municipio (provincia de Granada): se extrae SOLO la fila de Granada
+// como contexto/proxy del distrito, nunca como estimación distrital.
+
+function granadaMunicipioRow(
+  table: HealthReportStructuredTable | undefined
+): string[] | undefined {
+  // «Granada (capital)» es el municipio que contiene el distrito Zaidín; NO
+  // confundir con «Provincia Granada» ni «DS Granada-Metrop.» (otras escalas).
+  return table?.rows
+    .slice(1)
+    .find((r) => {
+      const n = normalize(r[0] ?? "");
+      return n.includes("granada") && n.includes("capital");
+    });
+}
+
+function addDemographicFindings(
+  report: HealthReportDocument,
+  findings: HealthReportStructuredFinding[],
+  tables: HealthReportStructuredTable[]
+): void {
+  const specs: Array<{ topic: string; parserTopic: string; unit: string }> = [
+    {
+      topic: "tasa de envejecimiento",
+      parserTopic: "demografía: tasa de envejecimiento por municipio",
+      unit: "% (tasa de envejecimiento)",
+    },
+    {
+      topic: "índice de dependencia",
+      parserTopic: "demografía: índice de dependencia por municipio",
+      unit: "índice de dependencia",
+    },
+    {
+      topic: "edad media de la población",
+      parserTopic: "demografía: edad media por municipio",
+      unit: "años (edad media)",
+    },
+  ];
+  for (const spec of specs) {
+    const table = tableByTopic(tables, spec.parserTopic);
+    const row = granadaMunicipioRow(table);
+    const value = firstNumber(row?.[1]);
+    if (table === undefined || row === undefined || value === undefined) continue;
+    addFinding(findings, {
+      kind: "demographic-indicator",
+      topic: `demografía: ${spec.topic}`,
+      statement: `Granada municipio: ${row[1]} (${spec.topic}); dato municipal usado como contexto del distrito.`,
+      value,
+      unit: spec.unit,
+      geography: geographyFromLabel("Granada municipio"),
+      source: {
+        documentId: report.linkedDocumentId,
+        sectionTitle: "Contexto sociodemográfico",
+        tableReference: table.tableReference,
+        textExcerpt: row.join(" | "),
+      },
+      limitations: [
+        "Dato de escala municipal (Granada), contexto/proxy del distrito: no es estimación distrital ni causa sanitaria demostrada.",
+      ],
+      interpretationStatus: "documented-fact",
+      interpretationUse: ["demography"],
+    });
+  }
+}
+
+// ── Prioridad 2: desigualdad material y estructura sociodemográfica ────────────
+
+function addMaterialInequalityFindings(
+  report: HealthReportDocument,
+  findings: HealthReportStructuredFinding[],
+  tables: HealthReportStructuredTable[]
+): void {
+  const table = tableByTopic(tables, "desigualdad material: indicadores municipales");
+  if (table === undefined) return;
+  for (const row of table.rows.slice(1)) {
+    const label = normalize(row[0] ?? "");
+    const value = firstNumber(row[1]);
+    if (value === undefined) continue;
+    let topic: string | undefined;
+    let unit = "recuento absoluto (personas)";
+    if (label.includes("parado")) {
+      topic = `desigualdad material: ${row[0]}`;
+    } else if (label.includes("bienestar")) {
+      topic = "desigualdad material: índice sintético de bienestar";
+      unit = "índice sintético";
+    }
+    if (topic === undefined) continue;
+    addFinding(findings, {
+      kind: "material-inequality-indicator",
+      topic,
+      statement: `Granada municipio: ${row[1]} (${row[0]}); recuento/índice municipal, no tasa ni estimación distrital.`,
+      value,
+      unit,
+      geography: geographyFromLabel("Granada municipio"),
+      source: {
+        documentId: report.linkedDocumentId,
+        sectionTitle: "Contexto sociodemográfico",
+        tableReference: table.tableReference,
+        textExcerpt: row.join(" | "),
+      },
+      limitations: [
+        "Recuento o índice de escala municipal (Granada): no es una tasa, ni una estimación del distrito, ni una desigualdad medida por barrios.",
+      ],
+      interpretationStatus: "documented-fact",
+      interpretationUse: ["material-inequality"],
+    });
+  }
+}
+
+// ── Prioridad 4: EDO, alertas y brotes (recuentos absolutos, nunca tasas) ──────
+
+function addEpidemiologicalEventFindings(
+  report: HealthReportDocument,
+  findings: HealthReportStructuredFinding[],
+  tables: HealthReportStructuredTable[]
+): void {
+  const edo = tableByTopic(tables, "enfermedades de declaración obligatoria");
+  if (edo !== undefined) {
+    const header = edo.rows[0] ?? [];
+    const colIdx = header.findIndex((c) =>
+      /zaidin vergeles|d\.?\s*zaidin/.test(normalize(c))
+    );
+    if (colIdx > 0) {
+      for (const row of edo.rows.slice(1)) {
+        const disease = row[0];
+        const count = firstNumber(row[colIdx]);
+        if (disease === undefined || count === undefined || count <= 0) continue;
+        addFinding(findings, {
+          kind: "epidemiological-event",
+          topic: `EDO: ${disease}`,
+          statement: `Distrito Zaidín-Vergeles: ${count} caso(s) declarado(s) acumulados 2018-2022 (${disease}).`,
+          value: count,
+          unit: "casos declarados (recuento absoluto)",
+          geography: geographyFromLabel("Distrito Zaidín Vergeles"),
+          period: "2018-2022",
+          source: {
+            documentId: report.linkedDocumentId,
+            sectionTitle: "Enfermedades de Declaración Obligatoria",
+            tableReference: edo.tableReference,
+            textExcerpt: row.join(" | "),
+          },
+          limitations: [
+            "Recuento absoluto de casos EDO acumulados; sin denominador poblacional ni tasa: no comparable como frecuencia ni prevalencia.",
+          ],
+          interpretationStatus: "documented-fact",
+          interpretationUse: ["surveillance"],
+        });
+      }
+    }
+  }
+
+  const brotes = tableByTopic(tables, "brotes y alertas sanitarias");
+  if (brotes !== undefined) {
+    const header = brotes.rows[0] ?? [];
+    const totalIdx = header.findIndex((c) => /total/.test(normalize(c)));
+    for (const row of brotes.rows.slice(1)) {
+      const tipo = row[0];
+      const total = firstNumber(totalIdx > 0 ? row[totalIdx] : row[row.length - 1]);
+      if (tipo === undefined || total === undefined || total <= 0) continue;
+      addFinding(findings, {
+        kind: "epidemiological-event",
+        topic: `brote/alerta: ${tipo}`,
+        statement: `${total} evento(s) registrado(s) 2018-2022 (${tipo}).`,
+        value: total,
+        unit: "eventos (recuento absoluto 2018-2022)",
+        geography: geographyFromLabel("Distrito Zaidín Vergeles"),
+        period: "2018-2022",
+        source: {
+          documentId: report.linkedDocumentId,
+          sectionTitle: "Brotes y Alertas Sanitarias",
+          tableReference: brotes.tableReference,
+          textExcerpt: row.join(" | "),
+        },
+        limitations: [
+          "Recuento absoluto de eventos; sin denominador ni tasa: describe presencia, no incidencia poblacional.",
+        ],
+        interpretationStatus: "documented-fact",
+        interpretationUse: ["surveillance"],
+      });
+    }
+  }
+}
+
+// ── Prioridad 3: correspondencia territorial explícita ────────────────────────
+
+function buildTerritorialCorrespondences(
+  report: HealthReportDocument,
+  tables: HealthReportStructuredTable[]
+): HealthReportTerritorialCorrespondence[] {
+  const table = tableByTopic(
+    tables,
+    "correspondencia territorial: centro de salud–distrito–barriada"
+  );
+  if (table === undefined) return [];
+  return table.rows
+    .slice(1)
+    .map((row) => ({
+      centroSalud: (row[0] ?? "").trim() || undefined,
+      censusDistrict: (row[1] ?? "").trim() || undefined,
+      neighbourhoods: (row[2] ?? "")
+        .split(/[,;]/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0),
+      source: {
+        documentId: report.linkedDocumentId,
+        tableReference: table.tableReference,
+        textExcerpt: clip(row.join(" | ")),
+      },
+    }))
+    .filter((c) => c.centroSalud !== undefined || c.censusDistrict !== undefined);
+}
+
+// ── Estado de estructuración por tabla (detectar ≠ reconocer ≠ estructurar) ────
+
+const NOT_STRUCTURED_REASONS: Array<{ match: RegExp; reason: string }> = [
+  { match: /enseñanzas|centro autorizado|educacion/i, reason: "inventario de centros educativos: fuera del alcance de este incremento" },
+  { match: /entidad|plena inclusion|aldeas infantiles/i, reason: "inventario de entidades/recursos: fuera del alcance de este incremento" },
+  { match: /nucleos de poblacion/i, reason: "población por núcleos: escala no distrital, no priorizada" },
+  { match: /composicion barriadas/i, reason: "estructura de barriadas: representada como correspondencia territorial, no como hallazgo" },
+];
+
+function assignTableStructuringStatus(
+  tables: HealthReportStructuredTable[],
+  findings: HealthReportStructuredFinding[]
+): void {
+  const refsConHallazgo = new Set(
+    findings.map((f) => f.source.tableReference).filter((r): r is string => r !== undefined)
+  );
+  for (const table of tables) {
+    if (table.recognizedTopic !== undefined && refsConHallazgo.has(table.tableReference)) {
+      table.structuringStatus = "structured";
+    } else if (table.recognizedTopic !== undefined) {
+      table.structuringStatus = "recognized-not-structured";
+      table.notStructuredReason =
+        "tabla reconocida por tema pero sin hallazgos estructurados en este incremento";
+    } else {
+      table.structuringStatus = "detected-not-structured";
+      const header = normalize(table.rows[0]?.join(" ") ?? "");
+      table.notStructuredReason =
+        NOT_STRUCTURED_REASONS.find((r) => r.match.test(header))?.reason ??
+        "tabla detectada sin tema reconocido ni semántica estructurable fiable";
+    }
+  }
+}
+
 export function buildHealthReportStructuredReading(
   report: HealthReportDocument | undefined
 ): HealthReportStructuredReading {
@@ -827,12 +1084,28 @@ export function buildHealthReportStructuredReading(
   addScreeningFindings(report, findings, tables);
   addLifestyleInterventionFindings(report, findings, sections);
   addMortalityFindings(report, findings, sections, limitations);
+  // Incremento 4 — cobertura epidemiológica prioritaria.
+  addDemographicFindings(report, findings, tables);
+  addMaterialInequalityFindings(report, findings, tables);
+  addEpidemiologicalEventFindings(report, findings, tables);
   addLimitationFindings(report, findings, limitations);
+
+  const territorialCorrespondences = buildTerritorialCorrespondences(report, tables);
+  assignTableStructuringStatus(tables, findings);
+
+  const detectedNotStructured = tables.filter(
+    (t) => t.structuringStatus === "detected-not-structured"
+  ).length;
+  const recognizedNotStructured = tables.filter(
+    (t) => t.structuringStatus === "recognized-not-structured"
+  ).length;
 
   const extractionNotes = [
     "Lectura derivada: no modifica ni sustituye el Informe de Salud original.",
     "Las menciones textuales se mantienen separadas de los datos tabulares y de las interpretaciones explícitas del documento.",
     "Las tablas se extraen sólo cuando existen como HTML persistido; los gráficos no tabulares no se convierten en cifras.",
+    `Extracción parcial y trazable: ${detectedNotStructured} tabla(s) detectada(s) sin estructurar y ${recognizedNotStructured} reconocida(s) sin hallazgos; su condición se registra, no se rellena con cifras.`,
+    "Los datos municipales (demografía, desigualdad) son contexto/proxy del distrito; los recuentos EDO y de brotes son absolutos, sin denominador ni tasa.",
   ];
   if (tables.length === 0 && report.body.tableCount !== undefined && report.body.tableCount > 0) {
     extractionNotes.push("El documento declara tablas, pero no hay HTML tabular persistido para reconstruir filas.");
@@ -847,6 +1120,7 @@ export function buildHealthReportStructuredReading(
     sections,
     tables,
     findings,
+    territorialCorrespondences,
     limitations,
     extractionNotes,
   };

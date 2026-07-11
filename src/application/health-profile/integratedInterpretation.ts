@@ -348,16 +348,17 @@ function presenciaAgenda(
 // ── Cobertura de la base estructurada (derivada, no inventada) ────────────────
 
 // Dominios omitidos o muy incompletos según la auditoría independiente de N1.
-// Es una declaración explícita y trazable de vacíos conocidos, no una cifra.
+// Vacíos que PERSISTEN tras el Incremento 4. La demografía, la desigualdad
+// material, la EDO/brotes y la correspondencia territorial se recuperaron de
+// forma PARCIAL (municipal-proxy o recuentos absolutos), por lo que sus lagunas
+// se reformulan como estructurales, no como ausencia total.
 const AUDITED_KNOWN_GAPS = [
-  "sociodemografía y estructura poblacional del distrito",
-  "desigualdad material y condiciones socioeconómicas",
-  "envejecimiento como estructura territorial (más allá de la mención)",
-  "EDO, alertas y brotes",
-  "estructura de barrios y distritos censales",
-  "centros educativos y correspondencia centro de salud–distrito–barriada",
-  "recursos presentes en el Informe",
-  "gran parte de las tablas y de las filas de cáncer",
+  "desagregación distrital y por barrios de sociodemografía y desigualdad (los datos recuperados son de escala municipal, proxy)",
+  "denominadores y tasas de EDO y brotes (los recuentos recuperados son absolutos)",
+  "renta, vulnerabilidad y composición social detalladas por sección censal",
+  "gran parte de las tablas municipales no priorizadas (natalidad, extranjería, etc.)",
+  "inventarios de recursos y centros educativos (fuera de alcance de este incremento)",
+  "tablas detectadas con semántica no estructurable de forma fiable",
 ];
 
 // kind del hallazgo estructurado → etiqueta de dominio cubierto.
@@ -368,6 +369,10 @@ const KIND_A_DOMINIO: Record<string, string> = {
   "territorial-comparison": "comparaciones territoriales",
   "health-behaviour-intervention": "intervenciones sobre estilos de vida",
   "declared-limitation": "limitaciones territoriales declaradas",
+  // Incremento 4 — dominios recuperados (parciales).
+  "demographic-indicator": "estructura demográfica municipal (envejecimiento, dependencia, edad)",
+  "material-inequality-indicator": "desigualdad material municipal (desempleo, bienestar)",
+  "epidemiological-event": "EDO, alertas y brotes (recuentos absolutos)",
 };
 
 function buildCoverage(
@@ -413,14 +418,20 @@ function buildCoverage(
     ...AUDITED_KNOWN_GAPS,
   ];
 
+  // La completitud NO se decide solo por número de tablas: mientras persistan
+  // vacíos estructurales (escala municipal-proxy, recuentos sin denominador,
+  // desagregación distrital ausente) la base sigue siendo parcial aunque suba el
+  // número de tablas estructuradas. No se asciende a «substantial» de forma
+  // automática solo porque aumenten los hallazgos.
   const ratio =
     detectedTableCount > 0 ? structuredTableCount / detectedTableCount : 0;
+  const sinVaciosEstructurales = knownGaps.length === 0;
   const completeness: EpidemiologicalCoverage["completeness"] =
     !base.present || detectedTableCount === 0
       ? "unknown"
-      : ratio < 0.5
-        ? "partial"
-        : "substantial";
+      : ratio >= 0.75 && sinVaciosEstructurales
+        ? "substantial"
+        : "partial";
 
   return {
     detectedTableCount,
