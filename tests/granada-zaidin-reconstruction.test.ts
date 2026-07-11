@@ -227,7 +227,9 @@ describe("Granada-Zaidín — codificación de los artefactos exportados", () =>
       "Granada-Zaidín",
       "Andalucía",
       "COMPÁS",
-      "reconstrucción",
+      // Testigo acentuado del texto UGC inyectado (Incremento 5A): prueba que el
+      // sourceText íntegro de los informes Vigía rehidrata con tildes correctas.
+      "Gestión Clínica",
       "ámbito",
       "—",
     ]) {

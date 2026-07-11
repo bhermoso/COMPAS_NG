@@ -12,7 +12,8 @@
     "test:smoke": "node tests/home-complementary-studies.smoke.mjs",
     "test:atarfe": "node tests/load-atarfe-complete.mjs",
     "rebuild:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/rebuild-granada-zaidin.gen.ts",
-    "restore:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/restore-zaidin-console.gen.ts"
+    "restore:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/restore-zaidin-console.gen.ts",
+    "inject:ugc-sourcetext": "vitest run --config vitest.rebuild.config.ts scripts/demo/inject-ugc-sourcetext.gen.ts"
   },
   "dependencies": {
     "docx": "^9.7.1",

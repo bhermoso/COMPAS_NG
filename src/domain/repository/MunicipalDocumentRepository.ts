@@ -29,6 +29,33 @@ export interface DocumentSource {
   collectedAt?: string;
 }
 
+/**
+ * Naturaleza documental fina (Incremento 5A). Cualifica QUÉ es el documento sin
+ * atomizarlo; NO sustituye a `kind` (que gobierna el display del Repositorio),
+ * lo precisa. Opcional y retrocompatible.
+ */
+export type DocumentNature =
+  | "ugc-clinical-assistance-report"; // informe clínico-asistencial por UGC (Vigilancia Integral de la Salud)
+
+/**
+ * Escala territorial del documento. Explicita que una UGC NO es un distrito
+ * municipal ni un distrito sanitario: evita confundir escalas aguas abajo.
+ */
+export type DocumentTerritorialScale =
+  | "unidad-gestion-clinica"
+  | "distrito"
+  | "municipio"
+  | "unknown";
+
+/**
+ * Modo en que el contenido está presente en el workspace. `full-text-non-atomized`
+ * = texto íntegro persistido, sin atomizar ni interpretar (no genera EvidenceAtoms).
+ */
+export type DocumentContentMode =
+  | "full-text-non-atomized"
+  | "atomized"
+  | "reference-only";
+
 export interface MunicipalDocument {
   id: DocumentId;
   municipalityId: MunicipalityId;
@@ -40,6 +67,12 @@ export interface MunicipalDocument {
   sourceText?: string;
   canGenerateEvidence?: boolean;
   tags: string[];
+  // Metadatos documentales finos (Incremento 5A) — opcionales, retrocompatibles.
+  documentNature?: DocumentNature;
+  territorialScale?: DocumentTerritorialScale;
+  /** Unidad de Gestión Clínica de origen, cuando aplica (p. ej. "Zaidín Sur"). */
+  ugc?: string;
+  contentMode?: DocumentContentMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -64,6 +97,10 @@ export interface AddMunicipalDocumentInput {
   sourceText?: string;
   canGenerateEvidence?: boolean;
   tags?: string[];
+  documentNature?: DocumentNature;
+  territorialScale?: DocumentTerritorialScale;
+  ugc?: string;
+  contentMode?: DocumentContentMode;
 }
 
 function defaultCanGenerateEvidence(kind: DocumentKind): boolean {
@@ -101,6 +138,10 @@ export function addMunicipalDocument(
     canGenerateEvidence:
       input.canGenerateEvidence ?? defaultCanGenerateEvidence(input.kind),
     tags: input.tags ?? [],
+    documentNature: input.documentNature,
+    territorialScale: input.territorialScale,
+    ugc: input.ugc,
+    contentMode: input.contentMode,
     createdAt: now,
     updatedAt: now,
   };

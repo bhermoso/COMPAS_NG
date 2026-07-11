@@ -32,7 +32,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createCompleteMunicipalityWorkspace } from "../../src/application/workspace";
-import { ingestManualDocument } from "../../src/application/document-ingestion";
+import {
+  ingestManualDocument,
+  extractDocxText,
+} from "../../src/application/document-ingestion";
 import { createHealthReportDocumentFromDocx } from "../../src/application/health-report";
 
 import { parseIBSECSV, ibseStudyToEvidenceAtoms } from "../../src/application/ibse";
@@ -310,6 +313,17 @@ function toArrayBuffer(path: string): ArrayBuffer {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
 }
 
+/**
+ * Lee la UGC declarada en el propio texto del informe ("Unidad de Gestión
+ * Clínica: Zaidín Sur"). No se hardcodea: procede del documento fuente.
+ */
+export function extractUgcLabel(sourceText: string): string | undefined {
+  const match = sourceText.match(
+    /Unidad de Gesti[oó]n Cl[ií]nica:\s*(.+?)\s*$/im
+  );
+  return match ? match[1].trim() : undefined;
+}
+
 export async function buildGranadaZaidinWorkspace(): Promise<GranadaZaidinBuildResult> {
   const municipalityId = GRANADA_ZAIDIN_ID;
 
@@ -425,9 +439,14 @@ export async function buildGranadaZaidinWorkspace(): Promise<GranadaZaidinBuildR
     updatedAt: new Date().toISOString(),
   };
 
-  // ── 4. Informes Vigía — referencia documental territorial (sin atomizar) ──
+  // ── 4. Informes Vigía — informes clínico-asistenciales por UGC ────────────
+  // Texto íntegro persistido y trazable, SIN atomizar ni interpretar: no genera
+  // EvidenceAtoms (canGenerateEvidence:false), no altera la línea 92 de
+  // evidencias. La UGC se lee del propio texto ("Unidad de Gestión Clínica: …"),
+  // sin hardcodear. Una UGC NO es un distrito municipal ni un distrito sanitario.
   for (const path of VIGIA_DOCX) {
     const fileName = path.split(/[\\/]/).pop()!;
+    const sourceText = await extractDocxText(toArrayBuffer(path));
     ws = {
       ...ws,
       repository: addMunicipalDocument(ws.repository, {
@@ -436,12 +455,17 @@ export async function buildGranadaZaidinWorkspace(): Promise<GranadaZaidinBuildR
         title: fileName.replace(/\.docx$/i, ""),
         source: {
           system:
-            "Referencia documental territorial — texto no atomizado en la reconstrucción",
+            "Informe clínico-asistencial por UGC (Vigilancia Integral de la Salud) — texto íntegro persistido, no atomizado ni interpretado",
           collectedAt: new Date().toISOString(),
         },
         sourceFileName: fileName,
+        sourceText,
         canGenerateEvidence: false,
         tags: ["territorial-documentation"],
+        documentNature: "ugc-clinical-assistance-report",
+        territorialScale: "unidad-gestion-clinica",
+        ugc: extractUgcLabel(sourceText),
+        contentMode: "full-text-non-atomized",
       }),
       updatedAt: new Date().toISOString(),
     };
