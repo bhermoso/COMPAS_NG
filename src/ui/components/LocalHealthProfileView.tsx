@@ -826,6 +826,15 @@ export function LocalHealthProfileView({
           generatedDate,
         })
       : null;
+  // Recuento honesto de fuentes: Informe de salud + estudios complementarios +
+  // activos comunitarios. `originsSummary` cuenta clases de origen de átomo
+  // (colapsa los 13 estudios en «complementary-study») y subestima la base.
+  const fuentesDiagnostico =
+    diagnosticAnswers !== undefined
+      ? (psl.healthReportTitle ? 1 : 0) +
+        diagnosticAnswers.estudios.totalStudies +
+        (diagnosticAnswers.salutogenica.totalAssets > 0 ? 1 : 0)
+      : psl.originsSummary.length;
 
   return (
     <div className="psl-doc-view">
@@ -845,9 +854,9 @@ export function LocalHealthProfileView({
               {STATUS_LABEL[psl.status]}
             </span>
             <span className="psl-doc-header__date">Generado el {generatedDate}</span>
-            {psl.originsSummary.length > 0 && (
+            {fuentesDiagnostico > 0 && (
               <span className="psl-doc-header__atoms">
-                {psl.originsSummary.length} fuente(s) de diagnóstico incorporada(s)
+                {fuentesDiagnostico} fuente(s) de diagnóstico incorporada(s)
               </span>
             )}
           </div>

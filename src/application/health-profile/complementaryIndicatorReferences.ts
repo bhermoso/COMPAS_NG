@@ -57,6 +57,21 @@ export interface IndicatorComparisonReference {
   narrativeLabel: string;
   /** Prioridad como indicador trazador del bloque (1 = principal). */
   tracerPriority?: number;
+  /**
+   * Dimensión temática fina dentro del bloque diagnóstico. Un bloque puede
+   * contener dimensiones distintas que NO deben fusionarse (p. ej. «consumos»
+   * agrupa alcohol, tabaco y alimentación). La selección de señal principal
+   * opera por dimensión, no por bloque.
+   */
+  dimension: string;
+  /**
+   * Medición sobre una muestra local del propio ámbito (instrumento cargado
+   * desde fichero municipal), no un proxy provincial/autonómico. La primacía
+   * local se decide con este campo, no con `tracerPriority`.
+   */
+  esLocal: boolean;
+  /** Tamaño de muestra válida del estudio, si el agregado lo expone. */
+  sampleSize?: number;
 }
 
 export interface IndicatorReferencesCoverage {
@@ -399,6 +414,79 @@ const INDICATOR_SPECS: IndicatorSpec[] = [
   },
 ];
 
+// ── Dimensión, carácter local y tamaño de muestra (trazabilidad de selección) ─
+//
+// La dimensión es más fina que el bloque: dentro de «consumos» conviven alcohol,
+// tabaco y alimentación, que miden cosas distintas y no se fusionan. La primacía
+// local se decide por instrumento cargado municipalmente, no por tamaño de
+// muestra ni por procedencia (CAGE es «ninguna» pero de escala provincial).
+
+const INDICATOR_DIMENSION: Record<string, string> = {
+  "ibse-indice-total": "bienestar-socioemocional",
+  "ibse-factor-vinculo": "bienestar-socioemocional",
+  "ibse-factor-situacion": "bienestar-socioemocional",
+  "ibse-factor-control": "bienestar-socioemocional",
+  "ibse-factor-persona": "bienestar-socioemocional",
+  "duke-apoyo-global": "apoyo-social",
+  "duke-apoyo-confidencial": "apoyo-social",
+  "duke-apoyo-afectivo": "apoyo-social",
+  "predimed-adherencia": "alimentacion",
+  "sf12-pcs": "salud-fisica-percibida",
+  "sf12-mcs": "salud-mental",
+  "sueno-insuficiente": "sueno",
+  "sueno-no-descansa": "sueno",
+  "cage-riesgo": "alcohol",
+  "cage-ordinal": "alcohol",
+  "auditc-positivo": "alcohol",
+  "ipaq-alta": "actividad-fisica",
+  "ipaq-inactividad": "actividad-fisica",
+  "ghq12-positivo": "salud-mental",
+  "phq9-positivo": "salud-mental",
+  "psqi-positivo": "sueno",
+  "fagerstrom-positivo": "tabaco",
+  "sbq-sedentario": "sedentarismo",
+};
+
+/** Instrumentos cargados desde muestra municipal propia (evidencia local). */
+const LOCAL_INSTRUMENTS = new Set([
+  "AUDIT-C",
+  "GHQ-12",
+  "PHQ-9",
+  "PSQI",
+  "Fagerström",
+  "SBQ",
+]);
+
+/** Accesor de tamaño de muestra válida por indicador (agregado real). */
+const SAMPLE_SIZE_ACCESSOR: Record<
+  string,
+  (w: MunicipalityWorkspace) => number | undefined
+> = {
+  "ibse-indice-total": (w) => w.ibseStudy?.aggregates.nValid,
+  "ibse-factor-vinculo": (w) => w.ibseStudy?.aggregates.nValid,
+  "ibse-factor-situacion": (w) => w.ibseStudy?.aggregates.nValid,
+  "ibse-factor-control": (w) => w.ibseStudy?.aggregates.nValid,
+  "ibse-factor-persona": (w) => w.ibseStudy?.aggregates.nValid,
+  "duke-apoyo-global": (w) => w.dukeStudy?.aggregates.nValidGlobal,
+  "duke-apoyo-confidencial": (w) => w.dukeStudy?.aggregates.nValidConfidential,
+  "duke-apoyo-afectivo": (w) => w.dukeStudy?.aggregates.nValidAffective,
+  "predimed-adherencia": (w) => w.predimedStudy?.aggregates.nValid,
+  "sf12-pcs": (w) => w.sf12Study?.aggregates.nValidPCS,
+  "sf12-mcs": (w) => w.sf12Study?.aggregates.nValidMCS,
+  "sueno-insuficiente": (w) => w.suenoStudy?.aggregates.n,
+  "sueno-no-descansa": (w) => w.suenoStudy?.aggregates.n,
+  "cage-riesgo": (w) => w.cageStudy?.aggregates.nValidCAGER,
+  "cage-ordinal": (w) => w.cageStudy?.aggregates.nValidCAGER,
+  "auditc-positivo": (w) => w.auditcStudy?.aggregates.nValid,
+  "ipaq-alta": (w) => w.ipaqStudy?.aggregates.nValidIPAQ,
+  "ipaq-inactividad": (w) => w.ipaqStudy?.aggregates.nValidIPAQ,
+  "ghq12-positivo": (w) => w.ghq12Study?.aggregates.nValid,
+  "phq9-positivo": (w) => w.phq9Study?.aggregates.nValid,
+  "psqi-positivo": (w) => w.psqiStudy?.aggregates.nValid,
+  "fagerstrom-positivo": (w) => w.fagerstromStudy?.aggregates.nValid,
+  "sbq-sedentario": (w) => w.sbqStudy?.aggregates.nValid,
+};
+
 // ── Utilidades ────────────────────────────────────────────────────────────────
 
 function normalize(value: string): string {
@@ -537,6 +625,19 @@ export function buildIndicatorComparisonReferences(
       : undefined;
     const sourceFile = spec.sourceFile(workspace) ?? "fichero no registrado";
     const andalusiaReference = andalusiaEASReferenceForSpec(spec);
+    const esLocal = LOCAL_INSTRUMENTS.has(spec.instrument);
+    const sampleSize = SAMPLE_SIZE_ACCESSOR[spec.id]?.(workspace);
+    const muestraStr =
+      sampleSize !== undefined ? `n=${sampleSize}` : "muestra declarada";
+    // La cautela distingue evidencia local de proxy contextual: no puede
+    // etiquetarse una muestra municipal como «proxy provincial».
+    const scaleCaution = esLocal
+      ? `Muestra local exploratoria (${muestraStr}) del propio ámbito: señal ` +
+        `orientativa, no representativa ni estimación poblacional del distrito; ` +
+        `requiere contraste comunitario.`
+      : "Evidencia contextual (proxy) de ámbito provincial u origen externo: " +
+        "no constituye estimación específica del distrito y requiere contraste " +
+        "territorial.";
 
     const ref: IndicatorComparisonReference = {
       indicatorId: spec.id,
@@ -554,14 +655,14 @@ export function buildIndicatorComparisonReferences(
       unit: spec.unit,
       source: sourceFile,
       calculationMethod: spec.calculationMethod,
-      scaleCaution:
-        "Evidencia contextual (proxy) de ámbito provincial u origen externo: " +
-        "no constituye estimación específica del distrito y requiere contraste " +
-        "territorial.",
+      scaleCaution,
       demoProxy,
       comparisonReading: "",
       narrativeLabel: spec.narrativeLabel,
       tracerPriority: spec.tracerPriority,
+      dimension: INDICATOR_DIMENSION[spec.id] ?? spec.blockId,
+      esLocal,
+      sampleSize,
     };
     ref.comparisonReading = interpretIndicatorComparison(ref);
     if (ref.andalusiaReference !== undefined) {

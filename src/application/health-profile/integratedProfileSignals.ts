@@ -59,6 +59,18 @@ export interface IntegratedHealthProfileSignal {
   esMencionTextual: boolean;
   /** true cuando el dato es proxy/contexto de escala superior. */
   esProxy: boolean;
+  /** true cuando es una medición sobre muestra local del propio ámbito. */
+  esLocal: boolean;
+  /** Dimensión temática fina (para agrupar sin fusionar señales distintas). */
+  dimension: string;
+  /** Bloque diagnóstico de procedencia (ámbito). */
+  ambito: string;
+  /** Tamaño de muestra válida, si el estudio lo expone. */
+  tamanoMuestra?: number;
+  /** Muestra local pequeña: señal orientativa, no estimación poblacional. */
+  caracterExploratorio: boolean;
+  /** Prioridad editorial como trazador (NO filtra la existencia de la señal). */
+  tracerPriority?: number;
   desigualdad: DesigualdadNoObservable;
   /** Mecanismo social plausible (hipótesis trazable), si existe. */
   mecanismoPlausible?: string;
@@ -196,6 +208,10 @@ export function buildIntegratedProfileSignals(
       valor: `presencia textual: ${s.menciones} mención(es) [${s.terminos.join(", ")}]`,
       esMencionTextual: true,
       esProxy: false,
+      esLocal: false,
+      dimension: "informe-presencia-textual",
+      ambito: "informe",
+      caracterExploratorio: false,
       desigualdad: desigualdadNoObservable(s.dimension, "informe"),
       mecanismoPlausible: buscarMecanismo(s.dimension, answers),
       activoRelacionado: buscarAmbito(s.dimension, answers),
@@ -207,26 +223,38 @@ export function buildIntegratedProfileSignals(
     });
   }
 
-  // 2. Indicadores trazadores de los estudios complementarios.
+  // 2. Señales de los estudios complementarios.
+  //    Toda referencia con valor se convierte en señal: `tracerPriority` es
+  //    jerarquía EDITORIAL (qué destaca la tabla), no un filtro de conocimiento.
+  //    Perder señales locales por no tener prioridad codificada era el defecto.
   const bloquePorId = new Map(
     answers.estudios.diagnosticBlocks.map((b) => [b.id, b])
   );
   for (const r of answers.referencias.references) {
-    if (r.tracerPriority === undefined || r.territorialValue === undefined) {
-      continue;
-    }
+    if (r.territorialValue === undefined) continue;
     const bloque = bloquePorId.get(r.diagnosticBlockId);
     const mecanismo = bloque?.relatedDeterminantHypotheses[0];
+    const muestraStr =
+      r.sampleSize !== undefined ? `n=${r.sampleSize}` : "muestra declarada";
+    const escala = r.esLocal
+      ? `muestra local exploratoria del ámbito (${muestraStr}), no representativa`
+      : r.demoProxy
+        ? "escala municipal/provincial usada como proxy contextual del ámbito"
+        : "muestra territorial/demo declarada";
     signals.push({
       id: `trazador-${r.indicatorId}`,
       senal: r.narrativeLabel,
       fuente: `${r.instrument} — ${r.source}`,
-      escala: r.demoProxy
-        ? "escala municipal/provincial usada como proxy contextual del ámbito"
-        : "muestra territorial/demo declarada",
+      escala,
       valor: formatIndicatorValue(r.territorialValue, r.unit),
       esMencionTextual: false,
       esProxy: r.demoProxy,
+      esLocal: r.esLocal,
+      dimension: r.dimension,
+      ambito: r.diagnosticBlockId,
+      tamanoMuestra: r.sampleSize,
+      caracterExploratorio: r.esLocal,
+      tracerPriority: r.tracerPriority,
       desigualdad: desigualdadNoObservable(r.narrativeLabel, "trazador"),
       mecanismoPlausible: mecanismo,
       activoRelacionado: buscarAmbito(bloque?.title ?? r.narrativeLabel, answers),
@@ -253,6 +281,10 @@ export function buildIntegratedProfileSignals(
         valor: `«${String(grado.valor)}» (${grado.anio})`,
         esMencionTextual: false,
         esProxy: badea.esProxyMunicipioMatriz,
+        esLocal: false,
+        dimension: "contexto-urbano",
+        ambito: "badea",
+        caracterExploratorio: false,
         desigualdad: desigualdadNoObservable(
           "grado de urbanización del municipio de referencia",
           "contexto"
@@ -306,4 +338,77 @@ export function buildIntegratedMatrix(
     estatusCausal: s.estatusCausal,
     pregunta: s.preguntaGrupoMotor,
   }));
+}
+
+// ── Conjuntos de señales por dimensión (selección editorial trazable) ─────────
+//
+// Separa lo que hasta ahora estaba mezclado: conocimiento disponible ≠ señal
+// principal ≠ señales corroborantes ≠ contexto comparativo. La selección
+// principal favorece la evidencia LOCAL cuando existe; los proxies pasan a
+// contexto. Nada se descarta: `all` conserva todas las señales de la dimensión,
+// y la vista decide después cuánto muestra.
+
+export interface IntegratedSignalSet {
+  dimension: string;
+  ambito: string;
+  /** Señal principal: local si la hay; si no, el proxy más informativo. */
+  primary: IntegratedHealthProfileSignal;
+  /** Señales del mismo carácter que la principal, con medida distinta. */
+  corroborating: IntegratedHealthProfileSignal[];
+  /** Señales de contexto (proxy/provincial) cuando la principal es local. */
+  contextual: IntegratedHealthProfileSignal[];
+  /** Todas las señales de la dimensión, sin descartar ninguna. */
+  all: IntegratedHealthProfileSignal[];
+}
+
+// Señales de estudios complementarios: excluye Informe (presencia textual) y
+// BADEA (contexto municipal), que no compiten por primacía de dimensión.
+function esSenalDeEstudio(s: IntegratedHealthProfileSignal): boolean {
+  return !s.esMencionTextual && s.ambito !== "badea";
+}
+
+/** Ordena candidatas a principal: local primero; dentro, mayor prioridad. */
+function ordenPrimacia(
+  a: IntegratedHealthProfileSignal,
+  b: IntegratedHealthProfileSignal
+): number {
+  if (a.esLocal !== b.esLocal) return a.esLocal ? -1 : 1;
+  const pa = a.tracerPriority ?? 99;
+  const pb = b.tracerPriority ?? 99;
+  return pa - pb;
+}
+
+export function buildIntegratedSignalSets(
+  answers: DiagnosticAnswers
+): IntegratedSignalSet[] {
+  const signals = buildIntegratedProfileSignals(answers).filter(esSenalDeEstudio);
+
+  const porDimension = new Map<string, IntegratedHealthProfileSignal[]>();
+  for (const s of signals) {
+    const grupo = porDimension.get(s.dimension) ?? [];
+    grupo.push(s);
+    porDimension.set(s.dimension, grupo);
+  }
+
+  const sets: IntegratedSignalSet[] = [];
+  for (const [dimension, grupo] of porDimension) {
+    const ordenadas = [...grupo].sort(ordenPrimacia);
+    const primary = ordenadas[0];
+    const resto = ordenadas.slice(1);
+    // Corroborantes: mismo carácter (local↔local, proxy↔proxy) que la principal
+    // y medida distinta — se conservan sin fusionarse. Contexto: distinto
+    // carácter (proxies que contextualizan una principal local).
+    const corroborating = resto.filter((s) => s.esLocal === primary.esLocal);
+    const contextual = resto.filter((s) => s.esLocal !== primary.esLocal);
+    sets.push({
+      dimension,
+      ambito: primary.ambito,
+      primary,
+      corroborating,
+      contextual,
+      all: grupo,
+    });
+  }
+
+  return sets;
 }

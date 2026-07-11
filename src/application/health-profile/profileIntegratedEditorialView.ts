@@ -188,7 +188,7 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     variant: "estudio",
     spaces: ["contexto-territorial", "determinantes", "desigualdades"],
     motorQuestionIndexes: [2, 4, 5, 7],
-    preferredSignalIds: ["trazador-ipaq-inactividad", "trazador-sbq-sedentarismo"],
+    preferredSignalIds: ["trazador-ipaq-inactividad", "trazador-sbq-sedentario"],
     preferredAgendaId: "sedentarismo-entorno",
     capacityMatches: ["vida activa", "actividad fisica", "tejido vecinal"],
     signalMatches: ["actividad", "sedentarismo", "ipaq", "sbq", "entorno"],
@@ -228,7 +228,7 @@ const READING_DEFINITIONS: ReadingDefinition[] = [
     variant: "estudio",
     spaces: ["determinantes", "desigualdades", "situacion-salud"],
     motorQuestionIndexes: [2, 4, 5, 7],
-    preferredSignalIds: ["trazador-predimed-adherencia", "trazador-cage-r"],
+    preferredSignalIds: ["trazador-predimed-adherencia", "trazador-cage-riesgo"],
     preferredAgendaId: "consumos-alimentacion",
     capacityMatches: ["adicciones", "educacion", "promocion"],
     signalMatches: ["aliment", "consumo", "predimed", "audit", "cage"],
@@ -807,7 +807,7 @@ function buildClosingColumns(input: {
         sanitarySignal !== undefined
           ? `El Informe de salud fija el hilo sanitario mediante presencia textual de ${sanitarySignal.senal}; no aporta por sí solo distribución interna.`
           : "El hilo sanitario necesita Informe de salud incorporado para sostener la apertura.",
-        `Los estudios trazadores aportan ${synthesis.senalesPrincipales.length} señales para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`,
+        `Los estudios complementarios aportan ${answers.referencias.references.filter((r) => r.tracerPriority !== undefined).length} indicadores trazadores para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`,
       ].filter((item): item is string => item !== undefined)).slice(0, 3),
     },
     {

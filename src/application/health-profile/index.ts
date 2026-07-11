@@ -89,11 +89,13 @@ export {
 export type {
   IntegratedHealthProfileSignal,
   IntegratedMatrixRow,
+  IntegratedSignalSet,
   DistribucionDesigualdad,
 } from "./integratedProfileSignals";
 export {
   buildIntegratedProfileSignals,
   buildIntegratedMatrix,
+  buildIntegratedSignalSets,
 } from "./integratedProfileSignals";
 export type {
   VisualForm,
