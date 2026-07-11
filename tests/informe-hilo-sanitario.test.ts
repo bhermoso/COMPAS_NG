@@ -125,6 +125,164 @@ describe("Informe de salud — lectura sanitaria sustantiva", () => {
     const vacia = buildHealthReportSanitaryReading(undefined);
     expect(vacia.present).toBe(false);
     expect(vacia.senales).toEqual([]);
+    expect(vacia.baseEpidemiologica.present).toBe(false);
+  });
+
+  it("conserva el documento original intacto y añade una base epidemiológica derivada", () => {
+    const originalText = ws.healthReport!.body.originalText;
+    const originalSections = ws.healthReport!.sections.map((s) => ({
+      title: s.title,
+      bodyText: s.bodyText,
+    }));
+    const lectura = buildHealthReportSanitaryReading(ws.healthReport);
+
+    expect(ws.healthReport!.body.originalText).toBe(originalText);
+    expect(ws.healthReport!.sections.map((s) => ({ title: s.title, bodyText: s.bodyText }))).toEqual(
+      originalSections
+    );
+    expect(lectura.baseEpidemiologica.present).toBe(true);
+    expect(lectura.baseEpidemiologica.originalTextAvailable).toBe(true);
+    expect(lectura.baseEpidemiologica.charCount).toBe(ws.healthReport!.body.charCount);
+    expect(lectura.baseEpidemiologica.documentId).toBe(ws.healthReport!.linkedDocumentId);
+  });
+
+  it("recupera secciones sustantivas por anclas sin rellenar las secciones originales vacías", () => {
+    const lectura = buildHealthReportSanitaryReading(ws.healthReport);
+    const secciones = lectura.baseEpidemiologica.sections;
+    expect(secciones.map((s) => s.title)).toEqual(
+      expect.arrayContaining([
+        "Enfermedades Crónicas",
+        "Incidencia de Cáncer",
+        "Cribados",
+        "Estilos de Vida",
+        "Mortalidad",
+      ])
+    );
+    expect(secciones.find((s) => s.title === "Enfermedades Crónicas")!.bodyText.length).toBeGreaterThan(3000);
+    expect(
+      ws.healthReport!.sections.find((s) => s.title === "ANÁLISIS EPIDEMIOLÓGICO")!.bodyText.length
+    ).toBeLessThan(100);
+    expect(secciones.every((s) => s.reconstructionStatus === "from-text-anchors")).toBe(true);
+  });
+
+  it("reconoce tablas persistidas y extrae escalas de Zaidín Centro y Sur", () => {
+    const base = buildHealthReportSanitaryReading(ws.healthReport).baseEpidemiologica;
+    expect(base.originalTableCount).toBe(23);
+    expect(base.tables.length).toBe(23);
+    expect(base.tables.map((t) => t.recognizedTopic)).toEqual(
+      expect.arrayContaining([
+        "cribado colorrectal: participación",
+        "cribado cáncer de mama",
+        "cribado cáncer de cérvix",
+        "proceso cáncer de próstata/HBP",
+      ])
+    );
+
+    const colorrectal = base.findings.filter((f) => f.topic === "cribado colorrectal: participación");
+    const centro = colorrectal.find((f) => f.geography.label === "U.A. Zaidín Centro");
+    const sur = colorrectal.find((f) => f.geography.label === "U.A. Zaidín Sur");
+    expect(centro?.value).toBe(43);
+    expect(centro?.geography.level).toBe("health-care-unit");
+    expect(centro?.geography.isProxyForTargetTerritory).toBe(true);
+    expect(sur?.value).toBe(39);
+    expect(sur?.geography.level).toBe("health-care-unit");
+  });
+
+  it("recupera magnitudes seleccionadas de crónicos, cribados, intervenciones y mortalidad", () => {
+    const base = buildHealthReportSanitaryReading(ws.healthReport).baseEpidemiologica;
+    const topics = base.findings.map((f) => f.topic);
+
+    expect(topics).toEqual(expect.arrayContaining([
+      "insuficiencia cardíaca",
+      "hipertensión arterial",
+      "diabetes mellitus",
+      "EPOC",
+      "demencias",
+      "atención al paciente pluripatológico",
+      "asma infantil",
+      "cribado de cáncer de mama",
+      "cribado de cáncer de cérvix",
+      "proceso cáncer de próstata/HBP",
+      "consejo dietético individual en adultos",
+      "intervención avanzada individual para dejar el tabaco",
+      "mortalidad general",
+    ]));
+
+    const epoc = base.findings.find((f) => f.topic === "EPOC")!;
+    expect(epoc.kind).toBe("clinical-indicator");
+    expect(epoc.interpretationStatus).toBe("document-authored-interpretation");
+    expect(epoc.value).toContain("superior");
+    expect(epoc.source.tableReference).toContain("EPOC");
+    expect(epoc.limitations[0]).toContain("interpretación explícita del Informe");
+
+    const mamaCentro = base.findings.find(
+      (f) => f.topic === "cribado de cáncer de mama" && f.geography.label === "UA Zaidín Centro"
+    )!;
+    expect(mamaCentro.value).toBe(87);
+    expect(mamaCentro.unit).toBe("% captación");
+
+    const cervixSur = base.findings.find(
+      (f) => f.topic === "cribado de cáncer de cérvix" && f.geography.label === "UA Zaidín Sur"
+    )!;
+    expect(cervixSur.value).toBeCloseTo(72.6);
+    expect(cervixSur.numerator).toBe(6323);
+    expect(cervixSur.denominator).toBe(8567);
+
+    const tabacoCentro = base.findings.find(
+      (f) => f.topic === "intervención avanzada individual para dejar el tabaco" &&
+        f.geography.label === "UA Zaidín Centro"
+    )!;
+    expect(tabacoCentro.value).toBeCloseTo(10.7);
+    expect(tabacoCentro.limitations[0]).toContain("no equivale a activo comunitario");
+
+    const mortalidad = base.findings.find((f) => f.topic === "mortalidad general")!;
+    expect(mortalidad.value).toBeCloseTo(10.6);
+    expect(mortalidad.numerator).toBe(2444);
+    expect(mortalidad.geography.level).toBe("municipality");
+  });
+
+  it("vincula las limitaciones declaradas por el Informe a cáncer y mortalidad", () => {
+    const base = buildHealthReportSanitaryReading(ws.healthReport).baseEpidemiologica;
+    expect(base.limitations.join("\n")).toMatch(/no (hay|existen) estadísticas oficiales/i);
+
+    const cancer = base.findings.find((f) => f.topic === "incidencia de cáncer: Mama")!;
+    expect(cancer.geography.level).toBe("municipality");
+    expect(cancer.geography.isProxyForTargetTerritory).toBe(true);
+    expect(cancer.limitations.join(" ")).toContain("barrios o Unidades Asistenciales");
+
+    const mortalidad = base.findings.find((f) => f.topic === "mortalidad general")!;
+    expect(mortalidad.limitations.join(" ")).toContain("barrios o Unidades Asistenciales");
+
+    expect(base.findings.some((f) => f.kind === "declared-limitation")).toBe(true);
+  });
+
+  it("distingue mención textual, dato e interpretación explícita del Informe", () => {
+    const lectura = buildHealthReportSanitaryReading(ws.healthReport);
+    const base = lectura.baseEpidemiologica;
+
+    const mencionCancer = base.findings.find(
+      (f) => f.kind === "textual-agenda" && f.topic === "cáncer y tumores"
+    )!;
+    expect(mencionCancer.interpretationStatus).toBe("textual-presence");
+    expect(mencionCancer.unit).toBe("menciones textuales");
+    expect(mencionCancer.limitations[0]).toContain("no equivale a prevalencia");
+
+    const datoCancer = base.findings.find((f) => f.topic === "incidencia de cáncer: Mama")!;
+    expect(datoCancer.interpretationStatus).toBe("documented-fact");
+    expect(datoCancer.unit).toContain("tasa bruta");
+
+    const cronico = base.findings.find((f) => f.topic === "diabetes mellitus")!;
+    expect(cronico.interpretationStatus).toBe("document-authored-interpretation");
+
+    expect(base.findings[0].kind).not.toBe("textual-agenda");
+    expect(lectura.senales[0].menciones).toBeGreaterThan(0);
+  });
+
+  it("la salida estructurada es determinista y no crea EvidenceAtoms ordinarios del Informe", () => {
+    const a = buildHealthReportSanitaryReading(ws.healthReport).baseEpidemiologica;
+    const b = buildHealthReportSanitaryReading(ws.healthReport).baseEpidemiologica;
+    expect(a).toEqual(b);
+    expect(ws.evidenceStore.atoms.some((atom) => atom.provenance.origin === "health-report")).toBe(false);
   });
 });
 

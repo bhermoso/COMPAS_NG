@@ -14,7 +14,12 @@
  *     archivo ni etiquetas históricas («estilo Atarfe»).
  */
 
-import type { HealthReportDocument } from "../../domain/health-report";
+import type {
+  HealthReportDocument,
+  HealthReportStructuredFinding,
+  HealthReportStructuredReading,
+} from "../../domain/health-report";
+import { buildHealthReportStructuredReading } from "../health-report";
 
 // ── Denominación institucional del Informe ────────────────────────────────────
 
@@ -73,6 +78,8 @@ export interface HealthReportSanitaryReading {
   present: boolean;
   /** Señales sanitarias detectadas, ordenadas por peso de menciones. */
   senales: HealthReportSanitarySignal[];
+  /** Base epidemiológica estructurada derivada del Informe, sin mutar el original. */
+  baseEpidemiologica: HealthReportStructuredReading;
   /** Secciones sanitarias del Informe (títulos reales). */
   seccionesSanitarias: string[];
   /** Qué no permite leer el Informe (declarado, no rellenado). */
@@ -117,6 +124,51 @@ function contar(texto: string, termino: string): number {
   return texto.split(termino).length - 1;
 }
 
+function slugHealthSignal(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function withTextualAgendaFindings(
+  base: HealthReportStructuredReading,
+  healthReport: HealthReportDocument,
+  senales: HealthReportSanitarySignal[]
+): HealthReportStructuredReading {
+  const agenda: HealthReportStructuredFinding[] = senales.map((senal, index) => ({
+    id: `health-report-textual-agenda-${index + 1}-${slugHealthSignal(senal.dimension)}`,
+    kind: "textual-agenda",
+    topic: senal.dimension,
+    statement:
+      `El Informe trata «${senal.dimension}» mediante los términos ` +
+      `${senal.terminos.join(", ")}.`,
+    value: senal.menciones,
+    unit: "menciones textuales",
+    geography: {
+      level: "unknown",
+      label: "ámbito del Informe",
+      isProxyForTargetTerritory: false,
+    },
+    source: {
+      documentId: healthReport.linkedDocumentId,
+      textExcerpt: senal.terminos.join(", "),
+    },
+    limitations: [
+      "La presencia textual no equivale a prevalencia, magnitud epidemiológica ni prioridad territorial.",
+    ],
+    interpretationStatus: "textual-presence",
+    interpretationUse: ["sanitary-thread", "future-human-hypothesis"],
+  }));
+
+  return {
+    ...base,
+    findings: [...base.findings, ...agenda],
+  };
+}
+
 export function buildHealthReportSanitaryReading(
   healthReport: HealthReportDocument | undefined
 ): HealthReportSanitaryReading {
@@ -124,6 +176,7 @@ export function buildHealthReportSanitaryReading(
     return {
       present: false,
       senales: [],
+      baseEpidemiologica: buildHealthReportStructuredReading(undefined),
       seccionesSanitarias: [],
       sinResolver: [],
       charCount: 0,
@@ -147,6 +200,11 @@ export function buildHealthReportSanitaryReading(
     }
   }
   senales.sort((a, b) => b.menciones - a.menciones);
+  const baseEpidemiologica = withTextualAgendaFindings(
+    buildHealthReportStructuredReading(healthReport),
+    healthReport,
+    senales
+  );
 
   const seccionesSanitarias = healthReport.sections
     .filter((s) => SECCION_SANITARIA_RE.test(s.title))
@@ -155,6 +213,7 @@ export function buildHealthReportSanitaryReading(
   return {
     present: true,
     senales,
+    baseEpidemiologica,
     seccionesSanitarias: [...new Set(seccionesSanitarias)],
     sinResolver: [
       "la mayor parte de los apartados no desagrega al nivel del distrito",
