@@ -29,8 +29,10 @@ import type {
 import {
   buildUGCClinicalAssistanceReading,
   buildUGCAssistanceQuestions,
+  selectVisibleUGCAssistanceQuestions,
   MAX_QUESTIONS_TOTAL,
   MAX_SIGNALS_PER_UNIT,
+  MAX_VISIBLE_QUESTIONS,
 } from "../src/application/ugc-clinical-assistance";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
 
@@ -301,5 +303,142 @@ describe("5C — Perfil visible contenido (N4)", () => {
       // No despliega listas de indicadores (sin viñetas ni saltos de lista).
       expect(b.clinicalAssistanceQuestion!.includes("Indicador:")).toBe(false);
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Incremento 5D — densidad y visibilidad de las preguntas de contraste
+// ══════════════════════════════════════════════════════════════════════════════
+
+const VISIBLE_UNIT_IDS = [
+  "cronicidad-condiciones-de-vida",
+  "apoyo-social-soledad-envejecimiento",
+  "prevencion-cribados",
+  "mortalidad-escala-desigualdad",
+];
+const TECHNICAL_ONLY_UNIT_IDS = [
+  "consumos-tabaco-alcohol",
+  "alimentacion-sobrepeso",
+];
+
+describe("5D — producidas, visibles y solo-técnicas", () => {
+  it("1. todas las preguntas siguen existiendo en el modelo técnico (6)", () => {
+    expect(answers.ugcAssistanceQuestions.length).toBe(6);
+    // Cada unidad convergente conserva su pregunta en el modelo N3.
+    const withQ = interp.units.filter((u) => u.clinicalAssistanceQuestions.length > 0);
+    expect(withQ.length).toBe(6);
+  });
+
+  it("2-3. la vista muestra solo las seleccionadas y respeta el límite global", () => {
+    const view = buildProfileIntegratedEditorialView(answers, {
+      territory: ws.municipality.identity.name,
+      status: "Documento de trabajo",
+      informeTitulo: "Informe de salud de El Zaidín",
+    });
+    const visibleIds = view.territorialReadings
+      .filter((b) => b.clinicalAssistanceQuestion !== undefined)
+      .map((b) => b.id)
+      .sort();
+    expect(visibleIds).toEqual([...VISIBLE_UNIT_IDS].sort());
+    expect(visibleIds.length).toBeLessThanOrEqual(MAX_VISIBLE_QUESTIONS);
+  });
+
+  it("4. ninguna unidad muestra más de una pregunta", () => {
+    const view = buildProfileIntegratedEditorialView(answers, {
+      territory: ws.municipality.identity.name,
+      status: "Documento de trabajo",
+      informeTitulo: "Informe de salud de El Zaidín",
+    });
+    // Cada hilo aporta a lo sumo una cadena de contraste (campo único).
+    for (const b of view.territorialReadings) {
+      expect(
+        typeof b.clinicalAssistanceQuestion === "string" ||
+          b.clinicalAssistanceQuestion === undefined
+      ).toBe(true);
+    }
+  });
+
+  it("5. las descartadas no se pierden: quedan como technical-only en el modelo", () => {
+    const technical = answers.ugcAssistanceQuestions.filter(
+      (q) => q.visibility === "technical-only"
+    );
+    expect(technical.map((q) => q.unitId).sort()).toEqual(
+      [...TECHNICAL_ONLY_UNIT_IDS].sort()
+    );
+    // Conservan trazabilidad completa (no se degradan a hecho ni se vacían).
+    for (const q of technical) {
+      expect(q.epistemicStatus).toBe("open-question");
+      expect(q.sourceSignalIds.length).toBeGreaterThan(0);
+      expect(q.documentIds.length).toBeGreaterThan(0);
+      expect(q.ugcs.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("6-8. la selección visible es por utilidad explícita, no por orden ni frecuencia", () => {
+    for (const q of answers.ugcAssistanceQuestions) {
+      expect(q.visibilityRationale.length).toBeGreaterThan(0);
+    }
+    const visible = selectVisibleUGCAssistanceQuestions(answers.ugcAssistanceQuestions);
+    const visibleIds = visible.map((q) => q.unitId);
+    // NO son las 4 primeras en orden de producción (eso incluiría tabaco).
+    const firstFour = answers.ugcAssistanceQuestions.slice(0, 4).map((q) => q.unitId);
+    expect(visibleIds.sort()).not.toEqual(firstFour.sort());
+    // Tabaco tiene señales coincidentes (frecuencia > 0) y AUN ASÍ no es visible:
+    // la exclusión es por utilidad (N2 local suficiente), no por frecuencia.
+    const tabaco = answers.ugcAssistanceQuestions.find(
+      (q) => q.unitId === "consumos-tabaco-alcohol"
+    )!;
+    expect(tabaco.sourceSignalIds.length).toBeGreaterThan(0);
+    expect(tabaco.visibility).toBe("technical-only");
+  });
+
+  it("bug 5D corregido: la pregunta de tabaco cita indicadores de tabaco, no de obesidad", () => {
+    const tabaco = answers.ugcAssistanceQuestions.find(
+      (q) => q.unitId === "consumos-tabaco-alcohol"
+    )!;
+    expect(tabaco.indicatorNames.every((n) => /fumador|tab[aá]qui/i.test(n))).toBe(true);
+    expect(tabaco.indicatorNames.some((n) => /obesidad/i.test(n))).toBe(false);
+  });
+
+  it("9-12. salud mental sin pregunta; A mejorar autoría; sin dirección ni diferencias UGC", () => {
+    const mental = interp.units.find((u) => u.id === "salud-mental-señal-local");
+    expect(mental?.clinicalAssistanceQuestions.length ?? 0).toBe(0);
+    const forbidden = ["peor salud", "peor atención", "una está mejor", "una está peor", "diferencias entre las ugc"];
+    for (const q of answers.ugcAssistanceQuestions) {
+      expect(q.limitations.some((l) => /'A mejorar' es autor[ií]a del documento/i.test(l))).toBe(true);
+      const text = `${q.question} ${q.rationale} ${q.visibilityRationale}`.toLowerCase();
+      for (const f of forbidden) expect(text.includes(f)).toBe(false);
+    }
+  });
+
+  it("13-16. N1a intacto; N1b 384; N2 intacto; N3 consume vía capa intermedia", () => {
+    const baseText = JSON.stringify(answers.sanitaria.baseEpidemiologica ?? {});
+    expect(baseText.includes("% Fumadores que abandonan el hábito")).toBe(false);
+    expect(buildUGCClinicalAssistanceReading(ws).signals.length).toBe(384);
+    const conLocal = interp.units.filter((u) => u.localSignals.length > 0);
+    for (const u of conLocal) {
+      const ugcIds = u.clinicalAssistanceQuestions.flatMap((q) => q.sourceSignalIds);
+      for (const s of u.localSignals) expect(ugcIds).not.toContain(s.id);
+    }
+    // N3 consume las preguntas pre-construidas, no las 384 señales.
+    expect(N3_SOURCE).toContain("answers.ugcAssistanceQuestions");
+    expect(N3_SOURCE).not.toContain("buildUGCAssistanceQuestions");
+  });
+
+  it("17-18. N4 no muestra listas masivas; 56/92 intacto", () => {
+    const view = buildProfileIntegratedEditorialView(answers, {
+      territory: ws.municipality.identity.name,
+      status: "Documento de trabajo",
+      informeTitulo: "Informe de salud de El Zaidín",
+    });
+    const serialized = JSON.stringify(view);
+    for (const notShown of ["Índice de sobre-envejecimiento", "Centros Educativos Primaria"]) {
+      expect(serialized.includes(notShown)).toBe(false);
+    }
+    expect(ws.repository.documents.length).toBe(20);
+    expect(ws.evidenceStore.atoms.length).toBe(92);
+    expect(
+      ws.evidenceStore.atoms.filter((a) => a.provenance.origin === "localiza-salud").length
+    ).toBe(56);
   });
 });

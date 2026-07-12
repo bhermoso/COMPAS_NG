@@ -22,6 +22,7 @@ import {
   type IntegratedInterpretationUnit,
   type IntegratedInterpretationStatus,
 } from "./integratedInterpretation";
+import { selectVisibleUGCAssistanceQuestions } from "../ugc-clinical-assistance";
 
 export interface ProfileIntegratedEditorialHeader {
   title: string;
@@ -874,7 +875,8 @@ function variantForUnit(unit: IntegratedInterpretationUnit): EvidenceVariant {
 }
 
 function interpretationUnitToReadingBlock(
-  unit: IntegratedInterpretationUnit
+  unit: IntegratedInterpretationUnit,
+  visibleAssistanceUnitIds: ReadonlySet<string>
 ): ProfileIntegratedEditorialReadingBlock {
   const principal = unit.localSignals[0];
   const signal =
@@ -897,7 +899,12 @@ function interpretationUnitToReadingBlock(
     motorQuestion: unit.question,
     variant: variantForUnit(unit),
     epistemicStatus: unit.epistemicStatus,
-    clinicalAssistanceQuestion: unit.clinicalAssistanceQuestions[0]?.question,
+    // Solo se muestra la pregunta de contraste si la unidad está en la selección
+    // visible (auditoría 5D): las demás quedan en el modelo para el espacio técnico.
+    clinicalAssistanceQuestion: visibleAssistanceUnitIds.has(unit.id)
+      ? unit.clinicalAssistanceQuestions.find((q) => q.visibility === "profile")
+          ?.question
+      : undefined,
   };
 }
 
@@ -931,9 +938,18 @@ export function buildProfileIntegratedEditorialView(
   // conserva SOLO como compatibilidad para expedientes sin Informe estructurado
   // (interpretación sin unidades), no como selección principal.
   const interpretation = buildIntegratedInterpretation(answers);
+  // Selección visible de preguntas de contraste asistencial (auditoría 5D): de
+  // todas las producidas, solo las marcadas "profile" y hasta el límite global.
+  const visibleAssistanceUnitIds = new Set(
+    selectVisibleUGCAssistanceQuestions(
+      interpretation.units.flatMap((u) => u.clinicalAssistanceQuestions)
+    ).map((q) => q.unitId)
+  );
   const territorialReadings: ProfileIntegratedEditorialReadingBlock[] =
     interpretation.units.length > 0
-      ? interpretation.units.map(interpretationUnitToReadingBlock)
+      ? interpretation.units.map((unit) =>
+          interpretationUnitToReadingBlock(unit, visibleAssistanceUnitIds)
+        )
       : READING_DEFINITIONS.flatMap((definition) => {
           const signal = pickSignal(signals, usedSignals, definition);
           if (signal === undefined) return [];
