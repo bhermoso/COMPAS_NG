@@ -44,6 +44,11 @@ import type { BadeaMunicipalContext } from "../badea";
 import { getBadeaMunicipalContext } from "../badea";
 import type { HealthReportSanitaryReading } from "./healthReportSanitaryReading";
 import { buildHealthReportSanitaryReading } from "./healthReportSanitaryReading";
+import type { UGCAssistanceQuestion } from "../ugc-clinical-assistance";
+import {
+  buildUGCClinicalAssistanceReading,
+  buildUGCAssistanceQuestions,
+} from "../ugc-clinical-assistance";
 
 // ── Tipos de la capa ──────────────────────────────────────────────────────────
 
@@ -103,6 +108,12 @@ export interface DiagnosticAnswers {
   badeaContexto?: BadeaMunicipalContext;
   /** Hilo sanitario: lectura por presencia del cuerpo del Informe de salud. */
   sanitaria: HealthReportSanitaryReading;
+  /**
+   * Preguntas de contraste asistencial por UGC (N1b → N3), pre-construidas por la
+   * capa intermedia `buildUGCAssistanceQuestions`. N3 las consume como preguntas
+   * abiertas trazadas; NUNCA recorre las 384 señales directamente.
+   */
+  ugcAssistanceQuestions: UGCAssistanceQuestion[];
   /** Síntesis narrativa del técnico, si existe. */
   sintesisTexto?: string;
 }
@@ -416,6 +427,9 @@ export function buildDiagnosticAnswers(
     referencias: buildIndicatorComparisonReferences({ workspace, indicatorTitles }),
     badeaContexto: getBadeaMunicipalContext(workspace.municipality.identity.id),
     sanitaria: buildHealthReportSanitaryReading(workspace.healthReport),
+    ugcAssistanceQuestions: buildUGCAssistanceQuestions(
+      buildUGCClinicalAssistanceReading(workspace)
+    ),
     sintesisTexto: workspace.perfilLocalDeSalud?.sintesisTexto?.trim() || undefined,
   };
 }

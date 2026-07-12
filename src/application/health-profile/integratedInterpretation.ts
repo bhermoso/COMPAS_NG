@@ -23,6 +23,7 @@
  */
 
 import type { DiagnosticAnswers } from "./diagnosticAnswers";
+import type { UGCAssistanceQuestion } from "../ugc-clinical-assistance";
 import type { ProfileSpace } from "../../domain/health-profile";
 import type {
   HealthReportStructuredFinding,
@@ -106,6 +107,13 @@ export interface IntegratedInterpretationUnit {
   plausibleHypotheses: string[];
   /** Preguntas abiertas del técnico que la unidad mantiene vivas. */
   openHumanQuestions: string[];
+  /**
+   * Preguntas de contraste asistencial (N1b) que CONVERGEN con esta unidad.
+   * Complementan la pregunta principal como cuestiones técnicas pendientes; son
+   * `open-question` y NO elevan el `epistemicStatus` de la unidad ni entran en
+   * `sanitaryAgenda`, `plausibleDeterminants` ni en las señales N2. Máximo una.
+   */
+  clinicalAssistanceQuestions: UGCAssistanceQuestion[];
   /** Lectura integrada como razonamiento continuo (valores reales). */
   reasoning: string;
   epistemicStatus: IntegratedInterpretationStatus;
@@ -878,6 +886,11 @@ export function buildIntegratedInterpretation(
       documentAuthoredInterpretations: humano.interpretaciones,
       plausibleHypotheses: humano.hipotesis,
       openHumanQuestions: humano.lagunas,
+      // N1b se consume como preguntas pre-construidas por la capa intermedia; N3
+      // NO recorre las 384 señales. Máximo una pregunta por unidad.
+      clinicalAssistanceQuestions: (answers.ugcAssistanceQuestions ?? [])
+        .filter((q) => q.unitId === theme.id)
+        .slice(0, 1),
       reasoning,
       epistemicStatus,
       traceability: {

@@ -64,6 +64,11 @@ export interface ProfileIntegratedEditorialReadingBlock {
   variant: EvidenceVariant;
   /** Estatus del cruce (N3), cuando la lectura procede de la interpretación integrada. */
   epistemicStatus?: IntegratedInterpretationStatus;
+  /**
+   * Pregunta de contraste asistencial (N1b), si la unidad converge con una señal
+   * UGC. Es una pregunta, no un resultado; máximo una por hilo.
+   */
+  clinicalAssistanceQuestion?: string;
 }
 
 export interface ProfileIntegratedEditorialClosingColumn {
@@ -892,6 +897,7 @@ function interpretationUnitToReadingBlock(
     motorQuestion: unit.question,
     variant: variantForUnit(unit),
     epistemicStatus: unit.epistemicStatus,
+    clinicalAssistanceQuestion: unit.clinicalAssistanceQuestions[0]?.question,
   };
 }
 

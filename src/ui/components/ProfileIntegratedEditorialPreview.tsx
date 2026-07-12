@@ -109,6 +109,15 @@ export function ProfileIntegratedEditorialPreview({
             <p className="pie-hilo__reading">{block.reading}</p>
             <p className="pie-hilo__context">{block.source} · {block.scale}</p>
             <p className="pie-hilo__question">{block.groupMotorQuestion}</p>
+            {/* Contraste asistencial (N1b): una pregunta abierta por hilo,
+                procedente de documentos UGC. No es un resultado. Reutiliza la
+                clase de pregunta; no despliega listas de indicadores. */}
+            {block.clinicalAssistanceQuestion !== undefined ? (
+              <p className="pie-hilo__question">
+                <strong>Contraste asistencial: </strong>
+                {block.clinicalAssistanceQuestion}
+              </p>
+            ) : null}
           </article>
         ))}
       </section>
