@@ -67,7 +67,7 @@ Este principio es invariante. No puede ceder ante consideraciones de convenienci
 | **Plan de Acción** | Borrador técnico de actuaciones derivado del PSL y de la priorización | Producto 6 |
 | **Plan Local de Salud** | Documento institucional definitivo del compromiso municipal | Producto 7 |
 | **Informe de Salud** | Fuente diagnóstica primaria del municipio | Capa documental |
-| **Estudios complementarios** | Los seis instrumentos certificados (IBSE, DUKE, PREDIMED, SF-12, Sueño, CAGE) | Producto 1 |
+| **Estudios complementarios** | Los trece instrumentos vigentes (7 EAS/IBSE: IBSE, DUKE-EAS, PREDIMED-EAS, SF-12 EAS, Sueño EAS, CAGE-EAS, IPAQ-EAS; 6 REDCap: AUDIT-C, GHQ-12, PHQ-9, PSQI, Fagerström, SBQ) | Producto 1 |
 | **Activos comunitarios** | Recursos y fortalezas del territorio identificados | Capa documental |
 | **Priorización ciudadana** | Proceso de participación comunitaria en la selección de temáticas | Capa participativa |
 | **Cautelas metodológicas** | Advertencias sobre calidad, alcance y limitaciones del análisis | Transversal |

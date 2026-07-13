@@ -894,9 +894,10 @@ Intentar definir el PLS antes del PSL-C introduciría acoplamiento prematuro.
 el equipo debe resolver qué indicadores incluir y si los datos de referencia estarán
 disponibles. Estas son preguntas metodológicas previas al diseño del compilador.
 
-**El DD (Diccionario REDCap) no debe congelarse primero.** Depende de que la Biblioteca
-Metodológica esté completa (6/6 instrumentos). Sin SF-12, Sueño y CAGE con módulo completo,
-el DD tiene valor parcial.
+**El DD (Diccionario REDCap) no debe congelarse primero.** La Biblioteca Metodológica
+está completa (13/13 instrumentos con `MethodologicalModule` registrado — H-01 cerrado
+2026-07-13). El bloqueo específico de SF-12, Sueño y CAGE está resuelto. El bloqueo
+que subsiste es la integración Constructor Metodológico → REDCap → EvidenceStore (H-10).
 
 ---
 

@@ -18,9 +18,10 @@ El `LocalHealthProfile` (objeto analítico vivo) y el `LocalHealthProfileCompile
 - `src/domain/health-profile-artifact/LocalHealthProfileArtifact.ts` — artefacto PSL-C
 
 **Pendiente de integración:**
-- Cautelas SAM (Product 2) como campo explícito del PSL
-- Flags explícitos de SF-12, Sueño, CAGE en el objeto LocalHealthProfile
+- Cautelas SAM (Producto 2) como campo explícito del PSL
 - Integración formal de `SampleQualityAssessment` en el pipeline PSL
+
+*(Los flags `sf12Present`, `suenoPresent`, `cagePresent` — D3-01 — están resueltos. Los 13 instrumentos vigentes tienen flag de presencia en `LocalHealthProfile`.)*
 
 ---
 
@@ -47,20 +48,27 @@ La ausencia de cualquier fuente no invalida el PSL. Cada fuente ausente genera u
 | Informe de Salud / Health Report | ✅ Implementada | Referenciado por `documentId`; nunca embebido |
 | EvidenceStore saneado | ✅ Implementado | Vía MIT → `buildLocalHealthProfile` |
 
-### 2.2 Estudios Complementarios — Producto 1 (6 instrumentos certificados)
+### 2.2 Estudios Complementarios — Producto 1 (13 instrumentos)
 
-Los seis instrumentos del Producto 1 contribuyen al PSL a través del EvidenceStore. Sus átomos de evidencia son procesados por el MIT y se reflejan en los Capítulos III y IV del PSL.
+Los trece instrumentos del Producto 1 contribuyen al PSL a través del EvidenceStore. Sus átomos de evidencia son procesados por el MIT y se reflejan en los Capítulos III y IV del PSL.
 
-| Instrumento | Tag canónico | Contribución al PSL |
+Los seis instrumentos originales (`ibsePresent`, `dukePresent`, `predimedPresent`, `sf12Present`, `suenoPresent`, `cagePresent`) tienen flag **obligatorio** en `LocalHealthProfile`. Los siete instrumentos adicionales (`auditcPresent`, `ipaqPresent`, `ghq12Present`, `phq9Present`, `psqiPresent`, `fagerstromPresent`, `sbqPresent`) tienen flag **opcional** (`boolean | undefined`). `complementaryStudyCount` recoge el total de instrumentos presentes.
+
+| Instrumento | Tag canónico | Flag en LocalHealthProfile |
 |---|---|---|
-| IBSE | `ibse` | `ibsePresent: boolean` + evidencia en EvidenceStore |
-| DUKE-EAS | `duke-eas` | `dukePresent: boolean` + evidencia en EvidenceStore |
-| PREDIMED-EAS | `predimed-eas` | `predimedPresent: boolean` + evidencia en EvidenceStore |
-| SF-12 EAS | `sf12-eas` | `complementaryStudyCount` + evidencia en EvidenceStore |
-| Sueño EAS | `sueno-eas` | `suenoPresent: boolean` + evidencia en EvidenceStore |
-| CAGE-EAS | `cage-eas` | `cagePresent: boolean` + evidencia en EvidenceStore |
-
-Los seis instrumentos tienen representación individual en el `LocalHealthProfile` (`ibsePresent`, `dukePresent`, `predimedPresent`, `sf12Present`, `suenoPresent`, `cagePresent`) y en el `LocalHealthProfileArtifact` (`baseDocumental`). Ningún instrumento certificado queda reducido solo a `complementaryStudyCount` — el conteo es redundante y conservado por conveniencia.
+| IBSE | `ibse` | `ibsePresent: boolean` |
+| DUKE-EAS | `duke-eas` | `dukePresent: boolean` |
+| PREDIMED-EAS | `predimed-eas` | `predimedPresent: boolean` |
+| SF-12 EAS | `sf12-eas` | `sf12Present: boolean` |
+| Sueño EAS | `sueno-eas` | `suenoPresent: boolean` |
+| CAGE-EAS | `cage-eas` | `cagePresent: boolean` |
+| IPAQ-EAS | `ipaq-eas` | `ipaqPresent?: boolean` |
+| AUDIT-C | `auditc` | `auditcPresent?: boolean` |
+| GHQ-12 | `ghq12` | `ghq12Present?: boolean` |
+| PHQ-9 | `phq9` | `phq9Present?: boolean` |
+| PSQI | `psqi` | `psqiPresent?: boolean` |
+| Fagerström | `fagerstrom` | `fagerstromPresent?: boolean` |
+| SBQ | `sbq` | `sbqPresent?: boolean` |
 
 ### 2.3 Sistema de Ajuste Muestral — Producto 2 (SAM NG)
 
@@ -174,14 +182,21 @@ La estructura de siete capítulos está implementada y congelada:
 
 | Campo | Estado | Nota |
 |---|---|---|
-| `ibsePresent` | ✅ Implementado | En PSL y PSL-C |
-| `dukePresent` | ✅ Implementado | En PSL y PSL-C |
-| `predimedPresent` | ✅ Implementado | En PSL y PSL-C |
-| `sf12Present` | ✅ Implementado | En PSL y PSL-C (D3-01 resuelto) |
-| `suenoPresent` | ✅ Implementado | En PSL y PSL-C (D3-01 resuelto) |
-| `cagePresent` | ✅ Implementado | En PSL y PSL-C (D3-01 resuelto) |
+| `ibsePresent` | ✅ Implementado | Obligatorio |
+| `dukePresent` | ✅ Implementado | Obligatorio |
+| `predimedPresent` | ✅ Implementado | Obligatorio |
+| `sf12Present` | ✅ Implementado | Obligatorio (D3-01 resuelto) |
+| `suenoPresent` | ✅ Implementado | Obligatorio (D3-01 resuelto) |
+| `cagePresent` | ✅ Implementado | Obligatorio (D3-01 resuelto) |
+| `ipaqPresent` | ✅ Implementado | Opcional (`boolean \| undefined`) |
+| `auditcPresent` | ✅ Implementado | Opcional (`boolean \| undefined`) |
+| `ghq12Present` | ✅ Implementado | Opcional (`boolean \| undefined`) |
+| `phq9Present` | ✅ Implementado | Opcional (`boolean \| undefined`) |
+| `psqiPresent` | ✅ Implementado | Opcional (`boolean \| undefined`) |
+| `fagerstromPresent` | ✅ Implementado | Opcional (`boolean \| undefined`) |
+| `sbqPresent` | ✅ Implementado | Opcional (`boolean \| undefined`) |
 | `samAssessments[]` | ❌ No existe | Pendiente (D3-02) |
-| `complementaryStudyCount` | ✅ Implementado | Total de estudios presentes |
+| `complementaryStudyCount` | ✅ Implementado | Total de instrumentos presentes |
 
 ### 4.2 Secciones del LocalHealthProfileArtifact (PSL-C compilado)
 
@@ -193,9 +208,9 @@ Las secciones del artefacto compilado están definidas en `CONTRACT-LOCAL-HEALTH
 
 ### Producto 1 — Sistema de Estudios Complementarios
 
-Los seis instrumentos aportan EvidenceAtoms al EvidenceStore. El MIT los procesa. El PSL los refleja en los Capítulos III y IV.
+Los trece instrumentos aportan EvidenceAtoms al EvidenceStore. El MIT los procesa. El PSL los refleja en los Capítulos III y IV. Los seis instrumentos originales tienen flag `boolean` obligatorio; los siete adicionales tienen flag `boolean | undefined` opcional.
 
-**La integración es completa** para la vía EvidenceStore → MIT → PSL. La única brecha pendiente es la representación explícita de SF-12, Sueño y CAGE como campos booleanos en el tipo LocalHealthProfile.
+**La integración es completa** para la vía EvidenceStore → MIT → PSL.
 
 Los parsers, algoritmos y agregados de los instrumentos NO son modificados por el PSL en ningún caso.
 
@@ -241,7 +256,7 @@ El Producto 3 se considera completo cuando:
 | `buildLocalHealthProfile` función pura certificada | ✅ |
 | `LocalHealthProfileCompiler` con 7 gates implementado | ✅ |
 | Ciclo de vida PSL (generated → validated → approved) implementado | ✅ parcial (`approved` sin UI handler) |
-| Todos los 6 instrumentos del Producto 1 representados en PSL | ⚠️ Solo 3 con flag explícito |
+| Los 13 instrumentos del Producto 1 representados en PSL | ✅ 6 obligatorios + 7 opcionales |
 | SAM assessments accesibles desde el PSL como cautelas | ❌ Pendiente |
 | PSL-C compilable y persistible acumulativamente | ✅ |
 
@@ -279,7 +294,7 @@ El Producto 3 se considera completo cuando:
 |---|---|
 | `CONTRACT-MIT-PSL.md` | Define el MIT, la Reconciliación y el PSL como objeto analítico interno. Prevalece para definiciones de pipeline. |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER.md` | Define el compilador PSL → PSL-C, los 7 gates y la estructura del artefacto compilado. |
-| `CONTRACT-COMPLEMENTARY-STUDIES.md` | Define los 6 instrumentos del Producto 1 como fuentes del EvidenceStore. |
+| `CONTRACT-COMPLEMENTARY-STUDIES.md` | Define los 13 instrumentos del Producto 1 como fuentes del EvidenceStore. |
 | `CONTRACT-DYNAMIC-TRIPYRAMID.md` | Define SAM (Producto 2) y la vía de integración futura como cautelas del PSL. |
 | `CONTRACT-EVIDENCE-QUALITY.md` | Define las cuatro dimensiones de calidad de evidencia y cómo se mapean a `confidence` en EvidenceAtoms. |
 | `CONTRACT-EVIDENCE.md` | Define EvidenceAtom, EvidenceStore e IntegrityGuard. |
