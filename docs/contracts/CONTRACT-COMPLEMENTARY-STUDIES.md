@@ -48,12 +48,18 @@ de IBSE en COMPÁS NG no le otorga una categoría distinta al resto.
 | Instrumento | Categoría | Estado actual |
 |---|---|---|
 | **IBSE** — Índice de Bienestar Socioemocional | `validated-scale` | Implementado (módulo en `draft`; ver §9) |
-| **DUKE-EAS** — Apoyo social funcional (Duke-UNC-11 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
-| **PREDIMED-EAS** — Adherencia a Dieta Mediterránea (PREDIMED-14 sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
-| **SF-12 EAS** — Salud percibida (PCS/MCS sobre EAS) | `validated-scale` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
-| **Sueño EAS** — Duración y calidad subjetiva del sueño (P33_R / P33A sobre EAS) | `eas-official-block` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
-| **CAGE-EAS** — Riesgo de alcoholismo (CAGE_R / CAGE sobre EAS) | `eas-official-block` | Implementado (sin `MethodologicalModule` en Biblioteca; ver §9a) |
-| **ESCA** — Escalas propias | `municipal-module` | Conceptual |
+| **DUKE-EAS** — Apoyo social funcional (Duke-UNC-11 sobre EAS) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **PREDIMED-EAS** — Adherencia a Dieta Mediterránea (PREDIMED-14 sobre EAS) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **SF-12 EAS** — Salud percibida (PCS/MCS sobre EAS) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **Sueño EAS** — Duración y calidad subjetiva del sueño (P33_R / P33A sobre EAS) | `eas-official-block` | Implementado — módulo en Biblioteca |
+| **CAGE-EAS** — Riesgo de alcoholismo (CAGE_R / CAGE sobre EAS) | `eas-official-block` | Implementado — módulo en Biblioteca |
+| **IPAQ-EAS** — Actividad física y sedentarismo en tiempo libre (IPAQ_DICO / P34A_R sobre EAS) | `eas-official-block` | Implementado — módulo en Biblioteca |
+| **AUDIT-C** — Cribado de consumo de riesgo de alcohol (AUDIT-C municipal) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **GHQ-12** — Cribado de malestar psicológico probable (GHQ-12 municipal) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **PHQ-9** — Cribado de síntomas depresivos (PHQ-9 municipal) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **PSQI** — Calidad global del sueño (Pittsburgh Sleep Quality Index municipal) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **Fagerström (FTND)** — Dependencia a la nicotina en fumadores (FTND municipal) | `validated-scale` | Implementado — módulo en Biblioteca |
+| **SBQ** — Comportamiento sedentario prolongado (SBQ municipal) | `validated-scale` | Implementado — módulo en Biblioteca |
 | Otros instrumentos futuros | — | Sin definir |
 
 El estado "conceptual" significa que el instrumento está reconocido en el
@@ -128,6 +134,13 @@ Cada instrumento tiene un tag canónico único. La correspondencia actual es:
 | SF-12 EAS | `complementary-study` | `"sf12-eas"` |
 | Sueño EAS | `complementary-study` | `"sueno-eas"` |
 | CAGE-EAS | `complementary-study` | `"cage-eas"` |
+| IPAQ-EAS | `complementary-study` | `"ipaq-eas"` |
+| AUDIT-C | `redcap-export` | `"auditc"` |
+| GHQ-12 | `redcap-export` | `"ghq12"` |
+| PHQ-9 | `redcap-export` | `"phq9"` |
+| PSQI | `redcap-export` | `"psqi"` |
+| Fagerström | `redcap-export` | `"fagerstrom"` |
+| SBQ | `redcap-export` | `"sbq"` |
 
 **Nota:** La Priorización Temática comparte `kind: "redcap-export"` con IBSE
 pero no es un Estudio Complementario; es una familia documental distinta con
@@ -447,11 +460,11 @@ de privacidad y una decisión deliberada del equipo.
 
 **I-CE-8 — La ausencia de implementación no implica ausencia conceptual**
 
-SF-12, DUKE, PREDIMED, CAGE y otros instrumentos reconocidos en DOMAIN-MODEL.md
-son Estudios Complementarios en estado "conceptual". No tener parser ni módulo
-registrado no los excluye de la categoría; simplemente indica que su
-implementación está pendiente. El contrato de la categoría se aplica a todos
-ellos cuando se implementen.
+Los 13 instrumentos vigentes están implementados. Futuros instrumentos que se
+reconozcan en el dominio antes de ser implementados seguirán este invariante:
+no tener parser ni módulo registrado no los excluye de la categoría; indica que
+su implementación está pendiente. El contrato de la categoría se aplica a todos
+cuando se implementen.
 
 **I-CE-9 — Un módulo en `draft` es operativo pero no canónico**
 
@@ -482,24 +495,34 @@ los siguientes estados:
 | Instrumento | Estado |
 |---|---|
 | **IBSE** | **Implementado** (módulo en `draft`; pendiente de `validated`) |
-| **DUKE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
-| **PREDIMED-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
-| **SF-12 EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
-| **Sueño EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
-| **CAGE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, inventario. Sin `MethodologicalModule` en Biblioteca (véase nota §9a). |
-| ESCA y otros propios | Conceptual |
+| **DUKE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **PREDIMED-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **SF-12 EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **Sueño EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **CAGE-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **IPAQ-EAS** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **AUDIT-C** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **GHQ-12** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **PHQ-9** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **PSQI** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **Fagerström (FTND)** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| **SBQ** | **Implementado** — dominio, parser, EvidenceAtoms, panel, workspace, `MethodologicalModule` en Biblioteca |
+| Otros instrumentos futuros | Conceptual |
 
-### Nota §9a — Deuda técnica: DUKE-EAS, PREDIMED-EAS, SF-12 EAS, Sueño EAS y CAGE-EAS sin MethodologicalModule
+### Nota §9a — Estado de la Biblioteca Metodológica (H-01 CERRADO)
 
-Los cinco instrumentos EAS están operativos en producción pero no siguen completamente el patrón §10. Específicamente:
+~~Deuda técnica abierta~~ **CERRADA** — todos los 13 instrumentos tienen `MethodologicalModule`
+registrado en `domain/methodology/registry.ts`.
 
-- **No existe `MethodologicalModule`** registrado en `domain/methodology/registry.ts` para ninguno de los cinco.
-- Sus parsers **hardcodean los nombres de columna** (p. ej. `P5701`–`P5711` en DUKE; `Predimed` con fallback a ítems en PREDIMED; `PCS12_SP`/`MCS12_SP` en SF-12; `P33_R`/`P33A` en Sueño; `CAGE_R`/`CAGE` en CAGE), en lugar de derivarlos de un módulo metodológico como hace el parser de IBSE.
-- Las limitaciones metodológicas están declaradas en las cautelas del parser, no en un módulo formal de la Biblioteca.
+Los módulos EAS (DUKE, PREDIMED, SF-12, Sueño, CAGE, IPAQ) están en estado `draft` por las
+mismas razones que IBSE: pendiente de contraste bibliográfico con fuente primaria completa.
+Los instrumentos REDCap municipales (AUDIT-C, GHQ-12, PHQ-9, PSQI, Fagerström, SBQ)
+igualmente en `draft`.
 
-Esta situación es conocida y aceptada en la implementación actual. No bloquea el uso en producción. La formalización de los módulos en la Biblioteca queda como tarea pendiente explícita antes de que los instrumentos puedan transitar al estado `Validado`.
-
-Adicionalmente, DUKE-EAS tiene un `MethodologicalModule` parcial en `domain/methodology/definitions/duke-eas.ts` que **sí está registrado** en el registry y del que el parser DUKE deriva su configuración de columnas. El resto de instrumentos EAS (PREDIMED, SF-12, Sueño, CAGE) no tienen módulo registrado.
+**Deuda residual vigente:** los módulos deben transitar a `validated` antes de que los
+instrumentos puedan considerarse en estado `Validado`. Ver §5.5 para condiciones de transición.
+El patrón §10 se respeta en los instrumentos REDCap; para EAS, los parsers pueden todavía
+derivar columnas hardcodeadas (ver comentarios en cada parser).
 
 ---
 
@@ -566,3 +589,4 @@ documental. Los siguientes aspectos quedan fuera de su alcance:
 | 2026-06-24 | Primera redacción. Establece la taxonomía correcta (Estudios Complementarios como categoría; IBSE como implementación). Documenta el estado actual de IBSE en la Biblioteca Metodológica, el patrón de implementación para futuros instrumentos y los invariantes de privacidad y trazabilidad. |
 | 2026-06-25 | Actualización de estado: DUKE-EAS y PREDIMED-EAS pasan de «Conceptual» a «Implementado» en §2.2 y §9. Se añade nota §9a documentando la deuda técnica por ausencia de `MethodologicalModule` en la Biblioteca Metodológica y la desviación de parsers respecto al patrón §10. |
 | 2026-06-27 | Sprint 0: SF-12 EAS, Sueño EAS y CAGE-EAS pasan de «Conceptual» a «Implementado» (implementados en commits `7f47034`, `20080cd` y `9c73fa0` respectivamente). §3.1 y §3.2 actualizados para reflejar la distinción real entre `kind: "redcap-export"` (IBSE) y `kind: "complementary-study"` (instrumentos EAS). Nota §9a ampliada para incluir los cinco instrumentos EAS sin `MethodologicalModule`. |
+| 2026-07-13 | Fase de gobernanza y consolidación: IPAQ-EAS, AUDIT-C, GHQ-12, PHQ-9, PSQI, Fagerström y SBQ pasan a «Implementado». §2.2, §3.2 y §9 actualizados para reflejar los 13 instrumentos vigentes. H-01 cerrado: todos los instrumentos tienen `MethodologicalModule` en la Biblioteca. Nota §9a actualizada. I-CE-8 actualizado. |

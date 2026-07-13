@@ -98,8 +98,12 @@ metodológica canónica en COMPÁS NG es la referencia institucional del sistema
 | `fecha_encuesta` (bloque identificación) | Definición libre COMPÁS NG |
 | `municipio_cod` (bloque identificación) | Código INE de 5 dígitos |
 | `anio_nacimiento` (bloque identificación) | Definición libre COMPÁS NG (ver §5) |
-| PHQ-9 (futuro) | Instrumento original Kroenke et al. (2001) |
-| IPAQ (futuro) | Instrumento original Craig et al. (2003) |
+| PHQ-9 | Instrumento original Kroenke et al. (2001) — implementado en producción |
+| GHQ-12 | Instrumento original Goldberg (1972) — implementado en producción |
+| PSQI | Instrumento original Buysse et al. (1989) — implementado en producción |
+| Fagerström (FTND) | Test de Dependencia a la Nicotina — implementado en producción |
+| SBQ | Cuestionario de comportamiento sedentario — implementado en producción |
+| AUDIT-C | Instrumento WHO (Bush et al., 1998) — implementado en producción |
 
 ---
 

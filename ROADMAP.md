@@ -1,6 +1,6 @@
 # COMPÁS NG — Hoja de ruta
 
-> Última revisión: 2026-06-28.
+> Última revisión: 2026-07-13.
 > Cada hito se activa solo cuando el anterior está estabilizado y verificado en interfaz.
 
 ---
@@ -25,9 +25,11 @@ El sistema dispone de:
 - Purga de átomos derivados al sustituir un documento canónico.
 - Purga de átomos huérfanos al hidratar desde localStorage.
 - Informe de Salud cargable como DOCX y PDF, preservado como documento íntegro.
-- **Seis Estudios Complementarios implementados**: IBSE (REDCap), DUKE-EAS, PREDIMED-EAS,
-  SF-12 EAS, Sueño EAS y CAGE-EAS (los cinco últimos sobre microdatos EAS Granada).
+- **Trece Estudios Complementarios implementados**: IBSE (REDCap), DUKE-EAS, PREDIMED-EAS,
+  SF-12 EAS, Sueño EAS, CAGE-EAS e IPAQ-EAS (sobre microdatos EAS Granada) más AUDIT-C,
+  GHQ-12, PHQ-9, PSQI, Fagerström y SBQ (encuestas municipales REDCap).
   Cada uno dispone de dominio, parser, EvidenceAtoms, panel UI, workspace y persistencia.
+  Todos tienen `MethodologicalModule` registrado en la Biblioteca Metodológica.
 - Priorización Temática con importación REDCap y explotación estadística.
 - Persistencia por municipio en localStorage con saneamiento de duplicados y reparación
   de trazabilidad (estados inconsistentes study-sin-documento).
@@ -117,10 +119,12 @@ Tareas pendientes:
 
 ## Hito 4 — Consolidación de Estudios Complementarios ✓ COMPLETADO
 
-**Objetivo completado en commits `0bf5026`, `9aad479`, `7f47034`, `20080cd`, `9c73fa0`.**
+**Objetivo completado en commits `0bf5026`, `9aad479`, `7f47034`, `20080cd`, `9c73fa0`
+y ampliado posteriormente con siete instrumentos adicionales.**
 
-Los seis Estudios Complementarios están implementados con dominio, parser, EvidenceAtoms,
-panel UI, workspace y persistencia. El Hito 4 se considera cerrado.
+Los trece Estudios Complementarios están implementados con dominio, parser, EvidenceAtoms,
+panel UI, workspace y persistencia. Todos tienen `MethodologicalModule` registrado en la
+Biblioteca Metodológica. El Hito 4 se considera cerrado.
 
 | Estudio | Fuente | Parser | Estado |
 |---|---|---|---|
@@ -130,11 +134,19 @@ panel UI, workspace y persistencia. El Hito 4 se considera cerrado.
 | SF-12 EAS | EAS CSV | `SF12CSVParser` | ✓ Implementado |
 | Sueño EAS | EAS CSV | `SuenoCSVParser` | ✓ Implementado |
 | CAGE-EAS | EAS CSV | `CAGECSVParser` | ✓ Implementado |
+| IPAQ-EAS | EAS CSV | `IPAQCSVParser` | ✓ Implementado |
+| AUDIT-C | REDCap CSV | `AUDITCCSVParser` | ✓ Implementado |
+| GHQ-12 | REDCap CSV | `GHQ12CSVParser` | ✓ Implementado |
+| PHQ-9 | REDCap CSV | `PHQ9CSVParser` | ✓ Implementado |
+| PSQI | REDCap CSV | `PSQICSVParser` | ✓ Implementado |
+| Fagerström | REDCap CSV | `FagerstromCSVParser` | ✓ Implementado |
+| SBQ | REDCap CSV | `SBQCSVParser` | ✓ Implementado |
 
-**Deuda técnica residual** (documentada en `CONTRACT-COMPLEMENTARY-STUDIES.md §9a`):
-DUKE, PREDIMED, SF-12, Sueño y CAGE carecen de `MethodologicalModule` en la Biblioteca
-Metodológica. Sus parsers hardcodean los nombres de columna en lugar de derivarlos del
-módulo. No bloquea el uso en producción. Necesario antes de transitar al estado `Validado`.
+**Deuda técnica residual** (documentada en `CONTRACT-COMPLEMENTARY-STUDIES.md`):
+Los instrumentos EAS (DUKE, PREDIMED, SF-12, Sueño, CAGE, IPAQ) tienen módulos
+metodológicos registrados pero varios parsers EAS derivaron inicialmente sus columnas
+de forma hardcodeada. Pendiente completar la transición al estado `Validado` para
+todos los módulos en `draft`. No bloquea el uso en producción.
 
 **Restricción vigente:** Ningún estudio activa automáticamente recomendaciones ni modifica
 el Plan de Acción.

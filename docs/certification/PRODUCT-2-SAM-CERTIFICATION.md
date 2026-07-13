@@ -269,6 +269,8 @@ Ningún archivo de `src/` preexistente fue modificado durante la implementación
 | `assessIBSEStudyFull()` | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
 | Fixture adulto Atarfe (INE 2022) | ✅ Disponible | `fixtures/population/` |
 | Fixture escolar Atarfe (MTI-BDU 2025) | ✅ Disponible | `fixtures/population/` |
+| `populationReferenceRegistry.ts` | ✅ Implementado | `src/application/sam/populationReferenceRegistry.ts` |
+| Consumo desde IBSEPanel (cuando ref. disponible) | ✅ Parcialmente integrado | `src/ui/components/IBSEPanel.tsx` |
 | Tripirámide visual (UI) | ⏳ Pendiente | — |
 | Persistencia en workspace | ⏳ Pendiente | — |
 | `samAssessmentToEvidenceAtom()` | ✅ Implementada | `src/application/sam/SAMAssessmentToEvidenceAtom.ts` |
@@ -340,7 +342,9 @@ La deuda residual del Producto 2 es de naturaleza funcional, no metodológica:
 | Tripirámide visual (UI) | Implementación pendiente | Ningún producto activo |
 | Persistencia en workspace | Implementación pendiente | Ningún producto activo |
 | `EvidenceAtom kind="sample-quality"` | Implementación pendiente | MIT/PSL si se quiere calidad muestral como evidencia |
-| Fixtures para otros municipios | Disponibilidad de datos | Uso de SAM fuera de Atarfe |
+| Fixtures para municipios distintos de Atarfe | Disponibilidad de datos | Uso de SAM en otros municipios |
+
+**Integración parcial completada (2026-07-13):** `populationReferenceRegistry.ts` añadido al módulo SAM. IBSEPanel muestra el dictamen real del motor SAM cuando existe `PopulationReference` verificada para el municipio activo (actualmente solo Atarfe). Para otros municipios (incluido Granada-Zaidín), muestra dictamen heurístico simplificado con nota explícita de ausencia de referencia.
 
 Ninguno de estos elementos condiciona el dictamen de certificación del Producto 2.
 
@@ -352,7 +356,7 @@ La auditoría directa del repositorio —incluyendo lectura de código fuente, t
 
 El motor `computeSampleQualityAssessment()` es correcto, puro e inmutable. Los tipos de dominio `PopulationReference` y `SampleQualityAssessment` son canónicos y completos. La capa de integración `assessStudies.ts` conecta correctamente los seis instrumentos del Producto 1 con el motor sin modificar ninguno de ellos. Los fixtures poblacionales están derivados de fuentes reales verificadas. La evaluación dual de IBSE es metodológicamente correcta y está implementada de forma independiente. La clasificación de calidad muestral es coherente con el contrato `CONTRACT-DYNAMIC-TRIPYRAMID.md` y sus semántica es explícita.
 
-El build es limpio. 573/573 tests pasan, de los cuales 92 verifican directamente el Producto 2. Los 481 tests anteriores no registran ninguna regresión.
+El build es limpio. 573/573 tests pasaban en la emisión original, de los cuales 92 verifican directamente el Producto 2. La suite actual (2215/2215) no registra ninguna regresión en el motor SAM.
 
 > **El Producto 2 — SAM NG queda oficialmente certificado.**
 

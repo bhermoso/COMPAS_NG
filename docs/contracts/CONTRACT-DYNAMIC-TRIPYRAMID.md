@@ -7,19 +7,25 @@
 
 ## Estado
 
-**Motor SAM implementado. Visualización (Tripirámide) pendiente.**
+**Motor SAM implementado y parcialmente integrado en panel IBSE. Visualización (Tripirámide) pendiente.**
 
 El núcleo de cálculo de SAM (motor + integración) está implementado en:
 - `src/domain/sam/` — `PopulationReference`, `SampleQualityAssessment`, `CochranParams`
 - `src/application/sam/computeSampleQualityAssessment.ts` — función pura certificada (Producto 2, Sesión 1)
-- `src/application/sam/assessStudies.ts` — capa de integración tipada con los 6 instrumentos (Producto 2, Sesión 2)
+- `src/application/sam/assessStudies.ts` — capa de integración tipada con los instrumentos complementarios
+- `src/application/sam/populationReferenceRegistry.ts` — registry de `PopulationReferenceSet` por municipio (2026-07-13)
 - `fixtures/population/atarfe-population-2022.ts` — Fuente Poblacional de Referencia adulta, ≥16 años (Padrón INE 2022, N=15.472)
 - `fixtures/population/atarfe-school-population-2025.ts` — Fuente Poblacional escolar 6–17 años (MTI-BDU 2025, N=2.847)
 - `tests/sam.test.ts` — 33 tests unitarios (motor)
-- `tests/sam-integration.test.ts` — 39 tests de integración (6 instrumentos + IBSE dual)
+- `tests/sam-integration.test.ts` — 39 tests de integración (instrumentos + IBSE dual)
+
+**Integración parcial:** `IBSEPanel.tsx` llama a `assessIBSEStudyFull` / `assessIBSEStudy16Plus` cuando el
+registry devuelve una `PopulationReference` para el municipio activo. Para municipios sin referencia
+verificada (p. ej. Granada-Zaidín), muestra dictamen heurístico simplificado con nota explícita.
 
 **Pendiente:** visualización UI (Tripirámide visual), generación de `EvidenceAtom kind="sample-quality"`,
-persistencia en workspace, estratificación, ponderación, desplazamiento, comparación longitudinal.
+persistencia en workspace, estratificación, ponderación, desplazamiento, comparación longitudinal,
+referencias para municipios distintos de Atarfe.
 
 ---
 

@@ -1,7 +1,7 @@
 # CONTRACT-INDEX — Índice maestro de contratos arquitectónicos
 
 > COMPÁS NG — Referencia de arquitectura contractual
-> Última actualización: Sprint 3 — 2026-07-07
+> Última actualización: 2026-07-13 — fase de gobernanza y consolidación del núcleo sanitario
 
 Este documento es la puerta de entrada a la arquitectura contractual de COMPÁS NG.
 No duplica contenido de los contratos. Cada entrada contiene: propósito, alcance, estado y relaciones.
@@ -57,11 +57,11 @@ Contrato de `EvidenceAtom`, `EvidenceStore` y `EvidenceStoreIntegrityGuard`. Def
 ---
 
 ### CONTRACT-COMPLEMENTARY-STUDIES
-**Estado:** VIGENTE
+**Estado:** VIGENTE — revisado 2026-07-13
 
-Contrato de los estudios complementarios como pipeline. Define el flujo canónico (CSV → Parser → Study → EvidenceAtoms → EvidenceStore), los 6 instrumentos admitidos, los invariantes de aislamiento municipal y la regla de no almacenamiento de registros individuales.
+Contrato de los estudios complementarios como pipeline. Define el flujo canónico (CSV → Parser → Study → EvidenceAtoms → EvidenceStore), los 13 instrumentos vigentes (7 EAS + 6 REDCap municipales), los invariantes de aislamiento municipal y la regla de no almacenamiento de registros individuales. H-01 cerrado: todos los instrumentos tienen `MethodologicalModule` en el registry.
 
-**Productores:** Parsers CSV (IBSE, DUKE, PREDIMED, SF-12, Sueño, CAGE).
+**Productores:** Parsers CSV (IBSE, DUKE-EAS, PREDIMED-EAS, SF-12 EAS, Sueño EAS, CAGE-EAS, IPAQ-EAS, AUDIT-C, GHQ-12, PHQ-9, PSQI, Fagerström, SBQ).
 **Consumidores:** EvidenceStore, CONTRACT-SCALE-PANELS (gramática visual).
 **Relacionado con:** CONTRACT-SCALE-PANELS, CONTRACT-EVIDENCE.
 
@@ -72,7 +72,7 @@ Contrato de los estudios complementarios como pipeline. Define el flujo canónic
 
 Gramática editorial de los paneles de estudios complementarios. Distingue tres categorías: bloques obligatorios en UI (metadatos, barras, referencias, recordatorio), bloques condicionales (interpretación asistida, cautelas) y bloques de referencia de sistema (identidad, integraciones). Define también para qué instrumentos aplica la interpretación asistida (solo IBSE entre los actuales).
 
-**Productores:** Paneles React (IBSEPanel, DUKEPanel, PREDIMEDPanel, SF12Panel, SuenoPanel, CAGEPanel).
+**Productores:** Paneles React (IBSEPanel, DUKEPanel, PREDIMEDPanel, SF12Panel, SuenoPanel, CAGEPanel, IPAQPanel, AUDITCPanel, GHQ12Panel, PHQ9Panel, PSQIPanel, FagerstromPanel, SBQPanel).
 **Consumidores:** Equipo técnico (UI).
 **Relacionado con:** CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-EVIDENCE-QUALITY.
 
@@ -86,6 +86,25 @@ Define las cuatro dimensiones de calidad de la evidencia: documental, muestral, 
 **Productores:** Parsers de estudios (calculan confianza), CONTRACT-DYNAMIC-TRIPYRAMID (calidad muestral futura).
 **Consumidores:** MIT (priorización por confianza), PSL (validación de capítulos).
 **Relacionado con:** CONTRACT-EVIDENCE, CONTRACT-DYNAMIC-TRIPYRAMID.
+
+---
+
+## Nivel 1 tardío — Lectura clínico-asistencial UGC
+
+> **Nota de estado (2026-07-13):** Las capas N1b y N3 (interpretación integrada) están implementadas
+> en producción pero sin contrato independiente en el índice. Se documentan aquí como productores/consumidores
+> dentro de los contratos vigentes. No requieren contratos nuevos en esta fase.
+
+**N1b — Lectura clínico-asistencial por UGC** (`src/application/ugc-clinical-assistance/`):
+productor `buildUGCClinicalAssistanceReading(workspace)` — extrae 384 señales de los informes Vigía
+(fuentes `territorial-documentation` con `sourceText`). NO crea EvidenceAtoms. Consume: `MunicipalityWorkspace`.
+Es producido por `buildDiagnosticAnswers` → `answers.ugcAssistanceQuestions` y consumido por `integratedInterpretation`
+únicamente como preguntas de contraste (gate «solo preguntas»).
+
+**N3 — Interpretación integrada** (`src/application/health-profile/integratedInterpretation.ts`):
+productor `buildIntegratedInterpretation(answers)` — genera `IntegratedInterpretation` con unidades por tema
+cruzando señales N1a + N2 + determinantes + desigualdades + capacidades + conocimiento humano.
+Consumido por `buildProfileIntegratedEditorialView` como fuente principal de `territorialReadings` (N4).
 
 ---
 
@@ -234,12 +253,12 @@ Contrato del Compilador del Plan Local de Salud. Define los gates obligatorios (
 ## Infraestructura metodológica
 
 ### CONTRACT-DYNAMIC-TRIPYRAMID
-**Estado:** VIGENTE
+**Estado:** VIGENTE — revisado 2026-07-13
 
-Define el Sistema de Ajuste Muestral (SAM) como capacidad metodológica transversal: `PopulationReference`, `SampleQualityAssessment`, Cochran+FPC como algoritmo por defecto, clasificación high/medium/low. Motor puro implementado y certificado (Producto 2, 2026-06-29). Integración con los 6 instrumentos complementarios implementada. Tripirámide visual, EvidenceAtoms desde SAM y estratificación pendientes.
+Define el Sistema de Ajuste Muestral (SAM) como capacidad metodológica transversal: `PopulationReference`, `SampleQualityAssessment`, Cochran+FPC como algoritmo por defecto, clasificación high/medium/low. Motor puro implementado y certificado (Producto 2, 2026-06-29). `populationReferenceRegistry.ts` añadido (2026-07-13): IBSEPanel consume el motor SAM cuando existe referencia verificada para el municipio activo (actualmente Atarfe). Tripirámide visual, EvidenceAtoms desde SAM y estratificación pendientes.
 
-**Productores:** `computeSampleQualityAssessment()` (motor puro); `assess*Study()` (capa de integración por instrumento).
-**Consumidores:** equipo técnico (dictamen metodológico). EvidenceStore (futuro: átomos `kind: "sample-quality"`), paneles de estudios (futuro: Tripirámide visual).
+**Productores:** `computeSampleQualityAssessment()` (motor puro); `assess*Study()` (capa de integración); `populationReferenceRegistry.ts` (lookup de referencias).
+**Consumidores:** `IBSEPanel` (dictamen SAM cuando ref. disponible). EvidenceStore (futuro: átomos `kind: "sample-quality"`), paneles de estudios (futuro: Tripirámide visual completa).
 **Relacionado con:** CONTRACT-EVIDENCE-QUALITY, CONTRACT-EVIDENCE, CONTRACT-COMPLEMENTARY-STUDIES.
 
 ---
