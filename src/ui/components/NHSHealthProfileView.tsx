@@ -88,7 +88,7 @@ export function NHSHealthProfileView({ artifact }: NHSHealthProfileViewProps) {
       <section className="workspace-panel nhs-portada">
         <div className="nhs-portada__head">
           <div>
-            <p className="eyebrow">Producto 4 · Perfil Comparativo de Salud</p>
+            <p className="eyebrow">Perfil de Salud Local · Diagnóstico Comparativo</p>
             <h2>{artifact.portada.municipalityName}</h2>
             <p className="nhs-portada__province">{artifact.portada.municipalityProvince} · {artifact.portada.year}</p>
           </div>

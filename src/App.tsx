@@ -154,6 +154,7 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Diagnóstico territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
+  { id: "nhs",           label: "Perfil de Salud tipo NHS" },
   { id: "plan",          label: "Plan de Acción" },
   { id: "plan-local",    label: "Plan Local de Salud" },
   { id: "evaluacion",    label: "Evaluación" },
@@ -2663,10 +2664,10 @@ export default function App() {
                       </p>
                     </div>
                     <div className="home-product home-product--2">
-                      <p className="home-product__name">Perfil Ejecutivo de Salud Local</p>
+                      <p className="home-product__name">Perfil de Salud tipo NHS (PSL-NHS)</p>
                       <p className="home-product__desc">
-                        Presentación ejecutiva y sintética del Perfil de Salud Local
-                        destinada a comunicación institucional y apoyo a la toma de decisiones.
+                        Diagnóstico comparativo con indicadores de salud del municipio
+                        y valores de referencia. Destinado a alcaldía y corporación municipal.
                       </p>
                     </div>
                     <div className="home-product home-product--3">
@@ -2984,36 +2985,36 @@ export default function App() {
           </>
         )}
 
-        {/* ── ④b Panel de Salud Local ────────────────── */}
+        {/* ── ④b Perfil de Salud tipo NHS ─────────────── */}
         {view === "nhs" && (
           workspace.nhsArtifact ? (
             <NHSHealthProfileView artifact={workspace.nhsArtifact} />
           ) : (
             <section className="workspace-panel">
-              <p className="eyebrow">Panel de Salud Local · {municipality.name}</p>
-              <h2>Panel de Salud Local</h2>
+              <p className="eyebrow">Perfil de Salud tipo NHS · {municipality.name}</p>
+              <h2>Perfil de Salud tipo NHS</h2>
               <p className="panel-note">
-                El Panel de Salud Local es una síntesis visual del Perfil de Salud Local,
-                con indicadores clave, comparación territorial y mensajes principales para
-                comunicación institucional y ciudadana. Inspirado en los NHS Health Profiles.
+                Diagnóstico comparativo de salud del municipio con indicadores clave
+                y valores de referencia provinciales o nacionales. Destinado a alcaldía,
+                corporación municipal y ciudadanía.
               </p>
               {pslValidated ? (
                 <>
                   <p className="panel-note">
                     El Perfil de Salud Local está validado y hay {runtime.psl.complementaryStudyCount} instrumento(s) disponible(s).
-                    Puede generarse el Panel de Salud Local.
+                    Puede generarse el Perfil de Salud tipo NHS.
                   </p>
                   <button
                     type="button"
                     className="psl-doc-compile-action__btn"
                     onClick={handleCompileNHS}
                   >
-                    Generar Panel de Salud Local
+                    Generar Perfil de Salud tipo NHS
                   </button>
                 </>
               ) : (
                 <p className="panel-note">
-                  El Perfil de Salud Local debe estar validado para generar el Panel de Salud Local.
+                  El Perfil de Salud Local debe estar validado para generar el Perfil de Salud tipo NHS.
                 </p>
               )}
             </section>
