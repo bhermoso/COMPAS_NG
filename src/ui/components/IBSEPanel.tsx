@@ -1,5 +1,11 @@
 import type { IBSEStudy } from "../../domain/ibse";
 import { IBSE_MODULE } from "../../domain/methodology/definitions/ibse";
+import {
+  assessIBSEStudyFull,
+  assessIBSEStudy16Plus,
+  getPopulationReferenceSet,
+} from "../../application/sam";
+import type { SampleQualityLevel } from "../../domain/sam";
 
 interface IBSEPanelProps {
   ibseStudy?: IBSEStudy;
@@ -25,6 +31,12 @@ function getIBSELevel(value: number): "alto" | "medio" | "medio-bajo" | "bajo" {
   if (value >= 60) return "medio";
   if (value >= 50) return "medio-bajo";
   return "bajo";
+}
+
+function samLevelToDisplay(level: SampleQualityLevel): { label: string; key: string } {
+  if (level === "high") return { label: "Adecuada", key: "adecuada" };
+  if (level === "medium") return { label: "Moderada", key: "moderada" };
+  return { label: "Insuficiente", key: "insuficiente" };
 }
 
 function getSampleQualityVerdict(
@@ -65,7 +77,25 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
   const { aggregates: agg } = ibseStudy;
 
   const totalLevel = getIBSELevel(agg.meanTotal);
-  const quality = getSampleQualityVerdict(agg.nValid);
+
+  // Dictamen SAM — usa el motor canónico cuando existe referencia poblacional verificada.
+  const popRefs = getPopulationReferenceSet(ibseStudy.municipalityId);
+  const samSchool = popRefs.school !== undefined
+    ? assessIBSEStudyFull(ibseStudy, popRefs.school)
+    : undefined;
+  const samAdult = popRefs.adult !== undefined
+    ? assessIBSEStudy16Plus(ibseStudy, popRefs.adult)
+    : undefined;
+  const samPrimary = samSchool ?? samAdult;
+
+  const quality = samPrimary !== undefined
+    ? {
+        ...samLevelToDisplay(samPrimary.sampleQuality),
+        note: samPrimary.sampleQualityRationale,
+        isSAM: true as const,
+        sam: samPrimary,
+      }
+    : { ...getSampleQualityVerdict(agg.nValid), isSAM: false as const, sam: undefined };
 
   // Dispersión interfactorial
   const factorValues = [
@@ -230,7 +260,14 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
           </div>
         </div>
         <p className="study-report__quality-note">
-          {quality.note} La evaluación completa de la representatividad requiere el análisis SAM.
+          {quality.note}
+          {quality.isSAM && quality.sam !== undefined && (
+            <> N teórico Cochran: {quality.sam.nTheoretical} · Cobertura: {quality.sam.coverageGlobal.toFixed(1)} %
+            (fuente: {quality.sam.populationReference.source}, {quality.sam.populationReference.year}).</>
+          )}
+          {!quality.isSAM && (
+            <> Sin referencia poblacional verificada para este municipio: valoración heurística sin ajuste Cochran.</>
+          )}
         </p>
       </section>
 
