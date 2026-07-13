@@ -1,5 +1,6 @@
 import type { DUKEStudy } from "../../domain/duke";
 import { DUKE_EAS_MODULE } from "../../domain/methodology/definitions/duke-eas";
+import { getSampleQualityVerdict } from "./studyPanelUtils";
 
 interface DUKEPanelProps {
   dukeStudy?: DUKEStudy;
@@ -27,28 +28,6 @@ function getDukeClinicalLevel(mean: number): "adecuado" | "moderado" | "bajo" {
   if (mean >= 40) return "adecuado";
   if (mean >= 32) return "moderado";
   return "bajo";
-}
-
-function getSampleQualityVerdict(
-  n: number
-): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
-  if (n >= 100)
-    return {
-      label: "Adecuada",
-      key: "adecuada",
-      note: `El tamaño muestral (${n} registros válidos) permite una lectura descriptiva del municipio.`,
-    };
-  if (n >= 30)
-    return {
-      label: "Moderada",
-      key: "moderada",
-      note: `El tamaño muestral (${n} registros válidos) es modesto. Los resultados son descriptivos de la muestra disponible, no estimaciones de la población total.`,
-    };
-  return {
-    label: "Insuficiente",
-    key: "insuficiente",
-    note: `La muestra es reducida (${n} registros válidos). Los resultados deben interpretarse con extrema precaución y no deben utilizarse para generalizaciones sobre el municipio.`,
-  };
 }
 
 function dukeTerritorialNarrative(municipalMean: number, refGranada: number): string {

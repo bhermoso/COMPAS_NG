@@ -1,5 +1,6 @@
 import type { PHQ9Study } from "../../domain/phq9";
 import { PHQ9_MODULE } from "../../domain/methodology/definitions/phq9";
+import { getSampleQualityVerdict } from "./studyPanelUtils";
 
 interface PHQ9PanelProps {
   phq9Study?: PHQ9Study;
@@ -10,12 +11,6 @@ function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
   } catch { return iso.slice(0, 10); }
-}
-
-function getSampleQualityVerdict(n: number): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
-  if (n >= 100) return { label: "Adecuada", key: "adecuada", note: `Tamaño muestral adecuado (${n} registros válidos).` };
-  if (n >= 30) return { label: "Moderada", key: "moderada", note: `Tamaño muestral modesto (${n} registros válidos). Resultados descriptivos.` };
-  return { label: "Insuficiente", key: "insuficiente", note: `Muestra reducida (${n} registros). Precaución extrema.` };
 }
 
 export function PHQ9Panel({ phq9Study, municipalityName }: PHQ9PanelProps) {

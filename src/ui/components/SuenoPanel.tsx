@@ -1,5 +1,6 @@
 import type { SuenoStudy } from "../../domain/sueno";
 import { SUENO_EAS_MODULE } from "../../domain/methodology/definitions/sueno-eas";
+import { getSampleQualityVerdict } from "./studyPanelUtils";
 
 interface SuenoPanelProps {
   suenoStudy?: SuenoStudy;
@@ -17,19 +18,6 @@ function formatDate(iso: string): string {
       day: "numeric", month: "long", year: "numeric",
     });
   } catch { return iso.slice(0, 10); }
-}
-
-function getSampleQualityVerdict(
-  n: number
-): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
-  if (n >= 100)
-    return { label: "Adecuada", key: "adecuada",
-      note: `El tamaño muestral (${n} registros válidos P33_R) permite una lectura descriptiva del municipio.` };
-  if (n >= 30)
-    return { label: "Moderada", key: "moderada",
-      note: `El tamaño muestral (${n} registros válidos P33_R) es modesto. Los resultados son descriptivos de la muestra disponible.` };
-  return { label: "Insuficiente", key: "insuficiente",
-    note: `La muestra es reducida (${n} registros válidos). Interpretar con extrema precaución.` };
 }
 
 const REF_DISCORDANCE_PCT = 29;

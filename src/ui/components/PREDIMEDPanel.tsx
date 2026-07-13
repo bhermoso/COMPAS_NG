@@ -1,5 +1,6 @@
 import type { PREDIMEDStudy } from "../../domain/predimed";
 import { PREDIMED_EAS_MODULE } from "../../domain/methodology/definitions/predimed-eas";
+import { getSampleQualityVerdict } from "./studyPanelUtils";
 
 interface PREDIMEDPanelProps {
   predimedStudy?: PREDIMEDStudy;
@@ -23,19 +24,6 @@ function getPREDIMEDLevel(mean: number): "alta" | "media" | "baja" {
   if (mean >= 9) return "alta";
   if (mean >= 7) return "media";
   return "baja";
-}
-
-function getSampleQualityVerdict(
-  n: number
-): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
-  if (n >= 100)
-    return { label: "Adecuada", key: "adecuada",
-      note: `El tamaño muestral (${n} registros válidos) permite una lectura descriptiva del municipio.` };
-  if (n >= 30)
-    return { label: "Moderada", key: "moderada",
-      note: `El tamaño muestral (${n} registros válidos) es modesto. Los resultados son descriptivos de la muestra disponible.` };
-  return { label: "Insuficiente", key: "insuficiente",
-    note: `La muestra es reducida (${n} registros válidos). Interpretar con extrema precaución.` };
 }
 
 function predimedTerritorialNarrative(municipalMean: number, refGranada: number): string {

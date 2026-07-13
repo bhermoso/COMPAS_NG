@@ -1,5 +1,6 @@
 import type { AUDITCStudy } from "../../domain/auditc";
 import { AUDITC_MODULE } from "../../domain/methodology/definitions/auditc";
+import { getSampleQualityVerdict } from "./studyPanelUtils";
 
 interface AUDITCPanelProps {
   auditcStudy?: AUDITCStudy;
@@ -12,19 +13,6 @@ function formatDate(iso: string): string {
       day: "numeric", month: "long", year: "numeric",
     });
   } catch { return iso.slice(0, 10); }
-}
-
-function getSampleQualityVerdict(
-  n: number
-): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
-  if (n >= 100)
-    return { label: "Adecuada", key: "adecuada",
-      note: `El tamaño muestral (${n} registros válidos) permite una lectura descriptiva.` };
-  if (n >= 30)
-    return { label: "Moderada", key: "moderada",
-      note: `El tamaño muestral (${n} registros válidos) es modesto. Los resultados son descriptivos de la muestra disponible.` };
-  return { label: "Insuficiente", key: "insuficiente",
-    note: `La muestra es reducida (${n} registros). Interpretar con extrema precaución.` };
 }
 
 function getRiskLevel(pct: number): "elevada" | "moderada" | "baja" {

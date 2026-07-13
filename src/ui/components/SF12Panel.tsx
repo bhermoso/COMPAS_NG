@@ -1,5 +1,6 @@
 import type { SF12Study } from "../../domain/sf12";
 import { SF12_EAS_MODULE } from "../../domain/methodology/definitions/sf12-eas";
+import { getSampleQualityVerdict } from "./studyPanelUtils";
 
 interface SF12PanelProps {
   sf12Study?: SF12Study;
@@ -29,19 +30,6 @@ function getSF12NormLevel(
   if (diff > 3)  return { label: "por encima de la referencia española", direction: "above" };
   if (diff < -3) return { label: "por debajo de la referencia española", direction: "below" };
   return { label: "en el rango de la referencia española", direction: "at" };
-}
-
-function getSampleQualityVerdict(
-  n: number
-): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
-  if (n >= 100)
-    return { label: "Adecuada", key: "adecuada",
-      note: `El tamaño muestral (${n} registros válidos) permite una lectura descriptiva del municipio.` };
-  if (n >= 30)
-    return { label: "Moderada", key: "moderada",
-      note: `El tamaño muestral (${n} registros válidos) es modesto. Los resultados son descriptivos de la muestra disponible.` };
-  return { label: "Insuficiente", key: "insuficiente",
-    note: `La muestra es reducida (${n} registros válidos). Interpretar con extrema precaución.` };
 }
 
 const REF_MEAN = 50;
