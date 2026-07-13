@@ -318,8 +318,6 @@ export function EstudiosComplementariosPanel({
   const municipality = municipalityName ?? "Municipio";
   const easSource = "microdatos EAS de Granada (PROV=18), agregados con el parser canónico";
   const anda = ANDALUSIA_REFERENCE_VALUE_BY_INDICATOR;
-  const noAndaluciaTerritorial =
-    "Sin referencia EAS metodológicamente equivalente para Andalucía en este instrumento.";
   const noComparatorTerritorial =
     "Instrumento de administración propia (muestra local). Sin referencia provincial ni autonómica equivalente.";
 
