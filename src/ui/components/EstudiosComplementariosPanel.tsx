@@ -4,6 +4,7 @@ import {
   type GranadaTerritorialReferences,
   type TerritorialComparison as TerritorialComparisonModel,
 } from "../../application/complementary-studies";
+import { ANDALUSIA_REFERENCE_VALUE_BY_INDICATOR } from "../../application/eas-references";
 import type { IBSEStudy } from "../../domain/ibse";
 import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
@@ -316,67 +317,81 @@ export function EstudiosComplementariosPanel({
 
   const municipality = municipalityName ?? "Municipio";
   const easSource = "microdatos EAS de Granada (PROV=18), agregados con el parser canónico";
-  const noAndalucia = "La referencia de Andalucía se mostrará cuando exista un fixture oficial metodológicamente equivalente.";
+  const anda = ANDALUSIA_REFERENCE_VALUE_BY_INDICATOR;
+  const noAndaluciaTerritorial =
+    "Sin referencia EAS metodológicamente equivalente para Andalucía en este instrumento.";
+  const noComparatorTerritorial =
+    "Instrumento de administración propia (muestra local). Sin referencia provincial ni autonómica equivalente.";
+
   const buildComparison = (
     metrics: TerritorialComparisonModel["metrics"],
     source: string | null,
     methodologicalNote?: string,
   ): TerritorialComparisonModel => ({ municipalityName: municipality, metrics, source, methodologicalNote });
+
+  // metric() admite un quinto arg opcional para el valor de Andalucía.
   const metric = (
     label: string,
     municipalityValue: number,
     granadaValue: number | null,
     unit: string,
     direction: "higher-is-favourable" | "lower-is-favourable",
-  ) => ({ label, municipalityValue, granadaValue, andaluciaValue: null, unit, direction });
+    andaluciaValue: number | null = null,
+  ) => ({ label, municipalityValue, granadaValue, andaluciaValue, unit, direction });
 
   const comparisons = {
     ibse: ibseStudy && buildComparison(
       [metric("Índice IBSE", ibseStudy.aggregates.meanTotal, granadaReferences?.ibse.meanTotal ?? null, "/100", "higher-is-favourable")],
       "monitor IBSE provincial de Granada, agregado con el parser canónico",
-      "Referencia contextual provincial; no procede de la EAS ni constituye una estimación poblacional.",
+      "Referencia contextual provincial; no procede de la EAS ni constituye una estimación poblacional. Sin equivalente autonómico EAS.",
     ),
     duke: dukeStudy && buildComparison(
-      [metric("Apoyo social global", dukeStudy.aggregates.meanGlobal, granadaReferences?.duke.meanGlobal ?? null, "/55", "higher-is-favourable")],
-      easSource, noAndalucia,
+      [metric("Apoyo social global", dukeStudy.aggregates.meanGlobal, granadaReferences?.duke.meanGlobal ?? null, "/55", "higher-is-favourable", anda["duke-apoyo-global"] ?? null)],
+      easSource,
     ),
     predimed: predimedStudy && buildComparison(
-      [metric("Adherencia mediterránea", predimedStudy.aggregates.meanScore, granadaReferences?.predimed.meanScore ?? null, "/14", "higher-is-favourable")],
-      easSource, noAndalucia,
+      [metric("Adherencia mediterránea", predimedStudy.aggregates.meanScore, granadaReferences?.predimed.meanScore ?? null, "/14", "higher-is-favourable", anda["predimed-adherencia"] ?? null)],
+      easSource,
     ),
     sf12: sf12Study && buildComparison([
-      metric("Salud física percibida (PCS)", sf12Study.aggregates.meanPCS, granadaReferences?.sf12.meanPCS ?? null, "/100", "higher-is-favourable"),
-      metric("Salud mental percibida (MCS)", sf12Study.aggregates.meanMCS, granadaReferences?.sf12.meanMCS ?? null, "/100", "higher-is-favourable"),
-    ], easSource, noAndalucia),
+      metric("Salud física percibida (PCS)", sf12Study.aggregates.meanPCS, granadaReferences?.sf12.meanPCS ?? null, "/100", "higher-is-favourable", anda["sf12-pcs"] ?? null),
+      metric("Salud mental percibida (MCS)", sf12Study.aggregates.meanMCS, granadaReferences?.sf12.meanMCS ?? null, "/100", "higher-is-favourable", anda["sf12-mcs"] ?? null),
+    ], easSource),
     sueno: suenoStudy && buildComparison([
-      metric("Sueño insuficiente", suenoStudy.aggregates.pctInsufficientSleep, granadaReferences?.sueno.pctInsufficientSleep ?? null, " %", "lower-is-favourable"),
-      metric("Descanso insuficiente", suenoStudy.aggregates.pctNoRest, granadaReferences?.sueno.pctNoRest ?? null, " %", "lower-is-favourable"),
-    ], easSource, noAndalucia),
+      metric("Sueño insuficiente", suenoStudy.aggregates.pctInsufficientSleep, granadaReferences?.sueno.pctInsufficientSleep ?? null, " %", "lower-is-favourable", anda["sueno-insuficiente"] ?? null),
+      metric("Descanso insuficiente", suenoStudy.aggregates.pctNoRest, granadaReferences?.sueno.pctNoRest ?? null, " %", "lower-is-favourable", anda["sueno-no-descansa"] ?? null),
+    ], easSource),
     cage: cageStudy && buildComparison(
-      [metric("Riesgo CAGE", cageStudy.aggregates.pctRisk, granadaReferences?.cage.pctRisk ?? null, " %", "lower-is-favourable")],
-      easSource, noAndalucia,
+      [metric("Riesgo CAGE", cageStudy.aggregates.pctRisk, granadaReferences?.cage.pctRisk ?? null, " %", "lower-is-favourable", anda["cage-riesgo"] ?? null)],
+      easSource,
     ),
     ipaq: ipaqStudy && buildComparison([
-      metric("Actividad física alta", ipaqStudy.aggregates.pctHigh, granadaReferences?.ipaq.pctHigh ?? null, " %", "higher-is-favourable"),
-      metric("Inactividad en tiempo libre", ipaqStudy.aggregates.pctInactive, granadaReferences?.ipaq.pctInactive ?? null, " %", "lower-is-favourable"),
-    ], easSource, noAndalucia),
+      metric("Actividad física alta", ipaqStudy.aggregates.pctHigh, granadaReferences?.ipaq.pctHigh ?? null, " %", "higher-is-favourable", anda["ipaq-alta"] ?? null),
+      metric("Inactividad en tiempo libre", ipaqStudy.aggregates.pctInactive, granadaReferences?.ipaq.pctInactive ?? null, " %", "lower-is-favourable", anda["ipaq-inactividad"] ?? null),
+    ], easSource),
     auditc: auditcStudy && buildComparison(
-      [metric("Cribado AUDIT-C positivo", auditcStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+      [metric("Cribado AUDIT-C positivo", auditcStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")],
+      null, noComparatorTerritorial,
     ),
     ghq12: ghq12Study && buildComparison(
-      [metric("Cribado GHQ-12 positivo", ghq12Study.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+      [metric("Cribado GHQ-12 positivo", ghq12Study.aggregates.pctPositive, null, " %", "lower-is-favourable")],
+      null, noComparatorTerritorial,
     ),
     phq9: phq9Study && buildComparison(
-      [metric("Síntomas depresivos moderados o superiores", phq9Study.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+      [metric("Síntomas depresivos moderados o superiores", phq9Study.aggregates.pctPositive, null, " %", "lower-is-favourable")],
+      null, noComparatorTerritorial,
     ),
     psqi: psqiStudy && buildComparison(
-      [metric("Mala calidad del sueño", psqiStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+      [metric("Mala calidad del sueño", psqiStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")],
+      null, noComparatorTerritorial,
     ),
     fagerstrom: fagerstromStudy && buildComparison(
-      [metric("Dependencia moderada o superior", fagerstromStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+      [metric("Dependencia moderada o superior", fagerstromStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")],
+      null, noComparatorTerritorial,
     ),
     sbq: sbqStudy && buildComparison(
-      [metric("Sedentarismo elevado", sbqStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")], null,
+      [metric("Sedentarismo elevado", sbqStudy.aggregates.pctPositive, null, " %", "lower-is-favourable")],
+      null, noComparatorTerritorial,
     ),
   };
 
