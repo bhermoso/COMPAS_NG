@@ -217,7 +217,7 @@ La interfaz debe mantener esta distinción visible. No deben confundirse.
 | Producto | Nombre visible en interfaz | Nombre técnico (no visible) |
 |---|---|---|
 | Producto 3 | Perfil de Salud Local COMPÁS (PSL-C) | `LocalHealthProfileArtifact` |
-| Producto 4 | Perfil de Salud tipo NHS (futuro) | `NHSHealthProfileArtifact` |
+| Producto 4 | Perfil de Salud tipo NHS | `NHSHealthProfileArtifact` |
 | Producto 7 | Plan Local de Salud | `LocalHealthPlanDocument` |
 
 ### 8.3 Estados del PSL en la interfaz
@@ -265,7 +265,7 @@ Este contrato aplica el Art. 5 (separación evidencia/interpretación/propuesta)
 - `CONTRACT-PSL-COMPAS`: los términos de este contrato en §4.1 y §8.2 son coherentes con el Producto 3 tal como está definido.
 - `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER`: el PSL-C como "documento institucional" coincide con la denominación de §8.2.
 - `CONTRACT-MIT-PSL`: los 7 capítulos del PSL son el contenido técnico del espacio "Perfil de Salud Local"; sus nombres de capítulo (Conclusiones, Cierre interpretativo, Síntesis y Priorización) son visibles tal como están definidos en el contrato.
-- `CONTRACT-NHS-HEALTH-PROFILE`: el futuro Producto 4 tiene denominación canónica registrada en §8.2.
+- `CONTRACT-NHS-HEALTH-PROFILE`: el Producto 4 tiene denominación canónica registrada en §8.2.
 
 ---
 
