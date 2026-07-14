@@ -176,6 +176,7 @@ interface InterpretationTheme {
   id: string;
   title: string;
   question: string;
+  questionWithoutLocal?: string;
   /** Espacios de conocimiento del técnico que modulan este tema (autoría humana). */
   spaces: ProfileSpace[];
   /** Usos interpretativos del Informe que constituyen la agenda del tema. */
@@ -190,8 +191,10 @@ interface InterpretationTheme {
   capacityIncludes: string[];
   /** Conector del mecanismo (evita muletilla común). */
   mechanismFrame: string;
+  mechanismFrameWithoutLocal?: string;
   /** Marco de la lectura territorial específico del tema. */
   territorialFrame: string;
+  territorialFrameWithoutLocal?: string;
 }
 
 const THEMES: InterpretationTheme[] = [
@@ -200,6 +203,8 @@ const THEMES: InterpretationTheme[] = [
     title: "Cronicidad, envejecimiento y condiciones de vida",
     question:
       "¿Qué condiciones cotidianas de movilidad, sedentarismo y alimentación acompañan la carga de cronicidad y envejecimiento que documenta el Informe?",
+    questionWithoutLocal:
+      "¿Qué información local sobre movilidad, sedentarismo y alimentación falta para contrastar la carga de cronicidad y envejecimiento del territorio?",
     spaces: ["situacion-salud", "determinantes", "contexto-territorial"],
     agendaUses: ["chronicity"],
     agendaTopicIncludes: [],
@@ -210,12 +215,16 @@ const THEMES: InterpretationTheme[] = [
       "La cronicidad no se lee aquí como suma de diagnósticos, sino como expresión de condiciones de vida",
     territorialFrame:
       "La agenda clínica de cronicidad del Informe puede leerse junto a cómo se mueve y se alimenta el barrio",
+    territorialFrameWithoutLocal:
+      "La cronicidad y el envejecimiento plantean una pregunta territorial sobre movilidad, sedentarismo y alimentación todavía no medida localmente",
   },
   {
     id: "apoyo-social-soledad-envejecimiento",
     title: "Apoyo social, soledad y envejecimiento",
     question:
       "¿A quién no llega la red de apoyo, y qué papel juega la soledad no deseada en el envejecimiento del barrio?",
+    questionWithoutLocal:
+      "¿Qué información local sobre apoyo social, soledad y cuidados falta para comprender el envejecimiento del territorio?",
     spaces: ["activos", "determinantes", "situacion-salud"],
     agendaUses: ["ageing"],
     agendaTopicIncludes: ["envejecimiento y dependencia"],
@@ -224,14 +233,20 @@ const THEMES: InterpretationTheme[] = [
     capacityIncludes: ["mayores", "tejido vecinal"],
     mechanismFrame:
       "Un apoyo social medio no cierra la cuestión: puede convivir con aislamiento no observado",
+    mechanismFrameWithoutLocal:
+      "La falta de medición local de apoyo social no cierra la cuestión: puede ocultar aislamiento no observado",
     territorialFrame:
       "El envejecimiento y la dependencia que nombra el Informe se cruzan con el apoyo social medido en la muestra",
+    territorialFrameWithoutLocal:
+      "El envejecimiento, los cuidados y la dependencia abren una pregunta sobre apoyo social y soledad todavía no medida localmente",
   },
   {
     id: "salud-mental-señal-local",
     title: "Salud mental y malestar: una señal local que requiere contraste",
     question:
       "¿Qué relación hay entre la escasa información estructurada sobre salud mental en la base disponible y la señal que abren GHQ-12, PHQ-9 y PSQI en la muestra local?",
+    questionWithoutLocal:
+      "¿Qué información local sobre salud mental y descanso falta para contrastar la agenda sanitaria disponible?",
     spaces: ["situacion-salud", "determinantes"],
     agendaUses: [],
     agendaTopicIncludes: ["salud mental"],
@@ -243,12 +258,16 @@ const THEMES: InterpretationTheme[] = [
       "El malestar emocional y el mal descanso remiten a condiciones psicosociales cotidianas",
     territorialFrame:
       "La base estructurada disponible ofrece poca información específica sobre salud mental —lo que no prueba que el Informe no la trate—, mientras los estudios locales abren una señal",
+    territorialFrameWithoutLocal:
+      "La base estructurada disponible ofrece poca información específica sobre salud mental —lo que no prueba que el Informe no la trate— y deja abierta la necesidad de medición local",
   },
   {
     id: "consumos-tabaco-alcohol",
     title: "Consumos de tabaco y alcohol",
     question:
       "¿Qué leen AUDIT-C y Fagerström locales sobre los consumos que el Informe nombra y cuya intervención registra con baja cobertura?",
+    questionWithoutLocal:
+      "¿Qué magnitud tienen en el territorio los consumos si no existe cribado local que los mida?",
     spaces: ["determinantes", "situacion-salud"],
     agendaUses: [],
     agendaTopicIncludes: ["consumos de tabaco", "dejar el tabaco"],
@@ -259,12 +278,16 @@ const THEMES: InterpretationTheme[] = [
       "El consumo se lee como práctica situada en condiciones materiales y de oferta, no como decisión individual aislada",
     territorialFrame:
       "El Informe nombra los consumos y registra una cobertura baja de intervención; los cribados locales aportan magnitud exploratoria",
+    territorialFrameWithoutLocal:
+      "Los consumos quedan como pregunta territorial; la magnitud queda como laguna mientras no exista cribado local",
   },
   {
     id: "alimentacion-sobrepeso",
     title: "Alimentación, sobrepeso y condiciones materiales",
     question:
       "¿Qué condiciones materiales de alimentación acompañan la agenda de sobrepeso, si no hay medición alimentaria local y PREDIMED es contexto provincial?",
+    questionWithoutLocal:
+      "¿Qué condiciones materiales de alimentación acompañan la agenda de sobrepeso, si no existe medición alimentaria local?",
     spaces: ["determinantes"],
     agendaUses: [],
     agendaTopicIncludes: ["alimentación", "obesidad", "dietético"],
@@ -275,6 +298,8 @@ const THEMES: InterpretationTheme[] = [
       "La alimentación conecta hábitos con precio, disponibilidad y margen real de elección",
     territorialFrame:
       "La agenda de sobrepeso del Informe carece de medición alimentaria local; PREDIMED solo contextualiza",
+    territorialFrameWithoutLocal:
+      "La alimentación y el sobrepeso plantean una pregunta alimentaria que queda abierta mientras no exista medición local",
   },
   {
     id: "prevencion-cribados",
@@ -309,6 +334,19 @@ const THEMES: InterpretationTheme[] = [
       "El propio Informe declara que no hay estadísticas fiables por barrios; la escala es aquí la desigualdad",
   },
 ];
+
+function themeForEvidenceState(
+  theme: InterpretationTheme,
+  hasLocalSignals: boolean
+): InterpretationTheme {
+  if (hasLocalSignals) return theme;
+  return {
+    ...theme,
+    question: theme.questionWithoutLocal ?? theme.question,
+    mechanismFrame: theme.mechanismFrameWithoutLocal ?? theme.mechanismFrame,
+    territorialFrame: theme.territorialFrameWithoutLocal ?? theme.territorialFrame,
+  };
+}
 
 // ── Utilidades de selección ───────────────────────────────────────────────────
 
@@ -841,8 +879,10 @@ export function buildIntegratedInterpretation(
         humano.hipotesis.length > 0,
     });
 
+    const reasoningTheme = themeForEvidenceState(theme, localSignals.length > 0);
+
     const reasoning = componerRazonamiento({
-      theme,
+      theme: reasoningTheme,
       presence,
       note,
       local: localSignals,
@@ -859,7 +899,7 @@ export function buildIntegratedInterpretation(
 
     // La pregunta abierta del equipo, cuando existe, gobierna la unidad; si no,
     // la pregunta de razonamiento del tema.
-    const question = humano.lagunas[0] ?? theme.question;
+    const question = humano.lagunas[0] ?? reasoningTheme.question;
 
     const sanitarySources = [
       ...new Set(
