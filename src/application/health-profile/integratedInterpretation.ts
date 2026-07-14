@@ -700,7 +700,11 @@ function tramoCapacidad(capacidades: string[]): string | undefined {
 
 function tramoIncertidumbre(items: string[]): string | undefined {
   if (items.length === 0) return undefined;
-  return `Lo que no puede saberse todavía: ${items[0]}`;
+  // El prefijo "Lo que no puede saberse todavía:" duplicaba "no puede saberse"
+  // cuando la nota de desigualdad ya lo contiene, y actuaba como etiqueta
+  // de plantilla. La prosa fluye directamente desde la declaración.
+  const sentence = items[0];
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
 function componerRazonamiento(input: {
