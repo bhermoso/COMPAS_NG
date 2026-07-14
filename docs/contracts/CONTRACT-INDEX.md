@@ -163,9 +163,9 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 ### CONTRACT-NHS-HEALTH-PROFILE
 **Estado:** VIGENTE
 
-Contrato canónico del Producto 4 (v1.0). Define el PSL-NHS como producto institucional de diagnóstico comparativo: audiencia política y ciudadana (no técnica), organización por dominio causal (no por instrumento), 7 indicadores canónicos con sus campos técnicos y valores de referencia disponibles, estructura documental de 4 partes (Marco municipal / Indicadores por dominio / Participación ciudadana / Alcance del diagnóstico), portada especificada, comportamiento con datos parciales definido, y 3 gates de compilación. Prerrequisito inmediato: conectar `MethodologicalModule.ReferenceValues` de DUKE, PREDIMED y SF-12 al `NHSHealthProfileCompiler` (D4-01). Los valores de referencia ya existen en el sistema — no se requieren datos externos nuevos para implementar el documento con comparadores para 3 instrumentos.
+Contrato canónico del Producto 4 (v1.0). Define el PSL-NHS como producto institucional de diagnóstico comparativo: audiencia política y ciudadana (no técnica), organización por dominio causal (no por instrumento), indicadores con campos técnicos y valores de referencia disponibles, estructura documental de 4 partes (Marco municipal / Indicadores por dominio / Participación ciudadana / Alcance del diagnóstico), portada especificada, comportamiento con datos parciales definido y gates de compilación. Decisión institucional vigente: el PSL-NHS es una representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por razón de su audiencia y formato. No genera conocimiento propio ni puede constituir una segunda fuente de verdad sobre el catálogo de instrumentos. Estado de implementación: compiler y vista existen; la exportación PDF/HTML/DOCX sigue pendiente (D4-04). El compiler consume actualmente 6 instrumentos por arrastre histórico del momento en que se escribió; el catálogo canónico son 13. Divergencia registrada como deuda abierta.
 
-**Productores:** `NHSHealthProfileCompiler` (pendiente de implementar; `CONTRACT-NHS-HEALTH-PROFILE-COMPILER` por crear al iniciar P4).
+**Productores:** `NHSHealthProfileCompiler` (implementado en `src/application/nhs-health-profile-compiler/`) y `NHSHealthProfileView` (vista implementada). El contrato del compiler quedó incorporado en `CONTRACT-NHS-HEALTH-PROFILE §10`; no existe contrato separado.
 **Consumidores:** Corporación municipal, ciudadanía, comunicación institucional.
 **Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID, CONTRACT-NAVIGATION, VISUAL-CONTRACT.
 
@@ -386,6 +386,17 @@ LocalHealthPlanDocument (PLS)
 
 ---
 
+## Deudas de gobernanza vigentes
+
+Estas entradas registran decisiones o divergencias vivas que afectan a la gobernanza del Perfil y no deben resolverse por inferencia libre en auditorías futuras.
+
+| ID | Deuda | Evidencia | Estado |
+|---|---|---|---|
+| GOV-PSL-01 | Estructura documental del Perfil no unificada: contratos MIT/PSL-C conservan siete capítulos; el artefacto/export protege seis capítulos narrativos; la lectura canónica en pantalla es editorial y no capitular. | `CONTRACT-MIT-PSL`, `CONTRACT-PSL-COMPAS`, `src/application/health-profile/narrativeChapters.ts`, `ProfileIntegratedEditorialPreview` | Pendiente de Intervención 2 |
+| GOV-PSL-02 | Vista editorial integrada implementada como lectura canónica sin contrato propio de producto. | `LocalHealthProfileView.tsx`, `tests/perfil-vista-editorial-integrada.test.tsx` | Pendiente de contrato/unificación |
+| GOV-PSL-03 | `PerfilFuentesPanel` y `PerfilLocalDeSaludPanel` se renderizan tras el Perfil, fuera de la lectura canónica y fuera del espacio técnico del Perfil. | `src/App.tsx:2978-2979` | Pendiente de decisión funcional |
+| GOV-P4-01 | El PSL-NHS es representación derivada con estatuto de producto institucional propio, pero el compiler consume actualmente 6 instrumentos por arrastre histórico. El catálogo canónico son 13. | `CONTRACT-NHS-HEALTH-PROFILE`, `NHSHealthProfileCompiler.ts`, catálogo de Estudios Complementarios | Deuda abierta |
+| GOV-VIS-01 | Identidad visual sin autoridad operacional única: `VISUAL-CONTRACT` existe como doctrina, pero `src/App.css` concentra 10.255 líneas, 1.795 colores hexadecimales, 132 colores únicos y dos escalas de grises conviviendo (`#64748b` y familia; `#526070` y familia). | `docs/visual/VISUAL-CONTRACT.md`, `src/App.css` | Deuda de gobernanza visual |
 ---
 
 ## Expedientes de certificación
@@ -395,7 +406,8 @@ LocalHealthPlanDocument (PLS)
 | `docs/certification/CERTIFICATION-SPRINT-0-1.md` | 2026-06-28 | Sprints 0–1: pipeline E2E, 309 tests |
 | `docs/certification/PRODUCT-1-CERTIFICATION.md` | 2026-06-29 | Producto 1 — Sistema de Estudios Complementarios: 6 instrumentos, 481 tests |
 | `docs/certification/PRODUCT-2-SAM-CERTIFICATION.md` | 2026-06-30 | Producto 2 — SAM NG: motor + integración + samAssessmentToEvidenceAtom, 573 tests |
-| `docs/certification/PRODUCT-3-PSL-CERTIFICATION.md` | 2026-06-30 | Producto 3 — PSL-C: 7 capítulos, compiler 7 gates, integración SAM+P1, 573 tests |
+| `docs/certification/PRODUCT-3-PSL-CERTIFICATION.md` | 2026-06-30 | Producto 3 — PSL-C: certificación histórica fechada; estado posterior superado en catálogo de 13 estudios, DOCX/PDF y estructura documental pendiente de unificación |
+| `docs/certification/PRODUCT-4-NHS-HEALTH-PROFILE-CERTIFICATION.md` | 2026-06-30 | Producto 4 — PSL-NHS: certificación histórica fechada; UI/Home/Nav implementadas después, export D4-04 pendiente |
 
 El plano arquitectónico completo que responde a la pregunta
 "¿qué debe existir para producir un Perfil de Salud Local, un Plan Local de Salud y una

@@ -129,8 +129,20 @@ El Informe de Salud del municipio (Informe de Situación de Salud u equivalente)
 1. **Es la base epidemiológica oficial del Perfil.** Sintetiza el estado de salud de la población desde la perspectiva del sistema sanitario público. El Perfil lo referencia como fuente primaria, no lo sustituye.
 2. **Se preserva íntegro.** El Informe de Salud se carga, conserva y visualiza como documento, no como evidencia atomizada. El sistema no lo transforma en unidades de evidencia ordinarias del EvidenceStore.
 3. **No genera EvidenceAtom en el flujo activo del producto.** Las secciones del Informe no se convierten en átomos de evidencia ni alimentan el Motor de Interpretación Territorial como evidencia estructurada. Ver D-HR-01 en el Gap Register.
-4. **El Perfil contextualiza el Informe, no lo reemplaza.** Lo que el Perfil añade es la lectura integrada: determinantes sociales, activos comunitarios, perspectiva ciudadana, documentación territorial, estudios complementarios y marcos estratégicos. Esta lectura enriquece el Informe sin modificarlo.
+4. **El Perfil contextualiza el Informe, no lo reemplaza.** Lo que el Perfil añade, una vez cumplida la regla N+1, es la lectura integrada: determinantes sociales, estudios complementarios, activos y capacidades, y priorización ciudadana. Esta lectura enriquece el Informe sin modificarlo.
 5. **Admite DOCX y PDF.** Ambos formatos se aceptan. El DOCX permite visualización estructurada; el PDF se preserva como fuente primaria sin extracción de contenido.
+
+### Art. 7 bis A. Regla N+1 del Perfil
+
+El Informe de Salud constituye la base epidemiológica oficial del Perfil, pero por sí solo no constituye un Perfil de Salud Local. El Informe de Salud solo es el componente **N**.
+
+Hay Perfil cuando esa base se interpreta a la luz de al menos una fuente adicional (**+1**) perteneciente a una de estas tres familias:
+
+1. Estudios Complementarios.
+2. Activos y capacidades del territorio.
+3. Priorización ciudadana.
+
+Cualquiera de estas fuentes puede activar la regla N+1, en cualquier combinación. El Perfil no resume el Informe de Salud: lo cruza con evidencia territorial adicional. Si solo existe el Informe de Salud, el producto sigue siendo el Informe de Salud, no un Perfil.
 
 ### Art. 7 ter. Limitaciones diagnósticas y áreas territoriales
 
@@ -201,7 +213,7 @@ Los resultados del proceso participativo —qué ha seleccionado la ciudadanía 
 
 Esta evidencia tiene tipo específico (percepción o afirmación participativa) y condiciones de validez propias: representatividad del proceso, acceso de los grupos más vulnerables, método utilizado. El Perfil declara estas condiciones.
 
-La participación ciudadana no decide prioridades en el Perfil: informa el diagnóstico. El Perfil registra qué ha dicho la comunidad; el Grupo Motor delibera sobre cómo integrarlo con el análisis técnico en la etapa de priorización.
+La participación ciudadana no decide prioridades en el Perfil: informa el diagnóstico. El Perfil escucha; no decide. Registra qué ha dicho la comunidad; el Grupo Motor delibera sobre cómo integrarlo con el análisis técnico en la etapa de priorización.
 
 Cuando el proceso participativo no se realizó, el Perfil lo declara como laguna y señala su implicación para la completitud del diagnóstico.
 
@@ -299,12 +311,22 @@ El sistema genera:
 - Candidaturas técnicas de intervención como propuesta para el equipo.
 - Andamiaje de capítulos para redacción humana.
 
+El cuerpo diagnóstico del Perfil es compilado, trazable y no editable libremente. Su autoridad metodológica depende de que pueda reconstruirse la cadena que va desde la fuente hasta la afirmación. La autoría humana no reescribe el diagnóstico como texto libre: lo interpreta, lo matiza y lo asume en los espacios de cierre y enriquecimiento previstos.
+
 El equipo técnico produce:
 - Las conclusiones diagnósticas del territorio.
 - El cierre interpretativo con el alcance y las limitaciones del diagnóstico.
 - La narración de la deliberación de priorización.
 
 Los capítulos de conclusiones y cierre interpretativo del Perfil son siempre de autoría humana. El andamiaje del sistema es un punto de partida para la redacción, no su sustituto. El Perfil compilado como documento institucional no puede generarse mientras esos capítulos contengan andamiaje no reemplazado por texto de autoría del equipo técnico.
+
+### Art. 16 bis. Cadena del conocimiento
+
+La cadena metodológica del Perfil es:
+
+`evidencia → lectura integrada → conclusiones → | frontera de planificación | → recomendaciones`
+
+El Perfil llega hasta las conclusiones. Las recomendaciones pertenecen al Plan de Acción y al Plan Local de Salud. La frontera entre Perfil y Plan no es un muro: toda recomendación posterior debe poder derivarse limpiamente de las conclusiones del Perfil, y toda conclusión debe poder trazarse hasta la evidencia que la sostiene.
 
 ### Art. 17. Autoría, validación y responsabilidad técnica
 
@@ -322,6 +344,14 @@ Una vez compilado como artefacto institucional, el Perfil es inmutable. Si el di
 
 ---
 
+### Art. 17 bis. Modelo canónico único
+
+Existe una sola composición canónica del Perfil de Salud Local. Pantalla, visor, impresión, DOCX y PDF son representaciones del mismo documento. Ninguna representación puede divergir de otra.
+
+Las diferencias de formato solo pueden afectar a soporte, paginación, densidad o adaptación visual. No pueden crear contenidos, estructuras diagnósticas, conclusiones o catálogos de fuentes distintos.
+
+---
+
 ## Capítulo VII — Flexibilidad y criterios de aceptación
 
 ### Art. 18. Flexibilidad metodológica
@@ -334,7 +364,7 @@ La identidad del Perfil no depende de qué instrumentos están disponibles, cuá
 - La autoría humana es identificable.
 - La trazabilidad hasta la evidencia de origen es completa.
 
-Un Perfil con un único instrumento disponible puede ser metodológicamente correcto. Un Perfil con seis instrumentos pero sin trazabilidad o sin autoría humana explícita no lo es.
+Un Perfil con Informe de Salud y una única fuente adicional válida según la regla N+1 puede ser metodológicamente correcto. Un Perfil con seis instrumentos pero sin trazabilidad o sin autoría humana explícita no lo es.
 
 Cuando se incorporen nuevas familias de evidencia, nuevos instrumentos o nuevas fuentes institucionales, este contrato debe revisarse para evaluar si sus artículos siguen siendo adecuados. Los artículos no cambian con la implementación: cambian cuando la experiencia metodológica demuestra que deben revisarse.
 
@@ -346,6 +376,7 @@ Un Perfil de Salud Local es metodológicamente aceptable cuando puede responders
 |---|---|
 | **Singularidad** | ¿Este Perfil no podría pertenecer a otro municipio sin que ningún lector lo notara? |
 | **Trazabilidad** | ¿Cada afirmación relevante es rastreable hasta la evidencia o la fuente que la sustenta? |
+| **Regla N+1** | ¿El Informe de Salud se interpreta junto a al menos una fuente adicional válida: estudios complementarios, activos y capacidades, o priorización ciudadana? |
 | **Incertidumbre visible** | ¿Las cautelas metodológicas están en el cuerpo del documento, junto al dato que condicionan? |
 | **Contradicciones declaradas** | ¿Las contradicciones entre fuentes están explícitamente reconocidas, sin resolución artificial? |
 | **Equilibrio activos-déficits** | ¿Los activos comunitarios tienen la misma visibilidad que los indicadores de necesidad? |
@@ -465,6 +496,36 @@ El Perfil compilado como documento institucional es inmutable desde el momento d
 
 ---
 
+**I-LHPM-7 — Regla N+1**
+
+El Informe de Salud por sí solo no constituye un Perfil de Salud Local. El Perfil requiere que el Informe se interprete junto a al menos una fuente adicional válida: Estudios Complementarios, activos y capacidades, o priorización ciudadana.
+
+*Consecuencia si se viola:* el Perfil queda reducido a resumen o reetiquetado del Informe de Salud; no existe lectura territorial integrada.
+
+*Fuente:* Art. 7 bis A.
+
+---
+
+**I-LHPM-8 — Modelo canónico único**
+
+Pantalla, visor, impresión, DOCX y PDF son representaciones del mismo documento canónico. Ninguna representación puede producir una lectura diagnóstica diferente.
+
+*Consecuencia si se viola:* COMPÁS NG genera perfiles paralelos y pierde la condición de fuente institucional trazable.
+
+*Fuente:* Art. 17 bis.
+
+---
+
+**I-LHPM-9 — Frontera entre conclusiones y recomendaciones**
+
+El Perfil llega hasta conclusiones. Las recomendaciones pertenecen al Plan de Acción, pero deben derivarse limpiamente de las conclusiones del Perfil y estas de la evidencia.
+
+*Consecuencia si se viola:* el Perfil prescribe actuaciones o el Plan formula recomendaciones sin base diagnóstica trazable.
+
+*Fuente:* Art. 16 bis; CONTRACT-ACTION-PLAN.
+
+---
+
 ## Relaciones con otros contratos
 
 | Contrato | Tipo de relación |
@@ -472,7 +533,7 @@ El Perfil compilado como documento institucional es inmutable desde el momento d
 | `CONTRACT-MIT-PSL` | Este contrato establece los principios que el MIT debe respetar al producir la interpretación territorial. Los Arts. 5, 6 y 14 condicionan el diseño del motor. |
 | `CONTRACT-PSL-COMPAS` | Define el producto institucional resultante de aplicar este contrato. Debe ser coherente en todos sus artículos con este contrato. |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` | Los gates del compilador (G-LHC-1 a G-LHC-7) son la implementación técnica de los Arts. 16, 17 e I-LHPM-3. |
-| `CONTRACT-NHS-HEALTH-PROFILE` | El Perfil comparativo es un producto derivado del mismo objeto fuente. Los Arts. 12 y 13 condicionan sus criterios de generación. |
+| `CONTRACT-NHS-HEALTH-PROFILE` | El Perfil comparativo es una representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por audiencia y formato. Los Arts. 12, 13 y 17 bis condicionan sus criterios de generación. |
 | `CONTRACT-INTERPRETATION` | Define qué significa interpretar dentro de COMPÁS NG. Este contrato es complementario: define qué tipos de afirmación son admisibles y cuáles no (Art. 8). |
 | `CONTRACT-STRATEGIC-REPOSITORY` | Las líneas estratégicas de los marcos institucionales son referencia para el capítulo de marco estratégico del Perfil (Arts. 15.1 y 15.4). La articulación con esos marcos es posterior al Perfil. |
 | `METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING` | Documento fundacional del que derivan los principios PM-1 a PM-24. Los invariantes de este contrato son aplicación normativa directa de esos principios. |
@@ -484,6 +545,7 @@ El Perfil compilado como documento institucional es inmutable desde el momento d
 | Fecha | Versión | Cambio | Responsable |
 |---|---|---|---|
 | 2026-07-03 | 1.0 | Creación inicial | COMPÁS NG Sprint 2 |
+| 2026-07-14 | 1.1 | Saneamiento de gobernanza: regla N+1, priorización ciudadana como evidencia, cadena del conocimiento, modelo canónico único y autoría humana acotada | COMPÁS NG gobernanza |
 
 ---
 

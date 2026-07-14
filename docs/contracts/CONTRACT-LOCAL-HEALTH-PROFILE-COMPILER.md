@@ -225,7 +225,7 @@ El campo `version` del `LocalHealthProfileArtifact` sigue el formato `PSL-C/v{N}
 ## 14. No-contratos
 
 Este contrato **no** define:
-- El formato de exportación DOCX o PDF (decisión de Sprint 2 posterior, requiere una capa de rendering separada)
-- La UI del compilador (botón, flujo, feedback visual)
+- Nuevos formatos de exportación fuera de los renderers PSL-C existentes. Estado actual: el PSL-C ya dispone de serialización DOCX y PDF mediante `src/application/psl-c-export/`.
+- Cambios de experiencia de usuario ajenos al flujo existente. Estado actual: la pantalla del Perfil ofrece compilación, visor institucional y descargas DOCX/PDF cuando existe un artefacto PSL-C.
 - Cómo se entrega el PSL-C al Distrito Sanitario (proceso externo)
 - El contenido metodológico del diagnóstico (gobernado por CONTRACT-MIT-PSL)

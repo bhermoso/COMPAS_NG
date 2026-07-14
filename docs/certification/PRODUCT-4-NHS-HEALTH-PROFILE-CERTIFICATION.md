@@ -11,6 +11,12 @@
 
 ---
 
+## Nota de estado superado (2026-07-14)
+
+Este expediente es un acto fechado de certificación emitido el 2026-06-30. Su cuerpo se conserva intacto como registro histórico: no se reescribe retrospectivamente. El estado actual del repositorio supera parte de sus afirmaciones de implementación: la UI, la integración en Home y la navegación del PSL-NHS existen tras `06f9b57 feat(p4-ui): completar unificacion del Producto 4 — Perfil de Salud tipo NHS`. La exportación PDF/HTML/DOCX del PSL-NHS sigue pendiente (D4-04). El catálogo canónico de Estudios Complementarios son 13; las menciones de esta certificación a 6 estudios reflejan la cobertura certificada en aquel momento y hoy constituyen arrastre histórico/deuda abierta, no doctrina vigente del catálogo.
+
+---
+
 ## 1. Identificación
 
 | Campo | Valor |

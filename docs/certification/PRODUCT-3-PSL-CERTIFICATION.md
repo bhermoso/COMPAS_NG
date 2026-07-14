@@ -10,6 +10,12 @@
 
 ---
 
+## Nota de estado superado (2026-07-14)
+
+Este expediente es un acto fechado de certificación emitido el 2026-06-30. Su cuerpo se conserva intacto como registro histórico: no se reescribe retrospectivamente. El estado actual del repositorio supera parte de sus afirmaciones de implementación: el catálogo canónico de Estudios Complementarios son 13, el PSL-C dispone de exportación DOCX/PDF, y la estructura documental real presenta un conflicto de gobernanza pendiente entre siete capítulos contractuales, seis capítulos narrativos del artefacto/export y lectura canónica editorial no capitular. Esta nota no resuelve esa estructura; la registra como estado superado pendiente de unificación posterior.
+
+---
+
 ## 1. Identificación
 
 | Campo | Valor |

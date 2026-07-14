@@ -6,6 +6,10 @@
 
 ---
 
+> Nota de saneamiento de gobernanza (2026-07-14): el PSL-NHS se registra como representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por su audiencia política y ciudadana y por su formato breve. No genera conocimiento propio: lo reexpresa. No puede constituir una segunda fuente de verdad sobre el catálogo de Estudios Complementarios.
+
+---
+
 ## 1. Naturaleza del Producto 4
 
 El **Perfil de Salud Local tipo NHS (PSL-NHS)** es un documento institucional de diagnóstico comparativo. Presenta los indicadores de salud disponibles del municipio junto a sus valores de referencia, para que la corporación municipal, la ciudadanía y los medios puedan entender en pocos minutos en qué situación está el municipio respecto a su entorno.
@@ -16,7 +20,7 @@ El **Perfil de Salud Local tipo NHS (PSL-NHS)** es un documento institucional de
 - un resumen del PSL-C;
 - un formato alternativo del Producto 3.
 
-Es un **producto institucional independiente**, con su propio compilador, su propia audiencia y su propio propósito.
+Es un **producto institucional propio**, con su propio compilador, su propia audiencia y su propio propósito, pero derivado del conocimiento territorial del Perfil canónico.
 
 ### 1.1 Distinción fundamental con el PSL-C
 
@@ -87,7 +91,7 @@ LocalHealthProfile (validated)
 
 **P4-R1:** El PSL-NHS no puede generarse desde un PSL no validado: `psl.status === "validated"`.
 
-**P4-R2:** El PSL-NHS no nace del PSL-C. Nunca es un derivado del artefacto compilado del Producto 3. Ambos compilan el `LocalHealthProfile`; no se generan uno desde el otro.
+**P4-R2:** El PSL-NHS es una representación derivada del conocimiento territorial del Perfil canónico, no un segundo diagnóstico ni una segunda fuente de verdad. No nace del artefacto PSL-C: reexpresa la misma base territorial para una audiencia distinta. El PSL-C y el PSL-NHS no se generan uno desde el otro.
 
 **P4-R3:** El PSL-NHS no consume los capítulos V, VI ni VII del PSL (conclusiones, cierre interpretativo, priorización). Su contenido proviene exclusivamente del Capítulo III (datos de diagnóstico integrado: qué estudios hay, cuántos registros) y del Capítulo IV (indicadores cuantitativos y cautelas metodológicas del MIT).
 
@@ -109,7 +113,7 @@ LocalHealthProfile (validated)
 
 ### 5.2 Valores de referencia disponibles en el sistema
 
-Los valores de referencia para los estudios EAS ya existen en las definiciones metodológicas del sistema (`MethodologicalModule.ReferenceValues`). El trabajo de implementación de D3-04 consiste en **conectar estos valores al `NHSHealthProfileCompiler`**, no en obtener datos externos nuevos.
+Los valores de referencia para DUKE-EAS, PREDIMED-EAS y SF-12 EAS ya existen en las definiciones metodológicas del sistema (`MethodologicalModule.ReferenceValues`) y están conectados al `NHSHealthProfileCompiler`. D4-01 queda cerrada. La deuda vigente no es obtener datos externos nuevos para esos tres instrumentos, sino revisar la cobertura del compiler frente al catálogo canónico de 13 estudios.
 
 | Instrumento | Indicador | Valor de referencia | Población | Fuente |
 |---|---|---|---|---|
@@ -122,7 +126,7 @@ Los valores de referencia para los estudios EAS ya existen en las definiciones m
 | CAGE-EAS | `pctRisk` | Sin referencia definida | N/A | Pendiente |
 
 **Estado de D3-04 (revisado):**
-D3-04 no describe datos ausentes del mundo exterior. Describe valores ya presentes en el sistema que aún no están conectados al compilador. Los indicadores IBSE, Sueño y CAGE no tienen referencia y se mostrarán sin comparador hasta que se definan valores de referencia metodológicamente validados.
+D3-04 no describe datos ausentes del mundo exterior. Los valores de DUKE, PREDIMED y SF-12 ya están conectados al compilador. Los indicadores IBSE, Sueño y CAGE no tienen referencia y se muestran sin comparador hasta que se definan valores de referencia metodológicamente validados. La cobertura de los 7 estudios restantes del catálogo canónico queda registrada como deuda de gobernanza/implementación, no como diseño metodológico cerrado.
 
 ### 5.3 Fuentes explícitamente excluidas
 
@@ -138,7 +142,7 @@ El PSL-NHS no consume ninguno de los siguientes objetos:
 
 ## 6. Indicadores canónicos
 
-Esta tabla es **normativa**. El compilador produce exactamente estos indicadores y no otros.
+Esta tabla documenta la cobertura actual del compiler NHS. No redefine el catálogo canónico de 13 Estudios Complementarios; su alineación completa queda abierta en D4-05.
 
 | Instrumento | Indicador visible (nombre no técnico) | Campo técnico | Dirección positiva | Valor de referencia |
 |---|---|---|---|---|
@@ -157,6 +161,8 @@ Esta tabla es **normativa**. El compilador produce exactamente estos indicadores
 - Si un estudio no está cargado, su indicador no aparece en el documento. No se muestra como vacío.
 - El `pctRisk` de CAGE y el `pctInsufficientSleep` de Sueño se expresan como porcentaje (%) de la muestra válida.
 
+**Nota de estado (2026-07-14):** el compiler consume actualmente 6 instrumentos por arrastre histórico del momento en que se escribió. El catálogo canónico de Estudios Complementarios de COMPÁS NG son 13. Esta divergencia no es una decisión de diseño: queda registrada como deuda abierta (D4-05).
+
 ---
 
 ## 7. Estructura documental
@@ -171,7 +177,7 @@ El documento se organiza en **cuatro partes** que el lector recorre de arriba ha
 - Nombre del municipio y provincia
 - Fecha de validación técnica del PSL de origen (`psl.validatedAt`)
 - Responsable técnico (`psl.validatedBy`)
-- Total de estudios disponibles: "X de 6 estudios complementarios"
+- Alcance de estudios disponibles: instrumentos representados actualmente por el compiler, con nota expresa de que el catálogo canónico de COMPÁS NG son 13 estudios.
 - Referencia al Informe de Salud si existe (solo título; nunca el contenido)
 
 **Formato:** bloque compacto de identificación. No hay párrafos descriptivos.
@@ -281,7 +287,8 @@ Diagnóstico Comparativo
 - Nombre del municipio (tipografía principal, tamaño destacado)
 - Provincia
 - Año del diagnóstico (año de `psl.validatedAt`)
-- `Diagnóstico basado en [N] de 6 estudios complementarios`
+- `Diagnóstico basado en [N] instrumentos representados actualmente por el compiler NHS`
+- Nota obligatoria de estado: `El catálogo canónico de COMPÁS NG son 13 estudios complementarios. La cobertura actual del compiler NHS procede de un arrastre histórico y queda registrada como deuda abierta.`
 - `Validado técnicamente: [fecha] · [nombre del técnico]`
 - Identificación COMPÁS NG
 - Identificación institucional (Junta de Andalucía / Distrito Sanitario si corresponde)
@@ -302,9 +309,9 @@ El PSL-NHS debe funcionar en todas las combinaciones posibles de estudios y comp
 
 | Situación | Comportamiento |
 |---|---|
-| 6 estudios disponibles | Documento completo con tres dominios |
-| 2–5 estudios disponibles | Solo los dominios con al menos 1 estudio; Parte IV lista los estudios ausentes |
-| 1 estudio disponible | Documento mínimo: 1 dominio + Parte IV con 5 estudios ausentes |
+| Todos los estudios actualmente representados por el compiler disponibles | Documento completo dentro de la cobertura histórica actual del compiler; no equivale a cobertura completa del catálogo canónico de 13 estudios |
+| Cobertura parcial dentro de los instrumentos actualmente representados por el compiler | Solo los dominios con al menos 1 estudio; Parte IV lista los estudios ausentes dentro de esa cobertura actual y declara la deuda frente al catálogo de 13 |
+| 1 estudio disponible | Documento mínimo: 1 dominio + Parte IV con cautela de alcance |
 | 0 estudios disponibles | Gate G-NHS-2 bloquea la compilación |
 
 ### 9.2 Casos por disponibilidad de comparadores
@@ -330,7 +337,7 @@ Esto no bloquea la generación pero comunica la limitación sin ocultar la utili
 
 El compilador del PSL-NHS es el `NHSHealthProfileCompiler`.
 
-**Estado:** No implementado. El contrato del compilador detallado es `CONTRACT-NHS-HEALTH-PROFILE-COMPILER` (pendiente de crear; se creará al iniciar la implementación del Producto 4).
+**Estado:** Implementado. El compiler vive en `src/application/nhs-health-profile-compiler/` y se invoca desde la interfaz. La especificación del compiler queda incorporada en este contrato (§10.1–§10.4); no existe contrato separado. La exportación PDF/HTML/DOCX del artefacto sigue pendiente (D4-04).
 
 ### 10.1 Entradas del compilador
 
@@ -397,7 +404,7 @@ El `NHSHealthProfileArtifact` es:
 
 | Producto | Relación con el PSL-NHS |
 |---|---|
-| **Producto 1** — Estudios Complementarios | Fuente primaria de contenido. Los seis instrumentos certificados son la base de los indicadores del PSL-NHS. |
+| **Producto 1** — Estudios Complementarios | Fuente primaria de contenido. El catálogo canónico vigente contiene 13 estudios. El PSL-NHS consume actualmente 6 por arrastre histórico; esa divergencia queda registrada como deuda abierta y no constituye una segunda definición del catálogo. |
 | **Producto 2** — SAM NG | Las cautelas de calidad muestral informan la nota "(muestra reducida)" en Parte II cuando el número de registros válidos es bajo. |
 | **Producto 3** — PSL-C | Comparte fuente (`LocalHealthProfile`); no se sustituyen. El PSL-NHS no nace del PSL-C: ambos compilan el mismo objeto por separado. |
 | **Producto 5** — MTE | Sin relación directa. El PSL-NHS no alimenta el MTE. |
@@ -408,9 +415,9 @@ El `NHSHealthProfileArtifact` es:
 
 ## 13. Invariantes
 
-**P4-I1:** El PSL-NHS no sustituye al PSL-C. Son productos independientes con propósitos distintos sobre la misma base de evidencia.
+**P4-I1:** El PSL-NHS no sustituye al PSL-C. Es una representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por audiencia y formato. No genera conocimiento propio ni redefine el catálogo de instrumentos.
 
-**P4-I2:** El PSL-NHS no es una versión corta del PSL-C. No resume capítulos del Producto 3. Toma indicadores del workspace y los presenta con comparadores.
+**P4-I2:** El PSL-NHS no es una versión corta del PSL-C ni resume sus capítulos. Reexpresa indicadores y comparadores de la misma base territorial para lectura política y ciudadana.
 
 **P4-I3:** El PSL-NHS presenta datos y comparadores. No concluye, no recomienda, no prioriza, no interpreta.
 
@@ -422,7 +429,7 @@ El `NHSHealthProfileArtifact` es:
 
 **P4-I7:** La organización es por dominio causal (Bienestar y salud comunitaria / Conductas y estilos de vida / Salud percibida). Nunca por instrumento.
 
-**P4-I8:** Los indicadores headline son los definidos en §6. No se añaden sub-escalas ni indicadores adicionales sin revisión de este contrato.
+**P4-I8:** Mientras D4-05 siga abierta, los indicadores headline de §6 describen la cobertura actual del compiler NHS. No se añaden sub-escalas; la incorporación de nuevos instrumentos headline requiere revisión explícita de este contrato.
 
 **P4-I9:** La Parte IV (Alcance del diagnóstico) es obligatoria en todos los PSL-NHS generados.
 
@@ -434,17 +441,18 @@ El `NHSHealthProfileArtifact` es:
 
 | ID | Deuda | Tipo | Estado |
 |---|---|---|---|
-| D4-01 | Conectar `MethodologicalModule.ReferenceValues` de DUKE, PREDIMED y SF-12 al `NHSHealthProfileCompiler` | Implementación (wiring) | Abierta — resolución durante implementación P4 |
+| D4-01 | Conectar `MethodologicalModule.ReferenceValues` de DUKE, PREDIMED y SF-12 al `NHSHealthProfileCompiler` | Implementación (wiring) | **Cerrada** — compiler conectado a los tres módulos |
 | D4-02 | Definir valores de referencia metodológicamente validados para IBSE, Sueño-EAS y CAGE-EAS | Disponibilidad de datos metodológicos | Abierta — no bloquea implementación |
-| D4-03 | Crear `CONTRACT-NHS-HEALTH-PROFILE-COMPILER` con especificación de tipos y estructura del artefacto | Implementación | Pendiente de crear al iniciar P4 |
-| D4-04 | Formato de exportación PDF/HTML del artefacto | Implementación de rendering | Pendiente; no bloquea el compilador |
-| ~~D3-04~~ | ~~Datos de referencia Granada/Andalucía no disponibles~~ | **RECLASIFICADO:** los valores existen en el sistema (DUKE, PREDIMED, SF-12). La deuda real es el wiring al compilador (= D4-01). | D3-04 cerrado → D4-01 abierta |
+| D4-03 | Crear `CONTRACT-NHS-HEALTH-PROFILE-COMPILER` con especificación de tipos y estructura del artefacto | Implementación | **Superada** — especificación incorporada en §10 de este contrato |
+| D4-04 | Formato de exportación PDF/HTML/DOCX del artefacto | Implementación de rendering | Pendiente; no bloquea el compilador ni la vista |
+| D4-05 | Alinear el compiler NHS con el catálogo canónico de 13 estudios | Gobernanza/implementación | Abierta — la cobertura actual de 6 instrumentos es arrastre histórico, no diseño |
+| ~~D3-04~~ | ~~Datos de referencia Granada/Andalucía no disponibles~~ | **RECLASIFICADO:** los valores existen en el sistema (DUKE, PREDIMED, SF-12). | Cerrado |
 
 ---
 
-## 15. Checklist de preparación para implementación
+## 15. Checklist de estado
 
-Antes de escribir código del `NHSHealthProfileCompiler`, estas condiciones deben cumplirse:
+Tras la implementación del `NHSHealthProfileCompiler`, estas condiciones quedan así:
 
 - [x] Audiencia definida (§2)
 - [x] Preguntas que responde el documento definidas (§3)
@@ -457,9 +465,11 @@ Antes de escribir código del `NHSHealthProfileCompiler`, estas condiciones debe
 - [x] Entradas del compilador tipadas (§10.1)
 - [x] Exclusiones normativas definidas (§11)
 - [x] Estado de los valores de referencia verificado en código (§5.2)
-- [ ] Tipos TypeScript del `NHSHealthProfileArtifact` → crear al iniciar P4
-- [ ] `CONTRACT-NHS-HEALTH-PROFILE-COMPILER` → crear al iniciar P4
-- [ ] Valores de referencia conectados al compilador (D4-01) → implementación P4
+- [x] Tipos TypeScript del `NHSHealthProfileArtifact` implementados
+- [x] Especificación del compiler incorporada en este contrato (§10)
+- [x] Valores de referencia DUKE/PREDIMED/SF-12 conectados al compilador (D4-01 cerrada)
+- [ ] Cobertura del compiler revisada frente al catálogo canónico de 13 estudios (D4-05)
+- [ ] Exportación PDF/HTML/DOCX del PSL-NHS (D4-04)
 
 ---
 
@@ -469,7 +479,7 @@ Antes de escribir código del `NHSHealthProfileCompiler`, estas condiciones debe
 |---|---|
 | `CONTRACT-PSL-COMPAS` | Define el Producto 3 como fuente compartida |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` | Arquitectura de referencia para el compilador del P4 |
-| `CONTRACT-COMPLEMENTARY-STUDIES` | Define los 6 instrumentos cuyo output es el contenido primario del PSL-NHS |
+| `CONTRACT-COMPLEMENTARY-STUDIES` | Define el catálogo canónico de 13 estudios. El PSL-NHS consume actualmente 6 por arrastre histórico; D4-05 mantiene abierta la alineación. |
 | `CONTRACT-DYNAMIC-TRIPYRAMID` | SAM como fuente de la nota "(muestra reducida)" |
 | `CONTRACT-NAVIGATION §4.1` | Nombre canónico en la interfaz: "Perfil de Salud tipo NHS" |
 | `VISUAL-CONTRACT §2` | Uso autorizado del gradiente COMPÁS en la portada |

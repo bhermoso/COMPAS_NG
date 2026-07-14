@@ -46,7 +46,7 @@ El sistema dispone de:
   que representa el estado del expediente municipal en las 7 fases del ciclo RELAS.
 - **Bloqueo de Nivel 3**: EPVSA, Plan de Acción, Agenda y Seguimiento requieren PSL
   validado. Sin PSL validado, estos paneles muestran estado bloqueado con requisitos.
-- Municipio piloto: Atarfe. Verificado end-to-end con seis estudios cargados.
+- Municipio piloto: Atarfe. Verificado end-to-end como expediente piloto. Las referencias antiguas a seis estudios quedan superadas por el catálogo canónico vigente de 13 Estudios Complementarios.
 
 ### Contratos arquitectónicos completados en Sprint 0
 
@@ -85,12 +85,11 @@ El Repositorio Documental Municipal está funcional con:
 
 El Informe de Salud es cargable como DOCX y PDF mediante la interfaz de carga.
 - DOCX: texto extraído vía Mammoth, renderizado como HTML en el visor.
-- PDF: texto extraído (OCR) disponible para el pipeline de evidencias.
-  El visor muestra ficha institucional; el texto extraído es capa técnica no visible.
+- PDF: preservado como fuente primaria sin extracción de texto y sin generación de EvidenceAtoms, conforme a D-HR-01.
 - Pendiente futuro: visor PDF nativo en interfaz para el Informe de Salud en PDF.
 
 **Deuda documentada:** El PDF original no se persiste en localStorage (limitación de
-cuota). El texto extraído se usa como representación de trabajo. El documento fuente
+cuota). No existe OCR ni texto extraído para el pipeline de evidencias. El documento fuente
 debe conservarse fuera del sistema por el equipo técnico.
 
 ---
@@ -216,7 +215,7 @@ en el flujo principal de usuario. Tienen propósito futuro documentado.
 | Componente | Estado | Propósito | Referencia |
 |---|---|---|---|
 | `QuestionnaireBuilderPanel` | Pendiente de integración | Constructor metodológico de cuestionarios municipales REDCap | VISUAL-CONTRACT §12.1 |
-| `LocalHealthProfilePanel` | Pendiente de integración | Generador PSL sintético (inspirado en NHS Health Profiles) | VISUAL-CONTRACT §12.2 |
+| `LocalHealthProfilePanel` | Legado/no canónico | Generador PSL sintético anterior a la lectura canónica actual; no debe confundirse con `PerfilLocalDeSaludPanel`, que sí está integrado en el flujo del Perfil | VISUAL-CONTRACT §12.2 |
 | `StrategicFrameworkPanel` | Pendiente de integración | Traductor estratégico PSL → EPVSA / ESCA / RELAS | VISUAL-CONTRACT §12.3 |
 
 Ninguno de estos componentes debe activarse en producción hasta Sprint 1.
