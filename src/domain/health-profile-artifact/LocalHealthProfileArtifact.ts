@@ -166,6 +166,25 @@ export interface PSLCArtifactCautelas {
   nota: string;
 }
 
+// ── Documento canónico congelado (esquema 2) ─────────────────────────────────
+// El documento canónico del Perfil (vista editorial integrada + procedencia
+// sellada) se congela SERIALIZADO. El dominio lo trata como opaco: es la capa de
+// aplicación (proyector) quien lo rehidrata. Guardarlo como cadena garantiza su
+// inmutabilidad (no puede mutarse parcialmente) y su serializabilidad, y evita
+// que el dominio dependa de tipos de la capa de aplicación (frontera estricta:
+// domain nunca importa application).
+
+export interface PSLCSealedCanonicalDocument {
+  /** Versión del ESQUEMA del documento canónico. Distinta de `artifactVersion`
+   *  (`PSL-C/vN`, secuencia por municipio). Los artefactos legacy (esquema 1)
+   *  carecen de este bloque y se detectan por su ausencia. */
+  schemaVersion: 2;
+  /** Documento canónico + procedencia, serializado como JSON. Opaco al dominio. */
+  payload: string;
+  /** Hash djb2 determinista del payload: identifica el documento congelado. */
+  canonicalHash: string;
+}
+
 // ── LocalHealthProfileArtifact (PSL-C) ───────────────────────────────────────
 
 export interface LocalHealthProfileArtifact {
@@ -203,6 +222,12 @@ export interface LocalHealthProfileArtifact {
   hipotesisActivas: PSLCArtifactHipotesis[];
   preguntasAbiertas: PSLCArtifactPreguntaAbierta[];
   generatedFromPerfilId: string | null;
+
+  // ── Documento canónico congelado (esquema 2, aditivo) ────────────────────
+  // Presente cuando la compilación recibe la instantánea de respuestas
+  // diagnósticas. Los artefactos v1 (legacy) no lo llevan: su ausencia los
+  // identifica como esquema anterior.
+  canonicalDocument?: PSLCSealedCanonicalDocument;
 
   // ── Invariante de congelación ─────────────────────────────────────────────
   isCongealed: true;

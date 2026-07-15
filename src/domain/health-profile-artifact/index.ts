@@ -15,5 +15,6 @@ export type {
   PSLCArtifactPriorizacion,
   PSLCArtifactNotaValidacion,
   PSLCArtifactCautelas,
+  PSLCSealedCanonicalDocument,
   LocalHealthProfileArtifact,
 } from "./LocalHealthProfileArtifact";

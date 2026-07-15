@@ -25,6 +25,8 @@ import type {
   PSLCArtifactPreguntaAbierta,
 } from "../../domain/health-profile-artifact";
 import { computePerfilEstadoGlobal } from "../health-profile";
+import type { DiagnosticAnswers } from "../health-profile";
+import { buildSealedCanonicalDocument } from "../psl-c-canonical";
 
 // ── Tipos públicos ─────────────────────────────────────────────────────────────
 
@@ -38,6 +40,10 @@ export interface CompileLocalHealthProfileInput {
   /** PerfilLocalDeSalud opcional. Si se pasa, el artefacto incluye EKC snapshot,
    *  hipótesis activas y preguntas abiertas congeladas desde el perfil. */
   perfil?: PerfilLocalDeSalud;
+  /** Instantánea de respuestas diagnósticas del expediente. Si se pasa, el
+   *  artefacto congela el documento canónico (esquema 2). Aditivo: al omitirse,
+   *  la compilación mantiene su forma legacy sin `canonicalDocument`. */
+  diagnosticAnswers?: DiagnosticAnswers;
 }
 
 export interface CompilationViolation {
@@ -157,6 +163,20 @@ export function compileLocalHealthProfile(
   const compiledAt = new Date().toISOString();
   const artifactVersion = `PSL-C/v${existingArtifactCount + 1}`;
   const sourceHash = computePSLHash(psl);
+
+  // ── Documento canónico congelado (esquema 2) ───────────────────────────────
+  // Se hornea desde la instantánea de respuestas diagnósticas, no del estado
+  // vivo. La fecha se pre-formatea de forma determinista dentro del builder.
+  const canonicalDocument =
+    input.diagnosticAnswers !== undefined
+      ? buildSealedCanonicalDocument({
+          answers: input.diagnosticAnswers,
+          territory: municipalityName,
+          status: psl.status,
+          informeTitulo: psl.healthReportTitle,
+          generatedAtISO: psl.generatedAt,
+        })
+      : undefined;
 
   // ── Puente PerfilLocalDeSalud ──────────────────────────────────────────────
   let ekcSnapshot: EKCSnapshot | null = null;
@@ -361,6 +381,9 @@ export function compileLocalHealthProfile(
     hipotesisActivas,
     preguntasAbiertas: preguntasAbiertasPerfil,
     generatedFromPerfilId,
+
+    // ── Documento canónico congelado (esquema 2, aditivo) ─────────────────
+    ...(canonicalDocument !== undefined ? { canonicalDocument } : {}),
 
     // ── Invariante ────────────────────────────────────────────────────────
     isCongealed: true,
