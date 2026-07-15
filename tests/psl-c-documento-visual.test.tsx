@@ -2,12 +2,18 @@
  * tests/psl-c-documento-visual.test.tsx
  *
  * Lectura visual del Perfil en los documentos institucionales PSL-C.
- * El modelo documental (buildPSLCDocumentModel con answers) incorpora las
- * secciones estructuradas del contrato visual: Salud en síntesis al inicio,
- * ranking de señales del Informe (peso textual, nunca prevalencia), tabla
- * central de trazadores con referencias, señales para deliberación, agenda
- * del Grupo Motor y anexo con los 23 indicadores y la matriz epistemológica.
- * DOCX y PDF serializan ese mismo modelo; el visor lo renderiza.
+ * El modelo documental (buildPSLCDocumentModel) incorpora las secciones
+ * estructuradas del contrato visual: Salud en síntesis al inicio, ranking de
+ * señales del Informe (peso textual, nunca prevalencia), tabla central de
+ * trazadores con referencias, señales para deliberación, agenda del Grupo Motor
+ * y anexo con los 23 indicadores y la matriz epistemológica. DOCX y PDF
+ * serializan ese mismo modelo; el visor lo renderiza.
+ *
+ * FUENTE ÚNICA (paso 2): la lectura visual es propiedad del ARTEFACTO, no de una
+ * entrada viva. Un artefacto con documento canónico congelado (esquema 2, se
+ * compila con `diagnosticAnswers`) produce la forma rica desde su instantánea
+ * sellada; un artefacto legacy (sin él) produce la forma textual clásica. Ya no
+ * existe el par (artefacto + answers vivos): mismo artefacto → mismo documento.
  *
  * Invariante clave: el documento NO queda reducido a capítulos textuales.
  */
@@ -91,7 +97,10 @@ function perfilConConocimiento(): PerfilLocalDeSalud {
 }
 
 let ws: MunicipalityWorkspace;
-let artifact: LocalHealthProfileArtifact;
+// Artefacto canónico (esquema 2): congela la instantánea → forma rica.
+let artifactCanonical: LocalHealthProfileArtifact;
+// Artefacto legacy (sin canonicalDocument): camino textual clásico.
+let artifactLegacy: LocalHealthProfileArtifact;
 let answers: DiagnosticAnswers;
 let model: PSLCDocumentModel;
 let modelSinAnswers: PSLCDocumentModel;
@@ -124,15 +133,6 @@ beforeAll(() => {
       deliberacionNota: "El Grupo Motor deliberó y documentó el consenso.",
     },
   };
-  const result = compileLocalHealthProfile({
-    psl: compilable,
-    perfil,
-    municipalityName: ws.municipality.identity.name,
-    municipalityProvince: ws.municipality.identity.province ?? "",
-    existingArtifactCount: 0,
-  });
-  if (!result.ok) throw new Error("compilación del arnés falló");
-  artifact = result.artifact;
   answers = buildDiagnosticAnswers({
     workspace: ws,
     determinantTitles: [],
@@ -140,8 +140,28 @@ beforeAll(() => {
       .filter((a) => a.kind === "asset")
       .map((a) => ({ title: a.title, content: a.content })),
   });
-  model = buildPSLCDocumentModel(artifact, { answers });
-  modelSinAnswers = buildPSLCDocumentModel(artifact);
+  // Canónico: la instantánea de respuestas se sella en el artefacto.
+  const canonical = compileLocalHealthProfile({
+    psl: compilable,
+    perfil,
+    municipalityName: ws.municipality.identity.name,
+    municipalityProvince: ws.municipality.identity.province ?? "",
+    existingArtifactCount: 0,
+    diagnosticAnswers: answers,
+  });
+  // Legacy: misma compilación sin instantánea → sin documento canónico.
+  const legacy = compileLocalHealthProfile({
+    psl: compilable,
+    perfil,
+    municipalityName: ws.municipality.identity.name,
+    municipalityProvince: ws.municipality.identity.province ?? "",
+    existingArtifactCount: 0,
+  });
+  if (!canonical.ok || !legacy.ok) throw new Error("compilación del arnés falló");
+  artifactCanonical = canonical.artifact;
+  artifactLegacy = legacy.artifact;
+  model = buildPSLCDocumentModel(artifactCanonical);
+  modelSinAnswers = buildPSLCDocumentModel(artifactLegacy);
   titulos = model.sections.map((s) => s.title);
 }, 60000);
 
@@ -356,7 +376,8 @@ describe("documento visual — identidad no textual", () => {
     }
   });
 
-  it("sin answers, el modelo conserva la forma textual clásica (compatibilidad)", () => {
+  it("un artefacto legacy (sin documento canónico) conserva la forma textual clásica", () => {
+    expect(artifactLegacy.canonicalDocument).toBeUndefined();
     expect(modelSinAnswers.sections.every((s) => s.kind === undefined)).toBe(
       true
     );
@@ -371,21 +392,17 @@ describe("documento visual — identidad no textual", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("documento visual — serialización DOCX y PDF", () => {
-  it("el DOCX enriquecido es un ZIP válido y mayor que el textual", async () => {
-    const conVisual = await exportPSLCArtifactToDocxBuffer(artifact, {
-      answers,
-    });
-    const textual = await exportPSLCArtifactToDocxBuffer(artifact);
+  it("el DOCX del artefacto canónico es un ZIP válido y mayor que el legacy", async () => {
+    const conVisual = await exportPSLCArtifactToDocxBuffer(artifactCanonical);
+    const textual = await exportPSLCArtifactToDocxBuffer(artifactLegacy);
     expect(conVisual[0]).toBe(0x50);
     expect(conVisual[1]).toBe(0x4b);
     expect(conVisual.length).toBeGreaterThan(textual.length);
   });
 
-  it("el PDF enriquecido es válido, con más páginas y al menos una visualización", async () => {
-    const conVisual = await exportPSLCArtifactToPdfBuffer(artifact, {
-      answers,
-    });
-    const textual = await exportPSLCArtifactToPdfBuffer(artifact);
+  it("el PDF del artefacto canónico es válido, con más páginas y al menos una visualización", async () => {
+    const conVisual = await exportPSLCArtifactToPdfBuffer(artifactCanonical);
+    const textual = await exportPSLCArtifactToPdfBuffer(artifactLegacy);
     // Cabecera %PDF
     expect(String.fromCharCode(...conVisual.slice(0, 5))).toBe("%PDF-");
     expect(conVisual.length).toBeGreaterThan(textual.length);
@@ -404,9 +421,9 @@ describe("documento visual — serialización DOCX y PDF", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("documento visual — visor institucional", () => {
-  it("renderiza síntesis, ranking, tablas y agenda al recibir answers", () => {
+  it("renderiza síntesis, ranking, tablas y agenda desde el artefacto canónico", () => {
     const html = renderToStaticMarkup(
-      <PSLCArtifactViewer artifact={artifact} answers={answers} />
+      <PSLCArtifactViewer artifact={artifactCanonical} />
     );
     expect(html).toContain("Salud en síntesis");
     expect(html).toContain("pslc-viewer__card--destacado");
@@ -414,9 +431,9 @@ describe("documento visual — visor institucional", () => {
     expect(html).toContain("pslc-viewer__tabla");
     expect(html).toContain("Quién puede quedar fuera:");
     expect(html).toContain("Matriz epistemológica");
-    // La forma clásica sigue disponible sin answers
+    // La forma clásica sigue disponible en un artefacto legacy
     const clasico = renderToStaticMarkup(
-      <PSLCArtifactViewer artifact={artifact} />
+      <PSLCArtifactViewer artifact={artifactLegacy} />
     );
     expect(clasico).not.toContain("pslc-viewer__ranking");
     expect(clasico).toContain("Lectura ejecutiva territorial");

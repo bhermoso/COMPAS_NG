@@ -42,7 +42,7 @@ import {
   buildMatrizAnexo,
   formatIndicatorValue,
 } from "../health-profile";
-import type { DiagnosticAnswers } from "../health-profile";
+import { readSealedCanonicalDocument } from "../psl-c-canonical";
 
 // ── Tipos del modelo ──────────────────────────────────────────────────────────
 
@@ -157,19 +157,8 @@ const empiezaPor = (p: string, prefijos: string[]): boolean =>
 
 // ── Constructor del modelo ────────────────────────────────────────────────────
 
-export interface BuildPSLCDocumentModelOptions {
-  /**
-   * Respuestas diagnósticas del expediente: activan las secciones
-   * visual-narrativas (síntesis, ranking del Informe, tabla de trazadores,
-   * agenda del Grupo Motor y anexos estructurados). Sin ellas, el documento
-   * se genera en su forma textual clásica.
-   */
-  answers?: DiagnosticAnswers;
-}
-
 export function buildPSLCDocumentModel(
-  artifact: LocalHealthProfileArtifact,
-  opts: BuildPSLCDocumentModelOptions = {}
+  artifact: LocalHealthProfileArtifact
 ): PSLCDocumentModel {
   const sections: PSLCDocumentSection[] = [];
   const ekc = artifact.ekcSnapshot;
@@ -179,13 +168,25 @@ export function buildPSLCDocumentModel(
         artifact.informeSalud.title
       )
     : undefined;
-  const sintesis = opts.answers
-    ? buildProfileSynthesis(opts.answers, { informeTitulo })
+
+  // Fuente ÚNICA de las secciones visual-narrativas: la instantánea de respuestas
+  // diagnósticas SELLADA dentro del artefacto (documento canónico, esquema 2). No
+  // hay entrada viva. Un artefacto legacy (sin canonicalDocument) no la tiene:
+  // `answers` queda undefined y el documento cae al camino textual clásico, que
+  // sigue leyendo `conclusiones.content` — sin romperse.
+  const answers =
+    artifact.canonicalDocument !== undefined
+      ? (readSealedCanonicalDocument(artifact.canonicalDocument)?.provenance
+          .diagnosticAnswersSnapshot ?? undefined)
+      : undefined;
+
+  const sintesis = answers
+    ? buildProfileSynthesis(answers, { informeTitulo })
     : undefined;
-  const visuales = opts.answers
-    ? buildDiagnosticVisuals(opts.answers, { informeTitulo })
+  const visuales = answers
+    ? buildDiagnosticVisuals(answers, { informeTitulo })
     : undefined;
-  const matriz = opts.answers ? buildMatrizAnexo(opts.answers) : undefined;
+  const matriz = answers ? buildMatrizAnexo(answers) : undefined;
 
   // ── Portada institucional (sin hash: la trazabilidad vive en el anexo) ────
   const provincia = artifact.portada.municipalityProvince
@@ -541,8 +542,8 @@ export function buildPSLCDocumentModel(
   }
 
   // Referencias comparativas completas (23 indicadores) — estructuradas.
-  if (opts.answers !== undefined) {
-    const refs = opts.answers.referencias.references;
+  if (answers !== undefined) {
+    const refs = answers.referencias.references;
     sections.push({
       title: "Referencias comparativas de los indicadores",
       level: 2,

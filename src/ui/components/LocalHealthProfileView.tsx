@@ -36,22 +36,16 @@ function descargarBlob(blob: Blob, fileName: string): void {
 }
 
 async function descargarPSLCDocx(
-  artifact: LocalHealthProfileArtifact,
-  answers?: DiagnosticAnswers
+  artifact: LocalHealthProfileArtifact
 ): Promise<void> {
-  const { blob, fileName } = await exportPSLCArtifactToDocxBlob(artifact, {
-    answers,
-  });
+  const { blob, fileName } = await exportPSLCArtifactToDocxBlob(artifact);
   descargarBlob(blob, fileName);
 }
 
 async function descargarPSLCPdf(
-  artifact: LocalHealthProfileArtifact,
-  answers?: DiagnosticAnswers
+  artifact: LocalHealthProfileArtifact
 ): Promise<void> {
-  const { blob, fileName } = await exportPSLCArtifactToPdfBlob(artifact, {
-    answers,
-  });
+  const { blob, fileName } = await exportPSLCArtifactToPdfBlob(artifact);
   descargarBlob(blob, fileName);
 }
 
@@ -376,10 +370,8 @@ function PSLCCompilationChecklist({
 
 function PSLCSalidasInstitucionales({
   compiledProfiles,
-  diagnosticAnswers,
 }: {
   compiledProfiles?: LocalHealthProfileArtifact[];
-  diagnosticAnswers?: DiagnosticAnswers;
 }) {
   const compilado =
     compiledProfiles !== undefined && compiledProfiles.length > 0;
@@ -435,7 +427,7 @@ function PSLCSalidasInstitucionales({
               <button
                 type="button"
                 className="pslc-salidas__btn"
-                onClick={() => void descargarPSLCDocx(ultimo!, diagnosticAnswers)}
+                onClick={() => void descargarPSLCDocx(ultimo!)}
               >
                 Descargar DOCX ({ultimo!.artifactVersion})
               </button>
@@ -445,7 +437,7 @@ function PSLCSalidasInstitucionales({
               <button
                 type="button"
                 className="pslc-salidas__btn"
-                onClick={() => void descargarPSLCPdf(ultimo!, diagnosticAnswers)}
+                onClick={() => void descargarPSLCPdf(ultimo!)}
               >
                 Descargar PDF ({ultimo!.artifactVersion})
               </button>
@@ -955,10 +947,7 @@ export function LocalHealthProfileView({
               compiledCount={compiledProfiles?.length ?? 0}
               onCompile={onCompile}
             />
-            <PSLCSalidasInstitucionales
-              compiledProfiles={compiledProfiles}
-              diagnosticAnswers={diagnosticAnswers}
-            />
+            <PSLCSalidasInstitucionales compiledProfiles={compiledProfiles} />
           </>
         )}
 
@@ -1556,7 +1545,7 @@ export function LocalHealthProfileView({
                 <button
                   type="button"
                   className="psl-doc-compile-action__btn psl-doc-docx-btn"
-                  onClick={() => void descargarPSLCDocx(artifact, diagnosticAnswers)}
+                  onClick={() => void descargarPSLCDocx(artifact)}
                   title="Descargar el documento institucional congelado en formato Word"
                 >
                   Descargar DOCX ({artifact.artifactVersion})
@@ -1564,7 +1553,7 @@ export function LocalHealthProfileView({
                 <button
                   type="button"
                   className="psl-doc-compile-action__btn psl-doc-docx-btn"
-                  onClick={() => void descargarPSLCPdf(artifact, diagnosticAnswers)}
+                  onClick={() => void descargarPSLCPdf(artifact)}
                   title="Descargar el documento institucional congelado en formato PDF"
                 >
                   Descargar PDF ({artifact.artifactVersion})
@@ -1573,7 +1562,7 @@ export function LocalHealthProfileView({
                   <summary className="psl-doc-annex__summary">
                     Ver documento institucional completo ({artifact.artifactVersion})
                   </summary>
-                  <PSLCArtifactViewer artifact={artifact} answers={diagnosticAnswers} />
+                  <PSLCArtifactViewer artifact={artifact} />
                 </details>
               </div>
             ))}

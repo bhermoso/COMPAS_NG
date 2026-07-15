@@ -7,7 +7,6 @@ export type {
   PSLCRankingItem,
   PSLCSignalListItem,
   PSLCAgendaEntry,
-  BuildPSLCDocumentModelOptions,
 } from "./pslcDocumentModel";
 export { buildPSLCDocumentModel, pslcDocxFileName } from "./pslcDocumentModel";
 export {

@@ -17,7 +17,6 @@ import type {
   PSLCDocumentSection,
   PSLCRankingItem,
   PSLCTableData,
-  BuildPSLCDocumentModelOptions,
 } from "./pslcDocumentModel";
 import { buildPSLCDocumentModel, pslcDocxFileName } from "./pslcDocumentModel";
 
@@ -296,10 +295,9 @@ export function buildPSLCPdf(model: PSLCDocumentModel): jsPDF {
 
 /** Serializa el artefacto congelado a un Blob PDF (navegador). */
 export async function exportPSLCArtifactToPdfBlob(
-  artifact: LocalHealthProfileArtifact,
-  opts: BuildPSLCDocumentModelOptions = {}
+  artifact: LocalHealthProfileArtifact
 ): Promise<{ blob: Blob; fileName: string }> {
-  const model = buildPSLCDocumentModel(artifact, opts);
+  const model = buildPSLCDocumentModel(artifact);
   const doc = buildPSLCPdf(model);
   const blob = doc.output("blob");
   return { blob, fileName: pslcPdfFileName(artifact) };
@@ -307,10 +305,9 @@ export async function exportPSLCArtifactToPdfBlob(
 
 /** Serializa el artefacto congelado a Uint8Array (Node: tests, scripts). */
 export async function exportPSLCArtifactToPdfBuffer(
-  artifact: LocalHealthProfileArtifact,
-  opts: BuildPSLCDocumentModelOptions = {}
+  artifact: LocalHealthProfileArtifact
 ): Promise<Uint8Array> {
-  const model = buildPSLCDocumentModel(artifact, opts);
+  const model = buildPSLCDocumentModel(artifact);
   const doc = buildPSLCPdf(model);
   return new Uint8Array(doc.output("arraybuffer"));
 }

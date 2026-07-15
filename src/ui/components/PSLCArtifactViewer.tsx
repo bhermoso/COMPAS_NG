@@ -1,5 +1,4 @@
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
-import type { DiagnosticAnswers } from "../../application/health-profile";
 import type { PSLCDocumentSection } from "../../application/psl-c-export";
 import { buildPSLCDocumentModel } from "../../application/psl-c-export";
 
@@ -10,9 +9,10 @@ import { buildPSLCDocumentModel } from "../../application/psl-c-export";
  * Renderiza el MISMO modelo documental que los exports DOCX y PDF
  * (buildPSLCDocumentModel): lectura visual (síntesis, señales del Informe,
  * trazadores, señales para deliberación), documento principal de lectura
- * territorial, agenda del Grupo Motor y anexo técnico. Con `answers`
- * disponibles se activan las secciones estructuradas del contrato visual;
- * sin ellas se muestra la forma textual clásica.
+ * territorial, agenda del Grupo Motor y anexo técnico. La lectura visual se
+ * activa cuando el artefacto lleva el documento canónico congelado (esquema 2);
+ * un artefacto legacy (sin él) se muestra en su forma textual clásica. No hay
+ * entrada viva: el documento es función del artefacto.
  *
  * Reglas: no edita el artefacto; no genera recomendaciones ni texto nuevo;
  * no inventa datos ausentes; mantiene visible la frontera con el Plan de
@@ -21,8 +21,6 @@ import { buildPSLCDocumentModel } from "../../application/psl-c-export";
 
 interface PSLCArtifactViewerProps {
   artifact: LocalHealthProfileArtifact;
-  /** Respuestas diagnósticas: activan la lectura visual del documento. */
-  answers?: DiagnosticAnswers;
 }
 
 function StructuredBody({ section }: { section: PSLCDocumentSection }) {
@@ -125,11 +123,8 @@ function StructuredBody({ section }: { section: PSLCDocumentSection }) {
   }
 }
 
-export function PSLCArtifactViewer({
-  artifact,
-  answers,
-}: PSLCArtifactViewerProps) {
-  const model = buildPSLCDocumentModel(artifact, { answers });
+export function PSLCArtifactViewer({ artifact }: PSLCArtifactViewerProps) {
+  const model = buildPSLCDocumentModel(artifact);
 
   return (
     <article className="pslc-viewer" aria-label="Documento institucional PSL-C">

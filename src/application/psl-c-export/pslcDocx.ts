@@ -24,7 +24,6 @@ import type { LocalHealthProfileArtifact } from "../../domain/health-profile-art
 import type {
   PSLCDocumentModel,
   PSLCDocumentSection,
-  BuildPSLCDocumentModelOptions,
 } from "./pslcDocumentModel";
 import { buildPSLCDocumentModel } from "./pslcDocumentModel";
 
@@ -198,19 +197,17 @@ export function buildPSLCDocx(model: PSLCDocumentModel): Document {
 
 /** Serializa el artefacto congelado a un Blob DOCX (navegador). */
 export async function exportPSLCArtifactToDocxBlob(
-  artifact: LocalHealthProfileArtifact,
-  opts: BuildPSLCDocumentModelOptions = {}
+  artifact: LocalHealthProfileArtifact
 ): Promise<{ blob: Blob; fileName: string }> {
-  const model = buildPSLCDocumentModel(artifact, opts);
+  const model = buildPSLCDocumentModel(artifact);
   const blob = await Packer.toBlob(buildPSLCDocx(model));
   return { blob, fileName: model.fileName };
 }
 
 /** Serializa el artefacto congelado a Buffer (entorno Node: tests, scripts). */
 export async function exportPSLCArtifactToDocxBuffer(
-  artifact: LocalHealthProfileArtifact,
-  opts: BuildPSLCDocumentModelOptions = {}
+  artifact: LocalHealthProfileArtifact
 ): Promise<Buffer> {
-  const model = buildPSLCDocumentModel(artifact, opts);
+  const model = buildPSLCDocumentModel(artifact);
   return Packer.toBuffer(buildPSLCDocx(model));
 }

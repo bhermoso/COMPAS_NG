@@ -142,6 +142,25 @@ export function sealCanonicalDocument(
   };
 }
 
+/**
+ * Rehidrata el documento canónico sellado a su forma estructurada. Es el único
+ * punto donde el proyector (capa de aplicación) reconstruye el documento a partir
+ * del artefacto: no hay ninguna otra entrada. Devuelve `null` si el sello no es
+ * del esquema esperado (artefacto de esquema anterior u opaco no reconocible),
+ * para que el proyector caiga con dignidad al camino legacy.
+ */
+export function readSealedCanonicalDocument(
+  sealed: PSLCSealedCanonicalDocument
+): PSLCCanonicalDocument | null {
+  if (sealed.schemaVersion !== PSLC_CANONICAL_SCHEMA_VERSION) return null;
+  try {
+    const doc = JSON.parse(sealed.payload) as PSLCCanonicalDocument;
+    return doc.schemaVersion === PSLC_CANONICAL_SCHEMA_VERSION ? doc : null;
+  } catch {
+    return null;
+  }
+}
+
 export function buildSealedCanonicalDocument(
   input: BuildPSLCCanonicalDocumentInput
 ): PSLCSealedCanonicalDocument {

@@ -5,6 +5,7 @@ export {
   buildPSLCCanonicalDocument,
   sealCanonicalDocument,
   buildSealedCanonicalDocument,
+  readSealedCanonicalDocument,
 } from "./pslcCanonicalDocument";
 export type {
   PSLCCanonicalDocument,
