@@ -24,7 +24,7 @@ import type {
   PSLCArtifactHipotesis,
   PSLCArtifactPreguntaAbierta,
 } from "../../domain/health-profile-artifact";
-import { computePerfilEstadoGlobal } from "../health-profile";
+import { computePerfilEstadoGlobal, institutionalHealthReportTitle } from "../health-profile";
 import type { DiagnosticAnswers } from "../health-profile";
 import { buildSealedCanonicalDocument } from "../psl-c-canonical";
 
@@ -173,7 +173,15 @@ export function compileLocalHealthProfile(
           answers: input.diagnosticAnswers,
           territory: municipalityName,
           status: psl.status,
-          informeTitulo: psl.healthReportTitle,
+          // Paridad de cabecera (paso 3): se sella el título INSTITUCIONAL del
+          // Informe, el mismo transform que usan pantalla y export, no el crudo.
+          informeTitulo:
+            psl.healthReportTitle !== undefined
+              ? institutionalHealthReportTitle(
+                  psl.municipalityId,
+                  psl.healthReportTitle
+                )
+              : undefined,
           generatedAtISO: psl.generatedAt,
         })
       : undefined;

@@ -22,6 +22,7 @@ import {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToPdfBlob,
 } from "../../application/psl-c-export";
+import { readSealedCanonicalDocument } from "../../application/psl-c-canonical";
 import { ProfileIntegratedEditorialPreview } from "./ProfileIntegratedEditorialPreview";
 
 // Descarga del documento institucional congelado (solo artefactos PSL-C
@@ -1539,33 +1540,47 @@ export function LocalHealthProfileView({
             del diagnóstico en el momento de su generación.
           </p>
           <div className="psl-compiled-list">
-            {[...compiledProfiles].reverse().map((artifact) => (
-              <div key={artifact.id}>
-                <PSLCArtefactoCard artifact={artifact} />
-                <button
-                  type="button"
-                  className="psl-doc-compile-action__btn psl-doc-docx-btn"
-                  onClick={() => void descargarPSLCDocx(artifact)}
-                  title="Descargar el documento institucional congelado en formato Word"
-                >
-                  Descargar DOCX ({artifact.artifactVersion})
-                </button>
-                <button
-                  type="button"
-                  className="psl-doc-compile-action__btn psl-doc-docx-btn"
-                  onClick={() => void descargarPSLCPdf(artifact)}
-                  title="Descargar el documento institucional congelado en formato PDF"
-                >
-                  Descargar PDF ({artifact.artifactVersion})
-                </button>
-                <details className="psl-doc-annex__details">
-                  <summary className="psl-doc-annex__summary">
-                    Ver documento institucional completo ({artifact.artifactVersion})
-                  </summary>
-                  <PSLCArtifactViewer artifact={artifact} />
-                </details>
-              </div>
-            ))}
+            {[...compiledProfiles].reverse().map((artifact) => {
+              // Lectura canónica del artefacto: la MISMA editorialView que la
+              // pantalla viva, pero leída del SELLO (no recalculada). Un artefacto
+              // legacy sin documento canónico no la tiene: se muestra solo el
+              // documento institucional (document model) tras el desplegable.
+              const sealedView =
+                artifact.canonicalDocument !== undefined
+                  ? readSealedCanonicalDocument(artifact.canonicalDocument)
+                      ?.editorialView ?? null
+                  : null;
+              return (
+                <div key={artifact.id}>
+                  <PSLCArtefactoCard artifact={artifact} />
+                  {sealedView !== null && (
+                    <ProfileIntegratedEditorialPreview view={sealedView} />
+                  )}
+                  <button
+                    type="button"
+                    className="psl-doc-compile-action__btn psl-doc-docx-btn"
+                    onClick={() => void descargarPSLCDocx(artifact)}
+                    title="Descargar el documento institucional congelado en formato Word"
+                  >
+                    Descargar DOCX ({artifact.artifactVersion})
+                  </button>
+                  <button
+                    type="button"
+                    className="psl-doc-compile-action__btn psl-doc-docx-btn"
+                    onClick={() => void descargarPSLCPdf(artifact)}
+                    title="Descargar el documento institucional congelado en formato PDF"
+                  >
+                    Descargar PDF ({artifact.artifactVersion})
+                  </button>
+                  <details className="psl-doc-annex__details">
+                    <summary className="psl-doc-annex__summary">
+                      Ver documento institucional completo ({artifact.artifactVersion})
+                    </summary>
+                    <PSLCArtifactViewer artifact={artifact} />
+                  </details>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
