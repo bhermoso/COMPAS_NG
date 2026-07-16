@@ -122,7 +122,23 @@ export function loadWorkspaceFromLocalStorage(
     const key = buildWorkspaceStorageKey(municipalityId);
     const raw = localStorage.getItem(key);
     if (!raw) return null;
+    return parseWorkspaceJSON(raw);
+  } catch {
+    return null;
+  }
+}
 
+/**
+ * Parsea, migra, valida y normaliza un workspace serializado (JSON). Es la fuente
+ * ÚNICA de deserialización de un expediente: la usan tanto la carga desde
+ * localStorage como la carga de seeds canónicos (`municipalitySeeds`). Devuelve
+ * `null` de forma segura ante esquema distinto, colecciones básicas ausentes o
+ * JSON inválido, sin lanzar.
+ */
+export function parseWorkspaceJSON(
+  raw: string
+): MunicipalityWorkspace | null {
+  try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parsed = JSON.parse(raw) as any;
 
