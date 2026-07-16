@@ -12,9 +12,14 @@ import { type QuestionnaireProject } from "./domain/questionnaire";
 import { importProjectDataset } from "./application/questionnaire";
 import { type CreateMunicipalityContextInput } from "./domain/municipality";
 import {
-  createCompleteMunicipalityWorkspace,
   isEmptyWorkspaceForPersistenceGuard,
 } from "./application/workspace";
+import {
+  loadOrCreateMunicipalityWorkspace,
+  shouldSkipPersistence,
+  shouldReplaceWithSeed,
+  type WorkspaceLoadResult,
+} from "./appWorkspaceHydration";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
@@ -90,9 +95,8 @@ import { buildEstadoResumen } from "./application/territorial-interpretation";
 import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisation";
 import {
   saveWorkspaceToLocalStorage,
-  loadWorkspaceFromLocalStorage,
-  hasWorkspaceInLocalStorage,
 } from "./infrastructure/persistence/local-storage";
+import { loadMunicipalitySeed } from "./infrastructure/seeds";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
 import { compileNHSHealthProfile } from "./application/nhs-health-profile-compiler";
@@ -298,27 +302,9 @@ function attachDocumentIdToAtoms(
   }));
 }
 
-interface WorkspaceLoadResult {
-  workspace: MunicipalityWorkspace;
-  protectExistingStorage: boolean;
-}
-
-function loadOrCreateMunicipalityWorkspace(
-  municipalityId: string,
-  input: CreateMunicipalityContextInput
-): WorkspaceLoadResult {
-  const loaded = loadWorkspaceFromLocalStorage(municipalityId);
-  if (loaded !== null) {
-    return { workspace: loaded, protectExistingStorage: false };
-  }
-
-  return {
-    workspace: createCompleteMunicipalityWorkspace(input),
-    protectExistingStorage: hasWorkspaceInLocalStorage(municipalityId),
-  };
-}
-
 // isEmptyWorkspaceForPersistenceGuard importada desde application/workspace
+// WorkspaceLoadResult / loadOrCreateMunicipalityWorkspace / shouldSkipPersistence
+// viven en ./appWorkspaceHydration (testables sin renderizar App).
 
 // ── Componente principal ─────────────────────────────────────
 
@@ -336,6 +322,13 @@ export default function App() {
   );
   const protectedEmptyWorkspaceIdRef = useRef<string | null>(
     initialWorkspaceLoad.protectExistingStorage
+      ? initialWorkspaceLoad.workspace.municipality.identity.id
+      : null
+  );
+  // Municipio cuyo expediente se está hidratando de forma asíncrona desde su seed
+  // canónico. Mientras esté fijado, el placeholder vacío NO se persiste.
+  const [pendingSeedId, setPendingSeedId] = useState<string | null>(
+    initialWorkspaceLoad.seedPending
       ? initialWorkspaceLoad.workspace.municipality.identity.id
       : null
   );
@@ -399,9 +392,17 @@ export default function App() {
   const [newMuniError, setNewMuniError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Carrera de hidratación: mientras se carga el seed del municipio, NO se
+    // persiste el placeholder vacío. Si se guardara, la comprobación "no hay
+    // expediente local" fallaría y el seed nunca se cargaría, dejando el
+    // expediente vacío de forma permanente.
     if (
-      protectedEmptyWorkspaceIdRef.current === workspace.municipality.identity.id &&
-      isEmptyWorkspaceForPersistenceGuard(workspace)
+      shouldSkipPersistence({
+        workspaceMunicipalityId: workspace.municipality.identity.id,
+        pendingSeedId,
+        protectedEmptyWorkspaceId: protectedEmptyWorkspaceIdRef.current,
+        isEmpty: isEmptyWorkspaceForPersistenceGuard(workspace),
+      })
     ) {
       setPersistenceMessage(null);
       return;
@@ -410,7 +411,38 @@ export default function App() {
     protectedEmptyWorkspaceIdRef.current = null;
     const saved = saveWorkspaceToLocalStorage(workspace);
     setPersistenceMessage(saved ? null : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE);
-  }, [workspace]);
+  }, [workspace, pendingSeedId]);
+
+  // Hidratación asíncrona del expediente municipal desde su seed canónico. Solo se
+  // activa cuando `pendingSeedId` está fijado (no había expediente local y existe
+  // seed). Nunca sobreescribe trabajo del usuario ni un expediente local existente.
+  useEffect(() => {
+    if (pendingSeedId === null) return;
+    const seedMunicipalityId = pendingSeedId;
+    let cancelled = false;
+    void loadMunicipalitySeed(seedMunicipalityId, {
+      baseUrl: import.meta.env.BASE_URL,
+    }).then((seedWorkspace) => {
+      if (cancelled) return;
+      if (seedWorkspace !== null) {
+        // No sobreescribir contenido real: solo sustituir un placeholder VACÍO del
+        // mismo municipio. Cubre tanto el placeholder recién creado en memoria como
+        // el placeholder de la versión anterior ya persistido en localStorage
+        // (migración): en ambos casos el workspace en memoria está vacío.
+        setWorkspace((current) =>
+          shouldReplaceWithSeed(current, seedMunicipalityId) ? seedWorkspace : current
+        );
+      }
+      // Éxito o fallo, la hidratación termina: se libera el guard de persistencia.
+      // Si falló (municipio sin seed real), el placeholder vacío pasará a guardarse.
+      setPendingSeedId((currentPending) =>
+        currentPending === seedMunicipalityId ? null : currentPending
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingSeedId]);
 
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
@@ -2276,6 +2308,8 @@ export default function App() {
     protectedEmptyWorkspaceIdRef.current = nextWorkspaceLoad.protectExistingStorage
       ? municipalityId
       : null;
+    // Activa (o limpia) la hidratación asíncrona del seed para el nuevo municipio.
+    setPendingSeedId(nextWorkspaceLoad.seedPending ? municipalityId : null);
 
     setWorkspace(nextWorkspace);
     setPendingTopics([...(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? [])]);

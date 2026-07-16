@@ -3,5 +3,6 @@ export {
   hasWorkspaceInLocalStorage,
   saveWorkspaceToLocalStorage,
   loadWorkspaceFromLocalStorage,
+  parseWorkspaceJSON,
   clearWorkspaceFromLocalStorage,
 } from "./LocalStorageWorkspacePersistence";
