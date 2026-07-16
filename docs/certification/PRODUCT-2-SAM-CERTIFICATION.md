@@ -73,8 +73,7 @@ sampleQuality:
 | `assessSF12Study()` | SF-12 EAS | `aggregates.nValidPCS` (campo canónico primario) |
 | `assessSuenoStudy()` | Sueño EAS | `aggregates.nValidP33R` (campo canónico primario) |
 | `assessCAGEStudy()` | CAGE-EAS | `aggregates.nValidCAGER` (campo canónico primario) |
-| `assessIBSEStudy16Plus()` | IBSE (evaluación adulta) | `aggregates.nValid` |
-| `assessIBSEStudyFull()` | IBSE (evaluación escolar) | `aggregates.nValid` |
+| `assessIBSEStudySAM()` | IBSE (gobernada por `sampleScope`) | `aggregates.nValid` (o `strataCounts.*.nValid` en muestra mixta con desglose) |
 
 Todas las funciones siguen el mismo patrón:
 
@@ -98,24 +97,35 @@ SampleQualityAssessment
 
 | Fixture | Fuente | Grupo | N | Uso |
 |---|---|---|---|---|
-| `fixtures/population/atarfe-population-2022.ts` | Padrón Municipal de Habitantes — INE, 1 enero 2022 | ≥16 años | 15.472 | Estudios EAS adultos + IBSE 16+ |
-| `fixtures/population/atarfe-school-population-2025.ts` | MTI-BDU — Poblaciones por Edad, 31 dic. 2025 | 6–17 años | 2.847 | IBSE muestra completa |
+| `fixtures/population/atarfe-population-2022.ts` | Padrón Municipal de Habitantes — INE, 1 enero 2022 | ≥16 años | 15.472 | Estudios EAS adultos + IBSE de 16 o más |
+| `fixtures/population/atarfe-under16-population-2025.ts` | MTI-BDU — Poblaciones por Edad, 31 dic. 2025 | 6–15 años | 2.323 | Referencia de menores para IBSE `under-16` (Cochran 330) |
+| `fixtures/population/atarfe-school-population-2025.ts` | MTI-BDU — Poblaciones por Edad, 31 dic. 2025 | 6–17 años | 2.847 | Universo escolar documental (NO usado como referencia SAM) |
 
-Ambos fixtures contienen datos reales verificados mediante automatización COM sobre los archivos Excel fuente del repositorio.
+Los tres fixtures contienen datos reales verificados mediante automatización COM sobre los archivos Excel fuente del repositorio.
 
-#### Integración IBSE — dos evaluaciones independientes
+#### Integración IBSE — evaluación gobernada por el discriminador de muestra
 
-IBSE genera dos `SampleQualityAssessment` distintos para un mismo estudio:
+Corrección metodológica (revisión 2026-07-16): la evaluación SAM del IBSE depende
+del universo etario REAL de la muestra (`IBSEStudy.sampleScope`), no de una doble
+evaluación que reutilizaba el mismo `nValid` total contra dos poblaciones (el
+antiguo par `assessIBSEStudy16Plus` / `assessIBSEStudyFull`, retirado). `assessIBSEStudySAM(study, refs)` devuelve un `IBSESAMResult`:
 
-| Evaluación | `instrumentId` | `nObserved` | `PopulationReference` | N | nTheoretical | Cobertura | Calidad |
-|---|---|---|---|---|---|---|---|
-| IBSE 16+ | `"ibse-16plus"` | 811 | Adultos ≥16 (INE 2022) | 15.472 | 375 | 216,3 % | HIGH |
-| IBSE muestra completa | `"ibse-full"` | 811 | Escolar 6–17 (MTI-BDU 2025) | 2.847 | 339 | 239,2 % | HIGH |
+| `sampleScope` | Referencia usada | `instrumentId` | Resultado |
+|---|---|---|---|
+| `"16-plus"` | Adultos ≥16 (EAS) | `"ibse-16plus"` | Un dictamen (solo 16+) |
+| `"under-16"` | Menores (universo escolar) | `"ibse-under16"` | Un dictamen (solo menores) |
+| `"mixed"` **con** `strataCounts` válidos | Ambas, cada estrato con SU `nValid` | ambos | Dos dictámenes por estrato |
+| `"mixed"` **sin** desglose | — | — | **No evaluable por estrato** |
+| `"unknown"` (legacy) | — | — | **No evaluable por estrato** |
 
-Ambas evaluaciones:
-- utilizan exactamente el mismo objeto `IBSEStudy`;
-- utilizan exactamente el mismo `nObserved = 811` (`aggregates.nValid`);
-- se diferencian únicamente por la `PopulationReference`.
+Regla invariable: **nunca** se reutiliza el `nValid` total para evaluar
+simultáneamente a menores y a 16+. Una muestra de 16 o más comparte el **universo
+poblacional de referencia** con la EAS (adultos ≥16), no sus datos ni su muestra.
+
+**Caso Atarfe (INE 18022):** el CSV `ibse-atarfe.csv` es una muestra **mixta** sin
+desglose etario; por tanto SAM se muestra como **no evaluable por estrato con este
+export**. La ausencia de SAM etario no invalida el estudio: el IBSE sigue siendo un
++1 municipal válido para la regla N+1.
 
 **La diferencia pertenece al contexto de evaluación, no al instrumento.** El instrumento IBSE es uno; las preguntas sobre representatividad son dos porque los universos de referencia son distintos: la población adulta municipal y la población escolar municipal.
 
@@ -265,10 +275,9 @@ Ningún archivo de `src/` preexistente fue modificado durante la implementación
 | `assessSF12Study()` | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
 | `assessSuenoStudy()` | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
 | `assessCAGEStudy()` | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
-| `assessIBSEStudy16Plus()` | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
-| `assessIBSEStudyFull()` | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
+| `assessIBSEStudySAM()` (gobernada por `sampleScope`) | ✅ Implementada e integrada | `src/application/sam/assessStudies.ts` |
 | Fixture adulto Atarfe (INE 2022) | ✅ Disponible | `fixtures/population/` |
-| Fixture escolar Atarfe (MTI-BDU 2025) | ✅ Disponible | `fixtures/population/` |
+| Fixture menores <16 Atarfe (MTI-BDU 2025, 6–15, N=2.323) | ✅ Disponible | `fixtures/population/` |
 | `populationReferenceRegistry.ts` | ✅ Implementado | `src/application/sam/populationReferenceRegistry.ts` |
 | Consumo desde IBSEPanel (cuando ref. disponible) | ✅ Parcialmente integrado | `src/ui/components/IBSEPanel.tsx` |
 | Tripirámide visual (UI) | ⏳ Pendiente | — |
@@ -307,7 +316,7 @@ Los parsers, agregados, semántica y `EvidenceAtom` de los seis instrumentos com
 
 ### IBSE — dos preguntas, un instrumento
 
-IBSE genera dos dictámenes metodológicos porque admite dos preguntas distintas sobre representatividad. Las funciones `assessIBSEStudy16Plus()` y `assessIBSEStudyFull()` son explícitamente independientes: nunca comparten estado ni se invocan mutuamente. El equipo técnico puede consultar una, la otra o ambas según el contexto del análisis.
+La evaluación SAM del IBSE la gobierna el discriminador de muestra (`sampleScope`): `assessIBSEStudySAM()` evalúa una muestra `16-plus` solo contra la referencia adulta/EAS, una `under-16` solo contra la referencia de menores, y una `mixed` solo produce dictámenes por estrato cuando el export aporta `strataCounts` válidos —cada estrato con su propio `nValid`, nunca el total—. Una muestra mixta sin desglose, o `unknown`, no es evaluable por estrato.
 
 ---
 

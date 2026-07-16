@@ -1,13 +1,37 @@
 import type { PopulationReference } from "../../domain/sam";
 import { ATARFE_POPULATION_2022 } from "../../../fixtures/population/atarfe-population-2022";
-import { ATARFE_SCHOOL_POPULATION_2025 } from "../../../fixtures/population/atarfe-school-population-2025";
+import { ATARFE_UNDER16_POPULATION_2025 } from "../../../fixtures/population/atarfe-under16-population-2025";
 
 export interface PopulationReferenceSet {
-  /** Adultos ≥16 años — instrumentos EAS (DUKE, PREDIMED, SF-12, Sueño, CAGE, IPAQ). */
+  /** Adultos ≥16 años — instrumentos EAS y muestras IBSE de 16 o más. */
   adult?: PopulationReference;
-  /** Población escolar 6–17 años — instrumento IBSE. */
-  school?: PopulationReference;
+  /**
+   * Referencia poblacional de MENORES de 16 (universo 6–15). Coherente para
+   * muestras IBSE de menores de 16. NO reutiliza la referencia escolar 6–17 (que
+   * incluye 16 y 17). NO se usa para muestras de 16 o más ni para evaluar una
+   * muestra mixta sin desglose etario válido.
+   */
+  minor?: PopulationReference;
 }
+
+// Conjunto INMUTABLE de referencias de Atarfe. Un mismo objeto congelado se
+// resuelve tanto por el identificador de municipio ("atarfe") como por su código
+// INE ("18022"): el expediente canónico usa `municipalityId: "atarfe"`, mientras
+// que la fuente poblacional se cita por INE. Sin este alias, un estudio real de
+// Atarfe no encontraría nunca sus referencias.
+const ATARFE_REFERENCE_SET: PopulationReferenceSet = Object.freeze({
+  adult: ATARFE_POPULATION_2022,
+  minor: ATARFE_UNDER16_POPULATION_2025,
+});
+
+/**
+ * Alias de municipio → clave canónica del registro. Permite que distintas formas
+ * de identificar al mismo municipio (id del expediente y código INE) resuelvan el
+ * MISMO conjunto de referencias. No fabrica datos: solo enruta identificadores.
+ */
+const MUNICIPALITY_ALIASES: Readonly<Record<string, string>> = {
+  atarfe: "18022",
+};
 
 /**
  * Registro de Fuentes Poblacionales de Referencia verificadas por municipio.
@@ -17,13 +41,15 @@ export interface PopulationReferenceSet {
  * La ausencia de entrada indica que SAM no puede ejecutarse para ese municipio.
  */
 const REGISTRY: Readonly<Record<string, PopulationReferenceSet>> = {
-  "18022": {
-    adult: ATARFE_POPULATION_2022,
-    school: ATARFE_SCHOOL_POPULATION_2025,
-  },
+  "18022": ATARFE_REFERENCE_SET,
 };
 
-/** Devuelve las referencias poblacionales disponibles para un municipio, o {} si no existen. */
+/**
+ * Devuelve las referencias poblacionales disponibles para un municipio, o {} si no
+ * existen. Resuelve alias (p. ej. "atarfe" → "18022") antes de consultar, de modo
+ * que el id del expediente y el código INE devuelvan el mismo conjunto inmutable.
+ */
 export function getPopulationReferenceSet(municipalityId: string): PopulationReferenceSet {
-  return REGISTRY[municipalityId] ?? {};
+  const canonicalKey = MUNICIPALITY_ALIASES[municipalityId] ?? municipalityId;
+  return REGISTRY[canonicalKey] ?? {};
 }

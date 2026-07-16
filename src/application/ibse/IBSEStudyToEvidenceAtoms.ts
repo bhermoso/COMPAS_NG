@@ -23,6 +23,7 @@
 
 import { createEvidenceAtom, type EvidenceAtom } from "../../domain/evidence";
 import type { IBSEStudy } from "../../domain/ibse";
+import { IBSE_PARTICIPANT_MEAN_LABEL } from "../../domain/ibse";
 
 interface IBSEFactorDef {
   title: string;
@@ -75,7 +76,7 @@ export function ibseStudyToEvidenceAtoms(study: IBSEStudy): EvidenceAtom[] {
       municipalityId: study.municipalityId,
       kind: "indicator",
       title: def.title,
-      content: `${def.description} Media municipal: ${value} (n=${nValid} registros válidos de ${n} totales). Fuente: ${study.sourceFileName}.`,
+      content: `${def.description} ${IBSE_PARTICIPANT_MEAN_LABEL}: ${value} (n=${nValid} registros válidos de ${n} totales). Fuente: ${study.sourceFileName}.`,
       confidence,
       provenance: {
         origin: "ibse",

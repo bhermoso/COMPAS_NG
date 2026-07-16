@@ -89,11 +89,12 @@ const GRANADA_INPUT = {
   territorialType: "distrito",
   createdBy: "test",
 };
-const ATARFE_INPUT = {
-  id: "atarfe",
-  name: "Atarfe",
+// Municipio SIN seed (Alfacar no tiene export canónico): comprueba el camino vacío.
+const ALFACAR_INPUT = {
+  id: "alfacar",
+  name: "Alfacar",
   province: "Granada",
-  ineCode: "18022",
+  ineCode: "18011",
   createdBy: "test",
 };
 
@@ -162,14 +163,14 @@ describe("hidratación de expedientes municipales desde seed", () => {
   });
 
   it("5. un municipio sin seed crea un workspace vacío", async () => {
-    expect(hasMunicipalitySeed("atarfe")).toBe(false);
-    const result = loadOrCreateMunicipalityWorkspace("atarfe", ATARFE_INPUT);
+    expect(hasMunicipalitySeed("alfacar")).toBe(false);
+    const result = loadOrCreateMunicipalityWorkspace("alfacar", ALFACAR_INPUT);
     expect(result.seedPending).toBe(false);
     expect(result.workspace.repository.documents.length).toBe(0);
     expect(result.workspace.evidenceStore.atoms.length).toBe(0);
     // Y el loader de seed lo rechaza aunque se le pase contenido.
     await expect(
-      loadMunicipalitySeed("atarfe", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
+      loadMunicipalitySeed("alfacar", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
     ).resolves.toBeNull();
   });
 

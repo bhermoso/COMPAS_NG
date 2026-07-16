@@ -1,4 +1,5 @@
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
+import { isStructurallySaneStrataCounts, normalizeIBSESampleScope } from "../../../domain/ibse";
 
 const KEY_PREFIX = "compas-ng:workspace";
 const SCHEMA_VERSION = "1.0.0";
@@ -154,6 +155,25 @@ export function parseWorkspaceJSON(
     // Normalizar IBSEStudy: campo añadido en b66193a — rellenar en workspaces anteriores
     if (parsed.ibseStudy && !Array.isArray(parsed.ibseStudy.methodologicalCautions)) {
       parsed.ibseStudy.methodologicalCautions = [];
+    }
+
+    // Discriminador de muestra (revisión 2026-07-16): normaliza en runtime. Un
+    // valor ausente O inválido (p. ej. "school" persistido por error, que el cast
+    // de TypeScript no detecta) se colapsa a "unknown". No se afirma escolaridad.
+    if (parsed.ibseStudy) {
+      parsed.ibseStudy.sampleScope = normalizeIBSESampleScope(parsed.ibseStudy.sampleScope);
+    }
+
+    // Normalización legacy de strataCounts: si existe pero no es estructuralmente
+    // sano (forma inválida, estratos incoherentes, nValid > n), se descarta para
+    // no arrastrar un desglose corrupto al motor SAM. La validación completa
+    // (sumas contra aggregates) la aplica el SAM en tiempo de evaluación.
+    if (
+      parsed.ibseStudy &&
+      parsed.ibseStudy.strataCounts !== undefined &&
+      !isStructurallySaneStrataCounts(parsed.ibseStudy.strataCounts)
+    ) {
+      delete parsed.ibseStudy.strataCounts;
     }
 
     if (parsed.dukeStudy && !Array.isArray(parsed.dukeStudy.methodologicalCautions)) {
