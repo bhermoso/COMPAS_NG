@@ -13,9 +13,10 @@ import type { PopulationReference } from "../../src/domain/sam";
 //  12: 232  | 13: 245  | 14: 226  | 15: 247  | 16: 262  | 17: 262
 //   Total 6–17: 2.847 personas
 //
-// Nota metodológica: este fixture se usa para el `SampleQualityAssessment`
-// del IBSE como instrumento escolar (evaluación de muestra completa).
-// No usar para estudios EAS de adultos — usar atarfe-population-2022.ts.
+// Nota metodológica: universo ESCOLAR 6–17 (documental). NO es la referencia SAM
+// de menores de 16: para `sampleScope: "under-16"` se usa atarfe-under16-population-2025.ts
+// (6–15, N=2.323), que no incluye 16 ni 17 años. Este fixture 6–17 no se emplea
+// como referencia SAM y se conserva solo como dato del universo escolar completo.
 export const ATARFE_SCHOOL_POPULATION_2025: PopulationReference = {
   municipalityId: "18022",
   municipalityCode: "18022",

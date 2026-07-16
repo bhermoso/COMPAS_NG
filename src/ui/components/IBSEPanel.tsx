@@ -1,11 +1,11 @@
 import type { IBSEStudy } from "../../domain/ibse";
+import { describeIBSESampleScope, validateIBSEStrataCounts } from "../../domain/ibse";
 import { IBSE_MODULE } from "../../domain/methodology/definitions/ibse";
 import {
-  assessIBSEStudyFull,
-  assessIBSEStudy16Plus,
+  assessIBSEStudySAM,
   getPopulationReferenceSet,
 } from "../../application/sam";
-import type { SampleQualityLevel } from "../../domain/sam";
+import type { SampleQualityLevel, SampleQualityAssessment } from "../../domain/sam";
 
 interface IBSEPanelProps {
   ibseStudy?: IBSEStudy;
@@ -44,10 +44,10 @@ function getSampleQualityVerdict(
 ): { label: string; key: "adecuada" | "moderada" | "insuficiente"; note: string } {
   if (n >= 100)
     return { label: "Adecuada", key: "adecuada",
-      note: `El tamaño muestral (${n} registros válidos) permite una lectura descriptiva del municipio.` };
+      note: `El tamaño muestral (${n} registros válidos) permite una lectura descriptiva de la muestra participante.` };
   if (n >= 30)
     return { label: "Moderada", key: "moderada",
-      note: `El tamaño muestral (${n} registros válidos) es modesto. Los resultados son descriptivos de la muestra disponible.` };
+      note: `El tamaño muestral (${n} registros válidos) es modesto. Los resultados son descriptivos de la muestra participante.` };
   return { label: "Insuficiente", key: "insuficiente",
     note: `La muestra es reducida (${n} registros). Interpretar con extrema precaución.` };
 }
@@ -76,26 +76,38 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
   const mun = municipalityName ?? "el municipio";
   const { aggregates: agg } = ibseStudy;
 
+  // Descripción del universo etario DERIVADA del discriminador de la muestra. Para
+  // una muestra mixta, la descripción distingue si hay un desglose etario completo
+  // y válido (recuentos que cuadran con los totales) o no: así la UI no afirma "no
+  // permite desglosar" cuando de hecho muestra ambos dictámenes por estrato.
+  const hasValidBreakdown =
+    ibseStudy.sampleScope === "mixed" &&
+    validateIBSEStrataCounts(ibseStudy.strataCounts, ibseStudy.aggregates).valid;
+  const scopeDesc = describeIBSESampleScope(ibseStudy.sampleScope, { hasValidBreakdown });
+
   const totalLevel = getIBSELevel(agg.meanTotal);
 
-  // Dictamen SAM — usa el motor canónico cuando existe referencia poblacional verificada.
+  // Dictamen SAM gobernado por el discriminador de muestra. Una muestra mixta sin
+  // desglose etario válido NO produce dictamen por estrato (no evaluable). Cuando
+  // una muestra mixta SÍ tiene desglose válido, se muestran AMBOS dictámenes.
   const popRefs = getPopulationReferenceSet(ibseStudy.municipalityId);
-  const samSchool = popRefs.school !== undefined
-    ? assessIBSEStudyFull(ibseStudy, popRefs.school)
-    : undefined;
-  const samAdult = popRefs.adult !== undefined
-    ? assessIBSEStudy16Plus(ibseStudy, popRefs.adult)
-    : undefined;
-  const samPrimary = samSchool ?? samAdult;
-
-  const quality = samPrimary !== undefined
-    ? {
-        ...samLevelToDisplay(samPrimary.sampleQuality),
-        note: samPrimary.sampleQualityRationale,
-        isSAM: true as const,
-        sam: samPrimary,
-      }
-    : { ...getSampleQualityVerdict(agg.nValid), isSAM: false as const, sam: undefined };
+  const sam = assessIBSEStudySAM(ibseStudy, { adult: popRefs.adult, minor: popRefs.minor });
+  // Todos los dictámenes disponibles, cada uno con su etiqueta de estrato. No se
+  // colapsa a uno solo (nada de `plus16 ?? under16`).
+  const samStrata: Array<{ key: string; label: string; a: SampleQualityAssessment }> = [
+    ...(sam.under16 ? [{ key: "menores", label: "Menores de 16", a: sam.under16 }] : []),
+    ...(sam.plus16 ? [{ key: "16plus", label: "16 años o más", a: sam.plus16 }] : []),
+  ];
+  const heuristic = getSampleQualityVerdict(agg.nValid);
+  const samSummaryNote = samStrata.length > 0
+    ? samStrata
+        .map(
+          (s) =>
+            `SAM ${s.label}: ${samLevelToDisplay(s.a.sampleQuality).label.toLowerCase()} ` +
+            `(cobertura ${s.a.coverageGlobal.toFixed(0)} %).`
+        )
+        .join(" ")
+    : `${heuristic.note} SAM por estrato: ${sam.notEvaluableReason ?? "sin referencia poblacional verificada para este municipio."}`;
 
   // Dispersión interfactorial
   const factorValues = [
@@ -117,20 +129,21 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
   const lowestFactor = factorNames.reduce((a, b) => a.value < b.value ? a : b);
 
   const executiveSummary: string[] = [
-    `La población escolar de ${mun} obtiene un Índice IBSE de ${agg.meanTotal}/100 — nivel ${totalLevel} (umbrales heurísticos del sistema, no normativos).`,
-    `El factor con menor puntuación es ${lowestFactor.label} (${lowestFactor.value}/100), que señala la dimensión más vulnerable del bienestar escolar.`,
+    scopeDesc.sampleSentence,
+    `La muestra municipal participante de ${mun} obtiene un Índice IBSE de ${agg.meanTotal}/100 — nivel ${totalLevel} (umbrales heurísticos del sistema, no normativos).`,
+    `El factor con menor puntuación es ${lowestFactor.label} (${lowestFactor.value}/100), que señala la dimensión más vulnerable del bienestar socioemocional en la muestra.`,
     dispLevel === "alta"
       ? `La dispersión interfactorial es alta (${dispersion} puntos): el índice total puede no representar adecuadamente la diversidad de dimensiones. Se recomienda el análisis por factor.`
       : `La dispersión interfactorial es ${dispLevel} (${dispersion} puntos). Los factores presentan un perfil relativamente homogéneo.`,
-    quality.note,
+    samSummaryNote,
   ];
 
   const pslParagraph =
-    `En ${mun}, el Índice de Bienestar Socioemocional (IBSE) de la población escolar ` +
+    `En ${mun}, el Índice de Bienestar Socioemocional (IBSE) de la muestra municipal participante ` +
     `(n = ${agg.nValid} registros válidos) es de ${agg.meanTotal}/100 — nivel ${totalLevel}. ` +
     `El factor ${lowestFactor.label} (${lowestFactor.value}/100) es la dimensión con menor puntuación. ` +
     `La dispersión interfactorial es ${dispLevel} (${dispersion} puntos). ` +
-    `Este resultado aporta evidencia sobre el bienestar subjetivo de la población escolar del municipio ` +
+    `Este resultado aporta evidencia sobre el bienestar subjetivo de la muestra municipal participante ` +
     `para el capítulo de Diagnóstico de Salud del Perfil de Salud Local.`;
 
   return (
@@ -147,11 +160,19 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
         </div>
         <div className="study-report__header-meta">
           <span className="study-report__tag">REDCap municipal</span>
-          <span className="study-report__tag">{module.identity.targetPopulation}</span>
+          <span className="study-report__tag">{scopeDesc.shortLabel}</span>
           <span className="study-report__meta-date">Importado el {formatDate(ibseStudy.createdAt)}</span>
           <span className="study-report__meta-n">{agg.nValid} registros válidos</span>
         </div>
       </header>
+
+      {/* UNIVERSO DE LA MUESTRA (derivado del discriminador) */}
+      <section className="study-report__section">
+        <p className="study-report__section-title">Universo de la muestra</p>
+        <p className="study-report__interpretation" data-sample-scope={ibseStudy.sampleScope}>
+          {scopeDesc.sampleSentence}
+        </p>
+      </section>
 
       {/* EN SÍNTESIS */}
       <section className="study-report__section">
@@ -254,21 +275,38 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
           </div>
           <div className="study-report__quality-cell">
             <span className="study-report__quality-label">Valoración</span>
-            <span className={`study-report__quality-verdict study-report__quality-verdict--${quality.key}`}>
-              {quality.label}
-            </span>
+            {samStrata.length > 0 ? (
+              <span className="study-report__quality-value">SAM por estrato</span>
+            ) : (
+              <span className={`study-report__quality-verdict study-report__quality-verdict--${heuristic.key}`}>
+                {heuristic.label}
+              </span>
+            )}
           </div>
         </div>
-        <p className="study-report__quality-note">
-          {quality.note}
-          {quality.isSAM && quality.sam !== undefined && (
-            <> N teórico Cochran: {quality.sam.nTheoretical} · Cobertura: {quality.sam.coverageGlobal.toFixed(1)} %
-            (fuente: {quality.sam.populationReference.source}, {quality.sam.populationReference.year}).</>
-          )}
-          {!quality.isSAM && (
-            <> Sin referencia poblacional verificada para este municipio: valoración heurística sin ajuste Cochran.</>
-          )}
-        </p>
+
+        {/* Dictámenes SAM por estrato — se muestran TODOS los disponibles. */}
+        {samStrata.length > 0 ? (
+          samStrata.map((s) => (
+            <p key={s.key} className="study-report__quality-note" data-sam-stratum={s.key}>
+              <strong>SAM — {s.label}:</strong>{" "}
+              <span className={`study-report__quality-verdict study-report__quality-verdict--${samLevelToDisplay(s.a.sampleQuality).key}`}>
+                {samLevelToDisplay(s.a.sampleQuality).label}
+              </span>{" "}
+              {s.a.sampleQualityRationale}{" "}
+              N observado: {s.a.nObserved} · N teórico Cochran: {s.a.nTheoretical} ·
+              Cobertura: {s.a.coverageGlobal.toFixed(1)} %
+              (referencia: {s.a.populationReference.ageGroupLabel} — {s.a.populationReference.source}, {s.a.populationReference.year}).
+            </p>
+          ))
+        ) : (
+          <p className="study-report__quality-note">
+            {heuristic.note}{" "}
+            SAM por estrato: {sam.notEvaluableReason
+              ?? "sin referencia poblacional verificada para este municipio."}{" "}
+            Valoración heurística sobre la muestra participante, sin ajuste Cochran.
+          </p>
+        )}
       </section>
 
       {/* LÍNEAS DE OBSERVACIÓN */}
@@ -302,11 +340,13 @@ export function IBSEPanel({ ibseStudy, municipalityName }: IBSEPanelProps) {
       <section className="study-report__section">
         <p className="study-report__section-title">Coherencia con otras evidencias</p>
         <p className="study-report__interpretation">
-          El IBSE es el único estudio de la batería centrado en la población escolar,
-          por lo que no tiene un referente directo en los instrumentos sobre población adulta (SF-12, DUKE-EAS, PREDIMED, Sueño, CAGE).
+          El IBSE es un instrumento de origen escolar administrado a la muestra municipal
+          participante ({scopeDesc.shortLabel.toLowerCase()}); su comparación con los instrumentos EAS
+          de población adulta (SF-12, DUKE-EAS, PREDIMED, Sueño, CAGE) requiere cautela por la
+          distinta composición etaria de las muestras.
           Cuando el SF-12 MCS está disponible, la comparación entre el bienestar emocional
-          escolar (IBSE) y la salud mental percibida adulta puede caracterizar si el perfil
-          de bienestar subjetivo de {mun} muestra diferencias relevantes entre generaciones.
+          de la muestra IBSE y la salud mental percibida adulta puede caracterizar si el perfil
+          de bienestar subjetivo de {mun} muestra diferencias relevantes entre grupos.
           Si el IBSE muestra un nivel bajo en el Factor Vínculo, resulta coherente explorarlo
           junto al DUKE-EAS, dado que ambos abordan dimensiones relacionales del bienestar.
           Cualquier concordancia o discrepancia entre instrumentos amplía el diagnóstico sin

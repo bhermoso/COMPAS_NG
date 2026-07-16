@@ -21,12 +21,19 @@ export const IBSE_MODULE: MethodologicalModule = {
     name: "Índice de Bienestar Socioemocional",
     shortName: "IBSE",
     description:
-      "Instrumento de medición del bienestar socioemocional de la población escolar " +
-      "mediante 8 ítems agrupados en 4 factores y un índice total.",
+      "Instrumento de medición del bienestar socioemocional mediante 8 ítems " +
+      "agrupados en 4 factores y un índice total. De diseño escolar, admite en la " +
+      "práctica muestras municipales de menores de 16 y de personas de 16 o más.",
     purpose:
-      "Evaluar el estado de bienestar subjetivo de la población escolar en sus " +
+      "Evaluar el estado de bienestar subjetivo de la población participante en sus " +
       "dimensiones de vínculo, situación vital, control percibido y aspectos personales.",
-    targetPopulation: "Población escolar (aproximadamente 10–16 años)",
+    // El instrumento es de origen escolar, pero NO es exclusivamente escolar: una
+    // muestra municipal puede incluir menores de 16 y personas de 16 o más. El
+    // universo etario real lo declara el discriminador `sampleScope` de cada
+    // IBSEStudy, no este campo. Una muestra de 16 o más comparte el universo
+    // poblacional de referencia con la EAS (adultos ≥16), no sus datos ni su muestra.
+    targetPopulation:
+      "Menores de 16 y/o personas de 16 o más, según la muestra municipal (instrumento de origen escolar; no exclusivamente escolar)",
     createdAt: "2026-06-22",
   },
 

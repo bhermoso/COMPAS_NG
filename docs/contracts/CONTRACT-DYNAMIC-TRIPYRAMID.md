@@ -15,13 +15,20 @@ El núcleo de cálculo de SAM (motor + integración) está implementado en:
 - `src/application/sam/assessStudies.ts` — capa de integración tipada con los instrumentos complementarios
 - `src/application/sam/populationReferenceRegistry.ts` — registry de `PopulationReferenceSet` por municipio (2026-07-13)
 - `fixtures/population/atarfe-population-2022.ts` — Fuente Poblacional de Referencia adulta, ≥16 años (Padrón INE 2022, N=15.472)
-- `fixtures/population/atarfe-school-population-2025.ts` — Fuente Poblacional escolar 6–17 años (MTI-BDU 2025, N=2.847)
+- `fixtures/population/atarfe-under16-population-2025.ts` — Fuente Poblacional de MENORES de 16, 6–15 años (MTI-BDU 2025, N=2.323, Cochran=330) — referencia SAM para `sampleScope: "under-16"`
+- `fixtures/population/atarfe-school-population-2025.ts` — universo escolar 6–17 años (MTI-BDU 2025, N=2.847) — **solo documental**, NO se usa como referencia SAM (no reutilizar para menores de 16, pues incluye 16 y 17)
 - `tests/sam.test.ts` — 33 tests unitarios (motor)
-- `tests/sam-integration.test.ts` — 39 tests de integración (instrumentos + IBSE dual)
+- `tests/sam-integration.test.ts` — tests de integración (instrumentos EAS + IBSE gobernado por `sampleScope`)
 
-**Integración parcial:** `IBSEPanel.tsx` llama a `assessIBSEStudyFull` / `assessIBSEStudy16Plus` cuando el
-registry devuelve una `PopulationReference` para el municipio activo. Para municipios sin referencia
-verificada (p. ej. Granada-Zaidín), muestra dictamen heurístico simplificado con nota explícita.
+**Integración parcial:** `IBSEPanel.tsx` llama a `assessIBSEStudySAM` (gobernada por el discriminador de
+muestra `sampleScope`) cuando el registry devuelve una `PopulationReference` para el municipio activo. El
+registry resuelve alias de municipio (`"atarfe"` → INE `"18022"`), de modo que un estudio real de Atarfe
+(que usa `municipalityId: "atarfe"`) encuentra sus referencias. Una muestra `mixed` sin desglose etario
+válido —o `unknown`— no es evaluable por estrato; una `mixed` con desglose válido pero sin referencia de
+un estrato tampoco, y el motivo distingue qué falta. Cuando el desglose es válido y ambas referencias
+están presentes, se muestran AMBOS dictámenes (menores de 16 con la referencia 6–15; 16+ con la adulta).
+Para municipios sin referencia verificada (p. ej. Granada-Zaidín), muestra dictamen heurístico
+simplificado con nota explícita.
 
 **Pendiente:** visualización UI (Tripirámide visual), generación de `EvidenceAtom kind="sample-quality"`,
 persistencia en workspace, estratificación, ponderación, desplazamiento, comparación longitudinal,
@@ -87,7 +94,8 @@ La calidad muestral **solo informa**. No modifica los resultados del estudio. No
 |---|---|---|
 | Microdatos EAS (Granada) | n observado por instrumento | Disponible en fixtures |
 | Padrón Municipal INE 2022 (Atarfe, ≥16 años) | N=15.472 | Disponible (`atarfe-population-2022.ts`) |
-| MTI-BDU 2025 (Atarfe, 6–17 años) | N=2.847 | Disponible (`atarfe-school-population-2025.ts`) |
+| MTI-BDU 2025 (Atarfe, 6–15 años, menores de 16) | N=2.323 (Cochran=330) | Disponible (`atarfe-under16-population-2025.ts`) — referencia SAM `under-16` |
+| MTI-BDU 2025 (Atarfe, 6–17 años) | N=2.847 | Disponible (`atarfe-school-population-2025.ts`) — solo documental, no referencia SAM |
 | Muestra teórica | n teórico = Cochran+FPC | Calculada por el motor |
 | Padrón de otros municipios | Población objetivo | Pendiente por municipio |
 

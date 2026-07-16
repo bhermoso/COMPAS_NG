@@ -1,0 +1,98 @@
+# Expediente canónico de Atarfe
+
+Expediente municipal de Atarfe (INE **18022**, provincia de Granada) para COMPÁS NG.
+Construido **exclusivamente con fuentes genuinamente municipales** y con los
+servicios reales de la aplicación. No contiene datos fabricados, provinciales
+atribuidos a Atarfe ni fixtures sintéticas.
+
+## Artefactos
+
+| Fichero | Uso |
+|---|---|
+| `exports/compas-ng-workspace-atarfe.json` | Export canónico (`MunicipalityWorkspace` serializado, `schemaVersion 1.0.0`). |
+| `../../public/seeds/compas-ng-workspace-atarfe.json` | Seed desplegable (byte a byte idéntico al export; Vite lo publica en `dist/seeds/`). |
+
+Generación reproducible: `npm run rebuild:atarfe`
+(`scripts/demo/buildAtarfeWorkspace.ts` + `scripts/demo/rebuild-atarfe.gen.ts`,
+config `vitest.rebuild.config.ts`; **no** forma parte de `npm test`).
+
+### Reproducibilidad byte a byte
+
+Los servicios de dominio emiten `crypto.randomUUID()` y `new Date()` en cada
+llamada. El **constructor canónico** (`buildAtarfeWorkspace`) neutraliza esa
+variación —sin alterar el comportamiento normal de la aplicación— aplicando:
+
+- **Sello temporal fijo**: `CANONICAL_TIMESTAMP = 2026-07-16T00:00:00.000Z` en
+  todos los `createdAt`/`updatedAt`/`extractedAt` (municipio, repositorio,
+  documentos, EvidenceStore, átomos, Informe e IBSE).
+- **Identificadores estables**: `doc-health-report-atarfe` (documento del
+  Informe), `health-report-atarfe` (HealthReportDocument), `ibse-study-atarfe`
+  (IBSEStudy) y `doc-ibse-atarfe` (documento IBSE).
+
+Ejecutar `npm run rebuild:atarfe` dos veces sin cambiar las fuentes produce el
+**mismo SHA-256** y deja `git diff` vacío. La prueba `atarfe-canonical-workspace`
+(caso 12) reconstruye el expediente con la **capa real de persistencia** y exige
+igualdad byte a byte con el export; el caso 14 verifica el determinismo.
+
+### SHA-256 de las fuentes de entrada
+
+Verificado en la suite (caso 13): si una fuente cambia, la validación falla.
+
+| Fuente | SHA-256 |
+|---|---|
+| `fixtures/health-reports/Informe_Salud_Atarfe.docx` | `597fcacf0342eeb8970ef61b3a9b1d58cfe9eeb1c6703af7639e843a6c5b8e2c` |
+| `fixtures/ibse-atarfe.csv` | `b2c6126c937b88de55c6aaae6c611f6c4bec75cd90e968916732c577039fa703` |
+
+## Recuentos deterministas
+
+| Elemento | Valor |
+|---|---|
+| Identidad | `atarfe` · Atarfe · Granada · INE 18022 |
+| Documentos del repositorio | **2** (Informe de Salud + IBSE) |
+| Estudios | **1** (IBSE municipal) |
+| EvidenceAtoms totales | **6** (5 `indicator` + 1 `qualitative-observation`, origen `ibse`) |
+| Átomos del Informe de Salud | **0** (D-HR-01 / Art. 7 bis §3) |
+| Autoría del Informe | **2 firmantes** (Carlos del Moral Campaña, María José Molina Rueda — Epidemiología, Distrito Granada-Metropolitano) |
+| IBSE (muestra **mixta**) | n=909 · nValid=811 · media IBSE total=63,2 · `sampleScope: "mixed"` · sin desglose etario |
+
+## Fuentes incluidas
+
+| Fuente | Categoría (fixtures/README.md) | Rol | Provenance |
+|---|---|---|---|
+| `fixtures/health-reports/Informe_Salud_Atarfe.docx` | municipal real (documento primario) | Base epidemiológica oficial (**N**), preservada sin atomizar y con su autoría (Art. 16) | `health-report`, `territorialScale: municipio`, `contentMode: full-text-non-atomized` |
+| `fixtures/ibse-atarfe.csv` | `municipal-demo` (REDCap Monitor IBSE Atarfe 2026) | Único estudio genuinamente municipal (**+1**) → cumple la regla N+1. Muestra **mixta** (`sampleScope: "mixed"`) | `redcap-export` + tag `ibse`, `territorialScale: municipio`, `contentMode: atomized` |
+
+## Fuentes EXCLUIDAS (y por qué)
+
+| Fuente | Categoría | Motivo de exclusión |
+|---|---|---|
+| DUKE / PREDIMED / SF-12 / Sueño / CAGE / IPAQ (`*-eas-granada.csv`) | `provincial-eas-granada` | Muestra **provincial de Granada**; el README declara que "no representa ningún municipio concreto". Atribuirlas a la población de Atarfe sería falso. Solo admisibles como contexto provincial explícito (patrón `PROXY_CAUTION`), no como dato municipal. |
+| `ibse-granada-provincia.csv` | `municipal-demo` (monitor provincial) | Provincial, no Atarfe; es la referencia interna del módulo IBSE. |
+| AUDIT-C / GHQ-12 / PHQ-9 / PSQI / Fagerström / SBQ (`*-municipal.csv`) | `synthetic-validation` | Datos **sintéticos**; "no representan ningún municipio real. No deben interpretarse epidemiológicamente." Prohibidos en un expediente canónico. |
+| Priorización `priorizacion_atarfe.csv` (referida en `tests/atarfe-workspace.test.ts`) | dev-derivada | "Solo para integración y desarrollo… no procede de proceso REDCap." Presentarla como priorización ciudadana falsearía un proceso participativo. Además, el fichero no existe versionado. |
+
+> Los arneses `tests/atarfe-workspace.test.ts` y `tests/load-atarfe-complete.mjs`
+> construyen un "Atarfe" de desarrollo que **atribuye los EAS provinciales a
+> Atarfe**; NO son la construcción canónica y no se reutilizan aquí.
+
+## Cautelas
+
+- El Informe de Salud es la fuente diagnóstica primaria; se conserva íntegro y no
+  genera evidencia atomizada (D-HR-01).
+- El IBSE es un instrumento de **origen escolar**, pero la muestra de Atarfe es
+  **mixta**: incluye menores de 16 y personas de 16 o más. El export **no** aporta
+  desglose etario (`strataCounts` ausente), por lo que **SAM no es evaluable por
+  estrato con este export**: no se produce dictamen de representatividad ni para
+  menores ni para 16+. Nunca se reutiliza el `nValid` total (811) contra dos
+  poblaciones distintas. La ausencia de SAM etario **no invalida** el estudio: el
+  IBSE sigue siendo un +1 municipal válido para la regla N+1.
+- **Cautelas de muestra (dentro del propio artefacto)**: el estudio IBSE y **cada
+  uno de sus átomos** llevan dos cautelas: (1) «Muestra municipal mixta: incluye
+  menores de 16 y personas de 16 o más; el export disponible no permite desglosar
+  los resultados por edad»; (2) «Los valores corresponden a la muestra municipal
+  participante; no se ha demostrado representatividad poblacional por estrato con
+  este export». Los átomos cuantitativos dicen «Media de la muestra municipal
+  participante», nunca «Media municipal». El documento se titula «Monitor IBSE
+  Atarfe 2026 (muestra mixta)».
+- Regla N+1 (Art. 7 bis A): Informe (N) + IBSE municipal (+1). Expediente válido y
+  honesto con las únicas fuentes municipales disponibles hoy.

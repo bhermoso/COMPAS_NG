@@ -22,16 +22,22 @@ export interface MunicipalitySeed {
  * Registro genérico de seeds canónicos. SOLO se registran municipios con un export
  * real vigente y rehidratable.
  *
- * Estado (auditoría 2026-07-16): único expediente canónico cargable = Granada-Zaidín
- * (20 documentos, 92 evidencias). Atarfe, Alfacar, Churriana de la Vega y Zagra NO
- * tienen export real: se abren vacíos hasta que exista uno (no se inventa contenido;
- * las fixtures sintéticas de tests NO se promueven a datos de producción).
+ * Estado (2026-07-16): expedientes canónicos cargables = Granada-Zaidín (20
+ * documentos, 92 evidencias) y Atarfe (Informe de Salud + IBSE municipal: 2
+ * documentos, 6 evidencias). Alfacar, Churriana de la Vega y Zagra NO tienen
+ * export real: se abren vacíos hasta que exista uno (no se inventa contenido; las
+ * fixtures sintéticas o provinciales NO se promueven a datos de producción).
  */
 export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
   "granada-zaidin": {
     municipalityId: "granada-zaidin",
     expectedName: "Granada-Zaidín",
     path: "seeds/compas-ng-workspace-granada-zaidin.json",
+  },
+  atarfe: {
+    municipalityId: "atarfe",
+    expectedName: "Atarfe",
+    path: "seeds/compas-ng-workspace-atarfe.json",
   },
 };
 

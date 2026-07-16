@@ -9,6 +9,7 @@
 // poblacional EAS metodológicamente equivalente.
 
 import type { IBSEStudy } from "../../domain/ibse";
+import { validateIBSEStrataCounts } from "../../domain/ibse";
 import type { DUKEStudy } from "../../domain/duke";
 import type { PREDIMEDStudy } from "../../domain/predimed";
 import type { SF12Study } from "../../domain/sf12";
@@ -84,35 +85,134 @@ export function assessCAGEStudy(
   });
 }
 
-// ── IBSE — dos evaluaciones independientes ───────────────────────────────────
+// ── IBSE — evaluación SAM gobernada por el discriminador de muestra ──────────
+//
+// Corrección metodológica (revisión 2026-07-16): la evaluación SAM del IBSE
+// depende del universo etario REAL de la muestra (`study.sampleScope`), no de una
+// doble evaluación que reutilizaba el mismo `nValid` total contra dos poblaciones
+// (el antiguo par assessIBSEStudy16Plus / assessIBSEStudyFull, retirado).
+//
+// Reglas:
+//   - "16-plus": se evalúa SOLO contra la referencia adulta/EAS (≥16).
+//   - "under-16": se evalúa SOLO contra una referencia poblacional de menores.
+//   - "mixed": produce dictámenes por estrato SOLO si existen recuentos válidos
+//     desglosados (`strataCounts`) Y ambas referencias. En otro caso NO es
+//     evaluable por estrato (nunca se reutiliza el nValid total para ambos grupos).
+//   - "unknown": no evaluable (dato legacy o sin desglose de edad).
 
-// Evaluación IBSE 16+: compara la muestra IBSE con la población adulta (≥16).
-// Permite la comparación metodológica con los estudios EAS de población adulta.
-// Referencia poblacional: población municipal ≥16 años.
-export function assessIBSEStudy16Plus(
+/** Referencias poblacionales disponibles para la evaluación SAM del IBSE. */
+export interface IBSEPopulationRefs {
+  /** Universo adulto/EAS (≥16 años). */
+  adult?: PopulationReference;
+  /** Universo de menores (población escolar de referencia). */
+  minor?: PopulationReference;
+}
+
+/** Resultado de la evaluación SAM del IBSE, gobernada por el discriminador. */
+export interface IBSESAMResult {
+  scope: IBSEStudy["sampleScope"];
+  evaluable: boolean;
+  /** Motivo cuando `evaluable` es false. */
+  notEvaluableReason?: string;
+  /** Dictamen del estrato de menores (cuando procede). */
+  under16?: SampleQualityAssessment;
+  /** Dictamen del estrato de 16 o más (cuando procede). */
+  plus16?: SampleQualityAssessment;
+}
+
+function assess16Plus(
   study: IBSEStudy,
-  ref16Plus: PopulationReference
+  nObserved: number,
+  refAdult: PopulationReference
 ): SampleQualityAssessment {
   return computeSampleQualityAssessment({
     instrumentId: "ibse-16plus",
     municipalityId: study.municipalityId,
-    nObserved: study.aggregates.nValid,
-    populationReference: ref16Plus,
+    nObserved,
+    populationReference: refAdult,
   });
 }
 
-// Evaluación IBSE muestra completa: evalúa la representatividad real del
-// estudio IBSE como instrumento escolar sobre su universo de referencia.
-// Referencia poblacional: población en edad escolar (6–17 años).
-// No fusionar con assessIBSEStudy16Plus — son dictámenes metodológicos distintos.
-export function assessIBSEStudyFull(
+function assessUnder16(
   study: IBSEStudy,
-  refFull: PopulationReference
+  nObserved: number,
+  refMinor: PopulationReference
 ): SampleQualityAssessment {
   return computeSampleQualityAssessment({
-    instrumentId: "ibse-full",
+    instrumentId: "ibse-under16",
     municipalityId: study.municipalityId,
-    nObserved: study.aggregates.nValid,
-    populationReference: refFull,
+    nObserved,
+    populationReference: refMinor,
   });
+}
+
+export function assessIBSEStudySAM(
+  study: IBSEStudy,
+  refs: IBSEPopulationRefs
+): IBSESAMResult {
+  const scope = study.sampleScope;
+
+  if (scope === "16-plus") {
+    if (refs.adult === undefined) {
+      return { scope, evaluable: false, notEvaluableReason: "Sin referencia poblacional adulta (≥16) verificada para este municipio." };
+    }
+    return { scope, evaluable: true, plus16: assess16Plus(study, study.aggregates.nValid, refs.adult) };
+  }
+
+  if (scope === "under-16") {
+    if (refs.minor === undefined) {
+      return { scope, evaluable: false, notEvaluableReason: "Sin referencia poblacional de menores verificada para este municipio." };
+    }
+    return { scope, evaluable: true, under16: assessUnder16(study, study.aggregates.nValid, refs.minor) };
+  }
+
+  if (scope === "mixed") {
+    // Orden de comprobaciones (diagnóstico veraz):
+    //   1. desglose ausente o inválido;
+    //   2. desglose válido pero falta la referencia de menores;
+    //   3. desglose válido pero falta la referencia de 16+;
+    //   4. desglose válido y ambas referencias → ambos dictámenes.
+    const strata = validateIBSEStrataCounts(study.strataCounts, study.aggregates);
+    if (!strata.valid) {
+      return {
+        scope,
+        evaluable: false,
+        notEvaluableReason:
+          study.strataCounts === undefined
+            ? "Muestra mixta sin desglose etario: no evaluable por estrato con este export."
+            : `Muestra mixta con desglose inválido: ${strata.reason}`,
+      };
+    }
+    // El desglose SÍ es válido: lo que puede faltar es una referencia poblacional.
+    if (refs.minor === undefined) {
+      return {
+        scope,
+        evaluable: false,
+        notEvaluableReason:
+          "Desglose etario válido, pero falta la referencia poblacional de menores para evaluar el estrato de menores de 16.",
+      };
+    }
+    if (refs.adult === undefined) {
+      return {
+        scope,
+        evaluable: false,
+        notEvaluableReason:
+          "Desglose etario válido, pero falta la referencia poblacional adulta (≥16) para evaluar el estrato de 16 o más.",
+      };
+    }
+    // Cada estrato con SU propio nValid: nunca se reutiliza el total.
+    return {
+      scope,
+      evaluable: true,
+      under16: assessUnder16(study, study.strataCounts!.under16!.nValid, refs.minor),
+      plus16: assess16Plus(study, study.strataCounts!.plus16!.nValid, refs.adult),
+    };
+  }
+
+  // unknown
+  return {
+    scope,
+    evaluable: false,
+    notEvaluableReason: "Discriminador de muestra desconocido (dato legacy): no evaluable por estrato.",
+  };
 }
