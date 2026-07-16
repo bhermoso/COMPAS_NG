@@ -1,5 +1,6 @@
 export {
   PSLC_CANONICAL_SCHEMA_VERSION,
+  PRIORITIZATION_PENDING_DECLARATION,
   pslStatusLabel,
   formatCanonicalDate,
   buildPSLCCanonicalDocument,
@@ -10,5 +11,7 @@ export {
 export type {
   PSLCCanonicalDocument,
   PSLCCanonicalDocumentProvenance,
+  PSLCReadingStatus,
+  PSLCReadingContext,
   BuildPSLCCanonicalDocumentInput,
 } from "./pslcCanonicalDocument";

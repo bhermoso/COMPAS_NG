@@ -24,7 +24,16 @@ import type {
   DiagnosticAnswers,
   ProfileIntegratedEditorialView,
 } from "../src/application/health-profile";
+import {
+  buildPSLCCanonicalDocument,
+  readSealedCanonicalDocument,
+} from "../src/application/psl-c-canonical";
+import { compileLocalHealthProfile } from "../src/application/health-profile-compiler";
 import { LocalHealthProfileView } from "../src/ui/components/LocalHealthProfileView";
+import { createMunicipalityContext } from "../src/domain/municipality";
+import { createEvidenceStore } from "../src/domain/evidence";
+import { createMunicipalDocumentRepository } from "../src/domain/repository";
+import { createMunicipalityWorkspace } from "../src/domain/workspace";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
 import type {
   LocalHealthProfile,
@@ -240,6 +249,177 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(editorialView.groupMotorAgenda.length).toBeGreaterThan(0);
     expect(editorialView.closing).toHaveLength(3);
     expect(editorialView.technicalAnnex.matrix.filas.length).toBeGreaterThan(0);
+  });
+
+  it("Paso 4: Granada-Zaidín (evidencia atomizada) sella readingStatus 'integrated'", () => {
+    // Granada-Zaidín tiene evidencia atomizada y lectura territorial: el documento
+    // canónico se declara integrado (átomos > 0 Y hay hilos territoriales).
+    expect(psl.totalEvidenceAtoms).toBeGreaterThan(0);
+    const doc = buildPSLCCanonicalDocument({
+      answers,
+      territory: ws.municipality.identity.name,
+      status: "validated",
+      informeTitulo: "Informe de salud de El Zaidín",
+      generatedAtISO: "2027-01-01T00:00:00.000Z",
+      pslContext: {
+        totalEvidenceAtoms: psl.totalEvidenceAtoms,
+        complementaryStudyCount: psl.complementaryStudyCount,
+        assetCount: psl.assetCount,
+        hasParticipatoryPrioritisation:
+          psl.thematicPrioritisationPresent ||
+          psl.priorizacion.hasParticipatorySelection,
+        prioritizacion: psl.priorizacion,
+      },
+    });
+    expect(doc.editorialView.territorialReadings.length).toBeGreaterThan(0);
+    expect(doc.readingStatus).toBe("integrated");
+  });
+
+  it("Paso 4: la pantalla congelada (LocalHealthProfileView) muestra la declaración pendiente del artefacto compilado", () => {
+    // Cableado real: se compila un artefacto Zagra (Informe presente, 0 átomos,
+    // priorización) y se renderiza la pantalla completa con `compiledProfiles`.
+    const municipality = createMunicipalityContext({
+      id: "zagra",
+      name: "Zagra",
+      province: "Granada",
+    });
+    const informeTexto =
+      "Informe de Salud de Zagra: demografía, mortalidad y morbilidad municipales.";
+    const zagraWs: MunicipalityWorkspace = {
+      ...createMunicipalityWorkspace(
+        municipality,
+        createMunicipalDocumentRepository({ municipalityId: "zagra" }),
+        createEvidenceStore("zagra")
+      ),
+      healthReport: {
+        id: "hr-zagra",
+        municipalityId: "zagra",
+        linkedDocumentId: "doc-informe-zagra",
+        sourceFileName: "informe-salud-zagra.pdf",
+        title: "Informe de Salud de Zagra 2025",
+        authors: [],
+        body: {
+          originalText: informeTexto,
+          format: "plain",
+          charCount: informeTexto.length, // coherente con el texto real
+          isAuthoritative: true,
+        },
+        sections: [
+          {
+            key: "demografia",
+            title: "Demografía",
+            bodyText: "Población de Zagra.",
+            sortOrder: 1,
+            isAuthoritative: true,
+          },
+        ],
+        createdAt: "2026-07-01T00:00:00.000Z",
+        updatedAt: "2026-07-01T00:00:00.000Z",
+      },
+    };
+    const zagraAnswers = buildDiagnosticAnswers({
+      workspace: zagraWs,
+      determinantTitles: [],
+      assets: [],
+    });
+    const zagraPsl: LocalHealthProfile = {
+      id: "psl-zagra-frozen",
+      municipalityId: "zagra",
+      status: "validated",
+      version: "2026-07-01T10:00:00.000Z",
+      evidenceStoreVersion: "2026-07-01T09:00:00.000Z",
+      strategicFrameworkSectionIds: [],
+      healthReportDocumentId: "doc-informe-zagra",
+      healthReportTitle: "Informe de Salud de Zagra 2025",
+      healthReportSectionCount: 1,
+      healthReportAtomCount: 0,
+      totalEvidenceAtoms: 0,
+      integrityErrors: 0,
+      integrityWarnings: 0,
+      atomsByOrigin: {},
+      atomsByKind: {},
+      evidenceAtomIds: [],
+      originsSummary: [],
+      ibsePresent: false,
+      dukePresent: false,
+      predimedPresent: false,
+      sf12Present: false,
+      suenoPresent: false,
+      cagePresent: false,
+      thematicPrioritisationPresent: true,
+      complementaryStudyCount: 0,
+      territorialSummary: "Zagra: Informe y priorización, sin evidencia atomizada.",
+      determinantCount: 0,
+      assetCount: 0,
+      indicatorCount: 0,
+      qualitativeFindingCount: 0,
+      methodologicalCautionCount: 0,
+      preliminaryOpportunities: [],
+      longitudinalActive: false,
+      longitudinalNote: "",
+      longitudinalEvidenceCount: 0,
+      marcosAplicados: [],
+      tensionesEstructurales: [],
+      conflictos: [],
+      tensionesEscaladas: [],
+      tensionesNoEscaladas: [],
+      ruidoEstructural: [],
+      areasDeIntervencion: [],
+      conclusiones: {
+        content: "Cuerpo diagnóstico compilado.",
+        status: "authored",
+        authorshipNote: "",
+      },
+      cierreInterpretativo: {
+        content: "Cierre interpretativo del equipo técnico de Zagra.",
+        status: "authored",
+        authorshipNote: "",
+      },
+      priorizacion: {
+        candidaturasTecnicas: [],
+        hasTechnicalCandidatures: false,
+        tematicasSeleccionadasIds: ["bienestar-emocional"],
+        tematicasSeleccionadasLabels: ["Bienestar Emocional"],
+        hasParticipatorySelection: true,
+        deliberacionNota: "Consenso documentado.",
+        consensoDocumentado: true,
+      },
+      priorizacionStatus: "complete",
+      generatedAt: "2026-07-01T09:30:00.000Z",
+      validatedAt: "2026-07-01T10:00:00.000Z",
+      validatedBy: "Técnica de salud pública — Zagra",
+      requiresHumanValidation: true,
+    };
+    const result = compileLocalHealthProfile({
+      psl: zagraPsl,
+      municipalityName: "Zagra",
+      municipalityProvince: "Granada",
+      existingArtifactCount: 0,
+      diagnosticAnswers: zagraAnswers,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const sealedDoc = result.artifact.canonicalDocument
+      ? readSealedCanonicalDocument(result.artifact.canonicalDocument)
+      : null;
+    expect(sealedDoc?.readingStatus).toBe("prioritization-pending");
+
+    // Render REAL de la pantalla: el artefacto compilado en `compiledProfiles`.
+    const frozenHtml = renderToStaticMarkup(
+      <LocalHealthProfileView
+        psl={zagraPsl}
+        pslIsStale={false}
+        municipalityName="Zagra"
+        diagnosticAnswers={zagraAnswers}
+        compiledProfiles={[result.artifact]}
+        onValidate={() => {}}
+        onInvalidate={() => {}}
+      />
+    );
+    // La pantalla congelada declara la lectura pendiente leyendo el sello.
+    expect(frozenHtml).toContain("La lectura territorial integrada está pendiente");
+    // No fabrica hilos territoriales en el artefacto congelado.
+    expect(frozenHtml).not.toContain('class="pie-hilo"');
   });
 
   it("alinea Vida cotidiana con sueño e inactividad, no con señales sanitarias del Informe", () => {

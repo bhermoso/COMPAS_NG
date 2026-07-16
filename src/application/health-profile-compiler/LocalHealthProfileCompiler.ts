@@ -26,7 +26,11 @@ import type {
 } from "../../domain/health-profile-artifact";
 import { computePerfilEstadoGlobal, institutionalHealthReportTitle } from "../health-profile";
 import type { DiagnosticAnswers } from "../health-profile";
-import { buildSealedCanonicalDocument } from "../psl-c-canonical";
+import {
+  buildPSLCCanonicalDocument,
+  sealCanonicalDocument,
+  type PSLCCanonicalDocument,
+} from "../psl-c-canonical";
 
 // ── Tipos públicos ─────────────────────────────────────────────────────────────
 
@@ -69,12 +73,11 @@ export function validateCompilationPreconditions(
     });
   }
 
-  if (psl.conclusiones.status !== "authored") {
-    violations.push({
-      gate: "G-LHC-2",
-      message: `El documento del Perfil (seis capítulos narrativos) debe estar en estado "authored". Estado actual: "${psl.conclusiones.status}".`,
-    });
-  }
+  // G-LHC-2 (autoría de `conclusiones`) y G-LHC-6 (contenido de `conclusiones`)
+  // RETIRADOS en el Paso 4 (Art. 16: el cuerpo diagnóstico es compilado y
+  // trazable, no editable a mano; su dignidad la garantiza el documento canónico
+  // compilado, no la autoría de un string de capítulos). La autoría humana se
+  // conserva sobre el cierre interpretativo (G-LHC-3 / G-LHC-7).
 
   if (psl.cierreInterpretativo.status !== "authored") {
     violations.push({
@@ -97,18 +100,126 @@ export function validateCompilationPreconditions(
     });
   }
 
-  if (!psl.conclusiones.content.trim()) {
-    violations.push({
-      gate: "G-LHC-6",
-      message: "Las conclusiones no pueden estar vacías.",
-    });
-  }
+  // G-LHC-6 RETIRADO en el Paso 4 (ver nota junto a G-LHC-2).
 
   if (!psl.cierreInterpretativo.content.trim()) {
     violations.push({
       gate: "G-LHC-7",
       message: "El cierre interpretativo no puede estar vacío.",
     });
+  }
+
+  // G-LHC-8: Regla N+1 (Art. 7 bis A / I-LHPM-7). El Informe de Salud es el
+  // componente N; por sí solo no es un Perfil. Hay Perfil solo si concurre al
+  // menos UNA fuente adicional (+1) de las tres familias válidas: estudios
+  // complementarios, activos y capacidades, o priorización ciudadana. Si no
+  // existe ninguna fuente +1 válida, el producto es el Informe de Salud —no un
+  // Perfil— aunque el expediente tenga átomos de un origen no elegible: la
+  // compilación se bloquea. (El bloqueo depende de la PRESENCIA del +1, no del
+  // recuento de átomos.)
+  if (!hasPlusOneSource(psl)) {
+    violations.push({
+      gate: "G-LHC-8",
+      message:
+        "Regla N+1 (I-LHPM-7): sin ninguna fuente adicional válida (estudios " +
+        "complementarios, activos o priorización ciudadana), el producto es el " +
+        "Informe de Salud, no un Perfil de Salud Local.",
+    });
+  }
+
+  return violations;
+}
+
+/**
+ * Presencia de al menos una fuente adicional (+1) de la regla N+1 (Art. 7 bis A):
+ * estudios complementarios, activos y capacidades, o priorización ciudadana.
+ * El Informe de Salud es el componente N y no cuenta como +1.
+ */
+function hasPlusOneSource(psl: LocalHealthProfile): boolean {
+  const estudios = psl.complementaryStudyCount > 0;
+  const activos = psl.assetCount > 0;
+  const priorizacionCiudadana =
+    psl.thematicPrioritisationPresent ||
+    psl.priorizacion.hasParticipatorySelection;
+  return estudios || activos || priorizacionCiudadana;
+}
+
+/**
+ * Gate estructural del cuerpo compilado (G-LHC-9, Paso 4). Sustituye a G-LHC-2/6:
+ * el cuerpo diagnóstico es compilado, así que la garantía de dignidad recae sobre
+ * la estructura y la trazabilidad del documento, no sobre la autoría de un string
+ * de capítulos.
+ *
+ * - Camino canónico (esquema 2): el documento debe tener cabecera, bloques de
+ *   fuente y cierre; procedencia diagnóstica y snapshot de priorización sellados;
+ *   y coherencia readingStatus↔territorialReadings (`integrated` ⇒ hay hilos;
+ *   `prioritization-pending` ⇒ 0 hilos, no se fabrica lectura).
+ * - Camino legacy (sin documento canónico): fallback estructural — el cuerpo
+ *   principal (`conclusiones.content`) no puede quedar vacío, de modo que ninguna
+ *   vía abra la compilación de un cuerpo vacío tras retirar G-LHC-2/6.
+ */
+export function validateCompiledBody(
+  canonicalDoc: PSLCCanonicalDocument | undefined,
+  psl: LocalHealthProfile
+): CompilationViolation[] {
+  const violations: CompilationViolation[] = [];
+  const fail = (message: string): void => {
+    violations.push({ gate: "G-LHC-9", message });
+  };
+
+  if (canonicalDoc === undefined) {
+    // Fallback legacy: sin documento canónico, el cuerpo compilado es el string de
+    // conclusiones; no puede quedar vacío.
+    if (!psl.conclusiones.content.trim()) {
+      fail(
+        "El cuerpo principal del Perfil está vacío y el expediente no compila " +
+          "documento canónico (esquema legacy): no puede generarse un artefacto " +
+          "institucional con cuerpo vacío."
+      );
+    }
+    return violations;
+  }
+
+  const { editorialView, readingStatus, provenance } = canonicalDoc;
+
+  // 1. Estructura mínima digna: cabecera, bloques de fuente y cierre.
+  if (editorialView.header.title.trim().length === 0) {
+    fail("El documento canónico no tiene cabecera (título vacío).");
+  }
+  if (editorialView.sourceBlocks.length === 0) {
+    fail("El documento canónico no tiene bloques de fuente.");
+  }
+  if (editorialView.closing.length === 0) {
+    fail("El documento canónico no tiene cierre.");
+  }
+
+  // 2. Trazabilidad: procedencia diagnóstica y snapshot de priorización sellados.
+  if (provenance?.diagnosticAnswersSnapshot === undefined) {
+    fail(
+      "El documento canónico no sella la procedencia diagnóstica (trazabilidad ausente)."
+    );
+  }
+  if (provenance?.prioritizationSnapshot === undefined) {
+    fail("El documento canónico no sella la instantánea de priorización.");
+  }
+
+  // 3. Coherencia readingStatus ↔ territorialReadings.
+  if (
+    readingStatus === "integrated" &&
+    editorialView.territorialReadings.length === 0
+  ) {
+    fail(
+      "Incoherencia: readingStatus 'integrated' sin ningún hilo territorial."
+    );
+  }
+  if (
+    readingStatus === "prioritization-pending" &&
+    editorialView.territorialReadings.length > 0
+  ) {
+    fail(
+      "Incoherencia: readingStatus 'prioritization-pending' con hilos territoriales " +
+        "(el documento no debe fabricar lectura)."
+    );
   }
 
   return violations;
@@ -167,9 +278,9 @@ export function compileLocalHealthProfile(
   // ── Documento canónico congelado (esquema 2) ───────────────────────────────
   // Se hornea desde la instantánea de respuestas diagnósticas, no del estado
   // vivo. La fecha se pre-formatea de forma determinista dentro del builder.
-  const canonicalDocument =
+  const canonicalDoc =
     input.diagnosticAnswers !== undefined
-      ? buildSealedCanonicalDocument({
+      ? buildPSLCCanonicalDocument({
           answers: input.diagnosticAnswers,
           territory: municipalityName,
           status: psl.status,
@@ -183,8 +294,32 @@ export function compileLocalHealthProfile(
                 )
               : undefined,
           generatedAtISO: psl.generatedAt,
+          // Contexto compilado (Paso 4): el documento canónico decide readingStatus
+          // y sella la priorización solo con estos campos, sin acceder al PSL.
+          pslContext: {
+            totalEvidenceAtoms: psl.totalEvidenceAtoms,
+            complementaryStudyCount: psl.complementaryStudyCount,
+            assetCount: psl.assetCount,
+            hasParticipatoryPrioritisation:
+              psl.thematicPrioritisationPresent ||
+              psl.priorizacion.hasParticipatorySelection,
+            prioritizacion: psl.priorizacion,
+          },
         })
       : undefined;
+
+  // ── Gate estructural del cuerpo compilado (Paso 4, en lugar de G-LHC-2/6) ───
+  // Retirada la autoría sobre `conclusiones`, la dignidad del Perfil ya no la
+  // garantiza un string de capítulos sino el cuerpo COMPILADO. El gate se aplica
+  // SIEMPRE (también al camino legacy sin documento canónico), para que ninguna
+  // vía permita compilar un cuerpo principal vacío tras retirar G-LHC-2/6.
+  const bodyViolations = validateCompiledBody(canonicalDoc, psl);
+  if (bodyViolations.length > 0) {
+    return { ok: false, violations: bodyViolations };
+  }
+
+  const canonicalDocument =
+    canonicalDoc !== undefined ? sealCanonicalDocument(canonicalDoc) : undefined;
 
   // ── Puente PerfilLocalDeSalud ──────────────────────────────────────────────
   let ekcSnapshot: EKCSnapshot | null = null;
