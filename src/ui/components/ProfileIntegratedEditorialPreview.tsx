@@ -2,6 +2,13 @@ import type { ProfileIntegratedEditorialView } from "../../application/health-pr
 
 interface ProfileIntegratedEditorialPreviewProps {
   view: ProfileIntegratedEditorialView;
+  /**
+   * Declaración digna de lectura territorial pendiente (Paso 4). Solo se muestra
+   * cuando el documento no tiene hilos territoriales (`readingStatus:
+   * "prioritization-pending"`, p. ej. Zagra). Es un enunciado de pendencia
+   * (Popay), no una lectura fabricada.
+   */
+  pendingReadingNotice?: string;
 }
 
 function variantClass(variant: string): string {
@@ -17,6 +24,7 @@ const EPISTEMIC_LABEL: Record<string, string> = {
 
 export function ProfileIntegratedEditorialPreview({
   view,
+  pendingReadingNotice,
 }: ProfileIntegratedEditorialPreviewProps) {
   return (
     <section className="pie-doc workspace-panel" aria-labelledby="pie-title">
@@ -89,6 +97,13 @@ export function ProfileIntegratedEditorialPreview({
         {/* Advertencia de no exhaustividad: una sola vez, no por hilo.
             Reutiliza la clase de nota existente (sin añadir CSS). */}
         <p className="pie-agenda-intro">{view.interpretation.nonExhaustiveNotice}</p>
+        {/* Documento digno con lectura pendiente (Paso 4): cuando no hay hilos
+            territoriales, se declara la pendencia (Popay) en lugar de fabricar
+            una lectura. Reutiliza la clase de nota existente (sin CSS nuevo). */}
+        {view.territorialReadings.length === 0 &&
+        pendingReadingNotice !== undefined ? (
+          <p className="pie-agenda-intro">{pendingReadingNotice}</p>
+        ) : null}
         {view.territorialReadings.map((block) => (
           <article key={block.id} className="pie-hilo" aria-labelledby={`pie-h-${block.id}`}>
             <header className="pie-hilo__header">

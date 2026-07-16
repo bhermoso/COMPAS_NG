@@ -24,7 +24,30 @@ import {
   computePerfilEpistemicMetrics,
   buildDiagnosticAnswers,
 } from "./application/health-profile";
+import type { DiagnosticAnswers } from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
+
+/**
+ * DiagnosticAnswers desde el workspace, con la convención ÚNICA de derivación del
+ * expediente: `determinantTitles` de los átomos `determinant` y `assets` de los
+ * átomos `asset`. Helper puro compartido por el flujo de compilación
+ * (`handleCompilePSL`) y por la vista viva (`LocalHealthProfileView`), para que
+ * ambos alimenten exactamente los mismos answers y el artefacto congelado reciba
+ * `canonicalDocument`/`readingStatus`.
+ */
+function buildWorkspaceDiagnosticAnswers(
+  workspace: MunicipalityWorkspace
+): DiagnosticAnswers {
+  return buildDiagnosticAnswers({
+    workspace,
+    determinantTitles: workspace.evidenceStore.atoms
+      .filter((a) => a.kind === "determinant")
+      .map((a) => a.title),
+    assets: workspace.evidenceStore.atoms
+      .filter((a) => a.kind === "asset")
+      .map((a) => ({ title: a.title, content: a.content })),
+  });
+}
 import {
   createHealthReportDocumentFromDocx,
   createHealthReportDocumentFromPdf,
@@ -513,6 +536,9 @@ export default function App() {
         municipalityName: prev.municipality.identity.name,
         municipalityProvince: prev.municipality.identity.province,
         existingArtifactCount: prev.compiledProfiles?.length ?? 0,
+        // Congela el documento canónico (esquema 2): sin estos answers el artefacto
+        // sería legacy y no tendría canonicalDocument/readingStatus/aviso pendiente.
+        diagnosticAnswers: buildWorkspaceDiagnosticAnswers(prev),
       });
       if (!result.ok) return prev;
       return {
@@ -2957,15 +2983,7 @@ export default function App() {
                   ? computePerfilEpistemicMetrics(workspace.perfilLocalDeSalud)
                   : undefined
               }
-              diagnosticAnswers={buildDiagnosticAnswers({
-                workspace,
-                determinantTitles: workspace.evidenceStore.atoms
-                  .filter((a) => a.kind === "determinant")
-                  .map((a) => a.title),
-                assets: workspace.evidenceStore.atoms
-                  .filter((a) => a.kind === "asset")
-                  .map((a) => ({ title: a.title, content: a.content })),
-              })}
+              diagnosticAnswers={buildWorkspaceDiagnosticAnswers(workspace)}
               compiledProfiles={workspace.compiledProfiles}
               onValidate={handleValidatePSL}
               onInvalidate={handleInvalidatePSL}

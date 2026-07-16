@@ -19,11 +19,43 @@ import {
   type DiagnosticAnswers,
   type ProfileIntegratedEditorialView,
 } from "../health-profile";
-import type { LocalHealthProfileStatus } from "../../domain/health-profile";
+import type {
+  LocalHealthProfileStatus,
+  PSLPriorizacion,
+} from "../../domain/health-profile";
 import type { PSLCSealedCanonicalDocument } from "../../domain/health-profile-artifact";
 
 /** Versión del esquema del documento canónico. Distinta de `artifactVersion`. */
 export const PSLC_CANONICAL_SCHEMA_VERSION = 2 as const;
+
+/**
+ * Estatuto de la lectura territorial del Perfil (Paso 4).
+ *
+ * - `"integrated"`: el diagnóstico tiene lectura territorial integrada (hay al
+ *   menos un hilo en `editorialView.territorialReadings`, que solo existe cuando
+ *   la evidencia produce señales).
+ * - `"prioritization-pending"`: el Perfil es válido por la regla N+1 (Art. 7 bis
+ *   A / I-LHPM-7) —típicamente por priorización ciudadana— pero todavía no hay
+ *   lectura territorial atomizada. El documento se declara DIGNO y explicita que
+ *   la lectura está pendiente (Popay: conocimiento pendiente, no ausencia). No se
+ *   fabrica lectura: `territorialReadings` permanece vacío.
+ */
+export type PSLCReadingStatus = "integrated" | "prioritization-pending";
+
+/**
+ * Declaración explícita de lectura territorial pendiente para el documento digno
+ * `prioritization-pending`. Es un enunciado de pendencia (Popay), no una lectura
+ * fabricada. Constante compartida para que pantalla, visor, DOCX y PDF declaren
+ * lo mismo (Art. 17 bis / I-LHPM-8: modelo canónico único).
+ */
+export const PRIORITIZATION_PENDING_DECLARATION =
+  "La lectura territorial integrada está pendiente: este Perfil es válido por la " +
+  "regla N+1 —el Informe de Salud interpretado junto a al menos una fuente adicional " +
+  "(estudios complementarios, activos y capacidades, o priorización ciudadana)—, pero " +
+  "esa fuente todavía no sostiene una lectura territorial atomizada. Es conocimiento " +
+  "pendiente de incorporación, no ausencia de conocimiento; el documento no fabrica " +
+  "una lectura que la evidencia aún no permite. Cuando la priorización ciudadana está " +
+  "presente, su incorporación interpretativa como evidencia queda explícitamente pendiente.";
 
 export interface PSLCCanonicalDocumentProvenance {
   /**
@@ -32,12 +64,43 @@ export interface PSLCCanonicalDocumentProvenance {
    * la consume. Sirve a auditoría y a la futura lectura de la priorización.
    */
   diagnosticAnswersSnapshot: DiagnosticAnswers;
+  /**
+   * Instantánea sellada de la priorización del PSL en el momento de compilación
+   * (Paso 4). Es PROCEDENCIA detach y serializable: sostiene el estatuto N+1 del
+   * documento `prioritization-pending` (caso Zagra) y deja la puerta abierta a la
+   * futura lectura de la priorización (Fase 3) sin cambiar esquema. Entra en el
+   * payload sellado y, por tanto, en el `canonicalHash`.
+   */
+  prioritizationSnapshot: PSLPriorizacion;
+}
+
+/**
+ * Contexto mínimo y coherente del PSL que el compilador entrega al documento
+ * canónico (Paso 4). El documento canónico NO accede al PSL ni al workspace: la
+ * decisión de `readingStatus` y el sellado de la priorización se toman solo con
+ * este contexto. Evita alterar el builder compartido `buildProfileIntegratedEditorialView`,
+ * que también alimenta la pantalla viva.
+ */
+export interface PSLCReadingContext {
+  /** Nº de EvidenceAtoms del PSL. El Informe NO atomiza (Art. 7 bis §3). */
+  totalEvidenceAtoms: number;
+  complementaryStudyCount: number;
+  assetCount: number;
+  /** Presencia/resultado de la priorización ciudadana (participativa). */
+  hasParticipatoryPrioritisation: boolean;
+  /** Instantánea de `psl.priorizacion` para sellar en `provenance`. */
+  prioritizacion: PSLPriorizacion;
 }
 
 export interface PSLCCanonicalDocument {
   schemaVersion: typeof PSLC_CANONICAL_SCHEMA_VERSION;
   /** Estructura canónica que renderizan pantalla, visor, DOCX, PDF e impresión. */
   editorialView: ProfileIntegratedEditorialView;
+  /**
+   * Estatuto de la lectura territorial (Paso 4). Se deriva de la propia
+   * `editorialView` y entra en el payload sellado y en el `canonicalHash`.
+   */
+  readingStatus: PSLCReadingStatus;
   /** Fecha de generación pre-formateada de forma determinista (sin ICU ni TZ). */
   generatedDateLabel: string;
   provenance: PSLCCanonicalDocumentProvenance;
@@ -93,28 +156,71 @@ export interface BuildPSLCCanonicalDocumentInput {
   informeTitulo?: string;
   /** ISO timestamp de generación del PSL origen (psl.generatedAt). */
   generatedAtISO: string;
+  /** Contexto compilado del PSL: decide `readingStatus` y sella la priorización. */
+  pslContext: PSLCReadingContext;
+}
+
+/** Clon detach y serializable: no aliasa el objeto vivo, de modo que mutar el
+ *  PSL/workspace tras compilar no altera el artefacto sellado. */
+function detachClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 export function buildPSLCCanonicalDocument(
   input: BuildPSLCCanonicalDocumentInput
 ): PSLCCanonicalDocument {
+  const { pslContext: ctx } = input;
   const generatedDateLabel = formatCanonicalDate(input.generatedAtISO);
+  // El builder compartido NO se altera (alimenta también la pantalla viva): puede
+  // producir hilos de agenda aunque no haya evidencia atomizada.
   const editorialView = buildProfileIntegratedEditorialView(input.answers, {
     territory: input.territory,
     status: pslStatusLabel(input.status),
     informeTitulo: input.informeTitulo,
     generatedDate: generatedDateLabel,
   });
+
+  // El estatuto de lectura lo decide el CONTEXTO COMPILADO del PSL (Art. 7 bis §3:
+  // el Informe no atomiza; solo estudios/activos generan átomos). Para declarar
+  // «integrated» no basta con contadores: se exige EVIDENCIA REAL que pueda
+  // sostener lectura, con concordancia entre el contexto (contadores del PSL) y los
+  // answers compilados (estructuras derivadas de la evidencia):
+  //   - estudios reales: ctx.complementaryStudyCount > 0 Y answers.estudios.totalStudies > 0;
+  //   - activos reales:  ctx.assetCount > 0 Y answers.salutogenica.totalAssets > 0.
+  // Así un átomo de origen no elegible (o contadores falsificados sin respaldo en
+  // los answers) no puede colar hilos de andamiaje como lectura integrada.
+  const hasRealStudies =
+    ctx.complementaryStudyCount > 0 && input.answers.estudios.totalStudies > 0;
+  const hasRealAssets =
+    ctx.assetCount > 0 && input.answers.salutogenica.totalAssets > 0;
+  const hasReadingBearingEvidence = hasRealStudies || hasRealAssets;
+
+  // «integrated» requiere: evidencia atomizada + al menos una fuente real
+  // (estudios/activos) + al menos un hilo territorial compilado. En cualquier otro
+  // caso válido por N+1 (p. ej. Zagra: Informe + priorización, 0 átomos) la lectura
+  // está PENDIENTE: el documento es digno pero NO fabrica hilos, así que su copia
+  // canónica vacía `territorialReadings`.
+  const readingStatus: PSLCReadingStatus =
+    ctx.totalEvidenceAtoms > 0 &&
+    hasReadingBearingEvidence &&
+    editorialView.territorialReadings.length > 0
+      ? "integrated"
+      : "prioritization-pending";
+
+  // El vaciado ocurre AQUÍ, sobre la copia canónica, no en el builder compartido.
+  const canonicalEditorialView: ProfileIntegratedEditorialView =
+    readingStatus === "prioritization-pending"
+      ? { ...editorialView, territorialReadings: [] }
+      : editorialView;
+
   return {
     schemaVersion: PSLC_CANONICAL_SCHEMA_VERSION,
-    editorialView,
+    editorialView: canonicalEditorialView,
+    readingStatus,
     generatedDateLabel,
     provenance: {
-      // Clon detach y serializable: la instantánea no aliasa el objeto vivo, de
-      // modo que mutar el workspace tras compilar no altera el artefacto.
-      diagnosticAnswersSnapshot: JSON.parse(
-        JSON.stringify(input.answers)
-      ) as DiagnosticAnswers,
+      diagnosticAnswersSnapshot: detachClone(input.answers),
+      prioritizationSnapshot: detachClone(ctx.prioritizacion),
     },
   };
 }

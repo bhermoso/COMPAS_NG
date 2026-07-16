@@ -6,6 +6,7 @@ export type {
 
 export {
   validateCompilationPreconditions,
+  validateCompiledBody,
   computePSLHash,
   compileLocalHealthProfile,
 } from "./LocalHealthProfileCompiler";

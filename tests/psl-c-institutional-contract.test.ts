@@ -310,7 +310,9 @@ describe("contrato PSL-C — estructura institucional del documento", () => {
     const violations = validateCompilationPreconditions(generated);
     const mensajes = violations.map((v) => v.message).join("\n");
     expect(mensajes).not.toMatch(/Cap\. V|Cap\. VI|Cap\. VII/);
-    expect(mensajes).toContain("documento del Perfil (seis capítulos narrativos)");
+    // Paso 4: el gate de autoría sobre `conclusiones` (G-LHC-2, "documento del
+    // Perfil (seis capítulos narrativos)") se retiró; la autoría humana se
+    // verifica sobre el cierre interpretativo (bloque institucional no capitular).
     expect(mensajes).toContain("bloque institucional no capitular");
     expect(mensajes).toContain("bloque de preparación deliberativa");
   });
@@ -325,7 +327,7 @@ describe("contrato PSL-C — gates de compilación", () => {
     const violations = validateCompilationPreconditions(generated);
     const gates = violations.map((v) => v.gate);
     expect(gates).toContain("G-LHC-1"); // no está validado
-    expect(gates).toContain("G-LHC-2"); // conclusiones sin autoría asumida
+    expect(gates).not.toContain("G-LHC-2"); // Paso 4: retirado (cuerpo compilado, no autoría de conclusiones)
     expect(gates).toContain("G-LHC-4"); // priorización sin completar
     expect(gates).toContain("G-LHC-5"); // consenso sin documentar
     const result = compileLocalHealthProfile({

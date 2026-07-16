@@ -22,7 +22,10 @@ import {
   exportPSLCArtifactToDocxBlob,
   exportPSLCArtifactToPdfBlob,
 } from "../../application/psl-c-export";
-import { readSealedCanonicalDocument } from "../../application/psl-c-canonical";
+import {
+  readSealedCanonicalDocument,
+  PRIORITIZATION_PENDING_DECLARATION,
+} from "../../application/psl-c-canonical";
 import { ProfileIntegratedEditorialPreview } from "./ProfileIntegratedEditorialPreview";
 
 // Descarga del documento institucional congelado (solo artefactos PSL-C
@@ -1541,20 +1544,29 @@ export function LocalHealthProfileView({
           </p>
           <div className="psl-compiled-list">
             {[...compiledProfiles].reverse().map((artifact) => {
-              // Lectura canónica del artefacto: la MISMA editorialView que la
-              // pantalla viva, pero leída del SELLO (no recalculada). Un artefacto
-              // legacy sin documento canónico no la tiene: se muestra solo el
-              // documento institucional (document model) tras el desplegable.
-              const sealedView =
+              // Lectura canónica del artefacto: el MISMO documento que la pantalla
+              // viva, pero leído del SELLO (no recalculado). Un artefacto legacy
+              // sin documento canónico no lo tiene: se muestra solo el documento
+              // institucional (document model) tras el desplegable.
+              const sealedDoc =
                 artifact.canonicalDocument !== undefined
                   ? readSealedCanonicalDocument(artifact.canonicalDocument)
-                      ?.editorialView ?? null
                   : null;
+              // Paso 4: la pantalla del artefacto congelado LEE el readingStatus
+              // del sello (no recalcula isEmpty). Con lectura pendiente declara la
+              // pendencia (Popay) en lugar de fabricar una lectura territorial.
+              const pendingReadingNotice =
+                sealedDoc?.readingStatus === "prioritization-pending"
+                  ? PRIORITIZATION_PENDING_DECLARATION
+                  : undefined;
               return (
                 <div key={artifact.id}>
                   <PSLCArtefactoCard artifact={artifact} />
-                  {sealedView !== null && (
-                    <ProfileIntegratedEditorialPreview view={sealedView} />
+                  {sealedDoc !== null && (
+                    <ProfileIntegratedEditorialPreview
+                      view={sealedDoc.editorialView}
+                      pendingReadingNotice={pendingReadingNotice}
+                    />
                   )}
                   <button
                     type="button"

@@ -2,9 +2,32 @@ import { describe, it, expect } from "vitest";
 import {
   compileLocalHealthProfile,
   validateCompilationPreconditions,
+  validateCompiledBody,
   computePSLHash,
 } from "../src/application/health-profile-compiler";
-import type { LocalHealthProfile, PerfilLocalDeSalud } from "../src/domain/health-profile";
+import {
+  buildDiagnosticAnswers,
+  buildProfileIntegratedEditorialView,
+} from "../src/application/health-profile";
+import type { DiagnosticAnswers } from "../src/application/health-profile";
+import {
+  readSealedCanonicalDocument,
+  buildPSLCCanonicalDocument,
+  sealCanonicalDocument,
+  type PSLCReadingContext,
+} from "../src/application/psl-c-canonical";
+import { createMunicipalityContext } from "../src/domain/municipality";
+import { createEvidenceStore } from "../src/domain/evidence";
+import { createMunicipalDocumentRepository } from "../src/domain/repository";
+import { createMunicipalityWorkspace } from "../src/domain/workspace";
+import { createThematicPrioritisation } from "../src/domain/thematic-prioritisation";
+import type { HealthReportDocument } from "../src/domain/health-report";
+import type { MunicipalityWorkspace } from "../src/domain/workspace";
+import type {
+  LocalHealthProfile,
+  PerfilLocalDeSalud,
+  PSLPriorizacion,
+} from "../src/domain/health-profile";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -120,9 +143,12 @@ describe("validateCompilationPreconditions", () => {
     expect(v.some((x) => x.gate === "G-LHC-1")).toBe(true);
   });
 
-  it("G-LHC-2: conclusiones scaffold → violación", () => {
+  it("G-LHC-2 RETIRADO (Paso 4): conclusiones scaffold ya no viola por sí mismo", () => {
+    // Art. 16: el cuerpo diagnóstico es compilado y trazable, no autoría de un
+    // string de capítulos. La autoría humana se conserva sobre el cierre.
     const v = validateCompilationPreconditions(basePSL({ conclusiones: scaffoldChapter() }));
-    expect(v.some((x) => x.gate === "G-LHC-2")).toBe(true);
+    expect(v.some((x) => x.gate === "G-LHC-2")).toBe(false);
+    expect(v).toHaveLength(0);
   });
 
   it("G-LHC-3: cierreInterpretativo scaffold → violación", () => {
@@ -142,9 +168,61 @@ describe("validateCompilationPreconditions", () => {
     expect(v.some((x) => x.gate === "G-LHC-5")).toBe(true);
   });
 
-  it("G-LHC-6: conclusiones vacías → violación", () => {
+  it("G-LHC-6 RETIRADO (Paso 4): conclusiones vacías ya no violan por sí mismas", () => {
     const v = validateCompilationPreconditions(basePSL({ conclusiones: authoredChapter("   ") }));
-    expect(v.some((x) => x.gate === "G-LHC-6")).toBe(true);
+    expect(v.some((x) => x.gate === "G-LHC-6")).toBe(false);
+    expect(v).toHaveLength(0);
+  });
+
+  it("G-LHC-8: 0 átomos y ningún +1 → violación N+1", () => {
+    const v = validateCompilationPreconditions(
+      basePSL({
+        totalEvidenceAtoms: 0,
+        complementaryStudyCount: 0,
+        assetCount: 0,
+        thematicPrioritisationPresent: false,
+        priorizacion: {
+          ...basePriorizacion(true),
+          hasParticipatorySelection: false,
+          tematicasSeleccionadasIds: [],
+          tematicasSeleccionadasLabels: [],
+        },
+      })
+    );
+    expect(v.some((x) => x.gate === "G-LHC-8")).toBe(true);
+  });
+
+  it("G-LHC-8: 0 átomos con priorización ciudadana → sin violación N+1 (Zagra)", () => {
+    const v = validateCompilationPreconditions(
+      basePSL({
+        totalEvidenceAtoms: 0,
+        complementaryStudyCount: 0,
+        assetCount: 0,
+        thematicPrioritisationPresent: true,
+      })
+    );
+    expect(v.some((x) => x.gate === "G-LHC-8")).toBe(false);
+  });
+
+  it("G-LHC-8: átomos > 0 de origen no elegible y ningún +1 → violación N+1", () => {
+    // Art. 7 bis A: el bloqueo depende de la PRESENCIA de un +1 válido, no del
+    // recuento de átomos. Un expediente con átomos de un origen no elegible pero
+    // sin estudios, activos ni priorización sigue siendo el Informe, no un Perfil.
+    const v = validateCompilationPreconditions(
+      basePSL({
+        totalEvidenceAtoms: 12,
+        complementaryStudyCount: 0,
+        assetCount: 0,
+        thematicPrioritisationPresent: false,
+        priorizacion: {
+          ...basePriorizacion(true),
+          hasParticipatorySelection: false,
+          tematicasSeleccionadasIds: [],
+          tematicasSeleccionadasLabels: [],
+        },
+      })
+    );
+    expect(v.some((x) => x.gate === "G-LHC-8")).toBe(true);
   });
 
   it("G-LHC-7: cierreInterpretativo vacío → violación", () => {
@@ -400,14 +478,35 @@ describe("compileLocalHealthProfile — casos de error", () => {
     }
   });
 
-  it("conclusiones scaffold → ok: false", () => {
+  it("conclusiones scaffold → ok: true (Paso 4: cuerpo compilado, sin gate de autoría)", () => {
+    // Sin diagnosticAnswers no hay documento canónico ni gate estructural; el
+    // cuerpo diagnóstico ya no exige autoría (G-LHC-2/6 retirados).
     const result = compileLocalHealthProfile({
       ...INPUT_ATARFE,
       psl: basePSL({ conclusiones: scaffoldChapter() }),
     });
+    expect(result.ok).toBe(true);
+  });
+
+  it("N+1: 0 átomos y ningún +1 → ok: false con violación G-LHC-8", () => {
+    const result = compileLocalHealthProfile({
+      ...INPUT_ATARFE,
+      psl: basePSL({
+        totalEvidenceAtoms: 0,
+        complementaryStudyCount: 0,
+        assetCount: 0,
+        thematicPrioritisationPresent: false,
+        priorizacion: {
+          ...basePriorizacion(true),
+          hasParticipatorySelection: false,
+          tematicasSeleccionadasIds: [],
+          tematicasSeleccionadasLabels: [],
+        },
+      }),
+    });
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.violations.some((v) => v.gate === "G-LHC-2")).toBe(true);
+      expect(result.violations.some((v) => v.gate === "G-LHC-8")).toBe(true);
     }
   });
 
@@ -675,5 +774,470 @@ describe("compileLocalHealthProfile — con PerfilLocalDeSalud", () => {
     const result = compileLocalHealthProfile(INPUT_ATARFE);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.artifact.generatedFromPerfilId).toBeNull();
+  });
+});
+
+// ── Fixture Zagra coherente (Paso 4) ──────────────────────────────────────────
+// Informe de Salud realmente presente en el workspace y en DiagnosticAnswers,
+// preservado SIN EvidenceAtoms (Art. 7 bis §3), priorización ciudadana presente,
+// evidenceStore vacío (0 átomos). No reutiliza basePSL(Atarfe): PSL propio con
+// campos concordantes.
+
+const ZAGRA_INFORME_TEXTO =
+  "El Informe de Salud de Zagra describe la situación de salud del municipio: " +
+  "demografía, mortalidad y morbilidad principales. Se preserva íntegro como " +
+  "documento y no se atomiza en el flujo de evidencia.";
+
+function zagraHealthReport(): HealthReportDocument {
+  return {
+    id: "hr-zagra",
+    municipalityId: "zagra",
+    linkedDocumentId: "doc-informe-zagra",
+    sourceFileName: "informe-salud-zagra.pdf",
+    title: "Informe de Salud de Zagra 2025",
+    authors: [],
+    body: {
+      originalText: ZAGRA_INFORME_TEXTO,
+      format: "plain",
+      charCount: ZAGRA_INFORME_TEXTO.length, // coherente con el texto real
+      isAuthoritative: true,
+    },
+    sections: [
+      {
+        key: "demografia",
+        title: "Demografía",
+        bodyText: "Estructura y evolución de la población de Zagra.",
+        sortOrder: 1,
+        isAuthoritative: true,
+      },
+      {
+        key: "mortalidad",
+        title: "Mortalidad",
+        bodyText: "Principales causas de mortalidad a escala municipal.",
+        sortOrder: 2,
+        isAuthoritative: true,
+      },
+    ],
+    createdAt: "2026-07-01T00:00:00.000Z",
+    updatedAt: "2026-07-01T00:00:00.000Z",
+  };
+}
+
+/** Workspace Zagra: Informe presente, priorización ciudadana, 0 átomos. */
+function zagraWorkspace(): MunicipalityWorkspace {
+  const municipality = createMunicipalityContext({
+    id: "zagra",
+    name: "Zagra",
+    province: "Granada",
+  });
+  const base = createMunicipalityWorkspace(
+    municipality,
+    createMunicipalDocumentRepository({ municipalityId: "zagra" }),
+    createEvidenceStore("zagra") // evidenceStore vacío: el Informe NO atomiza
+  );
+  return {
+    ...base,
+    healthReport: zagraHealthReport(),
+    thematicPrioritisation: createThematicPrioritisation("zagra", [
+      "bienestar-emocional",
+      "envejecimiento-activo",
+    ]),
+  };
+}
+
+function zagraDiagnosticAnswers(): DiagnosticAnswers {
+  return buildDiagnosticAnswers({
+    workspace: zagraWorkspace(),
+    determinantTitles: [],
+    assets: [],
+  });
+}
+
+/** DiagnosticAnswers de Zagra CON activos reales (los mismos que el flujo de App
+ *  deriva de los átomos `kind === "asset"`). */
+function zagraAnswersWithAssets(
+  assets: Array<{ title: string; content: string }>
+): DiagnosticAnswers {
+  return buildDiagnosticAnswers({
+    workspace: zagraWorkspace(),
+    determinantTitles: [],
+    assets,
+  });
+}
+
+function zagraPrioritizacion(): PSLPriorizacion {
+  return {
+    candidaturasTecnicas: [],
+    hasTechnicalCandidatures: false,
+    tematicasSeleccionadasIds: ["bienestar-emocional", "envejecimiento-activo"],
+    tematicasSeleccionadasLabels: ["Bienestar Emocional", "Envejecimiento Activo"],
+    hasParticipatorySelection: true, // priorización ciudadana = el +1
+    deliberacionNota: "El Grupo Motor de Zagra deliberó y documentó consenso.",
+    consensoDocumentado: true,
+  };
+}
+
+/** PSL Zagra dedicado y coherente (no derivado de basePSL/Atarfe). */
+function zagraPSL(overrides: Partial<LocalHealthProfile> = {}): LocalHealthProfile {
+  return {
+    id: "psl-zagra-001",
+    municipalityId: "zagra",
+    status: "validated",
+    version: "2026-07-01T10:00:00.000Z",
+    evidenceStoreVersion: "2026-07-01T09:00:00.000Z",
+    strategicFrameworkSectionIds: [],
+    healthReportDocumentId: "doc-informe-zagra",
+    healthReportTitle: "Informe de Salud de Zagra 2025",
+    healthReportSectionCount: 2,
+    healthReportAtomCount: 0, // el Informe NO atomiza
+    totalEvidenceAtoms: 0, // 0 átomos
+    integrityErrors: 0,
+    integrityWarnings: 0,
+    atomsByOrigin: {},
+    atomsByKind: {},
+    evidenceAtomIds: [],
+    originsSummary: [],
+    ibsePresent: false,
+    dukePresent: false,
+    predimedPresent: false,
+    sf12Present: false,
+    suenoPresent: false,
+    cagePresent: false,
+    thematicPrioritisationPresent: true, // priorización ciudadana presente
+    complementaryStudyCount: 0,
+    territorialSummary:
+      "Zagra: Informe de Salud y priorización ciudadana, sin evidencia atomizada.",
+    determinantCount: 0,
+    assetCount: 0,
+    indicatorCount: 0,
+    qualitativeFindingCount: 0,
+    methodologicalCautionCount: 0,
+    preliminaryOpportunities: [],
+    longitudinalActive: false,
+    longitudinalNote: "",
+    longitudinalEvidenceCount: 0,
+    marcosAplicados: [],
+    tensionesEstructurales: [],
+    conflictos: [],
+    tensionesEscaladas: [],
+    tensionesNoEscaladas: [],
+    ruidoEstructural: [],
+    areasDeIntervencion: [],
+    conclusiones: authoredChapter("Zagra: cuerpo diagnóstico compilado y trazable."),
+    cierreInterpretativo: authoredChapter(
+      "Cierre interpretativo del equipo técnico de Zagra: alcance y limitaciones del diagnóstico."
+    ),
+    priorizacion: zagraPrioritizacion(),
+    priorizacionStatus: "complete",
+    generatedAt: "2026-07-01T09:30:00.000Z",
+    validatedAt: "2026-07-01T10:00:00.000Z",
+    validatedBy: "Técnica de salud pública — Zagra",
+    requiresHumanValidation: true,
+    ...overrides,
+  };
+}
+
+function zagraContext(over: Partial<PSLCReadingContext> = {}): PSLCReadingContext {
+  return {
+    totalEvidenceAtoms: 0,
+    complementaryStudyCount: 0,
+    assetCount: 0,
+    hasParticipatoryPrioritisation: true,
+    prioritizacion: zagraPrioritizacion(),
+    ...over,
+  };
+}
+
+const ZAGRA_COMPILE_INPUT = () => ({
+  psl: zagraPSL(),
+  compiledBy: "Técnica de salud pública — Zagra",
+  municipalityName: "Zagra",
+  municipalityProvince: "Granada",
+  existingArtifactCount: 0,
+  diagnosticAnswers: zagraDiagnosticAnswers(),
+});
+
+// ── Tests: Paso 4 — readingStatus, N+1 y coherencia ───────────────────────────
+
+describe("compileLocalHealthProfile — Paso 4 readingStatus / N+1 / coherencia", () => {
+  it("Informe + priorización + 0 átomos → pending, sin lecturas fabricadas", () => {
+    const result = compileLocalHealthProfile(ZAGRA_COMPILE_INPUT());
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const sealed = result.artifact.canonicalDocument;
+      expect(sealed).toBeDefined();
+      const doc = sealed ? readSealedCanonicalDocument(sealed) : null;
+      expect(doc?.readingStatus).toBe("prioritization-pending");
+      // No se fabrica lectura: territorialReadings queda vacío en la copia canónica.
+      expect(doc?.editorialView.territorialReadings).toHaveLength(0);
+      // Documento digno: cabecera, bloques de fuente y cierre presentes.
+      expect(doc?.editorialView.header.title.trim().length).toBeGreaterThan(0);
+      expect(doc?.editorialView.sourceBlocks.length).toBeGreaterThan(0);
+      expect(doc?.editorialView.closing.length).toBeGreaterThan(0);
+      // El Informe está presente en la procedencia sin haberse atomizado.
+      expect(doc?.provenance.diagnosticAnswersSnapshot.healthReport.present).toBe(true);
+    }
+  });
+
+  it("Informe solo (sin ningún +1) → G-LHC-8, no compila", () => {
+    const psl = zagraPSL({
+      thematicPrioritisationPresent: false,
+      priorizacion: {
+        ...zagraPrioritizacion(),
+        hasParticipatorySelection: false,
+        tematicasSeleccionadasIds: [],
+        tematicasSeleccionadasLabels: [],
+      },
+    });
+    const result = compileLocalHealthProfile({
+      ...ZAGRA_COMPILE_INPUT(),
+      psl,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.violations.some((v) => v.gate === "G-LHC-8")).toBe(true);
+    }
+  });
+
+  it("evidencia no elegible sin ningún +1 → G-LHC-8 (bloqueo por presencia, no por átomos)", () => {
+    const psl = zagraPSL({
+      totalEvidenceAtoms: 9, // átomos de un origen no elegible
+      thematicPrioritisationPresent: false,
+      priorizacion: {
+        ...zagraPrioritizacion(),
+        hasParticipatorySelection: false,
+        tematicasSeleccionadasIds: [],
+        tematicasSeleccionadasLabels: [],
+      },
+    });
+    const result = compileLocalHealthProfile({ ...ZAGRA_COMPILE_INPUT(), psl });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.violations.some((v) => v.gate === "G-LHC-8")).toBe(true);
+    }
+  });
+
+  it("Informe + activos atomizados REALES, sin estudios → integrated", () => {
+    // Activo real y concordante en los answers (no solo contadores): el bloque de
+    // fuentes lo declara, el contexto tiene assetCount/átomos concordantes y el
+    // builder produce hilos → readingStatus integrated.
+    const answers = zagraAnswersWithAssets([
+      {
+        title: "Asociación de personas mayores La Solana",
+        content: "Grupo comunitario de personas mayores del municipio.",
+      },
+    ]);
+    expect(answers.salutogenica.totalAssets).toBeGreaterThan(0);
+    const doc = buildPSLCCanonicalDocument({
+      answers,
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext({ totalEvidenceAtoms: 1, assetCount: 1 }),
+    });
+    // El bloque de fuentes «activos» declara el recurso real.
+    const activos = doc.editorialView.sourceBlocks.find((b) => b.id === "activos");
+    expect(activos?.whatItAdds).toContain("1 recurso");
+    expect(doc.editorialView.territorialReadings.length).toBeGreaterThan(0);
+    expect(doc.readingStatus).toBe("integrated");
+  });
+
+  it("contexto declara activos pero answers sin activos → pending (sin respaldo real)", () => {
+    const doc = buildPSLCCanonicalDocument({
+      answers: zagraDiagnosticAnswers(), // salutogenica.totalAssets === 0
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext({ totalEvidenceAtoms: 3, assetCount: 3 }), // contador sin respaldo
+    });
+    expect(doc.readingStatus).toBe("prioritization-pending");
+    expect(doc.editorialView.territorialReadings).toHaveLength(0);
+  });
+
+  it("priorización + átomo no elegible (sin estudios ni activos reales) → pending y 0 hilos", () => {
+    const doc = buildPSLCCanonicalDocument({
+      answers: zagraDiagnosticAnswers(),
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext({ totalEvidenceAtoms: 5 }), // átomos de origen no elegible
+    });
+    expect(doc.readingStatus).toBe("prioritization-pending");
+    expect(doc.editorialView.territorialReadings).toHaveLength(0);
+  });
+
+  it("provenance sella la instantánea de priorización; entra en el canonicalHash", () => {
+    const doc = buildPSLCCanonicalDocument({
+      answers: zagraDiagnosticAnswers(),
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext(),
+    });
+    // Presente y con la priorización de Zagra.
+    expect(doc.provenance.prioritizationSnapshot.tematicasSeleccionadasLabels).toEqual([
+      "Bienestar Emocional",
+      "Envejecimiento Activo",
+    ]);
+    expect(doc.provenance.prioritizationSnapshot.hasParticipatorySelection).toBe(true);
+    // El snapshot entra en el payload y en el hash.
+    const sealed = sealCanonicalDocument(doc);
+    expect(sealed.payload).toContain("Envejecimiento Activo");
+    expect(sealed.canonicalHash).toMatch(/^pslc-[0-9a-f]{8}$/);
+  });
+
+  it("pantalla viva sin regresión: el builder compartido NO se vacía con 0 átomos", () => {
+    // El builder compartido (que alimenta la pantalla viva) conserva su
+    // comportamiento: con los mismos answers de Zagra produce hilos de agenda. El
+    // vaciado a `territorialReadings: []` ocurre SOLO en la copia canónica.
+    const liveView = buildProfileIntegratedEditorialView(zagraDiagnosticAnswers(), {
+      territory: "Zagra",
+      status: "Validado técnicamente",
+      generatedDate: "1 de julio de 2026",
+    });
+    expect(liveView.territorialReadings.length).toBeGreaterThan(0);
+
+    const canonical = buildPSLCCanonicalDocument({
+      answers: zagraDiagnosticAnswers(),
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext(), // 0 átomos
+    });
+    expect(canonical.editorialView.territorialReadings).toHaveLength(0);
+  });
+
+  it("mutación posterior de la priorización → snapshot inalterado (detach), y luego sella", () => {
+    const prioritizacion = zagraPrioritizacion();
+    // 1. Construir el documento canónico SIN sellar todavía.
+    const doc = buildPSLCCanonicalDocument({
+      answers: zagraDiagnosticAnswers(),
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext({ prioritizacion }),
+    });
+    // 2. Mutar el objeto `prioritizacion` ORIGINAL después de construir.
+    prioritizacion.tematicasSeleccionadasIds.push("intruso");
+    prioritizacion.tematicasSeleccionadasLabels.push("Intruso");
+    // 3. El snapshot es un clon detach: no refleja la mutación.
+    expect(
+      doc.provenance.prioritizationSnapshot.tematicasSeleccionadasLabels
+    ).not.toContain("Intruso");
+    expect(
+      doc.provenance.prioritizationSnapshot.tematicasSeleccionadasLabels
+    ).toEqual(["Bienestar Emocional", "Envejecimiento Activo"]);
+    // 4. Sellar después: el sello tampoco refleja la mutación.
+    const sealed = sealCanonicalDocument(doc);
+    expect(sealed.payload).not.toContain("Intruso");
+  });
+
+  it("priorizaciones distintas (todo lo demás igual) → payload y canonicalHash distintos", () => {
+    const common = {
+      answers: zagraDiagnosticAnswers(),
+      territory: "Zagra",
+      status: "validated" as const,
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+    };
+    const a = sealCanonicalDocument(
+      buildPSLCCanonicalDocument({ ...common, pslContext: zagraContext() })
+    );
+    const b = sealCanonicalDocument(
+      buildPSLCCanonicalDocument({
+        ...common,
+        pslContext: zagraContext({
+          prioritizacion: {
+            ...zagraPrioritizacion(),
+            tematicasSeleccionadasIds: ["otra-tematica"],
+            tematicasSeleccionadasLabels: ["Otra Temática"],
+          },
+        }),
+      })
+    );
+    expect(a.payload).not.toBe(b.payload);
+    expect(a.canonicalHash).not.toBe(b.canonicalHash);
+  });
+});
+
+// ── Tests: G-LHC-9 (estructura, trazabilidad, coherencia, fallback legacy) ─────
+
+describe("validateCompiledBody — G-LHC-9", () => {
+  function zagraDoc(over: Partial<PSLCReadingContext> = {}) {
+    return buildPSLCCanonicalDocument({
+      answers: zagraDiagnosticAnswers(),
+      territory: "Zagra",
+      status: "validated",
+      generatedAtISO: "2026-07-01T09:30:00.000Z",
+      pslContext: zagraContext(over),
+    });
+  }
+
+  it("documento digno (Zagra pending) → sin violación G-LHC-9", () => {
+    const v = validateCompiledBody(zagraDoc(), zagraPSL());
+    expect(v).toHaveLength(0);
+  });
+
+  it("documento estructuralmente degenerado (sin cierre) → G-LHC-9", () => {
+    const doc = zagraDoc();
+    const degenerate = {
+      ...doc,
+      editorialView: { ...doc.editorialView, closing: [] },
+    };
+    const v = validateCompiledBody(degenerate, zagraPSL());
+    expect(v.some((x) => x.gate === "G-LHC-9")).toBe(true);
+  });
+
+  it("documento sin trazadora de priorización → G-LHC-9", () => {
+    const doc = zagraDoc();
+    const sinSnapshot = {
+      ...doc,
+      provenance: { diagnosticAnswersSnapshot: doc.provenance.diagnosticAnswersSnapshot },
+    } as typeof doc;
+    const v = validateCompiledBody(sinSnapshot, zagraPSL());
+    expect(v.some((x) => x.gate === "G-LHC-9")).toBe(true);
+  });
+
+  it("incoherencia: prioritization-pending con hilos territoriales → G-LHC-9", () => {
+    const doc = zagraDoc();
+    const incoherente = {
+      ...doc,
+      readingStatus: "prioritization-pending" as const,
+      editorialView: {
+        ...doc.editorialView,
+        territorialReadings: [
+          {
+            id: "fabricado",
+            title: "Hilo fabricado",
+            signal: "x",
+            source: "x",
+            scale: "x",
+            reading: "x",
+            mechanism: "x",
+            exclusion: "x",
+            groupMotorQuestion: "x",
+            motorQuestion: "x",
+            variant: "informe" as const,
+          },
+        ],
+      },
+    };
+    const v = validateCompiledBody(incoherente, zagraPSL());
+    expect(v.some((x) => x.gate === "G-LHC-9")).toBe(true);
+  });
+
+  it("fallback legacy: sin documento canónico y cuerpo vacío → G-LHC-9", () => {
+    const v = validateCompiledBody(
+      undefined,
+      zagraPSL({ conclusiones: authoredChapter("   ") })
+    );
+    expect(v.some((x) => x.gate === "G-LHC-9")).toBe(true);
+  });
+
+  it("fallback legacy: sin documento canónico y cuerpo con contenido → sin violación", () => {
+    const v = validateCompiledBody(
+      undefined,
+      zagraPSL({ conclusiones: authoredChapter("Cuerpo compilado presente.") })
+    );
+    expect(v).toHaveLength(0);
   });
 });

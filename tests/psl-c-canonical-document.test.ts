@@ -105,6 +105,15 @@ describe("PASO 1 — documento canónico congelado (esquema 2)", () => {
       status: "validated" as const,
       informeTitulo: psl.healthReportTitle,
       generatedAtISO: psl.generatedAt,
+      pslContext: {
+        totalEvidenceAtoms: psl.totalEvidenceAtoms,
+        complementaryStudyCount: psl.complementaryStudyCount,
+        assetCount: psl.assetCount,
+        hasParticipatoryPrioritisation:
+          psl.thematicPrioritisationPresent ||
+          psl.priorizacion.hasParticipatorySelection,
+        prioritizacion: psl.priorizacion,
+      },
     };
     const a = buildSealedCanonicalDocument(meta);
     const b = buildSealedCanonicalDocument(meta);
