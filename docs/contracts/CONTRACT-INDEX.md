@@ -386,16 +386,61 @@ LocalHealthPlanDocument (PLS)
 
 ---
 
+## Fundamentos del Perfil único (Intervención 2026-07-17)
+
+Esta sección fija los fundamentos doctrinales del **Perfil de Salud Local** como
+producto institucional único de COMPÁS NG. Prevalece sobre cualquier redacción
+anterior de los contratos que contradiga estas decisiones. La *implementación* de
+la convergencia se aborda en incrementos posteriores; aquí solo cambia el estatuto
+contractual.
+
+1. **Producto único.** El único producto institucional del Perfil es el **Perfil
+   de Salud Local**. El «Perfil de Salud tipo NHS» deja de definirse como producto
+   autónomo y como segunda fuente de verdad. Sus capacidades solo podrán sobrevivir
+   como **representaciones derivadas dentro del Perfil canónico**, previa validación
+   científica y metodológica (ver `CONTRACT-NHS-HEALTH-PROFILE` §0). La retirada de
+   código, rutas, artefactos y tests NHS queda registrada como migración pendiente;
+   no se ejecuta en esta intervención.
+
+2. **Arquitectura adaptativa (sin recuento obligatorio de capítulos).** Existe una
+   **única lectura institucional canónica**. Su extensión y su número de secciones
+   **dependen de la riqueza y la solidez del expediente**: una sección puede
+   abrirse, comprimirse o no aparecer. Una **mera presencia textual no obliga** a
+   generar un bloque completo. **No puede coexistir una «lectura larga» alternativa**
+   —ni abierta ni plegada— que compita con la lectura canónica. El **espacio técnico**
+   puede existir *después* del documento, claramente separado de la lectura
+   institucional. Queda **derogada toda rigidez numérica** de «seis» o «siete»
+   capítulos (resuelve GOV-PSL-01 por eliminación de la rigidez, no por alineación
+   con la implementación actual).
+
+3. **Salida canónica (equivalencia semántica, no de apariencia).** Pantalla,
+   impresión, DOCX y PDF deben **derivar del mismo modelo semántico canónico** y
+   conservar: secciones, orden, contenido, estatuto epistemológico, fuentes,
+   escalas, cautelas y preguntas. Cada formato puede tener su propio renderer y
+   composición visual adecuados a su medio; **no se exige identidad de píxeles, CSS
+   ni paginación**. La implementación de esta convergencia queda pendiente para un
+   incremento posterior.
+
+4. **Clases de conocimiento (sin umbral numérico de menciones).** El sistema
+   distingue, al menos: *dato estructurado*, *señal local exploratoria*,
+   *referencia o proxy contextual*, *presencia textual en una fuente*, *conocimiento
+   cualitativo o comunitario real*, *síntesis automática derivada*, *incertidumbre*
+   e *hipótesis plausible*. La **frecuencia de una expresión puede orientar la
+   búsqueda, pero no eleva por sí sola una presencia textual a evidencia
+   territorial**. No se introduce un umbral numérico de menciones como criterio de
+   solidez (ver `CONTRACT-MIT-PSL` §6.1.2).
+
 ## Deudas de gobernanza vigentes
 
 Estas entradas registran decisiones o divergencias vivas que afectan a la gobernanza del Perfil y no deben resolverse por inferencia libre en auditorías futuras.
 
 | ID | Deuda | Evidencia | Estado |
 |---|---|---|---|
-| GOV-PSL-01 | Estructura documental del Perfil no unificada: contratos MIT/PSL-C conservan siete capítulos; el artefacto/export protege seis capítulos narrativos; la lectura canónica en pantalla es editorial y no capitular. | `CONTRACT-MIT-PSL`, `CONTRACT-PSL-COMPAS`, `src/application/health-profile/narrativeChapters.ts`, `ProfileIntegratedEditorialPreview` | Pendiente de Intervención 2 |
+| GOV-PSL-01 | Estructura documental del Perfil: **rigidez numérica derogada** por los Fundamentos del Perfil único (2026-07-17). La lectura canónica es única y adaptativa; su extensión depende del expediente. Queda pendiente la *implementación* de la arquitectura adaptativa en código. | `CONTRACT-MIT-PSL` §6, `CONTRACT-PSL-COMPAS` §4, `narrativeChapters.ts`, `ProfileIntegratedEditorialPreview` | Doctrina resuelta; implementación pendiente |
 | GOV-PSL-02 | Vista editorial integrada implementada como lectura canónica sin contrato propio de producto. | `LocalHealthProfileView.tsx`, `tests/perfil-vista-editorial-integrada.test.tsx` | Pendiente de contrato/unificación |
 | GOV-PSL-03 | `PerfilFuentesPanel` y `PerfilLocalDeSaludPanel` se renderizan tras el Perfil, fuera de la lectura canónica y fuera del espacio técnico del Perfil. | `src/App.tsx:2978-2979` | Pendiente de decisión funcional |
-| GOV-P4-01 | El PSL-NHS es representación derivada con estatuto de producto institucional propio, pero el compiler consume actualmente 6 instrumentos por arrastre histórico. El catálogo canónico son 13. | `CONTRACT-NHS-HEALTH-PROFILE`, `NHSHealthProfileCompiler.ts`, catálogo de Estudios Complementarios | Deuda abierta |
+| GOV-P4-01 | El PSL-NHS deja de ser producto autónomo/segunda fuente de verdad (Fundamentos del Perfil único, 2026-07-17): pasa a **candidato a representación derivada** dentro del Perfil, previa validación. La migración de código/ruta/artefacto y la reconciliación del catálogo (6 vs 13) quedan como **migración pendiente**; no se ejecutan en esta intervención. | `CONTRACT-NHS-HEALTH-PROFILE` §0, `NHSHealthProfileCompiler.ts`, catálogo de Estudios Complementarios | Doctrina resuelta; migración pendiente |
+| GOV-SALIDA-01 | Pantalla e impresión derivan de `editorialView`; DOCX/PDF/visor reconstruyen desde `provenance + conclusiones.content` (dos composiciones). Los Fundamentos (2026-07-17) obligan a equivalencia **semántica** entre salidas; la unificación de código queda pendiente. | `pslcCanonicalDocument.ts`, `pslcDocumentModel.ts`, `pslcDocx.ts`, `pslcPdf.ts` | Doctrina fijada; implementación pendiente |
 | GOV-VIS-01 | Identidad visual sin autoridad operacional única: `VISUAL-CONTRACT` existe como doctrina, pero `src/App.css` concentra 10.255 líneas, 1.795 colores hexadecimales, 132 colores únicos y dos escalas de grises conviviendo (`#64748b` y familia; `#526070` y familia). | `docs/visual/VISUAL-CONTRACT.md`, `src/App.css` | Deuda de gobernanza visual |
 ---
 

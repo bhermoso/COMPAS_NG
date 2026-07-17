@@ -2,11 +2,36 @@
 
 > Contrato canónico del Producto 4 — Perfil de Salud Local tipo NHS (PSL-NHS).
 > Versión 1.0 — 2026-06-30
-> Estado: VIGENTE
+> Estado: **SUPERADO EN SU ESTATUTO DE PRODUCTO AUTÓNOMO** (ver §0). El cuerpo
+> histórico (§1 en adelante) se conserva como registro de diseño, pero su
+> definición del PSL-NHS como «producto institucional propio» queda derogada.
 
 ---
 
-> Nota de saneamiento de gobernanza (2026-07-14): el PSL-NHS se registra como representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por su audiencia política y ciudadana y por su formato breve. No genera conocimiento propio: lo reexpresa. No puede constituir una segunda fuente de verdad sobre el catálogo de Estudios Complementarios.
+## 0. Estatuto revisado (Fundamentos del Perfil único, 2026-07-17)
+
+Esta cláusula **prevalece sobre el resto de este contrato**. Conforme a los
+Fundamentos del Perfil único (`CONTRACT-INDEX` §«Fundamentos del Perfil único»):
+
+- El único producto institucional es el **Perfil de Salud Local**. El «Perfil de
+  Salud tipo NHS» **deja de definirse como producto autónomo** y **no puede
+  constituir una segunda fuente de verdad**. Queda derogada toda afirmación de
+  §1/§1.1 que lo presente como «producto institucional propio».
+- Sus capacidades (comparación municipio↔referencia por dominio, síntesis breve)
+  **solo podrán sobrevivir como representaciones derivadas dentro del Perfil
+  canónico**, y **únicamente previa validación científica y metodológica**. En
+  particular, `computePosition` y la comparación por dominios quedan como
+  **capacidad candidata a evaluación**, no garantizada: solo se conservará si
+  compara escalas y metodologías equivalentes, no presenta proxy como dato local,
+  no fabrica rankings y añade comprensión real al Perfil.
+- **Migración pendiente (no ejecutada en esta intervención):** retirada de la ruta
+  de navegación, la acción de compilación, el artefacto persistido
+  `workspace.nhsArtifact`, el compilador y los tests NHS. En esta intervención
+  **solo cambia el estatuto contractual**; el código NHS permanece intacto.
+
+---
+
+> Nota de saneamiento de gobernanza (2026-07-14): el PSL-NHS se registra como representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por su audiencia política y ciudadana y por su formato breve. No genera conocimiento propio: lo reexpresa. No puede constituir una segunda fuente de verdad sobre el catálogo de Estudios Complementarios. *(Actualizada por §0: el estatuto de «producto institucional propio» queda derogado; ver arriba.)*
 
 ---
 
