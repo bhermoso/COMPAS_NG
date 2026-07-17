@@ -203,22 +203,39 @@ La decisión exacta sobre cuántas fases mostrar, en qué orden y con qué granu
 
 ## 8. Representación de los Productos institucionales
 
+> Reconciliado con los Fundamentos del Perfil único (`CONTRACT-INDEX`
+> §«Fundamentos del Perfil único», 2026-07-17). El único producto institucional
+> del Perfil es el **Perfil de Salud Local**. **No existe, en el estado objetivo,
+> una pestaña ni un producto independiente «Perfil de Salud tipo NHS».** Cualquier
+> presencia actual de esa ruta en el código es **migración técnica pendiente**, no
+> vocabulario canónico. El PSL-C es la **compilación institucional del mismo
+> Perfil**, no otro Perfil. Ninguna regla de este contrato mantiene un «Producto 4»
+> separado.
+
 ### 8.1 Principio de separación producto / espacio
 
-Un **producto institucional** (PSL-C, PLS, PSL-NHS) y el **espacio de trabajo** donde se produce son objetos distintos.
+Un **producto institucional** (PSL-C, PLS) y el **espacio de trabajo** donde se
+produce son objetos distintos.
 
 - El espacio "Perfil de Salud Local" es el lugar donde el técnico trabaja con el diagnóstico.
-- El "Perfil de Salud Local COMPÁS (PSL-C)" es el artefacto compilado que se entrega a las instituciones.
+- El "Perfil de Salud Local COMPÁS (PSL-C)" es el artefacto compilado que se entrega a las instituciones; es una **compilación del mismo Perfil**, no un producto-perfil distinto.
 
-La interfaz debe mantener esta distinción visible. No deben confundirse.
+La interfaz debe mantener esta distinción visible. No deben confundirse. La estructura
+del Perfil es **adaptativa**: no fija seis ni siete capítulos obligatorios (ver
+`CONTRACT-MIT-PSL` §6.1.1 bis).
 
 ### 8.2 Denominaciones canónicas de los productos en la interfaz
 
 | Producto | Nombre visible en interfaz | Nombre técnico (no visible) |
 |---|---|---|
 | Producto 3 | Perfil de Salud Local COMPÁS (PSL-C) | `LocalHealthProfileArtifact` |
-| Producto 4 | Perfil de Salud tipo NHS | `NHSHealthProfileArtifact` |
 | Producto 7 | Plan Local de Salud | `LocalHealthPlanDocument` |
+
+> El antiguo «Producto 4 — Perfil de Salud tipo NHS» **ya no es denominación
+> canónica** y se retira de esta tabla. La ruta/artefacto NHS que aún exista en el
+> código es migración técnica pendiente (ver `CONTRACT-NHS-HEALTH-PROFILE` §0). Las
+> capacidades NHS válidas, si alguna supera la evaluación científica/metodológica,
+> se presentan **dentro** del Perfil, no como producto ni pestaña propios.
 
 ### 8.3 Estados del PSL en la interfaz
 
@@ -264,8 +281,8 @@ Este contrato aplica el Art. 5 (separación evidencia/interpretación/propuesta)
 
 - `CONTRACT-PSL-COMPAS`: los términos de este contrato en §4.1 y §8.2 son coherentes con el Producto 3 tal como está definido.
 - `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER`: el PSL-C como "documento institucional" coincide con la denominación de §8.2.
-- `CONTRACT-MIT-PSL`: los 7 capítulos del PSL son el contenido técnico del espacio "Perfil de Salud Local"; sus nombres de capítulo (Conclusiones, Cierre interpretativo, Síntesis y Priorización) son visibles tal como están definidos en el contrato.
-- `CONTRACT-NHS-HEALTH-PROFILE`: el Producto 4 tiene denominación canónica registrada en §8.2.
+- `CONTRACT-MIT-PSL`: la lectura del PSL es **única y adaptativa**; su cobertura conceptual (Conclusiones, Cierre interpretativo, Síntesis y Priorización, etc.) se muestra según la riqueza del expediente, **sin recuento obligatorio de capítulos** (§6.1.1 bis).
+- `CONTRACT-NHS-HEALTH-PROFILE` §0: el PSL-NHS deja de ser producto autónomo; su retirada de código/ruta/artefacto es migración pendiente. No hay denominación canónica de un «Producto 4» separado.
 
 ---
 
@@ -310,7 +327,7 @@ Este contrato no define:
 | `FOUNDATIONS §2` | Municipio como unidad de trabajo |
 | `OPERATING-CONSTITUTION` Bloque F | Terminología única sin duplicidades |
 | `CONTRACT-PSL-COMPAS` | Producto 3 y sus términos canónicos |
-| `CONTRACT-NHS-HEALTH-PROFILE` | Denominación canónica del Producto 4 |
+| `CONTRACT-NHS-HEALTH-PROFILE` §0 | PSL-NHS derogado como producto autónomo; migración de código pendiente |
 | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT` | Denominación canónica del Producto 7 |
 | `docs/methodology/METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING §I.3` | Las seis etapas canónicas del ciclo institucional |
 

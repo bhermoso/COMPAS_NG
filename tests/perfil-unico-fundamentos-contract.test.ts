@@ -17,7 +17,10 @@ import { fileURLToPath } from "node:url";
 
 const DOCS = resolve(dirname(fileURLToPath(import.meta.url)), "..", "docs");
 const readRaw = (rel: string) => readFileSync(resolve(DOCS, rel), "utf8");
-const flatten = (s: string) => s.replace(/\s+/g, " ");
+// Normaliza a prosa: elimina el marcador de blockquote (`> `) al inicio de línea y
+// colapsa los espacios, para que las frases no dependan del ajuste de línea ni del
+// formato markdown.
+const flatten = (s: string) => s.replace(/^>\s?/gm, "").replace(/\s+/g, " ");
 
 describe("Fundamentos del Perfil único — CONTRACT-INDEX", () => {
   const raw = readRaw("contracts/CONTRACT-INDEX.md");
@@ -104,5 +107,86 @@ describe("Fundamentos del Perfil único — arquitectura adaptativa y salida can
     expect(vis).toContain("Sin lectura larga alternativa");
     expect(vis).toContain("Espacio técnico después del documento");
     expect(vis).toContain("no se exige identidad de píxeles");
+  });
+});
+
+// ── Reconciliación de navegación y catálogo (Commit 3) ───────────────────────
+// Se comprueba el ESTATUTO SEMÁNTICO de las secciones vigentes, sin prohibir
+// globalmente la cadena "PSL-NHS" (puede aparecer en notas históricas/migración).
+
+describe("Reconciliación — CONTRACT-NAVIGATION: un único Perfil", () => {
+  const raw = readRaw("contracts/CONTRACT-NAVIGATION.md");
+  const nav = flatten(raw);
+
+  it("declara que no existe pestaña ni producto NHS independiente en el estado objetivo", () => {
+    expect(nav).toContain(
+      "No existe, en el estado objetivo, una pestaña ni un producto independiente «Perfil de Salud tipo NHS»"
+    );
+    expect(nav).toContain("El PSL-C es la **compilación institucional del mismo Perfil**");
+    expect(nav).toContain("migración técnica pendiente");
+  });
+
+  it("retira la fila «Producto 4 | Perfil de Salud tipo NHS» de la tabla de denominaciones", () => {
+    expect(raw).not.toMatch(/\|\s*Producto 4\s*\|\s*Perfil de Salud tipo NHS\s*\|/);
+  });
+
+  it("no mantiene el mandato de 7 capítulos; declara estructura adaptativa", () => {
+    expect(raw).not.toContain("los 7 capítulos del PSL son el contenido técnico");
+    expect(nav).toContain("no fija seis ni siete capítulos obligatorios");
+  });
+});
+
+describe("Reconciliación — CONTRACT-INDEX: sin «Producto 4» vigente", () => {
+  const raw = readRaw("contracts/CONTRACT-INDEX.md");
+  const idx = flatten(raw);
+
+  it("reclasifica el registro NHS como representación derivada, no «Producto 4»", () => {
+    expect(raw).not.toContain("## Producto 4 — Perfil de Salud Local tipo NHS (PSL-NHS)");
+    expect(idx).toContain("deja de ser un «Producto 4» institucional independiente");
+    // Elimina la afirmación vigente de estatuto propio del registro.
+    expect(raw).not.toContain("con estatuto de producto institucional propio por razón de su audiencia y formato");
+  });
+
+  it("mantiene la migración NHS como pendiente (GOV-P4-01) y la cobertura adaptativa", () => {
+    expect(idx).toContain("migración pendiente");
+    expect(raw).not.toContain("los 7 capítulos del PSL");
+    expect(raw).not.toContain("estructura canónica de 7 capítulos");
+  });
+});
+
+describe("Reconciliación — INSTITUTIONAL-PRODUCTS-ARCHITECTURE: catálogo sin PSL-NHS", () => {
+  const raw = readRaw("architecture/INSTITUTIONAL-PRODUCTS-ARCHITECTURE.md");
+  const ipa = flatten(raw);
+
+  it("cuenta siete productos y retira PSL-NHS del catálogo y del grafo", () => {
+    expect(raw).toContain("Reconciliación con los Fundamentos del Perfil único");
+    expect(raw).toContain("**siete** productos institucionales distinguibles");
+    expect(raw).not.toContain("ocho productos institucionales distinguibles");
+    // Fila de catálogo del PSL-NHS retirada.
+    expect(raw).not.toMatch(/\|\s*\*\*PSL-NHS\*\*\s*\|/);
+  });
+
+  it("no recomienda ya paneles/compiladores NHS separados (recomendación superada)", () => {
+    expect(ipa).toContain("procede un panel ni un compilador NHS separados como producto propio");
+    expect(ipa).toContain("No procede un compilador NHS separado como producto propio");
+  });
+
+  it("no mantiene 7 capítulos obligatorios; registra migración pendiente", () => {
+    expect(raw).not.toContain("7 capítulos estructurados, exportable");
+    expect(raw).not.toContain("7 capítulos perfectamente definidos");
+    expect(ipa).toContain("migración técnica pendiente");
+  });
+});
+
+describe("Reconciliación — otras fuentes vigentes corregidas", () => {
+  it("BLUEPRINT-PRODUCTION marca superado el «Producto 4» y los 7 capítulos", () => {
+    const bp = flatten(readRaw("architecture/BLUEPRINT-PRODUCTION.md"));
+    expect(bp).toContain("deja de ser un producto institucional independiente");
+    expect(bp).toContain("lectura única y adaptativa");
+  });
+
+  it("CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY (rector) deroga el estatuto propio del NHS", () => {
+    const rector = flatten(readRaw("contracts/CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY.md"));
+    expect(rector).toContain("deja de tener estatuto de producto institucional propio");
   });
 });

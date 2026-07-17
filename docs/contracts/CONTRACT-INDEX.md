@@ -124,7 +124,7 @@ Contrato de qué significa "interpretar" dentro de COMPÁS NG. Define los límit
 ### CONTRACT-MIT-PSL
 **Estado:** VIGENTE
 
-Contrato del Motor de Interpretación Territorial (MIT) y del Perfil de Salud Local (PSL). Define LT1, OIT, Reconciliación Interpretativa, los 7 capítulos del PSL, los 6 estados del PSL y la regla PSL-C1 (el Nivel 3 solo consume PSL, nunca EvidenceStore directamente).
+Contrato del Motor de Interpretación Territorial (MIT) y del Perfil de Salud Local (PSL). Define LT1, OIT, Reconciliación Interpretativa, la lectura **única y adaptativa** del PSL (cobertura conceptual sin recuento obligatorio de capítulos, §6.1.1 bis), los 6 estados del PSL y la regla PSL-C1 (el Nivel 3 solo consume PSL, nunca EvidenceStore directamente).
 
 **Productores:** `TerritorialInterpretationEngine`, `buildLocalHealthProfile`.
 **Consumidores:** Priorización temática, Motor de Traducción Estratégica, Plan de Acción.
@@ -150,7 +150,7 @@ Contrato metodológico canónico del Perfil de Salud Local (PSL). Define qué de
 ### CONTRACT-PSL-COMPAS
 **Estado:** VIGENTE
 
-Contrato canónico del Producto 3. Define el PSL-C como producto analítico territorial en el catálogo de COMPÁS NG: naturaleza, fuentes consumibles (incluyendo Productos 1 y 2), separación arquitectónica estricta, estructura canónica de 7 capítulos, relación con SAM y Estudios Complementarios, y deuda registrada (D3-01 a D3-04).
+Contrato canónico del Producto 3. Define el PSL-C como producto analítico territorial en el catálogo de COMPÁS NG: naturaleza, fuentes consumibles (incluyendo Productos 1 y 2), separación arquitectónica estricta, cobertura conceptual **adaptativa** (sin recuento obligatorio de capítulos), relación con SAM y Estudios Complementarios, y deuda registrada (D3-01 a D3-04).
 
 **Productores:** `buildLocalHealthProfile` + `LocalHealthProfileCompiler`.
 **Consumidores:** Equipo técnico (diagnóstico), Nivel 3 (vía PSL-C1), compiladores superiores.
@@ -158,12 +158,12 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 
 ---
 
-## Producto 4 — Perfil de Salud Local tipo NHS (PSL-NHS)
+## PSL-NHS — representación derivada (antiguo «Producto 4»)
 
 ### CONTRACT-NHS-HEALTH-PROFILE
-**Estado:** VIGENTE
+**Estado:** SUPERADO EN SU ESTATUTO DE PRODUCTO AUTÓNOMO (ver §0 del propio contrato y Fundamentos del Perfil único, 2026-07-17)
 
-Contrato canónico del Producto 4 (v1.0). Define el PSL-NHS como producto institucional de diagnóstico comparativo: audiencia política y ciudadana (no técnica), organización por dominio causal (no por instrumento), indicadores con campos técnicos y valores de referencia disponibles, estructura documental de 4 partes (Marco municipal / Indicadores por dominio / Participación ciudadana / Alcance del diagnóstico), portada especificada, comportamiento con datos parciales definido y gates de compilación. Decisión institucional vigente: el PSL-NHS es una representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por razón de su audiencia y formato. No genera conocimiento propio ni puede constituir una segunda fuente de verdad sobre el catálogo de instrumentos. Estado de implementación: compiler y vista existen; la exportación PDF/HTML/DOCX sigue pendiente (D4-04). El compiler consume actualmente 6 instrumentos por arrastre histórico del momento en que se escribió; el catálogo canónico son 13. Divergencia registrada como deuda abierta.
+Por los Fundamentos del Perfil único, el PSL-NHS **deja de ser un «Producto 4» institucional independiente**: no es producto autónomo ni segunda fuente de verdad. Pasa a ser, a lo sumo, una **representación derivada dentro del Perfil de Salud Local**, y solo si supera evaluación científica/metodológica. El contrato conserva su cuerpo histórico como registro de diseño, subordinado a su §0. La retirada del código/ruta/artefacto NHS y la reconciliación del catálogo (6 vs 13 instrumentos) quedan como **migración pendiente** (GOV-P4-01).
 
 **Productores:** `NHSHealthProfileCompiler` (implementado en `src/application/nhs-health-profile-compiler/`) y `NHSHealthProfileView` (vista implementada). El contrato del compiler quedó incorporado en `CONTRACT-NHS-HEALTH-PROFILE §10`; no existe contrato separado.
 **Consumidores:** Corporación municipal, ciudadanía, comunicación institucional.

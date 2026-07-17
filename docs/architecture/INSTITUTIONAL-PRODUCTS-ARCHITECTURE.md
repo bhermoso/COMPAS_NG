@@ -14,6 +14,34 @@
 
 ---
 
+## 0. Reconciliación con los Fundamentos del Perfil único (2026-07-17)
+
+> **Esta sección prevalece sobre el resto del documento.** Reconcilia este catálogo
+> con los Fundamentos del Perfil único (`CONTRACT-INDEX` §«Fundamentos del Perfil
+> único»). Donde el cuerpo histórico contradiga lo siguiente, **queda superado**.
+
+- **El PSL-NHS deja de contarse como producto institucional independiente.** Se
+  retira del catálogo de productos actuales, de sus tablas y de sus grafos. El
+  catálogo vigente pasa de ocho a **siete** productos.
+- El PSL-NHS pasa a ser, a lo sumo, una **representación derivada del Perfil** (p. ej.
+  comparación municipio↔referencia por dominio), **sin compilador ni artefacto propio
+  garantizado**, y solo si supera evaluación científica/metodológica. No es una
+  segunda fuente de verdad.
+- **Quedan superadas las recomendaciones de este documento de mantener paneles o
+  compiladores separados** para PSL-C y PSL-NHS: el Perfil es único; el PSL-C es su
+  compilación institucional, no otro Perfil.
+- **Queda superada toda afirmación de «siete capítulos» obligatorios.** La lectura del
+  Perfil es única y **adaptativa** (`CONTRACT-MIT-PSL` §6.1.1 bis): su extensión y su
+  número de secciones dependen de la riqueza del expediente.
+- La retirada del **código/ruta/artefacto NHS** (`NHSHealthProfileCompiler`,
+  `NHSHealthProfileView`, `workspace.nhsArtifact`, pestaña de navegación) es
+  **migración técnica pendiente**, no ejecutada en esta intervención.
+
+Las secciones históricas §4 (análisis NHS) y §6.2 (NHSHealthProfileCompiler) se
+conservan como registro de diseño **superado**; no constituyen autoridad vigente.
+
+---
+
 ## 1. Filosofía
 
 COMPÁS NG no genera informes. Genera **productos institucionales**.
@@ -64,21 +92,24 @@ del proceso de planificación local.
 
 ## 2. Catálogo de productos institucionales
 
-COMPÁS NG produce ocho productos institucionales distinguibles.
-Cuatro son productos del ciclo de diagnóstico y planificación.
+COMPÁS NG produce **siete** productos institucionales distinguibles (ver §0).
+Tres son productos del ciclo de diagnóstico y planificación.
 Dos son artefactos metodológicos para el ciclo de captura.
 Dos son productos complementarios del proceso.
 
 | Código | Producto | Tipo | Estado actual |
 |---|---|---|---|
 | **PSL-C** | Perfil de Salud Local COMPÁS | Diagnóstico territorial | Sin compilador |
-| **PSL-NHS** | Perfil de Salud Local tipo NHS | Comunicación institucional | Sin compilador |
 | **PLS** | Plan Local de Salud | Planificación institucional | Sin definición estructural |
 | **RE** | Resumen Ejecutivo | Comunicación política | Sin definición |
 | **CM** | Cuestionario Municipal | Instrumento metodológico | Infraestructura parcial |
 | **DD** | Diccionario REDCap | Artefacto técnico | Infraestructura parcial |
 | **AT** | Anexo Técnico Metodológico | Documentación de rigor | Sin definición |
 | **MEM** | Memoria del Proceso | Documento participativo | Fuera del alcance del sistema |
+
+> El antiguo **PSL-NHS** se retira de este catálogo como producto independiente (§0):
+> pasa a ser, a lo sumo, una **representación derivada del Perfil**, sin compilador ni
+> artefacto propio garantizado.
 
 ---
 
@@ -90,7 +121,7 @@ Dos son productos complementarios del proceso.
 | **Destinatarios** | Equipo técnico local, Distrito Sanitario, Junta de Andalucía |
 | **Momento del ciclo** | Al completar el diagnóstico territorial (antes de la priorización formal) |
 | **Entradas** | `LocalHealthProfile` en estado `validated` |
-| **Salidas** | Documento institucional: 7 capítulos estructurados, exportable |
+| **Salidas** | Documento institucional exportable; lectura única y **adaptativa** (sin recuento obligatorio de capítulos, ver §0) |
 | **Dependencias** | Requiere Informe de Salud, al menos un Estudio Complementario y PSL validado |
 | **Compilador** | `LocalHealthProfileCompiler` |
 | **Contrato pendiente** | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` |
@@ -272,6 +303,10 @@ sea compilable. Un PSL con capítulos en estado `scaffold` no puede producir PSL
 ---
 
 ## 4. Perfil tipo NHS Health Profiles — Análisis y especificación
+
+> **SECCIÓN SUPERADA (ver §0).** Registro de diseño histórico. No es autoridad
+> vigente: el PSL-NHS ya no es un producto institucional independiente; sus
+> capacidades solo podrían sobrevivir como representación derivada dentro del Perfil.
 
 ### 4.1 Qué son los NHS Local Health Profiles
 
@@ -472,6 +507,9 @@ en artefactos institucionales exportables. No analizan, no interpretan, no propo
 | **Sprint** | Sprint 2 |
 
 ### 6.2 NHSHealthProfileCompiler
+
+> **SECCIÓN SUPERADA (ver §0).** El `NHSHealthProfileCompiler` no es un compilador de
+> producto propio en el estado objetivo; su retirada es migración técnica pendiente.
 
 | Campo | Valor |
 |---|---|
@@ -708,11 +746,10 @@ PSL-C y PSL-NHS en la interfaz.
 - ¿Cómo se presenta la ausencia de datos de referencia?
 - ¿Tienen los 6 estudios EAS peso suficiente para construir este perfil sin el Informe de Salud?
 
-**Nota sobre la tensión con el VISUAL-CONTRACT:** el VISUAL-CONTRACT §12.2 describe
-`LocalHealthProfilePanel` como "generador del PSL sintético, alimentado desde PSL".
-Esto podría fusionar PSL-C y PSL-NHS en un único componente. Esta fusión merece
-deliberación: son productos con audiencias y propósitos distintos; merecen
-compiladores distintos aunque compartan input.
+**Nota sobre la tensión con el VISUAL-CONTRACT:** *(superado por §0)* la antigua
+tensión sobre si PSL-C y PSL-NHS debían tener compiladores distintos queda resuelta:
+el Perfil es único; el PSL-C es su compilación institucional. No procede un compilador
+NHS separado como producto propio.
 
 ### P-4 — Circuito Survey → EvidenceStore
 
@@ -812,12 +849,13 @@ Las dependencias son entre productos, no entre componentes software.
             │   Perfil de Salud Local COMPÁS        │
             │         (PSL-C)  ◄──────────────────┐ │
             │           │                          │ │
-            │    ┌──────┴──────────┐               │ │
-            │    │                 │               │ │
-            │    ▼                 ▼               │ │
-            │ PSL-NHS         [PSL-C es el         │ │
-            │                 diagnóstico del PLS] │ │
+            │           ▼                          │ │
+            │    [PSL-C es el                      │ │
+            │     diagnóstico del PLS]             │ │
             └─────────────────────────────────────┘─┘
+            (PSL-NHS retirado del grafo como producto
+             independiente; ver §0 — sería, a lo sumo,
+             una representación derivada del Perfil)
                                  │
                                  ▼
             ┌───────────────────────────────────────┐
@@ -866,7 +904,7 @@ después (PSL-NHS, PLS, RE, AT) depende de que el PSL-C esté estructurado.
 Congelar el PSL-C primero crea el punto de anclaje de todo el sistema de productos.
 
 **Razón 2: El objeto de entrada está definido y estable.**
-El `LocalHealthProfile` tiene 7 capítulos perfectamente definidos en el código y en el contrato.
+El `LocalHealthProfile` cubre un conjunto definido de dimensiones de conocimiento; su *proyección editorial* es única y **adaptativa**, sin recuento obligatorio de capítulos *(reconciliado por §0)*.
 No hay ambigüedad sobre qué contiene. La única pregunta es cómo compilarlo como documento
 institucional. Esta pregunta es respondible hoy.
 
@@ -945,14 +983,13 @@ que subsiste es la integración Constructor Metodológico → REDCap → Evidenc
 **Contradicción C-1: VISUAL-CONTRACT §12.2 vs separación de compiladores**
 
 El VISUAL-CONTRACT §12.2 describe `LocalHealthProfilePanel` como "Generador del Perfil
-de Salud Local sintético, inspirado en NHS Local Health Profiles". Esto sugiere un único
-panel que fusionaría PSL-C y PSL-NHS. Pero PSL-C y PSL-NHS tienen audiencias y finalidades
-distintas y merecen compiladores distintos.
+de Salud Local sintético, inspirado en NHS Local Health Profiles".
 
-**Recomendación:** Al implementar Sprint 2, distinguir en la UI el panel de
-`LocalHealthProfileCompiler` (PSL-C, 7 capítulos) del panel de `NHSHealthProfileCompiler`
-(indicadores comparativos). La descripción del VISUAL-CONTRACT §12.2 puede actualizarse
-en Sprint 2 para reflejar esta distinción.
+**Recomendación *(reconciliada por §0)*:** el Perfil es único; **no** procede un panel
+ni un compilador NHS separados como producto propio. Las capacidades NHS válidas se
+integran, si superan evaluación, **dentro** del Perfil (lectura única y adaptativa, sin
+recuento obligatorio de capítulos). La retirada del `NHSHealthProfileCompiler`/panel es
+migración técnica pendiente.
 
 **Contradicción C-2: CONTRACT-COMPILER actual es insuficiente**
 
@@ -973,8 +1010,8 @@ madurez del modelo de productos institucionales.
 
 ## Resumen
 
-COMPÁS NG produce ocho productos institucionales distinguibles. La arquitectura
-de compiladores refleja esta distinción. El Perfil de Salud Local COMPÁS es el
+COMPÁS NG produce **siete** productos institucionales distinguibles (§0; el PSL-NHS
+ya no cuenta como producto independiente). El Perfil de Salud Local COMPÁS es el
 producto más urgente de congelar porque desbloquea todos los demás. El Plan Local
 de Salud no puede estructurarse sin CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, que a su
 vez no puede escribirse sin tener el PSL-C congelado como su capítulo de diagnóstico.
