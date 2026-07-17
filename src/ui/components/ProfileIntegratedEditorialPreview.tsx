@@ -1,7 +1,16 @@
-import type { ProfileIntegratedEditorialView } from "../../application/health-profile";
+import type {
+  ProfileIntegratedEditorialView,
+  CanonicalEditorialView,
+} from "../../application/health-profile";
 
 interface ProfileIntegratedEditorialPreviewProps {
-  view: ProfileIntegratedEditorialView;
+  /**
+   * GOV-SALIDA-01: la vista canónica sellada (`CanonicalEditorialView`) es
+   * lectura editorial pura y NO lleva anexo técnico (vive en el hermano
+   * `technicalSpace`). El borrador prevalidación conserva la forma antigua
+   * (`ProfileIntegratedEditorialView`), cuyo anexo se sigue mostrando aquí.
+   */
+  view: ProfileIntegratedEditorialView | CanonicalEditorialView;
   /**
    * Declaración digna de lectura territorial pendiente (Paso 4). Solo se muestra
    * cuando el documento no tiene hilos territoriales (`readingStatus:
@@ -230,40 +239,45 @@ export function ProfileIntegratedEditorialPreview({
         </div>
       </section>
 
-      {/* ── Lectura territorial ampliada y anexo técnico (colapsado) ────── */}
-      <details className="pie-annex">
-        <summary>{view.technicalAnnex.title}</summary>
-        <p>{view.technicalAnnex.summary}</p>
-        <div className="pie-annex__notes">
-          {view.technicalAnnex.matrix.notasBloque.map((note) => (
-            <p key={note}>{note}</p>
-          ))}
-        </div>
-        <div className="pie-table-wrap">
-          <table className="pie-table pie-table--annex">
-            <thead>
-              <tr>
-                <th>Señal</th>
-                <th>Fuente</th>
-                <th>Escala</th>
-                <th>Mecanismo</th>
-                <th>Pregunta</th>
-              </tr>
-            </thead>
-            <tbody>
-              {view.technicalAnnex.matrix.filas.map((row) => (
-                <tr key={row.senal + row.fuente}>
-                  <td>{row.senal}</td>
-                  <td>{row.fuente}</td>
-                  <td>{row.escala}</td>
-                  <td>{row.mecanismo}</td>
-                  <td>{row.pregunta}</td>
+      {/* ── Lectura territorial ampliada y anexo técnico (colapsado) ──────
+          Solo en el borrador prevalidación (forma antigua). La vista canónica
+          sellada es lectura pura: su material técnico vive en `technicalSpace`,
+          fuera de este componente editorial. */}
+      {"technicalAnnex" in view ? (
+        <details className="pie-annex">
+          <summary>{view.technicalAnnex.title}</summary>
+          <p>{view.technicalAnnex.summary}</p>
+          <div className="pie-annex__notes">
+            {view.technicalAnnex.matrix.notasBloque.map((note) => (
+              <p key={note}>{note}</p>
+            ))}
+          </div>
+          <div className="pie-table-wrap">
+            <table className="pie-table pie-table--annex">
+              <thead>
+                <tr>
+                  <th>Señal</th>
+                  <th>Fuente</th>
+                  <th>Escala</th>
+                  <th>Mecanismo</th>
+                  <th>Pregunta</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
+              </thead>
+              <tbody>
+                {view.technicalAnnex.matrix.filas.map((row) => (
+                  <tr key={row.senal + row.fuente}>
+                    <td>{row.senal}</td>
+                    <td>{row.fuente}</td>
+                    <td>{row.escala}</td>
+                    <td>{row.mecanismo}</td>
+                    <td>{row.pregunta}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      ) : null}
     </section>
   );
 }

@@ -24,10 +24,10 @@ import type {
   PSLCArtifactHipotesis,
   PSLCArtifactPreguntaAbierta,
 } from "../../domain/health-profile-artifact";
-import { computePerfilEstadoGlobal, institutionalHealthReportTitle } from "../health-profile";
+import { computePerfilEstadoGlobal } from "../health-profile";
 import type { DiagnosticAnswers } from "../health-profile";
 import {
-  buildPSLCCanonicalDocument,
+  buildCanonicalProfileDocumentFromPSL,
   sealCanonicalDocument,
   type PSLCCanonicalDocument,
 } from "../psl-c-canonical";
@@ -180,7 +180,9 @@ export function validateCompiledBody(
     return violations;
   }
 
-  const { editorialView, readingStatus, provenance } = canonicalDoc;
+  const { editorialView, provenance } = canonicalDoc;
+  // GOV-SALIDA-01: `readingStatus` es un campo de `editorialView`, no de la raíz.
+  const readingStatus = editorialView.readingStatus;
 
   // 1. Estructura mínima digna: cabecera, bloques de fuente y cierre.
   if (editorialView.header.title.trim().length === 0) {
@@ -276,35 +278,18 @@ export function compileLocalHealthProfile(
   const sourceHash = computePSLHash(psl);
 
   // ── Documento canónico congelado (esquema 2) ───────────────────────────────
-  // Se hornea desde la instantánea de respuestas diagnósticas, no del estado
-  // vivo. La fecha se pre-formatea de forma determinista dentro del builder.
+  // GOV-SALIDA-01: se construye desde el MISMO contexto vivo (PSL validado +
+  // Perfil + answers) que el preview podría construir antes de compilar. La
+  // compilación se limita a SELLAR este resultado; no origina información nueva.
+  // El título institucional del Informe, las cautelas, la base documental, la
+  // frontera, el cierre humano y el estado del conocimiento se derivan del PSL.
   const canonicalDoc =
     input.diagnosticAnswers !== undefined
-      ? buildPSLCCanonicalDocument({
+      ? buildCanonicalProfileDocumentFromPSL({
+          psl,
+          perfil: input.perfil,
           answers: input.diagnosticAnswers,
           territory: municipalityName,
-          status: psl.status,
-          // Paridad de cabecera (paso 3): se sella el título INSTITUCIONAL del
-          // Informe, el mismo transform que usan pantalla y export, no el crudo.
-          informeTitulo:
-            psl.healthReportTitle !== undefined
-              ? institutionalHealthReportTitle(
-                  psl.municipalityId,
-                  psl.healthReportTitle
-                )
-              : undefined,
-          generatedAtISO: psl.generatedAt,
-          // Contexto compilado (Paso 4): el documento canónico decide readingStatus
-          // y sella la priorización solo con estos campos, sin acceder al PSL.
-          pslContext: {
-            totalEvidenceAtoms: psl.totalEvidenceAtoms,
-            complementaryStudyCount: psl.complementaryStudyCount,
-            assetCount: psl.assetCount,
-            hasParticipatoryPrioritisation:
-              psl.thematicPrioritisationPresent ||
-              psl.priorizacion.hasParticipatorySelection,
-            prioritizacion: psl.priorizacion,
-          },
         })
       : undefined;
 

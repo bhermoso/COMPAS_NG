@@ -967,7 +967,7 @@ describe("compileLocalHealthProfile — Paso 4 readingStatus / N+1 / coherencia"
       const sealed = result.artifact.canonicalDocument;
       expect(sealed).toBeDefined();
       const doc = sealed ? readSealedCanonicalDocument(sealed) : null;
-      expect(doc?.readingStatus).toBe("prioritization-pending");
+      expect(doc?.editorialView.readingStatus).toBe("prioritization-pending");
       // No se fabrica lectura: territorialReadings queda vacío en la copia canónica.
       expect(doc?.editorialView.territorialReadings).toHaveLength(0);
       // Documento digno: cabecera, bloques de fuente y cierre presentes.
@@ -1039,7 +1039,7 @@ describe("compileLocalHealthProfile — Paso 4 readingStatus / N+1 / coherencia"
     const activos = doc.editorialView.sourceBlocks.find((b) => b.id === "activos");
     expect(activos?.whatItAdds).toContain("1 recurso");
     expect(doc.editorialView.territorialReadings.length).toBeGreaterThan(0);
-    expect(doc.readingStatus).toBe("integrated");
+    expect(doc.editorialView.readingStatus).toBe("integrated");
   });
 
   it("contexto declara activos pero answers sin activos → pending (sin respaldo real)", () => {
@@ -1050,7 +1050,7 @@ describe("compileLocalHealthProfile — Paso 4 readingStatus / N+1 / coherencia"
       generatedAtISO: "2026-07-01T09:30:00.000Z",
       pslContext: zagraContext({ totalEvidenceAtoms: 3, assetCount: 3 }), // contador sin respaldo
     });
-    expect(doc.readingStatus).toBe("prioritization-pending");
+    expect(doc.editorialView.readingStatus).toBe("prioritization-pending");
     expect(doc.editorialView.territorialReadings).toHaveLength(0);
   });
 
@@ -1062,7 +1062,7 @@ describe("compileLocalHealthProfile — Paso 4 readingStatus / N+1 / coherencia"
       generatedAtISO: "2026-07-01T09:30:00.000Z",
       pslContext: zagraContext({ totalEvidenceAtoms: 5 }), // átomos de origen no elegible
     });
-    expect(doc.readingStatus).toBe("prioritization-pending");
+    expect(doc.editorialView.readingStatus).toBe("prioritization-pending");
     expect(doc.editorialView.territorialReadings).toHaveLength(0);
   });
 
@@ -1201,9 +1201,10 @@ describe("validateCompiledBody — G-LHC-9", () => {
     const doc = zagraDoc();
     const incoherente = {
       ...doc,
-      readingStatus: "prioritization-pending" as const,
+      // GOV-SALIDA-01: readingStatus vive en editorialView, no en la raíz.
       editorialView: {
         ...doc.editorialView,
+        readingStatus: "prioritization-pending" as const,
         territorialReadings: [
           {
             id: "fabricado",
