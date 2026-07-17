@@ -304,10 +304,48 @@ El PSL es el **objeto canónico del Nivel 2**. No es un documento del
 repositorio. No es el Informe de Salud municipal. No es el Plan Local de
 Salud compilado. Es una síntesis analítica validable que:
 
-- Organiza el análisis territorial en siete capítulos estructurados.
+- Organiza el análisis territorial en una **lectura institucional canónica única
+  y adaptativa** (ver §6.1.1 bis): sus secciones y su extensión dependen de la
+  riqueza y solidez del expediente; no hay recuento obligatorio de capítulos.
 - Referencia los documentos fuente sin contenerlos ni sustituirlos.
 - Actúa como único puente autorizado hacia la capa de decisión (Nivel 3).
 - Tiene un ciclo de vida explícito con transiciones de estado auditables.
+
+### 6.1.1 bis Arquitectura adaptativa de la lectura canónica (Fundamentos del Perfil único, 2026-07-17)
+
+> Prevalece sobre cualquier redacción de este contrato que fije un número de
+> capítulos. Ver `CONTRACT-INDEX` §«Fundamentos del Perfil único».
+
+- Existe **una única lectura institucional canónica**. Queda **derogada toda
+  rigidez numérica** («seis» o «siete» capítulos): la estructura capitular que
+  sigue describe la **cobertura conceptual** (qué conocimiento cubre la lectura),
+  no un recuento obligatorio de secciones del documento.
+- La **extensión y el número de secciones dependen de la riqueza y la solidez del
+  expediente**. Una sección puede **abrirse, comprimirse o no aparecer**.
+- Una **mera presencia textual no obliga** a generar un bloque completo.
+- **No puede coexistir una «lectura larga» alternativa** —ni abierta ni plegada—
+  que compita con la lectura canónica.
+- El **espacio técnico** (trazabilidad, matriz completa, referencias) puede existir
+  *después* del documento, claramente separado de la lectura institucional.
+
+### 6.1.2 Clases de conocimiento (Fundamentos del Perfil único, 2026-07-17)
+
+La lectura distingue el **estatuto epistemológico** de cada pieza. Como mínimo:
+
+| Clase | Qué es | No es |
+|---|---|---|
+| Dato estructurado | valor medido de un instrumento (p. ej. media IBSE, referencia EAS) | no es prueba de causalidad |
+| Señal local exploratoria | resultado de muestra local no representativa | no es estimación poblacional |
+| Referencia / proxy contextual | valor provincial o municipal que contextualiza | **no es medición distrital** |
+| Presencia textual en una fuente | mención en el Informe u otro documento | **no es indicador ni prevalencia** |
+| Conocimiento cualitativo/comunitario real | testimonio, participación ciudadana, saber local | no lo genera el sistema |
+| Síntesis automática derivada | resumen que el sistema calcula desde otros datos (p. ej. `IBSE_RESUMEN`) | **no es conocimiento cualitativo ni participativo** |
+| Incertidumbre | lo que no se sabe (incl. ausencia de desagregación = incertidumbre de equidad) | no es ausencia de desigualdad |
+| Hipótesis plausible | mecanismo propuesto, coherente con la evidencia | **no es causalidad demostrada** |
+
+**Regla de solidez:** la **frecuencia de una expresión puede orientar la búsqueda,
+pero no eleva por sí sola una presencia textual a evidencia territorial.** No se
+introduce un umbral numérico de menciones como criterio de solidez.
 
 ### 6.1.1 Principios metodológicos del Perfil de Salud Local
 
@@ -332,7 +370,13 @@ El PSL describe, interpreta y sintetiza. No prescribe actuaciones, no selecciona
 prioridades institucionales, no asigna líneas estratégicas, no aprueba objetivos
 ni sustituye la deliberación técnica, ciudadana o institucional posterior.
 
-### 6.2 Estructura: siete capítulos
+### 6.2 Cobertura conceptual (dimensiones de la lectura, no recuento obligatorio)
+
+> Las «dimensiones capitulares» siguientes describen **qué conocimiento cubre** la
+> lectura canónica cuando el expediente lo sostiene. **No fijan un número
+> obligatorio de secciones del documento** (ver §6.1.1 bis): una dimensión sin
+> evidencia suficiente se comprime o no aparece; ninguna presencia textual obliga a
+> abrir un bloque completo.
 
 **Capítulo I — Marco Estratégico**
 

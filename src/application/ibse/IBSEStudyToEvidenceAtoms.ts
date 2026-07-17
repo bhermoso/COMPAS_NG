@@ -21,7 +21,7 @@
  *   utilizarse como apoyo a la interpretación territorial o a la planificación.
  */
 
-import { createEvidenceAtom, type EvidenceAtom } from "../../domain/evidence";
+import { createEvidenceAtom, IBSE_DERIVED_TAG, type EvidenceAtom } from "../../domain/evidence";
 import type { IBSEStudy } from "../../domain/ibse";
 import { IBSE_PARTICIPANT_MEAN_LABEL } from "../../domain/ibse";
 
@@ -187,6 +187,9 @@ function buildIBSEResumen(study: IBSEStudy, confidence: "low" | "medium"): Evide
       ],
       requiresHumanValidation: true,
     },
-    tags: ["ibse", "qualitative-observation", "ibse-resumen", "ibse-derived"],
+    // `IBSE_DERIVED_TAG` marca esta pieza como SÍNTESIS AUTOMÁTICA DERIVADA:
+    // se conserva como resumen técnico trazable, pero LT1 no la cuenta como
+    // hallazgo cualitativo ni participativo (ver domain/evidence/derivedSynthesis).
+    tags: ["ibse", "qualitative-observation", "ibse-resumen", IBSE_DERIVED_TAG],
   });
 }

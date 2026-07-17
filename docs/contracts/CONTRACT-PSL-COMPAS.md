@@ -13,7 +13,7 @@ El `LocalHealthProfile` (objeto analítico vivo) y el `LocalHealthProfileCompile
 
 **Implementado:**
 - `src/domain/health-profile/LocalHealthProfile.ts` — tipo canónico del objeto vivo
-- `src/application/health-profile/buildLocalHealthProfile.ts` — función pura, 7 capítulos
+- `src/application/health-profile/buildLocalHealthProfile.ts` — función pura; cobertura dimensional adaptativa (sin recuento obligatorio de capítulos)
 - `src/application/health-profile-compiler/LocalHealthProfileCompiler.ts` — compilador certificado
 - `src/domain/health-profile-artifact/LocalHealthProfileArtifact.ts` — artefacto PSL-C
 
@@ -133,7 +133,7 @@ Nivel 2 — Interpretación territorial
       │
       ▼
 Nivel 2 — Perfil de Salud Local (PSL) ← PRODUCTO 3
-  LocalHealthProfile (objeto vivo, 7 capítulos)
+  LocalHealthProfile (objeto vivo; cobertura dimensional adaptativa)
   LocalHealthProfileArtifact (PSL-C, artefacto compilado inmutable)
       │
       ▼ [PSL-C1: único puente autorizado al Nivel 3]
@@ -146,7 +146,10 @@ Nivel 3 — Decisión y planificación
 
 ### 3.1 Qué el PSL sintetiza e interpreta
 
-- Organiza la evidencia disponible en siete capítulos.
+- Organiza la evidencia disponible en una **lectura institucional canónica única y
+  adaptativa** cuya extensión y número de secciones dependen de la riqueza y solidez
+  del expediente (Fundamentos del Perfil único, `CONTRACT-INDEX` 2026-07-17). **No
+  hay recuento obligatorio de capítulos.**
 - Proporciona un resumen territorial asistido (MIT).
 - Identifica áreas de intervención candidatas (no las aprueba).
 - Referencia cautelas metodológicas (SAM, MIT, IntegrityGuard).
@@ -164,11 +167,17 @@ Nivel 3 — Decisión y planificación
 
 ---
 
-## 4. Estructura canónica del LocalHealthProfile
+## 4. Cobertura conceptual del LocalHealthProfile (no recuento obligatorio)
 
-La estructura de siete capítulos está implementada y congelada:
+> **Rigidez numérica derogada** por los Fundamentos del Perfil único
+> (`CONTRACT-INDEX`, 2026-07-17). La tabla siguiente describe las **dimensiones de
+> conocimiento** que la lectura canónica cubre *cuando el expediente lo sostiene*;
+> **no fija un número obligatorio** de capítulos ni una estructura «congelada». La
+> lectura es única y adaptativa: una dimensión sin evidencia suficiente se comprime o
+> no aparece. El objeto de dominio `LocalHealthProfile` puede conservar estos campos
+> como andamiaje interno; su *proyección editorial* es adaptativa.
 
-| Capítulo | Contenido | Autoría |
+| Dimensión (cobertura) | Contenido | Autoría |
 |---|---|---|
 | **I — Marco estratégico** | IDs de secciones del StrategicFramework (EPVSA, RELAS, ESCA, etc.) | Sistema |
 | **II — Informe de Salud** | Referencia por `documentId` y título; nunca el texto | Sistema |
@@ -252,7 +261,7 @@ El Producto 3 se considera completo cuando:
 
 | Criterio | Estado |
 |---|---|
-| `LocalHealthProfile` con 7 capítulos implementado | ✅ |
+| `LocalHealthProfile` con cobertura dimensional adaptativa (sin recuento obligatorio) | ✅ |
 | `buildLocalHealthProfile` función pura certificada | ✅ |
 | `LocalHealthProfileCompiler` con 7 gates implementado | ✅ |
 | Ciclo de vida PSL (generated → validated → approved) implementado | ✅ parcial (`approved` sin UI handler) |

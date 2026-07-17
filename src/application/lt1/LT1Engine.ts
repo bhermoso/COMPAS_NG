@@ -1,4 +1,5 @@
 import type { EvidenceAtom, EvidenceStore } from "../../domain/evidence";
+import { isDerivedSynthesisAtom } from "../../domain/evidence";
 
 export interface LT1Result {
   summary: string;
@@ -16,10 +17,16 @@ export function generateLT1(store: EvidenceStore): LT1Result {
   const determinants = store.atoms.filter((atom) => atom.kind === "determinant");
   const assets = store.atoms.filter((atom) => atom.kind === "asset");
   const indicators = store.atoms.filter((atom) => atom.kind === "indicator");
+  // Hallazgos cualitativos/participativos: conocimiento primario humano. Se excluye
+  // la SÍNTESIS AUTOMÁTICA DERIVADA (p. ej. IBSE_RESUMEN): permanece en el
+  // EvidenceStore y conserva su trazabilidad, pero no es experiencia vivida ni
+  // participación ciudadana y no debe inflar el conteo cualitativo ni generar
+  // candidaturas de priorización basadas en participación inexistente.
   const qualitativeFindings = store.atoms.filter(
     (atom) =>
-      atom.kind === "qualitative-observation" ||
-      atom.kind === "participation"
+      (atom.kind === "qualitative-observation" ||
+        atom.kind === "participation") &&
+      !isDerivedSynthesisAtom(atom)
   );
   const methodologicalCautions = store.atoms.filter(
     (atom) => atom.kind === "methodological-caution" || atom.kind === "sample-quality"

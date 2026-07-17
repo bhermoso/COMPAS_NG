@@ -11,6 +11,17 @@
 
 ---
 
+> **Reconciliación (2026-07-17):** por los Fundamentos del Perfil único
+> (`CONTRACT-INDEX` §«Fundamentos del Perfil único»), **el «PRODUCTO 4 — NHS Health
+> Profile» deja de ser un producto institucional independiente**. Donde este plano lo
+> presente como producto/artefacto/compilador propio o en un *path* paralelo, queda
+> **superado**: sería, a lo sumo, una representación derivada dentro del Perfil, sin
+> compilador ni artefacto propio garantizado; su retirada de código es migración
+> técnica pendiente. Asimismo, toda referencia a «7 capítulos» del PSL queda superada
+> por la **lectura única y adaptativa** (`CONTRACT-MIT-PSL` §6.1.1 bis).
+
+---
+
 ## Los tres productos canónicos
 
 COMPÁS NG produce exactamente tres tipos de artefacto institucional:

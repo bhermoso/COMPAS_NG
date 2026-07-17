@@ -34,15 +34,32 @@ escala y cautela.** Si no puede declarar las tres cosas, no se visualiza.
   garantizados" ni porcentajes de cobertura.
 - **BADEA como protagonista**: nunca en la apertura ni como gráfico principal.
 
-## 4. Dónde va cada cosa
+## 4. Salida canónica única y espacio técnico
 
-- **Pantalla**: matriz deliberativa (interactiva, para el trabajo del equipo),
-  tabla de trazadores (ya existe en anexo), fichas de incertidumbre.
-- **DOCX/PDF (documento institucional)**: tabla de señales sanitarias del
-  Informe + tabla de trazadores + resumen de capacidades; matriz deliberativa
-  en versión compacta si cabe con dignidad.
-- **Anexo técnico**: trazabilidad completa, referencias comparativas, ficha
-  BADEA, detalle de cautelas.
+> Conforme a los Fundamentos del Perfil único (`CONTRACT-INDEX` §«Fundamentos del
+> Perfil único», 2026-07-17). Deroga la versión anterior de §4 que repartía el
+> contenido en tres composiciones distintas (pantalla / DOCX-PDF / anexo).
+
+**Un solo modelo semántico canónico.** La lectura institucional es única. Pantalla,
+impresión, DOCX y PDF **derivan del mismo modelo semántico** y conservan las mismas
+**secciones, orden, contenido, estatuto epistemológico, fuentes, escalas, cautelas
+y preguntas**. Cada medio dispone de su propio renderer y composición visual (una
+tabla en pantalla puede ser interactiva y en PDF estática); **no se exige identidad
+de píxeles, CSS ni paginación**, sí identidad de contenido semántico.
+
+**Sin lectura larga alternativa.** No puede coexistir una segunda lectura del mismo
+contenido —ni «ampliada» ni «plegada»— que compita con la lectura canónica. Cada
+elemento (señales, trazadores, incertidumbres, activos) aparece **una vez**, en la
+lectura o en el espacio técnico, no en ambos como composiciones divergentes.
+
+**Espacio técnico después del documento.** La trazabilidad completa, las referencias
+comparativas, la ficha BADEA y el detalle de cautelas viven en un **espacio técnico
+posterior**, claramente separado de la lectura institucional. Es un anexo de
+*trabajo*, no una segunda versión del Perfil.
+
+**Adaptatividad.** Una sección/visualización puede **abrirse, comprimirse o no
+aparecer** según la riqueza y solidez del expediente; una mera presencia textual no
+obliga a generar un bloque completo.
 
 ## 5. Declaración obligatoria
 

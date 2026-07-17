@@ -395,7 +395,7 @@ Un Perfil que no supera alguno de estos criterios requiere revisión antes de co
 Las siguientes cuestiones no tienen todavía resolución normativa en este contrato. Mientras estén abiertas, la responsabilidad recae en el juicio del equipo técnico.
 
 **H-LHPM-1 — Versiones del Perfil técnico según destinatario**
-¿Qué versión del Perfil compilado —la completa de siete capítulos o la resumida de tres a cuatro páginas— se entrega de forma predeterminada a cada destinatario institucional? Esta decisión afecta al compilador y al ciclo de vida del artefacto.
+¿Qué versión del Perfil compilado —la lectura completa o una síntesis breve— se entrega de forma predeterminada a cada destinatario institucional? (La lectura es única y adaptativa, sin recuento obligatorio de capítulos; ver Fundamentos del Perfil único.) Esta decisión afecta al compilador y al ciclo de vida del artefacto.
 
 **H-LHPM-2 — Umbral mínimo de participación ciudadana para compilación**
 ¿Qué nivel de participación es metodológicamente suficiente para que el Perfil pueda compilarse? ¿Basta con la priorización temática por cuestionario? ¿Es necesario que los grupos más vulnerables hayan tenido acceso representativo? Esta decisión determina si la participación es un requisito de calidad o un gate del compilador.
@@ -533,7 +533,7 @@ El Perfil llega hasta conclusiones. Las recomendaciones pertenecen al Plan de Ac
 | `CONTRACT-MIT-PSL` | Este contrato establece los principios que el MIT debe respetar al producir la interpretación territorial. Los Arts. 5, 6 y 14 condicionan el diseño del motor. |
 | `CONTRACT-PSL-COMPAS` | Define el producto institucional resultante de aplicar este contrato. Debe ser coherente en todos sus artículos con este contrato. |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` | Los gates del compilador (G-LHC-1 a G-LHC-7) son la implementación técnica de los Arts. 16, 17 e I-LHPM-3. |
-| `CONTRACT-NHS-HEALTH-PROFILE` | El Perfil comparativo es una representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por audiencia y formato. Los Arts. 12, 13 y 17 bis condicionan sus criterios de generación. |
+| `CONTRACT-NHS-HEALTH-PROFILE` §0 | El Perfil comparativo es una **representación derivada** del conocimiento territorial del Perfil canónico. Por los Fundamentos del Perfil único (2026-07-17) **deja de tener estatuto de producto institucional propio** y no puede ser segunda fuente de verdad; solo sobrevive dentro del Perfil, previa validación. Los Arts. 12, 13 y 17 bis condicionan sus criterios de generación. |
 | `CONTRACT-INTERPRETATION` | Define qué significa interpretar dentro de COMPÁS NG. Este contrato es complementario: define qué tipos de afirmación son admisibles y cuáles no (Art. 8). |
 | `CONTRACT-STRATEGIC-REPOSITORY` | Las líneas estratégicas de los marcos institucionales son referencia para el capítulo de marco estratégico del Perfil (Arts. 15.1 y 15.4). La articulación con esos marcos es posterior al Perfil. |
 | `METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING` | Documento fundacional del que derivan los principios PM-1 a PM-24. Los invariantes de este contrato son aplicación normativa directa de esos principios. |
