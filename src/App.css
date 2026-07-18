@@ -9139,53 +9139,14 @@ h3 {
   padding-left: 20px !important;
 }
 
-/* ── PSL-C: salida imprimible desde navegador ──────────────────────────────
-   Sin export PDF/DOCX: al imprimir, solo el documento institucional abierto
-   es visible; el resto de la aplicación se oculta. La trazabilidad, las
-   cautelas y la frontera con el Plan de Acción nunca se ocultan. */
-
-@media print {
-  /* Solo cuando hay un visor institucional abierto se imprime únicamente el
-     documento; si no, la pantalla se imprime con flujo normal (no en blanco). */
-  body:has(details[open] .pslc-viewer) * { visibility: hidden; }
-  body:has(details[open] .pslc-viewer) .pslc-viewer,
-  body:has(details[open] .pslc-viewer) .pslc-viewer * { visibility: visible; }
-  body:has(details[open] .pslc-viewer) .pslc-viewer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    padding: 0;
-    font-size: 11pt;
-    color: #000;
-  }
-  .pslc-viewer .psl-doc-section {
-    border-top: 1px solid #999;
-    padding: 14pt 0;
-  }
-  /* Portada entera en la primera página; el documento empieza después. */
-  .pslc-viewer__portada {
-    break-inside: avoid;
-    break-after: page;
-    border-top: 3pt solid #000 !important;
-  }
-  .pslc-viewer h2, .pslc-viewer h3, .pslc-viewer h4 { break-after: avoid; }
-  .pslc-viewer__meta, .pslc-viewer ul, .psl-doc-notice { break-inside: avoid; }
-  .pslc-viewer p { orphans: 3; widows: 3; }
-  /* Cautelas y frontera: visibles y sin partirse. */
-  .pslc-viewer .psl-doc-notice--warning {
-    border: 1pt solid #000;
-    background: none;
-    color: #000;
-  }
-  .pslc-viewer__frontera {
-    break-inside: avoid;
-    background: none;
-    border-left: 3pt solid #000;
-  }
-}
+/* ── PSL-C: impresión (GOV-SALIDA-01 · PR-4) ───────────────────────────────
+   Régimen de impresión ÚNICO y determinista, definido más abajo en «Perfil
+   canónico — régimen de impresión único». La impresión es SIEMPRE la lectura
+   canónica del Perfil (`.pie-*`); el visor institucional (`.pslc-viewer`) y el
+   espacio técnico NO se imprimen (el documento completo con anexo se obtiene
+   por exportación DOCX/PDF). Abrir o cerrar cualquier `<details>` no cambia qué
+   se imprime. Se retiró el antiguo régimen dual gobernado por
+   `:has(details[open] .pslc-viewer)`. */
 
 /* Export DOCX del artefacto PSL-C */
 .psl-doc-docx-btn { margin: 10px 8px 4px 0; }
@@ -9842,7 +9803,10 @@ h3 {
   font-style: italic;
 }
 
-/* ── Perfil canónico — reglas de impresión ───────────────────────────────── */
+/* ── Perfil canónico — régimen de impresión ÚNICO (GOV-SALIDA-01 · PR-4) ────
+   Ctrl+P imprime siempre la lectura canónica `.pie-*`, con independencia del
+   estado de cualquier `<details>`. El visor institucional anidado y el espacio
+   técnico quedan fuera de la impresión (regla de producto fija). */
 @media print {
   /* Shell: sin padding en papel. */
   .app-shell { padding: 0 !important; }
@@ -9886,11 +9850,13 @@ h3 {
   .pie-hilo__mechanism,
   .pie-hilo__exclusion { orphans: 3; widows: 3; }
 
-  /* Espacio técnico: oculto en impresión normal del Perfil.
-     El selector :not() garantiza que no interfiere con el visor PSL-C
-     institucional, que tiene su propia regla de impresión por encima. */
-  body:not(:has(details[open] .pslc-viewer)) .psl-technical-space,
-  body:not(:has(details[open] .pslc-viewer)) .psl-technical-space__label {
+  /* Espacio técnico y visor institucional anidado: NO se imprimen. La impresión
+     es siempre la lectura canónica; el documento completo con anexo se obtiene
+     por exportación DOCX/PDF. Regla fija, sin depender del estado de ningún
+     `<details>`. */
+  .psl-technical-space,
+  .psl-technical-space__label,
+  .pslc-viewer {
     display: none !important;
   }
 
