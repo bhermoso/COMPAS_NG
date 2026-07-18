@@ -169,22 +169,23 @@ beforeAll(() => {
 // Salud en síntesis al inicio del documento
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("documento visual — Salud en síntesis", () => {
-  it("abre el documento, antes de la lectura ejecutiva, con 3 mensajes destacados", () => {
-    expect(titulos[0]).toBe("Salud en síntesis");
-    expect(titulos.indexOf("Salud en síntesis")).toBeLessThan(
-      titulos.indexOf("Lectura ejecutiva territorial")
+describe("documento visual — imagen general", () => {
+  it("abre el documento con la imagen general en mensajes destacados", () => {
+    // GOV-SALIDA-01 (PR-2): el documento v2 proyecta la LECTURA canónica: la
+    // apertura es «Imagen general» (la antigua «Salud en síntesis» quedó
+    // absorbida por la lectura editorial).
+    expect(titulos[0]).toBe("Imagen general");
+    expect(titulos.indexOf("Imagen general")).toBeLessThan(
+      titulos.indexOf("Lectura integrada del territorio")
     );
     const sintesis = model.sections[0];
     expect(sintesis.kind).toBe("summaryCards");
     const cards = sintesis.cards!;
-    expect(cards.length).toBeGreaterThanOrEqual(4);
-    expect(cards.filter((c) => c.destacado)).toHaveLength(3);
-    // El primer mensaje es sustantivo (hilo sanitario), no metodológico
+    expect(cards.length).toBeGreaterThanOrEqual(3);
+    // La imagen general abre con mensajes sustantivos, todos destacados.
+    expect(cards.filter((c) => c.destacado)).toHaveLength(cards.length);
     expect(cards[0].destacado).toBe(true);
     expect(cards[0].texto).not.toMatch(/^(Este perfil|Este documento|La metodolog)/);
-    // La nota de escala acompaña a la síntesis
-    expect(sintesis.paragraphs.join(" ")).toContain("escala");
   });
 });
 
@@ -230,12 +231,15 @@ describe("documento visual — tabla de trazadores", () => {
     expect(seccion).toBeDefined();
     expect(seccion!.kind).toBe("table");
     const tabla = seccion!.table!;
+    // Cabeceras de la tabla de trazadores tal como las muestra la lectura
+    // canónica (mismas que la pantalla). Los 23 indicadores completos viven en
+    // «Referencias comparativas» del espacio técnico, no como nota aquí.
     expect(tabla.headers).toEqual([
       "Bloque",
       "Indicador",
       "Valor",
-      "Granada",
-      "Andalucía",
+      "Ref. Granada",
+      "Ref. Andalucía",
       "Escala",
       "Lectura",
     ]);
@@ -244,8 +248,6 @@ describe("documento visual — tabla de trazadores", () => {
     expect(
       tabla.rows.some((r) => r[6].includes("andaluza"))
     ).toBe(true);
-    expect(tabla.nota).toContain("anexo técnico");
-    expect(tabla.nota).toContain("23 indicadores");
   });
 
   it("los proxies se presentan como contexto, nunca como estimación distrital", () => {
@@ -253,14 +255,9 @@ describe("documento visual — tabla de trazadores", () => {
       (s) => s.title === "Indicadores trazadores: valores y referencias"
     );
     const escalas = seccion!.table!.rows.map((r) => r[5]);
-    expect(
-      escalas.some((e) => e === "proxy contextual — no estimación distrital")
-    ).toBe(true);
+    expect(escalas.some((e) => e === "proxy contextual")).toBe(true);
     for (const e of escalas) {
-      expect([
-        "proxy contextual — no estimación distrital",
-        "muestra local",
-      ]).toContain(e);
+      expect(["proxy contextual", "muestra local"]).toContain(e);
     }
   });
 });
@@ -286,15 +283,15 @@ describe("documento visual — deliberación y Grupo Motor", () => {
 
   it("la agenda conecta señal, mecanismo, quién puede quedar fuera y pregunta", () => {
     const seccion = model.sections.find(
-      (s) => s.title === "Agenda para el Grupo Motor"
+      (s) => s.title === "Qué debe discutir el Grupo Motor"
     );
     expect(seccion).toBeDefined();
     expect(seccion!.kind).toBe("groupMotorAgenda");
-    // Tras las conclusiones y antes del anexo técnico
-    expect(titulos.indexOf("Agenda para el Grupo Motor")).toBeGreaterThan(
-      titulos.indexOf("Conclusiones para la deliberación")
+    // En la lectura y antes del anexo técnico.
+    expect(titulos.indexOf("Qué debe discutir el Grupo Motor")).toBeGreaterThan(
+      titulos.indexOf("Lectura integrada del territorio")
     );
-    expect(titulos.indexOf("Agenda para el Grupo Motor")).toBeLessThan(
+    expect(titulos.indexOf("Qué debe discutir el Grupo Motor")).toBeLessThan(
       titulos.indexOf("Anexo técnico")
     );
     const agenda = seccion!.agenda!;
@@ -425,7 +422,7 @@ describe("documento visual — visor institucional", () => {
     const html = renderToStaticMarkup(
       <PSLCArtifactViewer artifact={artifactCanonical} />
     );
-    expect(html).toContain("Salud en síntesis");
+    expect(html).toContain("Imagen general");
     expect(html).toContain("pslc-viewer__card--destacado");
     expect(html).toContain("pslc-viewer__ranking");
     expect(html).toContain("pslc-viewer__tabla");

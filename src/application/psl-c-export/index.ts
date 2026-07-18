@@ -9,6 +9,12 @@ export type {
   PSLCAgendaEntry,
 } from "./pslcDocumentModel";
 export { buildPSLCDocumentModel, pslcDocxFileName } from "./pslcDocumentModel";
+export { buildPSLCDocumentModelLegacy } from "./pslcDocumentModelLegacy";
+export type { PSLCDocumentMetadata } from "./pslcCanonicalProjector";
+export {
+  projectCanonicalToDocumentModel,
+  buildPSLCDocumentMetadata,
+} from "./pslcCanonicalProjector";
 export {
   buildPSLCDocx,
   exportPSLCArtifactToDocxBlob,
