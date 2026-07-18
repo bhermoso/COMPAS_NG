@@ -182,3 +182,22 @@ describe("PASO 3 — A. la pantalla del artefacto lee el sello", () => {
     expect(artifactLegacy.canonicalDocument).toBeUndefined();
   });
 });
+
+describe("PASO 3 (GOV-SALIDA-01) — lectura y espacio técnico hermanos", () => {
+  it("el sello separa editorialView (lectura pura) y technicalSpace (hermano)", () => {
+    const doc = readSealedCanonicalDocument(artifactCanonical.canonicalDocument!);
+    expect(doc).not.toBeNull();
+    // readingStatus vive en la lectura, no en la raíz del documento.
+    expect(doc!.editorialView.readingStatus).toBeDefined();
+    // La lectura editorial no contiene material técnico anidado.
+    expect("technicalAnnex" in doc!.editorialView).toBe(false);
+    // El espacio técnico es hermano de la lectura, no hijo, e íntegro.
+    expect(doc!.technicalSpace.kind).toBe("canonical-technical-space");
+    expect(doc!.technicalSpace.comparativeReferences.length).toBeGreaterThan(0);
+    expect(doc!.technicalSpace.epistemicMatrix.length).toBeGreaterThan(0);
+    // El cierre humano y la frontera institucional viven en la lectura.
+    expect(doc!.editorialView.institutionalBoundary.kind).toBe(
+      "institutional-boundary"
+    );
+  });
+});

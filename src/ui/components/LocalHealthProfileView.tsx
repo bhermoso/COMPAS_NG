@@ -1556,7 +1556,7 @@ export function LocalHealthProfileView({
               // del sello (no recalcula isEmpty). Con lectura pendiente declara la
               // pendencia (Popay) en lugar de fabricar una lectura territorial.
               const pendingReadingNotice =
-                sealedDoc?.readingStatus === "prioritization-pending"
+                sealedDoc?.editorialView.readingStatus === "prioritization-pending"
                   ? PRIORITIZATION_PENDING_DECLARATION
                   : undefined;
               return (

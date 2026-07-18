@@ -272,7 +272,7 @@ describe("modelo puro — Vista editorial integrada", () => {
       },
     });
     expect(doc.editorialView.territorialReadings.length).toBeGreaterThan(0);
-    expect(doc.readingStatus).toBe("integrated");
+    expect(doc.editorialView.readingStatus).toBe("integrated");
   });
 
   it("Paso 4: la pantalla congelada (LocalHealthProfileView) muestra la declaración pendiente del artefacto compilado", () => {
@@ -402,7 +402,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     const sealedDoc = result.artifact.canonicalDocument
       ? readSealedCanonicalDocument(result.artifact.canonicalDocument)
       : null;
-    expect(sealedDoc?.readingStatus).toBe("prioritization-pending");
+    expect(sealedDoc?.editorialView.readingStatus).toBe("prioritization-pending");
 
     // Render REAL de la pantalla: el artefacto compilado en `compiledProfiles`.
     const frozenHtml = renderToStaticMarkup(
