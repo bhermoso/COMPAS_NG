@@ -35,8 +35,9 @@ import type {
 import { buildProfileIntegratedEditorialView } from "./profileIntegratedEditorialView";
 import type { IntegratedInterpretation } from "./integratedInterpretation";
 import type { TrazadorRow, GrupoMotorCard } from "./profileDiagnosticVisuals";
+import { buildDiagnosticVisuals } from "./profileDiagnosticVisuals";
 import type { MatrizAnexo } from "./profileSynthesisView";
-import { buildMatrizAnexo } from "./profileSynthesisView";
+import { buildMatrizAnexo, buildProfileSynthesis } from "./profileSynthesisView";
 import type { CausalStatus } from "./profileScientificFramework";
 import type { IndicatorComparisonReference } from "./complementaryIndicatorReferences";
 import { formatIndicatorValue } from "./complementaryIndicatorReferences";
@@ -170,6 +171,27 @@ export interface CanonicalEpistemicMatrixRow {
   activoCapacidad: string | null;
 }
 
+/** Barra de peso textual del Informe (menciones), nunca prevalencia. */
+export interface CanonicalInformeRankingItem {
+  etiqueta: string;
+  valor: number;
+  max: number;
+}
+
+export interface CanonicalInformeRanking {
+  items: CanonicalInformeRankingItem[];
+  unidad: string;
+  caption: string;
+}
+
+/** Señal principal para deliberación (fila compacta). */
+export interface CanonicalPrincipalSignal {
+  grupo: string;
+  senal: string;
+  fuente: string;
+  pregunta: string;
+}
+
 // ── Contexto vivo único ──────────────────────────────────────────────────────
 
 export interface CanonicalReadingCounters {
@@ -200,9 +222,13 @@ export interface CanonicalEditorialView {
   header: ProfileIntegratedEditorialHeader;
   overview: ProfileIntegratedEditorialOverviewMessage[];
   sourceBlocks: ProfileIntegratedEditorialSourceBlock[];
+  /** Ranking de peso textual del Informe (visualización de la lectura). null si no hay Informe. */
+  informeSignalRanking: CanonicalInformeRanking | null;
   territorialReadings: ProfileIntegratedEditorialReadingBlock[];
   interpretation: IntegratedInterpretation;
   tracerTable: TrazadorRow[];
+  /** Señales principales para deliberación (visualización de la lectura). */
+  principalSignals: CanonicalPrincipalSignal[];
   groupMotorAgenda: GrupoMotorCard[];
   closing: ProfileIntegratedEditorialClosingColumn[];
   readingStatus: PSLCReadingStatus;
@@ -252,6 +278,8 @@ export interface SealedCanonicalProfileDocumentV2 {
     pendingDeclaration?: string | null;
     humanClosing?: CanonicalAuthoredClosing | null;
     institutionalBoundary?: CanonicalInstitutionalBoundary;
+    informeSignalRanking?: CanonicalInformeRanking | null;
+    principalSignals?: CanonicalPrincipalSignal[];
     technicalAnnex?: unknown;
   };
   technicalSpace?: CanonicalTechnicalSpace;
@@ -291,9 +319,11 @@ export function isLegacyEditorialView(
 export type CanonicalReadingSectionId =
   | "overview"
   | "source-blocks"
+  | "informe-ranking"
   | "pending-declaration"
   | "territorial-readings"
   | "tracer-table"
+  | "principal-signals"
   | "group-motor-agenda"
   | "generated-closing"
   | "human-closing"
@@ -310,9 +340,11 @@ export type CanonicalTechnicalSectionId =
 export const CANONICAL_READING_ORDER = [
   "overview",
   "source-blocks",
+  "informe-ranking",
   "pending-declaration",
   "territorial-readings",
   "tracer-table",
+  "principal-signals",
   "group-motor-agenda",
   "generated-closing",
   "human-closing",
@@ -519,14 +551,46 @@ export function buildCanonicalEditorialView(
   const pendingDeclaration =
     readingStatus === "prioritization-pending" ? PRIORITIZATION_PENDING_DECLARATION : null;
 
+  // Visualizaciones de la lectura (peso textual del Informe y señales
+  // principales): derivadas de los mismos answers, forman parte de la lectura
+  // canónica —no del espacio técnico— para que todas las salidas las conserven.
+  const synthesis = buildProfileSynthesis(ctx.answers, {
+    informeTitulo: ctx.informeTitulo ?? undefined,
+    scopeNoun: "territorio",
+  });
+  const visuals = buildDiagnosticVisuals(ctx.answers, {
+    informeTitulo: ctx.informeTitulo ?? undefined,
+  });
+  const informeSignalRanking: CanonicalInformeRanking | null =
+    visuals.informeChart !== undefined
+      ? {
+          items: visuals.informeChart.items.map((i) => ({
+            etiqueta: i.etiqueta,
+            valor: i.valor,
+            max: visuals.informeChart!.maxValor,
+          })),
+          unidad: visuals.informeChart.unidad,
+          caption: visuals.informeChart.caption,
+        }
+      : null;
+  const principalSignals: CanonicalPrincipalSignal[] =
+    synthesis.senalesPrincipales.map((r) => ({
+      grupo: r.grupo,
+      senal: r.senal,
+      fuente: r.fuente,
+      pregunta: r.pregunta,
+    }));
+
   return {
     kind: "canonical-editorial-view",
     header: ov.header,
     overview: ov.overview,
     sourceBlocks: ov.sourceBlocks,
+    informeSignalRanking,
     territorialReadings,
     interpretation: ov.interpretation,
     tracerTable: ov.tracerTable,
+    principalSignals,
     groupMotorAgenda: ov.groupMotorAgenda,
     closing: ov.closing,
     readingStatus,
@@ -720,9 +784,11 @@ export function normalizeSealedCanonicalProfileDocument(
       header: ev.header,
       overview: ev.overview,
       sourceBlocks: ev.sourceBlocks,
+      informeSignalRanking: ev.informeSignalRanking ?? null,
       territorialReadings: ev.territorialReadings,
       interpretation: ev.interpretation,
       tracerTable: ev.tracerTable,
+      principalSignals: ev.principalSignals ?? [],
       groupMotorAgenda: ev.groupMotorAgenda,
       closing: ev.closing,
       readingStatus,
