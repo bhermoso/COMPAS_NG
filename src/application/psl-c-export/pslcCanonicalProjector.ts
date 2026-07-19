@@ -153,16 +153,24 @@ export function projectCanonicalToDocumentModel(
   }
 
   if (reading.territorialReadings.length > 0) {
+    // El aviso de no exhaustividad encabeza la lectura, igual que en pantalla:
+    // proyección mecánica del campo canónico `interpretation.nonExhaustiveNotice`,
+    // para que el documento sellado (DOCX/PDF/visor) lleve la misma cautela
+    // metodológica que la lectura viva (Art. 17 bis).
+    const nonExhaustive = reading.interpretation.nonExhaustiveNotice.trim();
     sections.push({
       sectionId: "territorial-readings",
       title: "Lectura integrada del territorio",
       level: 1,
-      paragraphs: reading.territorialReadings.flatMap((b) => {
-        const base = `${b.title}. ${b.reading}`;
-        return b.reading.includes(b.groupMotorQuestion)
-          ? [base]
-          : [base, b.groupMotorQuestion];
-      }),
+      paragraphs: [
+        ...(nonExhaustive.length > 0 ? [nonExhaustive] : []),
+        ...reading.territorialReadings.flatMap((b) => {
+          const base = `${b.title}. ${b.reading}`;
+          return b.reading.includes(b.groupMotorQuestion)
+            ? [base]
+            : [base, b.groupMotorQuestion];
+        }),
+      ],
     });
   }
 
