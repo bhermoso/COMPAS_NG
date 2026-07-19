@@ -834,6 +834,58 @@ describe("render — perfil de salud local canónico", () => {
     expect(sinFrontera).not.toContain("Frontera institucional");
   });
 
+  it("la pantalla canónica rinde las visualizaciones del proyector en su posición", () => {
+    // GOV-SALIDA-01 (paridad de presencia pantalla↔proyector): la lectura `.pie-*`
+    // canónica rinde ahora las dos visualizaciones que el proyector (DOCX/PDF/visor)
+    // ya emitía y la pantalla omitía: «Señales sanitarias del Informe de salud»
+    // (informe-ranking) y «Señales principales para deliberación» (principal-signals),
+    // cada una en su posición canónica. Solo vista canónica; el borrador no las lleva.
+    const canonicalDoc = buildPSLCCanonicalDocument({
+      answers,
+      territory: ws.municipality.identity.name,
+      status: "validated",
+      informeTitulo: "Informe de salud de El Zaidín",
+      generatedAtISO: "2027-01-01T00:00:00.000Z",
+      pslContext: {
+        totalEvidenceAtoms: psl.totalEvidenceAtoms,
+        complementaryStudyCount: psl.complementaryStudyCount,
+        assetCount: psl.assetCount,
+        hasParticipatoryPrioritisation: false,
+        prioritizacion: psl.priorizacion,
+      },
+    });
+    const canonicalView = canonicalDoc.editorialView;
+    // El arnés es significativo: la vista canónica trae ambas visualizaciones.
+    expect(canonicalView.informeSignalRanking).not.toBeNull();
+    expect(canonicalView.principalSignals.length).toBeGreaterThan(0);
+
+    const canonicalHtml = renderToStaticMarkup(
+      <ProfileIntegratedEditorialPreview view={canonicalView} />
+    );
+    expect(canonicalHtml).toContain("Señales sanitarias del Informe de salud");
+    expect(canonicalHtml).toContain("Señales principales para deliberación");
+    // Reutiliza la gramática visual existente (sin CSS nuevo).
+    expect(canonicalHtml).toContain("pv-bar__relleno pv--informe");
+    expect(canonicalHtml).toContain('class="pslc-viewer__senales"');
+
+    // Posición canónica: informe-ranking entre «Señales principales por fuente»
+    // y «Lectura integrada»; principal-signals entre «Indicadores trazadores» y
+    // «Qué debe discutir el Grupo Motor» (subsecuencia del orden del proyector).
+    const i = (s: string): number => canonicalHtml.indexOf(s);
+    expect(i("Señales principales por fuente")).toBeLessThan(
+      i("Señales sanitarias del Informe de salud")
+    );
+    expect(i("Señales sanitarias del Informe de salud")).toBeLessThan(
+      i("Lectura integrada del territorio")
+    );
+    expect(i("Indicadores trazadores")).toBeLessThan(
+      i("Señales principales para deliberación")
+    );
+    expect(i("Señales principales para deliberación")).toBeLessThan(
+      i("Qué debe discutir el Grupo Motor")
+    );
+  });
+
   it("el fragmento editorial no usa lenguaje de decisión ni fórmulas de plantilla", () => {
     // La FRONTERA institucional se excluye del chequeo: su enunciado fijo nombra
     // el «Plan de Acción» para demarcar que el Perfil NO lo hace (demarcación
