@@ -17,13 +17,15 @@ Fundamentos del Perfil único (`CONTRACT-INDEX` §«Fundamentos del Perfil únic
   Salud tipo NHS» **deja de definirse como producto autónomo** y **no puede
   constituir una segunda fuente de verdad**. Queda derogada toda afirmación de
   §1/§1.1 que lo presente como «producto institucional propio».
-- Sus capacidades (comparación municipio↔referencia por dominio, síntesis breve)
-  **solo podrán sobrevivir como representaciones derivadas dentro del Perfil
-  canónico**, y **únicamente previa validación científica y metodológica**. En
-  particular, `computePosition` y la comparación por dominios quedan como
-  **capacidad candidata a evaluación**, no garantizada: solo se conservará si
-  compara escalas y metodologías equivalentes, no presenta proxy como dato local,
-  no fabrica rankings y añade comprensión real al Perfil.
+- La **representación derivada** (registro breve del Perfil para audiencia política
+  y ciudadana) **sobrevive como reexpresión sin veredictos**: no genera conocimiento
+  propio, reexpresa el del Perfil canónico. En particular, `computePosition` y la
+  comparación por dominios (posición municipio↔referencia: `above`/`below`/`similar`)
+  **quedan descartadas**. El trazador canónico rehúsa por diseño formular una posición
+  del territorio (`profileDiagnosticVisuals.ts:101-127`: «**nunca se formula como
+  posición del distrito**»); una representación derivada **no puede fabricar una
+  afirmación que su fuente niega**. La derivada mostrará valores y referencias del
+  trazador canónico y **preservará `esProxy`**, dejando la interpretación al lector.
 - **Migración pendiente (no ejecutada en esta intervención):** retirada de la ruta
   de navegación, la acción de compilación, el artefacto persistido
   `workspace.nhsArtifact`, el compilador y los tests NHS. En esta intervención
