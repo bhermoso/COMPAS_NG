@@ -270,6 +270,45 @@ describe("visor PSL-C — documento institucional renderizado", () => {
     expect(canonicalHtml).toContain("pslc-viewer__frontera");
   });
 
+  it("rinde y distingue la frontera institucional en la vista canónica", () => {
+    // GOV-SALIDA-01 (institutionalBoundary en el visor): en la vista canónica
+    // sellada, la frontera se rinde COMPLETA (enunciado + consenso) y se
+    // distingue con su marca propia (`pslc-viewer__frontera`), como en la ruta
+    // legacy. Invariante ejecutable: el Perfil concluye, no recomienda (Art. 16 bis).
+    const answers = buildDiagnosticAnswers({
+      workspace: ws,
+      determinantTitles: [],
+      assets: ws.evidenceStore.atoms
+        .filter((a) => a.kind === "asset")
+        .map((a) => ({ title: a.title, content: a.content })),
+    });
+    const result = compileLocalHealthProfile({
+      psl: pslCompilable(generated),
+      perfil: perfilConConocimiento(),
+      compiledBy: "Equipo técnico de salud pública",
+      municipalityName: ws.municipality.identity.name,
+      municipalityProvince: ws.municipality.identity.province ?? "",
+      existingArtifactCount: 0,
+      diagnosticAnswers: answers,
+    });
+    if (!result.ok) throw new Error("compilación canónica falló");
+    // Artefacto v2: el visor consume la proyección canónica (no la ruta legacy).
+    expect(result.artifact.canonicalDocument).toBeDefined();
+    const canonicalHtml = renderToStaticMarkup(
+      <PSLCArtifactViewer artifact={result.artifact} />
+    );
+    // La frontera se rinde completa: enunciado fijo + consenso.
+    expect(canonicalHtml).toContain("Frontera institucional");
+    expect(canonicalHtml).toContain(
+      "no formula recomendaciones, actuaciones, programas ni objetivos estratégicos"
+    );
+    expect(canonicalHtml).toContain("Plan de Acción");
+    expect(canonicalHtml).toContain("fase posterior del proceso de planificación");
+    expect(canonicalHtml).toContain("Consenso del Grupo Motor documentado:");
+    // Y se distingue con su marca propia (institucional).
+    expect(canonicalHtml).toContain("pslc-viewer__frontera");
+  });
+
   it("sin espacio de conocimiento, declara EKC no disponible en lugar de inventarlo", () => {
     const sinPerfil = compileLocalHealthProfile({
       psl: pslCompilable(generated),
