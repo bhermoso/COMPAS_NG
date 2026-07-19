@@ -148,6 +148,12 @@ export function PSLCArtifactViewer({ artifact }: PSLCArtifactViewerProps) {
           className={
             "psl-doc-section pslc-viewer__capitulo" +
             (section.level === 2 ? " pslc-viewer__sub" : "") +
+            // El cierre de autoría humana se distingue del cuerpo compilado (voz
+            // autoral, Art. 16). Se identifica por sectionId canónico (la ruta
+            // legacy no lo lleva y conserva su presentación).
+            (section.sectionId === "human-closing"
+              ? " pslc-viewer__cierre-humano"
+              : "") +
             (section.title === "Frontera institucional"
               ? " pslc-viewer__frontera"
               : "") +
