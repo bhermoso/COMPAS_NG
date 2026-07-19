@@ -61,4 +61,17 @@ describe("impresión — régimen único y determinista", () => {
     // El anexo colapsado de la lectura tampoco se imprime.
     expect(block).toMatch(/\.pie-annex\s*\{[^}]*display:\s*none/s);
   });
+
+  it("la barra del ranking del Informe se imprime (negro, no vacía)", () => {
+    // La lectura .pie-* incluye el ranking del Informe. Los navegadores omiten
+    // los fondos al imprimir, así que la barra saldría vacía: se fuerza negro
+    // (régimen B/N) con print-color-adjust exact para que imprima su magnitud.
+    const block = mediaPrintBlock(css);
+    expect(block).toMatch(
+      /\.pv-bar__relleno\s*\{[^}]*background:\s*#000[^}]*\}/s
+    );
+    expect(block).toMatch(
+      /\.pv-bar__relleno\s*\{[^}]*print-color-adjust:\s*exact/s
+    );
+  });
 });
