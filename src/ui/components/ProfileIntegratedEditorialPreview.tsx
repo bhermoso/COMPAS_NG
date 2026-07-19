@@ -131,6 +131,48 @@ export function ProfileIntegratedEditorialPreview({
         </div>
       </section>
 
+      {/* ── Señales sanitarias del Informe de salud (ranking de peso textual) ──
+          Visualización de la lectura presente SOLO en la vista canónica sellada
+          (`view.informeSignalRanking`), en paridad de PRESENCIA con el proyector
+          (DOCX/PDF/visor), que ya la emite (Art. 17 bis). Reutiliza la gramática
+          visual existente (`pv-bar__*`, `pslc-viewer__ranking*`); sin CSS nuevo.
+          El borrador legacy no lleva este campo y no la muestra. */}
+      {"informeSignalRanking" in view && view.informeSignalRanking !== null ? (
+        <section
+          className="pie-doc-section"
+          aria-labelledby="pie-informe-ranking-title"
+        >
+          <h3 id="pie-informe-ranking-title" className="pie-section__title">
+            Señales sanitarias del Informe de salud
+          </h3>
+          <div className="pslc-viewer__ranking">
+            {view.informeSignalRanking.items.map((item) => (
+              <div key={item.etiqueta} className="pslc-viewer__ranking-fila">
+                <span className="pslc-viewer__ranking-etiqueta">
+                  {item.etiqueta}
+                </span>
+                <span className="pv-bar__pista">
+                  <span
+                    className="pv-bar__relleno pv--informe"
+                    style={{
+                      width: `${Math.max(
+                        4,
+                        (item.valor / Math.max(1, item.max)) * 100
+                      )}%`,
+                    }}
+                  />
+                </span>
+                <span className="pslc-viewer__ranking-valor">{item.valor}</span>
+              </div>
+            ))}
+          </div>
+          <p className="pie-hilo__context">
+            {view.informeSignalRanking.unidad}.{" "}
+            {view.informeSignalRanking.caption}
+          </p>
+        </section>
+      ) : null}
+
       {/* ── Lectura integrada del territorio ────────────────────────────── */}
       <section className="pie-doc-section" aria-labelledby="pie-reading-title">
         <h3 id="pie-reading-title" className="pie-section__title">
@@ -220,6 +262,30 @@ export function ProfileIntegratedEditorialPreview({
           </div>
         </section>
       )}
+
+      {/* ── Señales principales para deliberación ─────────────────────────────
+          Visualización de la lectura presente SOLO en la vista canónica sellada
+          (`view.principalSignals`), en paridad de PRESENCIA con el proyector, que
+          ya la emite (Art. 17 bis). Reutiliza `pslc-viewer__senales`; sin CSS
+          nuevo. El borrador legacy no lleva este campo y no la muestra. */}
+      {"principalSignals" in view && view.principalSignals.length > 0 ? (
+        <section
+          className="pie-doc-section"
+          aria-labelledby="pie-principal-signals-title"
+        >
+          <h3 id="pie-principal-signals-title" className="pie-section__title">
+            Señales principales para deliberación
+          </h3>
+          <ul className="pslc-viewer__senales">
+            {view.principalSignals.map((senal) => (
+              <li key={senal.grupo + senal.senal}>
+                <strong>{senal.grupo}</strong> — {senal.senal} ({senal.fuente}).{" "}
+                <em>{senal.pregunta}</em>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* ── Agenda del Grupo Motor ───────────────────────────────────────── */}
       {view.groupMotorAgenda.length > 0 && (
