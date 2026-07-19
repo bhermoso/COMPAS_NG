@@ -255,7 +255,18 @@ describe("gramática visual semántica y Grupo Motor", () => {
       html.indexOf("Lectura territorial del diagnóstico"),
       html.indexOf('id="psl-resumen"')
     );
-    expect(seccion).not.toMatch(
+    // La FRONTERA institucional se excluye del chequeo: su enunciado fijo nombra
+    // el «Plan de Acción» para demarcar que el Perfil NO lo hace (demarcación
+    // institucional, no prosa editorial). Se excise SOLO esa sección; el resto de
+    // la lectura sí debe estar libre de lenguaje de decisión.
+    const idxFrontera = seccion.indexOf("Frontera institucional");
+    const idxAnexo = seccion.indexOf("<details", idxFrontera);
+    const sinFrontera =
+      idxFrontera >= 0
+        ? seccion.slice(0, idxFrontera) +
+          (idxAnexo >= 0 ? seccion.slice(idxAnexo) : "")
+        : seccion;
+    expect(sinFrontera).not.toMatch(
       /se recomienda|recomendamos|debe implantarse|programa de|plan de acci[óo]n/i
     );
   });

@@ -29,6 +29,7 @@ import {
   buildPSLCCanonicalDocument,
   readSealedCanonicalDocument,
   buildAuthoredClosing,
+  buildInstitutionalBoundary,
 } from "../src/application/psl-c-canonical";
 import { compileLocalHealthProfile } from "../src/application/health-profile-compiler";
 import { LocalHealthProfileView } from "../src/ui/components/LocalHealthProfileView";
@@ -41,6 +42,7 @@ import type { MunicipalityWorkspace } from "../src/domain/workspace";
 import type {
   LocalHealthProfile,
   PerfilLocalDeSalud,
+  PSLPriorizacion,
 } from "../src/domain/health-profile";
 
 const store = new Map<string, string>();
@@ -756,20 +758,21 @@ describe("render — perfil de salud local canónico", () => {
     );
   });
 
-  it("el borrador vivo (vista legacy) no rinde la frontera institucional (canónica exclusiva)", () => {
-    // La frontera institucional depende del consenso de priorización, propio del
-    // documento sellado. El borrador prevalidación (forma legacy) no la lleva y
-    // no la inventa. (Granada-Zaidín no tiene cierre de autoría en el fixture,
-    // así que su borrador tampoco muestra «Cierre interpretativo».)
-    expect(proposalHtml).not.toContain("Frontera institucional");
-    expect(proposalHtml).not.toContain("Consenso del Grupo Motor documentado:");
+  it("el borrador vivo rinde la frontera institucional (espejo de la canónica)", () => {
+    // GOV-SALIDA-01 (borrador vivo): la frontera se rinde EN VIVO —mismo marcado y
+    // origen (`buildInstitutionalBoundary(psl.priorizacion)`) que la vista
+    // canónica— para que el autor la vea antes de compilar. El enunciado de
+    // frontera es fijo (el Perfil concluye, no recomienda); el consenso refleja la
+    // priorización viva.
+    expect(proposalHtml).toContain("Frontera institucional");
+    expect(proposalHtml).toContain("no formula recomendaciones");
+    expect(proposalHtml).toContain("Consenso del Grupo Motor documentado:");
   });
 
-  it("el borrador vivo rinde el cierre de autoría humana cuando existe, y no la frontera", () => {
+  it("el borrador vivo rinde el cierre de autoría humana cuando existe", () => {
     // GOV-SALIDA-01 (borrador vivo): el cierre humano (`cierreInterpretativo`)
     // se muestra EN VIVO —mismo marcado y origen (`buildAuthoredClosing`) que la
-    // vista canónica— para que el autor lo vea antes de compilar (Art. 16). La
-    // frontera institucional NO se rinde en el borrador (canónica exclusiva).
+    // vista canónica— para que el autor lo vea antes de compilar (Art. 16).
     const draftHumanClosing = buildAuthoredClosing({
       content: "Cierre de autoría del equipo técnico — borrador vivo.",
       status: "authored",
@@ -789,8 +792,6 @@ describe("render — perfil de salud local canónico", () => {
     expect(conCierre.indexOf("Cierre de la lectura")).toBeLessThan(
       conCierre.indexOf("Cierre de autoría del equipo técnico — borrador vivo.")
     );
-    // Frontera institucional: nunca en el borrador legacy.
-    expect(conCierre).not.toContain("Frontera institucional");
 
     // Sin cierre de autoría (prop ausente): el borrador no fabrica la sección.
     const sinCierre = renderToStaticMarkup(
@@ -799,8 +800,56 @@ describe("render — perfil de salud local canónico", () => {
     expect(sinCierre).not.toContain("Cierre interpretativo");
   });
 
+  it("el borrador vivo rinde la frontera cuando se le pasa, y no la fabrica sin ella", () => {
+    // GOV-SALIDA-01 (borrador vivo): la frontera se rinde con el mismo marcado que
+    // la canónica cuando se le pasa la prop (desde `buildInstitutionalBoundary`);
+    // sin la prop, el borrador no la fabrica. El enunciado de frontera es fijo y
+    // nombra el «Plan de Acción» solo para demarcar que el Perfil NO lo hace.
+    const draftBoundary = buildInstitutionalBoundary({
+      candidaturasTecnicas: [
+        { title: "Cohesión y apoyo social" },
+        { title: "Entornos activos" },
+      ],
+      consensoDocumentado: true,
+    } as PSLPriorizacion);
+    const conFrontera = renderToStaticMarkup(
+      <ProfileIntegratedEditorialPreview
+        view={editorialView}
+        institutionalBoundary={draftBoundary}
+      />
+    );
+    expect(conFrontera).toContain("Frontera institucional");
+    expect(conFrontera).toContain("no formula recomendaciones");
+    expect(conFrontera).toContain("Cohesión y apoyo social");
+    expect(conFrontera).toContain("Consenso del Grupo Motor documentado:");
+    // La frontera va después de las columnas generadas «Cierre de la lectura».
+    expect(conFrontera.indexOf("Cierre de la lectura")).toBeLessThan(
+      conFrontera.indexOf("Frontera institucional")
+    );
+
+    // Sin la prop de frontera: el borrador no la fabrica.
+    const sinFrontera = renderToStaticMarkup(
+      <ProfileIntegratedEditorialPreview view={editorialView} />
+    );
+    expect(sinFrontera).not.toContain("Frontera institucional");
+  });
+
   it("el fragmento editorial no usa lenguaje de decisión ni fórmulas de plantilla", () => {
-    expect(proposalHtml).not.toMatch(FORBIDDEN_EDITORIAL_RE);
+    // La FRONTERA institucional se excluye del chequeo: su enunciado fijo nombra
+    // el «Plan de Acción» para demarcar que el Perfil NO lo hace (demarcación
+    // institucional, no prosa editorial). Se excise SOLO esa sección —conservando
+    // el resto de la lectura y el anexo técnico bajo el chequeo—: la prosa
+    // editorial propiamente dicha sí debe estar libre de lenguaje de decisión.
+    const idxFrontera = proposalHtml.indexOf("Frontera institucional");
+    const idxAnexo = proposalHtml.indexOf("<details", idxFrontera);
+    const sinFrontera =
+      idxFrontera >= 0
+        ? proposalHtml.slice(0, idxFrontera) +
+          (idxAnexo >= 0 ? proposalHtml.slice(idxAnexo) : "")
+        : proposalHtml;
+    expect(sinFrontera).not.toMatch(FORBIDDEN_EDITORIAL_RE);
+    // La frontera está presente y es el único portador de «Plan de Acción».
+    expect(proposalHtml).toContain("Frontera institucional");
   });
 });
 
