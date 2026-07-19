@@ -2,6 +2,7 @@ import type {
   ProfileIntegratedEditorialView,
   CanonicalEditorialView,
   CanonicalAuthoredClosing,
+  CanonicalInstitutionalBoundary,
 } from "../../application/health-profile";
 
 interface ProfileIntegratedEditorialPreviewProps {
@@ -28,6 +29,15 @@ interface ProfileIntegratedEditorialPreviewProps {
    * que su contenido coincide con el que mostrará el documento sellado.
    */
   humanClosing?: CanonicalAuthoredClosing | null;
+  /**
+   * Frontera institucional para el BORRADOR vivo (vista legacy). La vista
+   * canónica sellada ya la lleva en `view.institutionalBoundary` y prevalece;
+   * esta prop solo sirve al borrador. El enunciado de frontera es fijo (el Perfil
+   * concluye, no recomienda); candidaturas y consenso reflejan en vivo la
+   * priorización (`buildInstitutionalBoundary(psl.priorizacion)`). Mismo origen y
+   * función que la canónica → espejo exacto del documento sellado.
+   */
+  institutionalBoundary?: CanonicalInstitutionalBoundary | null;
 }
 
 function variantClass(variant: string): string {
@@ -45,12 +55,19 @@ export function ProfileIntegratedEditorialPreview({
   view,
   pendingReadingNotice,
   humanClosing,
+  institutionalBoundary,
 }: ProfileIntegratedEditorialPreviewProps) {
-  // Fuente única del cierre humano: la vista canónica sellada lo lleva en sí
-  // misma; el borrador vivo (vista legacy) lo recibe por prop. Se rinde una sola
-  // vez, con el mismo marcado, de modo que la canónica queda byte a byte igual.
-  const resolvedHumanClosing: CanonicalAuthoredClosing | null =
-    "institutionalBoundary" in view ? view.humanClosing : humanClosing ?? null;
+  // Fuente única del cierre humano y de la frontera: la vista canónica sellada
+  // los lleva en sí misma; el borrador vivo (vista legacy) los recibe por prop.
+  // Se rinden una sola vez, con el mismo marcado, de modo que la vista canónica
+  // queda byte a byte igual.
+  const isCanonical = "institutionalBoundary" in view;
+  const resolvedHumanClosing: CanonicalAuthoredClosing | null = isCanonical
+    ? view.humanClosing
+    : humanClosing ?? null;
+  const resolvedBoundary: CanonicalInstitutionalBoundary | null = isCanonical
+    ? view.institutionalBoundary
+    : institutionalBoundary ?? null;
   return (
     <section className="pie-doc workspace-panel" aria-labelledby="pie-title">
 
@@ -286,11 +303,15 @@ export function ProfileIntegratedEditorialPreview({
       ) : null}
 
       {/* ── Frontera institucional ───────────────────────────────────────────
-          SOLO en la vista canónica sellada (`CanonicalEditorialView`): la frontera
-          depende del consenso de priorización, propio del documento sellado. El
-          Perfil concluye, no recomienda (Art. 16 bis). El borrador legacy no la
-          lleva y queda intacto. */}
-      {"institutionalBoundary" in view ? (
+          Cierra la cadena editorial: el Perfil concluye, no recomienda (Art. 16 bis).
+          Se rinde para la vista canónica sellada (`view.institutionalBoundary`) Y
+          para el borrador vivo (prop `institutionalBoundary`, desde
+          `buildInstitutionalBoundary(psl.priorizacion)`), con el mismo marcado: el
+          enunciado de frontera es fijo; candidaturas y consenso reflejan en vivo la
+          priorización. El borrador anticipa el documento sellado sin divergir
+          (Art. 17 bis). El enunciado nombra el «Plan de Acción» para demarcar que
+          el Perfil NO lo hace: es demarcación institucional, no prosa editorial. */}
+      {resolvedBoundary !== null ? (
         <section
           className="pie-doc-section"
           aria-labelledby="pie-frontier-title"
@@ -298,18 +319,16 @@ export function ProfileIntegratedEditorialPreview({
           <h3 id="pie-frontier-title" className="pie-section__title">
             Frontera institucional
           </h3>
-          <p className="pie-hilo__reading">
-            {view.institutionalBoundary.statement}
-          </p>
-          {view.institutionalBoundary.candidaturas.length > 0 ? (
+          <p className="pie-hilo__reading">{resolvedBoundary.statement}</p>
+          {resolvedBoundary.candidaturas.length > 0 ? (
             <>
               <p className="pie-agenda-intro">
                 El documento deja preparadas{" "}
-                {view.institutionalBoundary.candidaturas.length} candidatura(s)
+                {resolvedBoundary.candidaturas.length} candidatura(s)
                 técnica(s) para la deliberación posterior:
               </p>
               <ul className="pie-cierre__items">
-                {view.institutionalBoundary.candidaturas.map((candidatura) => (
+                {resolvedBoundary.candidaturas.map((candidatura) => (
                   <li key={candidatura}>{candidatura}</li>
                 ))}
               </ul>
@@ -317,10 +336,7 @@ export function ProfileIntegratedEditorialPreview({
           ) : null}
           <p className="pie-hilo__context">
             Consenso del Grupo Motor documentado:{" "}
-            {view.institutionalBoundary.consensoDocumentado
-              ? "sí"
-              : "no disponible"}
-            .
+            {resolvedBoundary.consensoDocumentado ? "sí" : "no disponible"}.
           </p>
         </section>
       ) : null}

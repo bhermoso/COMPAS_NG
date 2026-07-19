@@ -26,6 +26,7 @@ import {
   readSealedCanonicalDocument,
   PRIORITIZATION_PENDING_DECLARATION,
   buildAuthoredClosing,
+  buildInstitutionalBoundary,
 } from "../../application/psl-c-canonical";
 import { ProfileIntegratedEditorialPreview } from "./ProfileIntegratedEditorialPreview";
 
@@ -930,6 +931,7 @@ export function LocalHealthProfileView({
         <ProfileIntegratedEditorialPreview
           view={integratedEditorialView}
           humanClosing={buildAuthoredClosing(psl.cierreInterpretativo)}
+          institutionalBoundary={buildInstitutionalBoundary(psl.priorizacion)}
         />
       )}
 
