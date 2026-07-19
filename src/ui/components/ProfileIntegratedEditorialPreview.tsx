@@ -68,6 +68,12 @@ export function ProfileIntegratedEditorialPreview({
   const resolvedBoundary: CanonicalInstitutionalBoundary | null = isCanonical
     ? view.institutionalBoundary
     : institutionalBoundary ?? null;
+  // Declaración de lectura territorial pendiente (regla N+1): la vista canónica
+  // la lleva en sí misma; el borrador vivo la recibe por prop (fallback). Se
+  // rinde como SECCIÓN propia (abajo), no como nota dentro de la lectura integrada.
+  const resolvedPendingDeclaration: string | null = isCanonical
+    ? view.pendingDeclaration
+    : pendingReadingNotice ?? null;
   return (
     <section className="pie-doc workspace-panel" aria-labelledby="pie-title">
 
@@ -173,54 +179,74 @@ export function ProfileIntegratedEditorialPreview({
         </section>
       ) : null}
 
-      {/* ── Lectura integrada del territorio ────────────────────────────── */}
-      <section className="pie-doc-section" aria-labelledby="pie-reading-title">
-        <h3 id="pie-reading-title" className="pie-section__title">
-          Lectura integrada del territorio
-        </h3>
-        {/* Advertencia de no exhaustividad: una sola vez, no por hilo.
-            Reutiliza la clase de nota existente (sin añadir CSS). */}
-        <p className="pie-agenda-intro">{view.interpretation.nonExhaustiveNotice}</p>
-        {/* Documento digno con lectura pendiente (Paso 4): cuando no hay hilos
-            territoriales, se declara la pendencia (Popay) en lugar de fabricar
-            una lectura. Reutiliza la clase de nota existente (sin CSS nuevo). */}
-        {view.territorialReadings.length === 0 &&
-        pendingReadingNotice !== undefined ? (
-          <p className="pie-agenda-intro">{pendingReadingNotice}</p>
-        ) : null}
-        {view.territorialReadings.map((block) => (
-          <article key={block.id} className="pie-hilo" aria-labelledby={`pie-h-${block.id}`}>
-            <header className="pie-hilo__header">
-              <span className={variantClass(block.variant)} aria-hidden="true" />
-              <h4 id={`pie-h-${block.id}`} className="pie-hilo__title">
-                {block.title}
-              </h4>
-              {block.epistemicStatus !== undefined ? (
-                <span className="pie-hilo__status">
-                  {EPISTEMIC_LABEL[block.epistemicStatus] ?? block.epistemicStatus}
-                </span>
+      {/* ── Lectura territorial pendiente (regla N+1) ──────────────────────
+          Cuando no hay lectura territorial atomizada, la pendencia (Popay) se
+          declara como SECCIÓN propia en posición canónica —igual que el proyector
+          (DOCX/PDF/visor)—, no como nota dentro de la lectura integrada. Canónica:
+          `view.pendingDeclaration`; borrador: prop de fallback. Reutiliza `.pie-*`;
+          sin CSS nuevo. */}
+      {resolvedPendingDeclaration !== null ? (
+        <section className="pie-doc-section" aria-labelledby="pie-pending-title">
+          <h3 id="pie-pending-title" className="pie-section__title">
+            Lectura territorial pendiente
+          </h3>
+          <p className="pie-agenda-intro">{resolvedPendingDeclaration}</p>
+        </section>
+      ) : null}
+
+      {/* ── Lectura integrada del territorio ────────────────────────────────
+          Solo cuando hay hilos territoriales, como el proyector: en el caso
+          pendiente se rinde «Lectura territorial pendiente» en su lugar (no un
+          cajón vacío). El aviso de no exhaustividad acompaña a la lectura, así
+          que vive con ella. */}
+      {view.territorialReadings.length > 0 ? (
+        <section className="pie-doc-section" aria-labelledby="pie-reading-title">
+          <h3 id="pie-reading-title" className="pie-section__title">
+            Lectura integrada del territorio
+          </h3>
+          {/* Advertencia de no exhaustividad: una sola vez, no por hilo.
+              Reutiliza la clase de nota existente (sin añadir CSS). */}
+          <p className="pie-agenda-intro">
+            {view.interpretation.nonExhaustiveNotice}
+          </p>
+          {view.territorialReadings.map((block) => (
+            <article
+              key={block.id}
+              className="pie-hilo"
+              aria-labelledby={`pie-h-${block.id}`}
+            >
+              <header className="pie-hilo__header">
+                <span className={variantClass(block.variant)} aria-hidden="true" />
+                <h4 id={`pie-h-${block.id}`} className="pie-hilo__title">
+                  {block.title}
+                </h4>
+                {block.epistemicStatus !== undefined ? (
+                  <span className="pie-hilo__status">
+                    {EPISTEMIC_LABEL[block.epistemicStatus] ?? block.epistemicStatus}
+                  </span>
+                ) : null}
+              </header>
+              <p className="pie-hilo__signal">{block.signal}</p>
+              {/* La lectura integrada (Nivel 3) cruza agenda sanitaria, señales
+                  locales, contexto, mecanismo plausible, desigualdad y capacidad
+                  como razonamiento continuo, no como lista de campos. */}
+              <p className="pie-hilo__reading">{block.reading}</p>
+              <p className="pie-hilo__context">{block.source} · {block.scale}</p>
+              <p className="pie-hilo__question">{block.groupMotorQuestion}</p>
+              {/* Contraste asistencial (N1b): pregunta abierta SECUNDARia a la
+                  pregunta principal del hilo (jerarquía editorial, auditoría 5D).
+                  Reutiliza la clase de contexto —peso visual menor— sin CSS nuevo;
+                  una sola por hilo, sin listas de indicadores. */}
+              {block.clinicalAssistanceQuestion !== undefined ? (
+                <p className="pie-hilo__context">
+                  <strong>Contraste asistencial: </strong>
+                  {block.clinicalAssistanceQuestion}
+                </p>
               ) : null}
-            </header>
-            <p className="pie-hilo__signal">{block.signal}</p>
-            {/* La lectura integrada (Nivel 3) cruza agenda sanitaria, señales
-                locales, contexto, mecanismo plausible, desigualdad y capacidad
-                como razonamiento continuo, no como lista de campos. */}
-            <p className="pie-hilo__reading">{block.reading}</p>
-            <p className="pie-hilo__context">{block.source} · {block.scale}</p>
-            <p className="pie-hilo__question">{block.groupMotorQuestion}</p>
-            {/* Contraste asistencial (N1b): pregunta abierta SECUNDARia a la
-                pregunta principal del hilo (jerarquía editorial, auditoría 5D).
-                Reutiliza la clase de contexto —peso visual menor— sin CSS nuevo;
-                una sola por hilo, sin listas de indicadores. */}
-            {block.clinicalAssistanceQuestion !== undefined ? (
-              <p className="pie-hilo__context">
-                <strong>Contraste asistencial: </strong>
-                {block.clinicalAssistanceQuestion}
-              </p>
-            ) : null}
-          </article>
-        ))}
-      </section>
+            </article>
+          ))}
+        </section>
+      ) : null}
 
       {/* ── Indicadores trazadores ──────────────────────────────────────── */}
       {view.tracerTable.length > 0 && (
