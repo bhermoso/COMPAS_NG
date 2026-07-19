@@ -1,6 +1,7 @@
 import type {
   ProfileIntegratedEditorialView,
   CanonicalEditorialView,
+  CanonicalAuthoredClosing,
 } from "../../application/health-profile";
 
 interface ProfileIntegratedEditorialPreviewProps {
@@ -18,6 +19,15 @@ interface ProfileIntegratedEditorialPreviewProps {
    * (Popay), no una lectura fabricada.
    */
   pendingReadingNotice?: string;
+  /**
+   * Cierre de autoría humana (`cierreInterpretativo`) para el BORRADOR vivo
+   * (vista legacy). La vista canónica sellada ya lo lleva en `view.humanClosing`
+   * y prevalece; esta prop solo sirve al borrador, para que el autor vea su
+   * cierre en vivo antes de compilar (Art. 16: la autoría humana vive en el
+   * cierre). Mismo origen y función (`buildAuthoredClosing`) que la canónica, así
+   * que su contenido coincide con el que mostrará el documento sellado.
+   */
+  humanClosing?: CanonicalAuthoredClosing | null;
 }
 
 function variantClass(variant: string): string {
@@ -34,7 +44,13 @@ const EPISTEMIC_LABEL: Record<string, string> = {
 export function ProfileIntegratedEditorialPreview({
   view,
   pendingReadingNotice,
+  humanClosing,
 }: ProfileIntegratedEditorialPreviewProps) {
+  // Fuente única del cierre humano: la vista canónica sellada lo lleva en sí
+  // misma; el borrador vivo (vista legacy) lo recibe por prop. Se rinde una sola
+  // vez, con el mismo marcado, de modo que la canónica queda byte a byte igual.
+  const resolvedHumanClosing: CanonicalAuthoredClosing | null =
+    "institutionalBoundary" in view ? view.humanClosing : humanClosing ?? null;
   return (
     <section className="pie-doc workspace-panel" aria-labelledby="pie-title">
 
@@ -242,70 +258,71 @@ export function ProfileIntegratedEditorialPreview({
         </div>
       </section>
 
-      {/* ── Cierre interpretativo (autoría humana) y Frontera institucional ──
-          Solo en la vista canónica sellada (`CanonicalEditorialView`): cierran
-          la cadena editorial en pantalla —evidencia → lectura → conclusiones →
-          FRONTERA (Art. 16 bis)— en el MISMO documento que DOCX/PDF/visor
-          (Art. 17 bis). El borrador prevalidación (forma legacy) no lleva estos
-          campos y queda intacto. Reutilizan clases `.pie-*` existentes; sin CSS
-          nuevo. Como la impresión es la lectura `.pie-*` (PR-4), también cierran
-          la cadena en impresión. */}
+      {/* ── Cierre interpretativo (autoría humana) ──────────────────────────
+          Cierra la cadena editorial —evidencia → lectura → conclusiones— con la
+          voz humana. Se rinde para la vista canónica sellada (`view.humanClosing`)
+          Y para el borrador vivo (prop `humanClosing`, desde `psl.cierreInterpretativo`),
+          con el mismo marcado: el autor ve su cierre en vivo antes de compilar y
+          el documento no diverge (Art. 16 / Art. 17 bis). Reutiliza clases
+          `.pie-*`; sin CSS nuevo. */}
+      {resolvedHumanClosing !== null ? (
+        <section
+          className="pie-doc-section"
+          aria-labelledby="pie-human-closing-title"
+        >
+          <h3 id="pie-human-closing-title" className="pie-section__title">
+            Cierre interpretativo
+          </h3>
+          {resolvedHumanClosing.content
+            .split("\n\n")
+            .map((p) => p.trim())
+            .filter((p) => p.length > 0)
+            .map((paragraph) => (
+              <p key={paragraph} className="pie-hilo__reading">
+                {paragraph}
+              </p>
+            ))}
+        </section>
+      ) : null}
+
+      {/* ── Frontera institucional ───────────────────────────────────────────
+          SOLO en la vista canónica sellada (`CanonicalEditorialView`): la frontera
+          depende del consenso de priorización, propio del documento sellado. El
+          Perfil concluye, no recomienda (Art. 16 bis). El borrador legacy no la
+          lleva y queda intacto. */}
       {"institutionalBoundary" in view ? (
-        <>
-          {view.humanClosing !== null ? (
-            <section
-              className="pie-doc-section"
-              aria-labelledby="pie-human-closing-title"
-            >
-              <h3 id="pie-human-closing-title" className="pie-section__title">
-                Cierre interpretativo
-              </h3>
-              {view.humanClosing.content
-                .split("\n\n")
-                .map((p) => p.trim())
-                .filter((p) => p.length > 0)
-                .map((paragraph) => (
-                  <p key={paragraph} className="pie-hilo__reading">
-                    {paragraph}
-                  </p>
+        <section
+          className="pie-doc-section"
+          aria-labelledby="pie-frontier-title"
+        >
+          <h3 id="pie-frontier-title" className="pie-section__title">
+            Frontera institucional
+          </h3>
+          <p className="pie-hilo__reading">
+            {view.institutionalBoundary.statement}
+          </p>
+          {view.institutionalBoundary.candidaturas.length > 0 ? (
+            <>
+              <p className="pie-agenda-intro">
+                El documento deja preparadas{" "}
+                {view.institutionalBoundary.candidaturas.length} candidatura(s)
+                técnica(s) para la deliberación posterior:
+              </p>
+              <ul className="pie-cierre__items">
+                {view.institutionalBoundary.candidaturas.map((candidatura) => (
+                  <li key={candidatura}>{candidatura}</li>
                 ))}
-            </section>
+              </ul>
+            </>
           ) : null}
-          <section
-            className="pie-doc-section"
-            aria-labelledby="pie-frontier-title"
-          >
-            <h3 id="pie-frontier-title" className="pie-section__title">
-              Frontera institucional
-            </h3>
-            {/* El Perfil concluye, no recomienda: enunciado fijo de frontera
-                con el Plan de Acción (fase posterior). */}
-            <p className="pie-hilo__reading">
-              {view.institutionalBoundary.statement}
-            </p>
-            {view.institutionalBoundary.candidaturas.length > 0 ? (
-              <>
-                <p className="pie-agenda-intro">
-                  El documento deja preparadas{" "}
-                  {view.institutionalBoundary.candidaturas.length} candidatura(s)
-                  técnica(s) para la deliberación posterior:
-                </p>
-                <ul className="pie-cierre__items">
-                  {view.institutionalBoundary.candidaturas.map((candidatura) => (
-                    <li key={candidatura}>{candidatura}</li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-            <p className="pie-hilo__context">
-              Consenso del Grupo Motor documentado:{" "}
-              {view.institutionalBoundary.consensoDocumentado
-                ? "sí"
-                : "no disponible"}
-              .
-            </p>
-          </section>
-        </>
+          <p className="pie-hilo__context">
+            Consenso del Grupo Motor documentado:{" "}
+            {view.institutionalBoundary.consensoDocumentado
+              ? "sí"
+              : "no disponible"}
+            .
+          </p>
+        </section>
       ) : null}
 
       {/* ── Lectura territorial ampliada y anexo técnico (colapsado) ──────
