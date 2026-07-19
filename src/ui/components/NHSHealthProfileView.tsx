@@ -1,174 +1,129 @@
-import type { NHSHealthProfileArtifact, NHSDomain, NHSIndicatorRow } from "../../domain/nhs-health-profile";
+import type { CanonicalProfileDocument } from "../../application/health-profile/canonicalProfileDocument";
+import {
+  projectNHSDerived,
+  type NHSDerivedRow,
+} from "../../application/health-profile/nhsDerivedProjection";
+
+/**
+ * NHSHealthProfileView — representación breve DERIVADA del Perfil canónico
+ * (GOV-P4-01 · PR-D).
+ *
+ * Reoriginada: ya no consume `NHSHealthProfileArtifact`. Recibe el documento
+ * canónico sellado y lo presenta a través del proyector puro `projectNHSDerived`.
+ * No calcula, compara, ordena, puntúa ni reconstruye contenido. No emite posición
+ * municipal ni ningún veredicto: presenta valor territorial y referencias tal como
+ * constan en el trazador canónico y deja la interpretación al lector. La marca de
+ * proxy contextual depende exclusivamente de `esProxy`.
+ */
 
 interface NHSHealthProfileViewProps {
-  artifact: NHSHealthProfileArtifact;
+  /** Documento canónico sellado, o `null` si es inexistente, legacy o incompleto. */
+  document: CanonicalProfileDocument | null;
 }
 
-const DOMAIN_LABELS: Record<string, string> = {
-  bienestar: "Bienestar y salud socioemocional",
-  conductas: "Conductas de salud",
-  "salud-percibida": "Salud percibida",
-};
+/** Agrupa filas en tramos CONSECUTIVOS por `bloque`, preservando orden exacto. */
+function groupByConsecutiveBloque(
+  rows: NHSDerivedRow[]
+): Array<{ bloque: string; rows: NHSDerivedRow[] }> {
+  const groups: Array<{ bloque: string; rows: NHSDerivedRow[] }> = [];
+  for (const row of rows) {
+    const last = groups[groups.length - 1];
+    if (last !== undefined && last.bloque === row.bloque) {
+      last.rows.push(row);
+    } else {
+      groups.push({ bloque: row.bloque, rows: [row] });
+    }
+  }
+  return groups;
+}
 
-const POSITION_LABEL: Record<string, { label: string; css: string }> = {
-  above:   { label: "Mejor que referencia", css: "nhs-pos--above" },
-  below:   { label: "Peor que referencia",  css: "nhs-pos--below" },
-  similar: { label: "Similar a referencia", css: "nhs-pos--similar" },
-};
-
-function IndicatorRow({ row }: { row: NHSIndicatorRow }) {
-  const pos = row.position ? POSITION_LABEL[row.position] : null;
-  const dirLabel = row.positiveDirection === "higher-is-better" ? "↑ mejor más alto" : "↓ mejor más bajo";
-
+function IndicatorRow({ row }: { row: NHSDerivedRow }) {
   return (
     <div className="nhs-indicator-row">
       <div className="nhs-indicator-row__label-col">
-        <p className="nhs-indicator-row__label">{row.label}</p>
-        <span className="nhs-indicator-row__dir">{dirLabel}</span>
-        {row.smallSampleWarning && (
-          <span className="nhs-indicator-row__small-n">⚠ muestra pequeña (n={row.validN})</span>
+        <p className="nhs-indicator-row__label">{row.indicador}</p>
+        {row.esProxy && (
+          <span className="nhs-indicator-row__dir">referencia proxy contextual</span>
         )}
       </div>
       <div className="nhs-indicator-row__value-col">
-        <span className="nhs-indicator-row__value">{row.value.toFixed(1)}</span>
-        <span className="nhs-indicator-row__unit">{row.unit}</span>
+        <span className="nhs-indicator-row__value">{row.valor}</span>
       </div>
       <div className="nhs-indicator-row__ref-col">
-        {row.reference ? (
-          <>
-            <span className="nhs-indicator-row__ref-val">{row.reference.value.toFixed(1)}</span>
-            <span className="nhs-indicator-row__ref-pop">{row.reference.population}</span>
-          </>
-        ) : (
-          <span className="nhs-indicator-row__no-ref">Sin referencia</span>
-        )}
+        <span className="nhs-indicator-row__ref-val">{row.refGranada}</span>
       </div>
-      <div className="nhs-indicator-row__pos-col">
-        {pos ? (
-          <span className={`nhs-pos-pill ${pos.css}`}>{pos.label}</span>
-        ) : (
-          <span className="nhs-pos-pill nhs-pos--no-ref">—</span>
-        )}
+      <div className="nhs-indicator-row__ref-col">
+        <span className="nhs-indicator-row__ref-val">{row.refAndalucia}</span>
       </div>
     </div>
   );
 }
 
-function DomainSection({ domain }: { domain: NHSDomain }) {
-  return (
-    <div className="nhs-domain">
-      <div className="nhs-domain__header">
-        <p className="eyebrow">{DOMAIN_LABELS[domain.id] ?? domain.id}</p>
-        <p className="nhs-domain__count">{domain.indicators.length} indicador{domain.indicators.length !== 1 ? "es" : ""}</p>
-      </div>
-      <div className="nhs-domain__table-header">
-        <span>Indicador</span>
-        <span>Valor municipal</span>
-        <span>Referencia</span>
-        <span>Posición</span>
-      </div>
-      <div className="nhs-domain__rows">
-        {domain.indicators.map((row) => (
-          <IndicatorRow key={row.instrumentId} row={row} />
-        ))}
-      </div>
-    </div>
-  );
-}
+export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
+  const projection = projectNHSDerived(document);
 
-export function NHSHealthProfileView({ artifact }: NHSHealthProfileViewProps) {
-  const compiledDate = new Date(artifact.compiledAt).toLocaleDateString("es-ES", {
-    day: "2-digit", month: "long", year: "numeric",
-  });
+  if (!projection.available) {
+    return (
+      <section className="workspace-panel">
+        <p className="eyebrow">Perfil de Salud Local · Representación derivada</p>
+        <h2>Vista no disponible</h2>
+        <p className="panel-note">
+          Esta vista es una representación derivada del Perfil de Salud Local canónico.
+          Para mostrarse necesita que el Perfil se haya compilado como documento
+          institucional (documento canónico sellado). Un Perfil validado pero todavía
+          no compilado no tiene aún esta representación derivada.
+        </p>
+      </section>
+    );
+  }
+
+  const groups = groupByConsecutiveBloque(projection.rows);
 
   return (
     <div className="nhs-root">
 
-      {/* Portada */}
-      <section className="workspace-panel nhs-portada">
-        <div className="nhs-portada__head">
-          <div>
-            <p className="eyebrow">Perfil de Salud Local · Diagnóstico Comparativo</p>
-            <h2>{artifact.portada.municipalityName}</h2>
-            <p className="nhs-portada__province">{artifact.portada.municipalityProvince} · {artifact.portada.year}</p>
-          </div>
-          <div className="nhs-portada__meta">
-            <span className="psl-artifact-version">{artifact.artifactVersion}</span>
-            <span className="nhs-portada__date">{compiledDate}</span>
-          </div>
-        </div>
-
-        <div className="nhs-portada__stats">
-          <div className="nhs-stat">
-            <span className="nhs-stat__val">{artifact.portada.complementaryStudyCount}</span>
-            <span className="nhs-stat__label">de 6 estudios disponibles</span>
-          </div>
-          <div className="nhs-stat">
-            <span className="nhs-stat__val">{artifact.dominios.reduce((a, d) => a + d.indicators.length, 0)}</span>
-            <span className="nhs-stat__label">indicadores calculados</span>
-          </div>
-          <div className="nhs-stat">
-            <span className="nhs-stat__val">
-              {artifact.dominios.reduce((a, d) => a + d.indicators.filter((i) => i.reference !== null).length, 0)}
-            </span>
-            <span className="nhs-stat__label">con referencia comparativa</span>
-          </div>
-        </div>
-
-        {artifact.portada.fewComparatorsWarning && (
-          <p className="nhs-warning">
-            ⚠ Pocos indicadores tienen referencia comparativa disponible. El perfil comparativo tiene valor limitado hasta que se incorporen datos de referencia Granada/Andalucía.
-          </p>
-        )}
-      </section>
-
-      {/* Dominios de indicadores */}
-      {artifact.dominios.map((domain) => (
-        <section key={domain.id} className="workspace-panel nhs-domain-panel">
-          <DomainSection domain={domain} />
-        </section>
-      ))}
-
-      {/* Participación ciudadana */}
-      {artifact.participacionCiudadana?.realizada && (
-        <section className="workspace-panel">
-          <p className="eyebrow">Participación ciudadana</p>
-          <p className="panel-note">
-            Proceso participativo realizado
-            {artifact.participacionCiudadana.fecha ? ` (${artifact.participacionCiudadana.fecha})` : ""}.
-            {" "}{artifact.participacionCiudadana.tematicasCount} temáticas priorizadas.
-          </p>
-        </section>
-      )}
-
-      {/* Alcance */}
       <section className="workspace-panel">
-        <p className="eyebrow">Alcance del diagnóstico</p>
-        <h2>Instrumentos disponibles</h2>
-        <div className="nhs-alcance">
-          {artifact.alcance.availableStudies.length > 0 && (
-            <div>
-              <p className="nhs-alcance__label">Instrumentos incluidos:</p>
-              <div className="nhs-alcance__list">
-                {artifact.alcance.availableStudies.map((s) => (
-                  <span key={s.instrumentId} className="nhs-study-chip nhs-study-chip--present">{s.label}</span>
-                ))}
-              </div>
-            </div>
-          )}
-          {artifact.alcance.missingStudies.length > 0 && (
-            <div>
-              <p className="nhs-alcance__label">No disponibles en este expediente:</p>
-              <div className="nhs-alcance__list">
-                {artifact.alcance.missingStudies.map((s) => (
-                  <span key={s.instrumentId} className="nhs-study-chip nhs-study-chip--missing">{s.label}</span>
-                ))}
-              </div>
-            </div>
-          )}
-          <p className="nhs-alcance__cautela">{artifact.alcance.cautela}</p>
-        </div>
+        <p className="eyebrow">Perfil de Salud Local · Representación derivada (diagnóstico comparativo)</p>
+        <h2>Indicadores del territorio y sus referencias</h2>
+        <p className="panel-note">
+          Representación derivada del Perfil de Salud Local canónico. Se presentan los
+          valores del territorio y sus referencias provincial y andaluza tal como constan
+          en el documento; la interpretación corresponde al lector. Esta vista no emite
+          veredictos comparativos.
+        </p>
       </section>
+
+      {projection.rows.length === 0 ? (
+        <section className="workspace-panel">
+          <p className="panel-note">
+            El trazador del Perfil canónico no contiene filas disponibles para esta representación.
+          </p>
+        </section>
+      ) : (
+        groups.map((group, gi) => (
+          <section key={`${group.bloque}-${gi}`} className="workspace-panel nhs-domain-panel">
+            <div className="nhs-domain">
+              <div className="nhs-domain__header">
+                <p className="eyebrow">{group.bloque}</p>
+                <p className="nhs-domain__count">
+                  {group.rows.length} indicador{group.rows.length !== 1 ? "es" : ""}
+                </p>
+              </div>
+              <div className="nhs-domain__table-header">
+                <span>Indicador</span>
+                <span>Valor</span>
+                <span>Ref. provincial</span>
+                <span>Ref. andaluza</span>
+              </div>
+              <div className="nhs-domain__rows">
+                {group.rows.map((row, ri) => (
+                  <IndicatorRow key={`${row.indicador}-${ri}`} row={row} />
+                ))}
+              </div>
+            </div>
+          </section>
+        ))
+      )}
 
     </div>
   );

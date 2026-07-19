@@ -99,7 +99,7 @@ import {
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
-import { compileNHSHealthProfile } from "./application/nhs-health-profile-compiler";
+import { readSealedCanonicalDocument } from "./application/psl-c-canonical";
 import { approvePSL, createFormalValidation } from "./application/institutional-lifecycle";
 import { isFormalValidationStale } from "./domain/institutional-lifecycle";
 
@@ -576,26 +576,6 @@ export default function App() {
       return {
         ...prev,
         compiledProfiles: [...(prev.compiledProfiles ?? []), result.artifact],
-        updatedAt: new Date().toISOString(),
-      };
-    });
-  }, []);
-
-  const handleCompileNHS = useCallback(() => {
-    setWorkspace((prev) => {
-      const psl = prev.validatedPSL;
-      if (!psl) return prev;
-      const result = compileNHSHealthProfile({
-        psl,
-        workspace: prev,
-        municipalityName: prev.municipality.identity.name,
-        municipalityProvince: prev.municipality.identity.province,
-        existingArtifactCount: prev.nhsArtifact ? 1 : 0,
-      });
-      if (!result.ok) return prev;
-      return {
-        ...prev,
-        nhsArtifact: result.artifact,
         updatedAt: new Date().toISOString(),
       };
     });
@@ -3037,40 +3017,17 @@ export default function App() {
           </>
         )}
 
-        {/* ── ④b Perfil de Salud tipo NHS ─────────────── */}
+        {/* ── ④b Perfil de Salud Local · representación derivada (GOV-P4-01 · PR-D) ── */}
         {view === "nhs" && (
-          workspace.nhsArtifact ? (
-            <NHSHealthProfileView artifact={workspace.nhsArtifact} />
-          ) : (
-            <section className="workspace-panel">
-              <p className="eyebrow">Perfil de Salud tipo NHS · {municipality.name}</p>
-              <h2>Perfil de Salud tipo NHS</h2>
-              <p className="panel-note">
-                Diagnóstico comparativo de salud del municipio con indicadores clave
-                y valores de referencia provinciales o nacionales. Destinado a alcaldía,
-                corporación municipal y ciudadanía.
-              </p>
-              {pslValidated ? (
-                <>
-                  <p className="panel-note">
-                    El Perfil de Salud Local está validado y hay {runtime.psl.complementaryStudyCount} instrumento(s) disponible(s).
-                    Puede generarse el Perfil de Salud tipo NHS.
-                  </p>
-                  <button
-                    type="button"
-                    className="psl-doc-compile-action__btn"
-                    onClick={handleCompileNHS}
-                  >
-                    Generar Perfil de Salud tipo NHS
-                  </button>
-                </>
-              ) : (
-                <p className="panel-note">
-                  El Perfil de Salud Local debe estar validado para generar el Perfil de Salud tipo NHS.
-                </p>
-              )}
-            </section>
-          )
+          <NHSHealthProfileView
+            document={(() => {
+              const compiled = workspace.compiledProfiles ?? [];
+              const last = compiled[compiled.length - 1];
+              return last?.canonicalDocument !== undefined
+                ? readSealedCanonicalDocument(last.canonicalDocument)
+                : null;
+            })()}
+          />
         )}
 
         {/* ── ⑤ Priorizaciones — técnica y participativa ──────── */}
