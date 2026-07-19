@@ -9912,6 +9912,17 @@ h3 {
   /* Puntos de variante: negros en impresión B/N. */
   .pie-variant { background: #000 !important; }
 
+  /* Ranking del Informe: la barra imprime su magnitud en NEGRO (coherente con el
+     régimen B/N: sin azul), forzando `print-color-adjust` para que el navegador
+     no la omita en papel —antes salía vacía porque se descartan los fondos—. El
+     carril muestra su extensión con un borde en vez de su relleno gris. */
+  .pv-bar__pista { border: 1px solid #999 !important; background: none !important; }
+  .pv-bar__relleno {
+    background: #000 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
   /* Preguntas para el Grupo Motor: negrita, sin azul. */
   .pie-reading-card__question,
   .pie-agenda-card__question { color: #000 !important; }
