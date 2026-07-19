@@ -426,6 +426,17 @@ describe("modelo puro — Vista editorial integrada", () => {
     // No fabrica hilos territoriales en el artefacto congelado.
     expect(frozenHtml).not.toContain('class="pie-hilo"');
 
+    // GOV-SALIDA-01 (paridad de pending-declaration): la pendencia se rinde como
+    // SECCIÓN propia «Lectura territorial pendiente» (posición canónica, igual que
+    // el proyector), no como nota en línea. Y «Lectura integrada del territorio»
+    // NO se rinde cuando no hay hilos (cajón vacío suprimido), como el proyector.
+    expect(frozenHtml).toContain("Lectura territorial pendiente");
+    expect(frozenHtml).not.toContain("Lectura integrada del territorio");
+    // Orden canónico: la pendencia precede al cierre de la lectura.
+    expect(frozenHtml.indexOf("Lectura territorial pendiente")).toBeLessThan(
+      frozenHtml.indexOf("Cierre de la lectura")
+    );
+
     // GOV-SALIDA-01 (frente de pantalla): la cadena editorial se cierra en
     // pantalla igual que en DOCX/PDF/visor (Art. 17 bis) y llega hasta la
     // FRONTERA (Art. 16 bis). El artefacto congelado es la vista canónica, así
