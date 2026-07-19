@@ -190,6 +190,23 @@ describe("documento visual — imagen general", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
+// Lectura integrada — aviso de no exhaustividad en el documento sellado
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("documento visual — lectura integrada", () => {
+  it("encabeza con el aviso de no exhaustividad (paridad con la pantalla)", () => {
+    // GOV-SALIDA-01: el documento sellado (DOCX/PDF/visor) lleva ahora el aviso
+    // metodológico de no exhaustividad que la lectura viva ya mostraba, como
+    // primer párrafo de «Lectura integrada del territorio» (Art. 17 bis).
+    const lectura = model.sections.find(
+      (s) => s.title === "Lectura integrada del territorio"
+    );
+    expect(lectura).toBeDefined();
+    expect(lectura!.paragraphs[0]).toContain("No son una reproducción exhaustiva");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
 // Ranking de señales del Informe (la visualización del documento)
 // ══════════════════════════════════════════════════════════════════════════════
 
