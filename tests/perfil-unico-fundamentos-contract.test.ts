@@ -55,7 +55,7 @@ describe("Fundamentos del Perfil único — CONTRACT-INDEX", () => {
   it("registra las deudas resueltas por doctrina y las migraciones pendientes", () => {
     expect(idx).toContain("GOV-SALIDA-01");
     expect(idx).toContain("rigidez numérica derogada");
-    expect(idx).toContain("candidato a representación derivada");
+    expect(idx).toContain("representación derivada sin veredictos comparativos");
   });
 });
 
@@ -68,10 +68,10 @@ describe("Fundamentos del Perfil único — CONTRACT-NHS-HEALTH-PROFILE", () => 
     expect(nhs).toContain("no puede constituir una segunda fuente de verdad");
   });
 
-  it("registra computePosition como capacidad candidata, no garantizada", () => {
-    expect(nhs).toContain("capacidad candidata a evaluación");
-    expect(nhs).toContain("no fabrica rankings");
-    expect(nhs).toContain("no presenta proxy como dato local");
+  it("registra computePosition como descartada (la fuente rehúsa la posición)", () => {
+    expect(nhs).toContain("quedan descartadas");
+    expect(nhs).toContain("nunca se formula como posición del distrito");
+    expect(nhs).toContain("no puede fabricar una afirmación que su fuente niega");
   });
 
   it("registra la migración de código NHS como pendiente (no ejecutada)", () => {
