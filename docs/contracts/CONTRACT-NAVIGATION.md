@@ -206,9 +206,9 @@ La decisión exacta sobre cuántas fases mostrar, en qué orden y con qué granu
 > Reconciliado con los Fundamentos del Perfil único (`CONTRACT-INDEX`
 > §«Fundamentos del Perfil único», 2026-07-17). El único producto institucional
 > del Perfil es el **Perfil de Salud Local**. **No existe, en el estado objetivo,
-> una pestaña ni un producto independiente «Perfil de Salud tipo NHS».** Cualquier
-> presencia actual de esa ruta en el código es **migración técnica pendiente**, no
-> vocabulario canónico. El PSL-C es la **compilación institucional del mismo
+> una pestaña ni un producto independiente «Perfil de Salud tipo NHS».** Esa
+> ruta/pestaña ha sido retirada del código: **migración técnica ejecutada**
+> (GOV-P4-01 · PR-E); no era vocabulario canónico. El PSL-C es la **compilación institucional del mismo
 > Perfil**, no otro Perfil. Ninguna regla de este contrato mantiene un «Producto 4»
 > separado.
 
@@ -232,8 +232,8 @@ del Perfil es **adaptativa**: no fija seis ni siete capítulos obligatorios (ver
 | Producto 7 | Plan Local de Salud | `LocalHealthPlanDocument` |
 
 > El antiguo «Producto 4 — Perfil de Salud tipo NHS» **ya no es denominación
-> canónica** y se retira de esta tabla. La ruta/artefacto NHS que aún exista en el
-> código es migración técnica pendiente (ver `CONTRACT-NHS-HEALTH-PROFILE` §0). Las
+> canónica** y se retira de esta tabla. La ruta/artefacto NHS han sido retirados del
+> código: migración técnica ejecutada (ver `CONTRACT-NHS-HEALTH-PROFILE` §0). Las
 > capacidades NHS válidas, si alguna supera la evaluación científica/metodológica,
 > se presentan **dentro** del Perfil, no como producto ni pestaña propios.
 

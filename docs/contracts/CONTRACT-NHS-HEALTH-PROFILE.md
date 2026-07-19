@@ -26,10 +26,11 @@ Fundamentos del Perfil único (`CONTRACT-INDEX` §«Fundamentos del Perfil únic
   posición del distrito**»); una representación derivada **no puede fabricar una
   afirmación que su fuente niega**. La derivada mostrará valores y referencias del
   trazador canónico y **preservará `esProxy`**, dejando la interpretación al lector.
-- **Migración pendiente (no ejecutada en esta intervención):** retirada de la ruta
-  de navegación, la acción de compilación, el artefacto persistido
-  `workspace.nhsArtifact`, el compilador y los tests NHS. En esta intervención
-  **solo cambia el estatuto contractual**; el código NHS permanece intacto.
+- **Migración ejecutada (GOV-P4-01 · PR-E):** retiradas la ruta de navegación, la
+  acción de compilación, el artefacto persistido `workspace.nhsArtifact`, el
+  compilador y los tests NHS. La representación breve se proyecta ahora desde el
+  documento canónico, dentro del único espacio «Perfil de Salud Local»; el código
+  NHS autónomo ha sido retirado.
 
 ---
 
