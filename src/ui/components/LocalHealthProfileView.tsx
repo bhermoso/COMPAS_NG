@@ -25,6 +25,7 @@ import {
 import {
   readSealedCanonicalDocument,
   PRIORITIZATION_PENDING_DECLARATION,
+  buildAuthoredClosing,
 } from "../../application/psl-c-canonical";
 import { ProfileIntegratedEditorialPreview } from "./ProfileIntegratedEditorialPreview";
 
@@ -926,7 +927,10 @@ export function LocalHealthProfileView({
       {/* Composición oficial única. Absorbe la antigua «Salud en síntesis» y */}
       {/* deja el desarrollo capitular fuera de la experiencia principal.     */}
       {!isEmpty && integratedEditorialView !== null && (
-        <ProfileIntegratedEditorialPreview view={integratedEditorialView} />
+        <ProfileIntegratedEditorialPreview
+          view={integratedEditorialView}
+          humanClosing={buildAuthoredClosing(psl.cierreInterpretativo)}
+        />
       )}
 
       {/* ── Espacio técnico del Perfil ──────────────────────────────────── */}

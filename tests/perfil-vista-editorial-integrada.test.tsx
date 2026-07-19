@@ -28,6 +28,7 @@ import type {
 import {
   buildPSLCCanonicalDocument,
   readSealedCanonicalDocument,
+  buildAuthoredClosing,
 } from "../src/application/psl-c-canonical";
 import { compileLocalHealthProfile } from "../src/application/health-profile-compiler";
 import { LocalHealthProfileView } from "../src/ui/components/LocalHealthProfileView";
@@ -755,12 +756,47 @@ describe("render — perfil de salud local canónico", () => {
     );
   });
 
-  it("el borrador vivo (vista legacy) no fabrica cierre humano ni frontera institucional", () => {
-    // El frente de pantalla añade cierre humano y frontera SOLO a la vista
-    // canónica sellada. El borrador prevalidación (forma legacy) queda intacto:
-    // no lleva `institutionalBoundary` ni `humanClosing` y no los inventa.
+  it("el borrador vivo (vista legacy) no rinde la frontera institucional (canónica exclusiva)", () => {
+    // La frontera institucional depende del consenso de priorización, propio del
+    // documento sellado. El borrador prevalidación (forma legacy) no la lleva y
+    // no la inventa. (Granada-Zaidín no tiene cierre de autoría en el fixture,
+    // así que su borrador tampoco muestra «Cierre interpretativo».)
     expect(proposalHtml).not.toContain("Frontera institucional");
     expect(proposalHtml).not.toContain("Consenso del Grupo Motor documentado:");
+  });
+
+  it("el borrador vivo rinde el cierre de autoría humana cuando existe, y no la frontera", () => {
+    // GOV-SALIDA-01 (borrador vivo): el cierre humano (`cierreInterpretativo`)
+    // se muestra EN VIVO —mismo marcado y origen (`buildAuthoredClosing`) que la
+    // vista canónica— para que el autor lo vea antes de compilar (Art. 16). La
+    // frontera institucional NO se rinde en el borrador (canónica exclusiva).
+    const draftHumanClosing = buildAuthoredClosing({
+      content: "Cierre de autoría del equipo técnico — borrador vivo.",
+      status: "authored",
+      authorshipNote: "",
+    });
+    const conCierre = renderToStaticMarkup(
+      <ProfileIntegratedEditorialPreview
+        view={editorialView}
+        humanClosing={draftHumanClosing}
+      />
+    );
+    expect(conCierre).toContain("Cierre interpretativo");
+    expect(conCierre).toContain(
+      "Cierre de autoría del equipo técnico — borrador vivo."
+    );
+    // El cierre humano va después de las columnas generadas «Cierre de la lectura».
+    expect(conCierre.indexOf("Cierre de la lectura")).toBeLessThan(
+      conCierre.indexOf("Cierre de autoría del equipo técnico — borrador vivo.")
+    );
+    // Frontera institucional: nunca en el borrador legacy.
+    expect(conCierre).not.toContain("Frontera institucional");
+
+    // Sin cierre de autoría (prop ausente): el borrador no fabrica la sección.
+    const sinCierre = renderToStaticMarkup(
+      <ProfileIntegratedEditorialPreview view={editorialView} />
+    );
+    expect(sinCierre).not.toContain("Cierre interpretativo");
   });
 
   it("el fragmento editorial no usa lenguaje de decisión ni fórmulas de plantilla", () => {
