@@ -220,10 +220,13 @@ export function ProfileIntegratedEditorialPreview({
         </section>
       )}
 
-      {/* ── Cierre interpretativo ────────────────────────────────────────── */}
+      {/* ── Cierre de la lectura (columnas generadas) ──────────────────────
+          El título canónico de estas columnas es «Cierre de la lectura»; el
+          rótulo «Cierre interpretativo» queda reservado para el cierre de
+          autoría humana (abajo), en paridad con el proyector DOCX/PDF/visor. */}
       <section className="pie-doc-section" aria-labelledby="pie-closing-title">
         <h3 id="pie-closing-title" className="pie-section__title">
-          Cierre interpretativo
+          Cierre de la lectura
         </h3>
         <div className="pie-cierre">
           {view.closing.map((column) => (
@@ -238,6 +241,72 @@ export function ProfileIntegratedEditorialPreview({
           ))}
         </div>
       </section>
+
+      {/* ── Cierre interpretativo (autoría humana) y Frontera institucional ──
+          Solo en la vista canónica sellada (`CanonicalEditorialView`): cierran
+          la cadena editorial en pantalla —evidencia → lectura → conclusiones →
+          FRONTERA (Art. 16 bis)— en el MISMO documento que DOCX/PDF/visor
+          (Art. 17 bis). El borrador prevalidación (forma legacy) no lleva estos
+          campos y queda intacto. Reutilizan clases `.pie-*` existentes; sin CSS
+          nuevo. Como la impresión es la lectura `.pie-*` (PR-4), también cierran
+          la cadena en impresión. */}
+      {"institutionalBoundary" in view ? (
+        <>
+          {view.humanClosing !== null ? (
+            <section
+              className="pie-doc-section"
+              aria-labelledby="pie-human-closing-title"
+            >
+              <h3 id="pie-human-closing-title" className="pie-section__title">
+                Cierre interpretativo
+              </h3>
+              {view.humanClosing.content
+                .split("\n\n")
+                .map((p) => p.trim())
+                .filter((p) => p.length > 0)
+                .map((paragraph) => (
+                  <p key={paragraph} className="pie-hilo__reading">
+                    {paragraph}
+                  </p>
+                ))}
+            </section>
+          ) : null}
+          <section
+            className="pie-doc-section"
+            aria-labelledby="pie-frontier-title"
+          >
+            <h3 id="pie-frontier-title" className="pie-section__title">
+              Frontera institucional
+            </h3>
+            {/* El Perfil concluye, no recomienda: enunciado fijo de frontera
+                con el Plan de Acción (fase posterior). */}
+            <p className="pie-hilo__reading">
+              {view.institutionalBoundary.statement}
+            </p>
+            {view.institutionalBoundary.candidaturas.length > 0 ? (
+              <>
+                <p className="pie-agenda-intro">
+                  El documento deja preparadas{" "}
+                  {view.institutionalBoundary.candidaturas.length} candidatura(s)
+                  técnica(s) para la deliberación posterior:
+                </p>
+                <ul className="pie-cierre__items">
+                  {view.institutionalBoundary.candidaturas.map((candidatura) => (
+                    <li key={candidatura}>{candidatura}</li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            <p className="pie-hilo__context">
+              Consenso del Grupo Motor documentado:{" "}
+              {view.institutionalBoundary.consensoDocumentado
+                ? "sí"
+                : "no disponible"}
+              .
+            </p>
+          </section>
+        </>
+      ) : null}
 
       {/* ── Lectura territorial ampliada y anexo técnico (colapsado) ──────
           Solo en el borrador prevalidación (forma antigua). La vista canónica

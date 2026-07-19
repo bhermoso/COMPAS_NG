@@ -23,6 +23,7 @@ import {
 import type {
   DiagnosticAnswers,
   ProfileIntegratedEditorialView,
+  CanonicalEditorialView,
 } from "../src/application/health-profile";
 import {
   buildPSLCCanonicalDocument,
@@ -30,6 +31,7 @@ import {
 } from "../src/application/psl-c-canonical";
 import { compileLocalHealthProfile } from "../src/application/health-profile-compiler";
 import { LocalHealthProfileView } from "../src/ui/components/LocalHealthProfileView";
+import { ProfileIntegratedEditorialPreview } from "../src/ui/components/ProfileIntegratedEditorialPreview";
 import { createMunicipalityContext } from "../src/domain/municipality";
 import { createEvidenceStore } from "../src/domain/evidence";
 import { createMunicipalDocumentRepository } from "../src/domain/repository";
@@ -420,6 +422,49 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(frozenHtml).toContain("La lectura territorial integrada está pendiente");
     // No fabrica hilos territoriales en el artefacto congelado.
     expect(frozenHtml).not.toContain('class="pie-hilo"');
+
+    // GOV-SALIDA-01 (frente de pantalla): la cadena editorial se cierra en
+    // pantalla igual que en DOCX/PDF/visor (Art. 17 bis) y llega hasta la
+    // FRONTERA (Art. 16 bis). El artefacto congelado es la vista canónica, así
+    // que su cierre humano y su frontera llegan realmente a la pantalla.
+    expect(frozenHtml).toContain("Cierre de la lectura");
+    expect(frozenHtml).toContain(
+      "Cierre interpretativo del equipo técnico de Zagra."
+    );
+    expect(frozenHtml).toContain("Frontera institucional");
+    expect(frozenHtml).toContain("no formula recomendaciones");
+    expect(frozenHtml).toContain("Consenso del Grupo Motor documentado:");
+
+    // El ORDEN de la cadena de cierre se verifica en aislamiento sobre el propio
+    // componente (en la página completa el cuerpo del cierre humano también
+    // aparece antes, en la tarjeta del artefacto): columnas generadas «Cierre
+    // de la lectura» → «Cierre interpretativo» (humano) → «Frontera
+    // institucional». Se sobreescriben solo las candidaturas (Zagra no lleva
+    // ninguna) para ejercitar además esa rama.
+    expect(sealedDoc).not.toBeNull();
+    if (sealedDoc === null) return;
+    const canonicalView: CanonicalEditorialView = {
+      ...sealedDoc.editorialView,
+      institutionalBoundary: {
+        ...sealedDoc.editorialView.institutionalBoundary,
+        candidaturas: ["Cohesión y apoyo social", "Entornos activos"],
+      },
+    };
+    const componentHtml = renderToStaticMarkup(
+      <ProfileIntegratedEditorialPreview view={canonicalView} />
+    );
+    const idxLectura = componentHtml.indexOf("Cierre de la lectura");
+    const idxHumano = componentHtml.indexOf(
+      "Cierre interpretativo del equipo técnico de Zagra."
+    );
+    const idxFrontera = componentHtml.indexOf("Frontera institucional");
+    expect(idxLectura).toBeGreaterThanOrEqual(0);
+    expect(idxHumano).toBeGreaterThan(idxLectura);
+    expect(idxFrontera).toBeGreaterThan(idxHumano);
+    // Rama de candidaturas técnicas: se enumeran cuando la frontera las lleva.
+    expect(componentHtml).toContain("candidatura(s) técnica(s)");
+    expect(componentHtml).toContain("Cohesión y apoyo social");
+    expect(componentHtml).toContain("Entornos activos");
   });
 
   it("alinea Vida cotidiana con sueño e inactividad, no con señales sanitarias del Informe", () => {
@@ -703,9 +748,19 @@ describe("render — perfil de salud local canónico", () => {
   it("subordina la lectura ampliada y el anexo técnico en details", () => {
     expect(proposalHtml).toContain("<details");
     expect(proposalHtml).toContain("Lectura territorial ampliada y anexo técnico");
-    expect(proposalHtml.indexOf("Cierre interpretativo")).toBeLessThan(
+    // Las columnas generadas se titulan «Cierre de la lectura» (paridad con el
+    // proyector); preceden al anexo técnico colapsado.
+    expect(proposalHtml.indexOf("Cierre de la lectura")).toBeLessThan(
       proposalHtml.indexOf("<details")
     );
+  });
+
+  it("el borrador vivo (vista legacy) no fabrica cierre humano ni frontera institucional", () => {
+    // El frente de pantalla añade cierre humano y frontera SOLO a la vista
+    // canónica sellada. El borrador prevalidación (forma legacy) queda intacto:
+    // no lleva `institutionalBoundary` ni `humanClosing` y no los inventa.
+    expect(proposalHtml).not.toContain("Frontera institucional");
+    expect(proposalHtml).not.toContain("Consenso del Grupo Motor documentado:");
   });
 
   it("el fragmento editorial no usa lenguaje de decisión ni fórmulas de plantilla", () => {
