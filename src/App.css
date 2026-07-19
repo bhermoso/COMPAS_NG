@@ -9139,6 +9139,15 @@ h3 {
   padding-left: 20px !important;
 }
 
+/* Cierre interpretativo — voz de autoría humana (Art. 16). Se distingue del
+   cuerpo compilado y del cierre de frontera: acento editorial (azul) frente al
+   institucional (pizarra oscura). */
+.pslc-viewer__cierre-humano {
+  background: #f8fafc;
+  border-left: 4px solid #0074c8;
+  padding-left: 20px !important;
+}
+
 /* ── PSL-C: impresión (GOV-SALIDA-01 · PR-4) ───────────────────────────────
    Régimen de impresión ÚNICO y determinista, definido más abajo en «Perfil
    canónico — régimen de impresión único». La impresión es SIEMPRE la lectura

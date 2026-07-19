@@ -26,6 +26,7 @@ import {
   addHypothesis,
   addOpenQuestion,
   updateSynthesis,
+  buildDiagnosticAnswers,
 } from "../src/application/health-profile";
 import { PSLCArtifactViewer } from "../src/ui/components/PSLCArtifactViewer";
 import type { LocalHealthProfileArtifact } from "../src/domain/health-profile-artifact";
@@ -221,6 +222,52 @@ describe("visor PSL-C — documento institucional renderizado", () => {
     expect(html).toContain("pslc-viewer__meta");
     expect(html).toContain("pslc-viewer__capitulo");
     expect(html).toContain("pslc-viewer__frontera");
+  });
+
+  it("distingue el cierre de autoría humana con tratamiento propio (vista canónica)", () => {
+    // GOV-SALIDA-01 (humanClosing en el visor): en la vista canónica sellada, el
+    // cierre de autoría humana (`human-closing`) se rinde CON marca propia
+    // (`pslc-viewer__cierre-humano`), distinguiéndolo del cuerpo compilado y del
+    // cierre de frontera (voz autoral, Art. 16). Requiere artefacto v2 (con
+    // `diagnosticAnswers`) y un cierre con contenido.
+    const answers = buildDiagnosticAnswers({
+      workspace: ws,
+      determinantTitles: [],
+      assets: ws.evidenceStore.atoms
+        .filter((a) => a.kind === "asset")
+        .map((a) => ({ title: a.title, content: a.content })),
+    });
+    const cierreTexto =
+      "El equipo técnico interpreta que sostener las redes de cuidado del distrito es la clave de lectura del diagnóstico.";
+    const pslConCierre: LocalHealthProfile = {
+      ...pslCompilable(generated),
+      cierreInterpretativo: {
+        ...generated.cierreInterpretativo,
+        content: cierreTexto,
+        status: "authored",
+      },
+    };
+    const result = compileLocalHealthProfile({
+      psl: pslConCierre,
+      perfil: perfilConConocimiento(),
+      compiledBy: "Equipo técnico de salud pública",
+      municipalityName: ws.municipality.identity.name,
+      municipalityProvince: ws.municipality.identity.province ?? "",
+      existingArtifactCount: 0,
+      diagnosticAnswers: answers,
+    });
+    if (!result.ok) throw new Error("compilación canónica falló");
+    // Artefacto v2: el visor consume la proyección canónica (no la ruta legacy).
+    expect(result.artifact.canonicalDocument).toBeDefined();
+    const canonicalHtml = renderToStaticMarkup(
+      <PSLCArtifactViewer artifact={result.artifact} />
+    );
+    // El cierre humano se rinde, con su título, su contenido y su marca propia.
+    expect(canonicalHtml).toContain("pslc-viewer__cierre-humano");
+    expect(canonicalHtml).toContain("Cierre interpretativo");
+    expect(canonicalHtml).toContain(cierreTexto);
+    // La marca es distinta de la frontera (voz autoral vs institucional).
+    expect(canonicalHtml).toContain("pslc-viewer__frontera");
   });
 
   it("sin espacio de conocimiento, declara EKC no disponible en lugar de inventarlo", () => {
