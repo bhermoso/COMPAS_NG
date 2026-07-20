@@ -163,9 +163,9 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 ### CONTRACT-NHS-HEALTH-PROFILE
 **Estado:** SUPERADO EN SU ESTATUTO DE PRODUCTO AUTÓNOMO (ver §0 del propio contrato y Fundamentos del Perfil único, 2026-07-17)
 
-Por los Fundamentos del Perfil único, el PSL-NHS **deja de ser un «Producto 4» institucional independiente**: no es producto autónomo ni segunda fuente de verdad. Pasa a ser una **representación derivada dentro del Perfil de Salud Local, sin veredictos comparativos**: la capacidad de posición (`computePosition`) queda **descartada** (evaluación resuelta), no pendiente. El contrato conserva su cuerpo histórico como registro de diseño, subordinado a su §0. La retirada del código/ruta/artefacto NHS y la reconciliación del catálogo (6 vs 13 instrumentos) quedan como **migración pendiente** (GOV-P4-01).
+Por los Fundamentos del Perfil único, el PSL-NHS **deja de ser un «Producto 4» institucional independiente**: no es producto autónomo ni segunda fuente de verdad. Pasa a ser una **representación derivada dentro del Perfil de Salud Local, sin veredictos comparativos**: la capacidad de posición (`computePosition`) queda **descartada** (evaluación resuelta), no pendiente. El contrato conserva su cuerpo histórico como registro de diseño, subordinado a su §0. La retirada del código/ruta/artefacto NHS queda **ejecutada** (GOV-P4-01 · PR-E); la divergencia de catálogo (6 vs 13) se disuelve con el compilador retirado.
 
-**Productores:** `NHSHealthProfileCompiler` (implementado en `src/application/nhs-health-profile-compiler/`) y `NHSHealthProfileView` (vista implementada). El contrato del compiler quedó incorporado en `CONTRACT-NHS-HEALTH-PROFILE §10`; no existe contrato separado.
+**Productores:** `projectNHSDerived` (`src/application/health-profile/nhsDerivedProjection.ts`) como proyector puro del documento canónico, y `NHSHealthProfileView` como renderer integrado dentro del espacio «Perfil de Salud Local». No existe compilador ni artefacto NHS autónomo.
 **Consumidores:** Corporación municipal, ciudadanía, comunicación institucional.
 **Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID, CONTRACT-NAVIGATION, VISUAL-CONTRACT.
 
@@ -399,8 +399,8 @@ contractual.
    autónomo y como segunda fuente de verdad. La **representación derivada** sobrevive
    como reexpresión **sin veredictos**; la capacidad de posición (`computePosition`)
    queda **descartada** (ver `CONTRACT-NHS-HEALTH-PROFILE` §0). La retirada de
-   código, rutas, artefactos y tests NHS queda registrada como migración pendiente;
-   no se ejecuta en esta intervención.
+   código, rutas, artefactos y tests NHS queda **ejecutada** (GOV-P4-01 · PR-E):
+   la representación derivada vive dentro del único espacio «Perfil de Salud Local».
 
 2. **Arquitectura adaptativa (sin recuento obligatorio de capítulos).** Existe una
    **única lectura institucional canónica**. Su extensión y su número de secciones
@@ -439,7 +439,7 @@ Estas entradas registran decisiones o divergencias vivas que afectan a la gobern
 | GOV-PSL-01 | Estructura documental del Perfil: **rigidez numérica derogada** por los Fundamentos del Perfil único (2026-07-17). La lectura canónica es única y adaptativa; su extensión depende del expediente. Queda pendiente la *implementación* de la arquitectura adaptativa en código. | `CONTRACT-MIT-PSL` §6, `CONTRACT-PSL-COMPAS` §4, `narrativeChapters.ts`, `ProfileIntegratedEditorialPreview` | Doctrina resuelta; implementación pendiente |
 | GOV-PSL-02 | Vista editorial integrada implementada como lectura canónica sin contrato propio de producto. | `LocalHealthProfileView.tsx`, `tests/perfil-vista-editorial-integrada.test.tsx` | Pendiente de contrato/unificación |
 | GOV-PSL-03 | `PerfilFuentesPanel` y `PerfilLocalDeSaludPanel` se renderizan tras el Perfil, fuera de la lectura canónica y fuera del espacio técnico del Perfil. | `src/App.tsx:2978-2979` | Pendiente de decisión funcional |
-| GOV-P4-01 | El PSL-NHS deja de ser producto autónomo/segunda fuente de verdad (Fundamentos del Perfil único, 2026-07-17): pasa a **representación derivada sin veredictos comparativos** dentro del Perfil. La capacidad de posición (`computePosition`) queda **descartada** (evaluación resuelta). La migración de código/ruta/artefacto y la reconciliación del catálogo (6 vs 13) quedan como **migración pendiente**; no se ejecutan en esta intervención. | `CONTRACT-NHS-HEALTH-PROFILE` §0, `NHSHealthProfileCompiler.ts`, catálogo de Estudios Complementarios | Doctrina resuelta; migración pendiente |
+| GOV-P4-01 | El PSL-NHS deja de ser producto autónomo/segunda fuente de verdad (Fundamentos del Perfil único, 2026-07-17): pasa a **representación derivada sin veredictos comparativos** dentro del Perfil. La capacidad de posición (`computePosition`) queda **descartada** (evaluación resuelta). La migración de código/ruta/artefacto queda **ejecutada** (PR-E); la divergencia de catálogo (6 vs 13) se disuelve con el compilador retirado. | `CONTRACT-NHS-HEALTH-PROFILE` §0, representación derivada en `view==="psl"` | Doctrina resuelta; migración ejecutada |
 | GOV-SALIDA-01 | Pantalla e impresión derivan de `editorialView`; DOCX/PDF/visor reconstruyen desde `provenance + conclusiones.content` (dos composiciones). Los Fundamentos (2026-07-17) obligan a equivalencia **semántica** entre salidas; la unificación de código queda pendiente. | `pslcCanonicalDocument.ts`, `pslcDocumentModel.ts`, `pslcDocx.ts`, `pslcPdf.ts` | Doctrina fijada; implementación pendiente |
 | GOV-VIS-01 | Identidad visual sin autoridad operacional única: `VISUAL-CONTRACT` existe como doctrina, pero `src/App.css` concentra 10.255 líneas, 1.795 colores hexadecimales, 132 colores únicos y dos escalas de grises conviviendo (`#64748b` y familia; `#526070` y familia). | `docs/visual/VISUAL-CONTRACT.md`, `src/App.css` | Deuda de gobernanza visual |
 ---

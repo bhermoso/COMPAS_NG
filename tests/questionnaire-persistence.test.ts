@@ -18,6 +18,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { createCompleteMunicipalityWorkspace } from '../src/application/workspace'
+import { parseWorkspaceJSON } from '../src/infrastructure/persistence/local-storage'
 import type { MunicipalityWorkspace } from '../src/domain/workspace'
 import type { QuestionnaireProject } from '../src/domain/questionnaire'
 import { createQuestionnaire } from '../src/application/questionnaire'
@@ -156,10 +157,33 @@ describe('GES — persistencia de QuestionnaireProjects en el workspace', () => 
     expect(restored.repository.documents).toHaveLength(0)
     expect(restored.validatedPSL).toBeUndefined()
     expect(restored.compiledProfiles).toBeUndefined()
-    expect(restored.nhsArtifact).toBeUndefined()
 
     // El proyecto existe en paralelo sin interferir
     expect(restored.questionnaireProjects).toHaveLength(1)
   })
 
+})
+
+// ── Compatibilidad legacy: propiedad `nhsArtifact` sobrante (GOV-P4-01 · PR-E) ──
+// Tras retirar la autonomía NHS, `nhsArtifact` ya no existe en el tipo. Un blob
+// persistido por una versión anterior puede llevarlo como propiedad adicional.
+// `parseWorkspaceJSON` tolera extras: el workspace se rehidrata sin que ninguna
+// lógica de producción necesite leer ni interpretar el artefacto antiguo, y sin
+// migración destructiva (el extra puede persistir como dato inerte).
+describe('Compatibilidad legacy — blob con `nhsArtifact` sobrante', () => {
+  it('rehidrata un blob legacy con nhsArtifact sin interpretarlo', () => {
+    const ws = makeWorkspace('mun-legacy')
+    const legacyRaw = JSON.stringify({
+      ...ws,
+      nhsArtifact: { id: 'legacy-nhs', municipalityId: 'mun-legacy', isCongealed: true },
+    })
+
+    const restored = parseWorkspaceJSON(legacyRaw)
+
+    expect(restored).not.toBeNull()
+    expect(restored!.municipality.identity.id).toBe('mun-legacy')
+    expect(restored!.repository.documents).toHaveLength(0)
+    expect(restored!.evidenceStore.atoms).toHaveLength(0)
+    // No se exige purga del extra: la restauración es válida sin leerlo.
+  })
 })

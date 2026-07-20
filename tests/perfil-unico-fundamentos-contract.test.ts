@@ -74,9 +74,9 @@ describe("Fundamentos del Perfil único — CONTRACT-NHS-HEALTH-PROFILE", () => 
     expect(nhs).toContain("no puede fabricar una afirmación que su fuente niega");
   });
 
-  it("registra la migración de código NHS como pendiente (no ejecutada)", () => {
-    expect(nhs).toContain("Migración pendiente");
-    expect(nhs).toContain("el código NHS permanece intacto");
+  it("registra la migración de código NHS como ejecutada (PR-E)", () => {
+    expect(nhs).toContain("Migración ejecutada");
+    expect(nhs).toContain("el código NHS autónomo ha sido retirado");
   });
 });
 
@@ -123,7 +123,7 @@ describe("Reconciliación — CONTRACT-NAVIGATION: un único Perfil", () => {
       "No existe, en el estado objetivo, una pestaña ni un producto independiente «Perfil de Salud tipo NHS»"
     );
     expect(nav).toContain("El PSL-C es la **compilación institucional del mismo Perfil**");
-    expect(nav).toContain("migración técnica pendiente");
+    expect(nav).toContain("migración técnica ejecutada");
   });
 
   it("retira la fila «Producto 4 | Perfil de Salud tipo NHS» de la tabla de denominaciones", () => {
@@ -147,10 +147,17 @@ describe("Reconciliación — CONTRACT-INDEX: sin «Producto 4» vigente", () =>
     expect(raw).not.toContain("con estatuto de producto institucional propio por razón de su audiencia y formato");
   });
 
-  it("mantiene la migración NHS como pendiente (GOV-P4-01) y la cobertura adaptativa", () => {
-    expect(idx).toContain("migración pendiente");
+  it("registra la migración NHS como ejecutada (GOV-P4-01) y mantiene la cobertura adaptativa", () => {
+    expect(idx).toContain("migración ejecutada");
     expect(raw).not.toContain("los 7 capítulos del PSL");
     expect(raw).not.toContain("estructura canónica de 7 capítulos");
+  });
+
+  it("identifica la rama derivada real como productor y niega compilador/artefacto autónomo", () => {
+    expect(idx).toContain("projectNHSDerived");
+    expect(idx).toContain("No existe compilador ni artefacto NHS autónomo");
+    // El registro vigente no puede seguir declarando el compilador retirado.
+    expect(raw).not.toContain("`NHSHealthProfileCompiler` (implementado en `src/application/nhs-health-profile-compiler/`)");
   });
 });
 
@@ -171,10 +178,10 @@ describe("Reconciliación — INSTITUTIONAL-PRODUCTS-ARCHITECTURE: catálogo sin
     expect(ipa).toContain("No procede un compilador NHS separado como producto propio");
   });
 
-  it("no mantiene 7 capítulos obligatorios; registra migración pendiente", () => {
+  it("no mantiene 7 capítulos obligatorios; registra migración ejecutada", () => {
     expect(raw).not.toContain("7 capítulos estructurados, exportable");
     expect(raw).not.toContain("7 capítulos perfectamente definidos");
-    expect(ipa).toContain("migración técnica pendiente");
+    expect(ipa).toContain("migración técnica ejecutada");
   });
 });
 

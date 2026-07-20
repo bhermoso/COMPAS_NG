@@ -12,7 +12,7 @@ import type { MunicipalityWorkspace } from "../../domain/workspace";
  * reales, provocando pérdida silenciosa de información.
  *
  * Última revisión: Intervención GES (2026-07-02) — añadido questionnaireProjects;
- *   auditoría de cierre — añadido compiledProfiles, nhsArtifact, pslApproval, formalValidations.
+ *   auditoría de cierre — añadido compiledProfiles, pslApproval, formalValidations.
  *   Incidente de persistencia (2026-07-07) — añadidos los siete estudios incorporados
  *   después de la revisión anterior (AUDIT-C, IPAQ, GHQ-12, PHQ-9, PSQI, Fagerström, SBQ),
  *   projectDatasetImports y perfilLocalDeSalud. La omisión reproducía la causa raíz de
@@ -44,7 +44,6 @@ export function isEmptyWorkspaceForPersistenceGuard(
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
     workspace.validatedPSL === undefined &&
     (workspace.compiledProfiles?.length ?? 0) === 0 &&
-    workspace.nhsArtifact === undefined &&
     workspace.pslApproval === undefined &&
     (workspace.formalValidations?.length ?? 0) === 0 &&
     // Proyectos GES — omitido en Intervención 3, causa raíz de la regresión de persistencia

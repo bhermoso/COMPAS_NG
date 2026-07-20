@@ -34,8 +34,9 @@
   Perfil es única y **adaptativa** (`CONTRACT-MIT-PSL` §6.1.1 bis): su extensión y su
   número de secciones dependen de la riqueza del expediente.
 - La retirada del **código/ruta/artefacto NHS** (`NHSHealthProfileCompiler`,
-  `NHSHealthProfileView`, `workspace.nhsArtifact`, pestaña de navegación) es
-  **migración técnica pendiente**, no ejecutada en esta intervención.
+  `workspace.nhsArtifact`, pestaña de navegación) es **migración técnica ejecutada**
+  (GOV-P4-01 · PR-E). `NHSHealthProfileView` se conserva como renderer de la
+  representación derivada, proyectada del documento canónico dentro del Perfil.
 
 Las secciones históricas §4 (análisis NHS) y §6.2 (NHSHealthProfileCompiler) se
 conservan como registro de diseño **superado**; no constituyen autoridad vigente.
@@ -509,7 +510,7 @@ en artefactos institucionales exportables. No analizan, no interpretan, no propo
 ### 6.2 NHSHealthProfileCompiler
 
 > **SECCIÓN SUPERADA (ver §0).** El `NHSHealthProfileCompiler` no es un compilador de
-> producto propio en el estado objetivo; su retirada es migración técnica pendiente.
+> producto propio en el estado objetivo; su retirada es migración técnica ejecutada (PR-E).
 
 | Campo | Valor |
 |---|---|
@@ -989,7 +990,7 @@ de Salud Local sintético, inspirado en NHS Local Health Profiles".
 ni un compilador NHS separados como producto propio. Las capacidades NHS válidas se
 integran, si superan evaluación, **dentro** del Perfil (lectura única y adaptativa, sin
 recuento obligatorio de capítulos). La retirada del `NHSHealthProfileCompiler`/panel es
-migración técnica pendiente.
+migración técnica ejecutada (PR-E).
 
 **Contradicción C-2: CONTRACT-COMPILER actual es insuficiente**
 

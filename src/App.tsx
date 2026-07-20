@@ -175,13 +175,12 @@ function slugifyMunicipalityId(name: string): string {
 
 // ── Tipos y constantes de módulo ─────────────────────────────
 
-type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "nhs" | "priorizacion" | "lectura" | "plan" | "plan-local" | "evaluacion" | "ges";
+type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "priorizacion" | "lectura" | "plan" | "plan-local" | "evaluacion" | "ges";
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Diagnóstico territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
-  { id: "nhs",           label: "Perfil de Salud tipo NHS" },
   { id: "plan",          label: "Plan de Acción" },
   { id: "plan-local",    label: "Plan Local de Salud" },
   { id: "evaluacion",    label: "Evaluación" },
@@ -2703,13 +2702,6 @@ export default function App() {
                         técnicamente. Documento base para la planificación.
                       </p>
                     </div>
-                    <div className="home-product home-product--2">
-                      <p className="home-product__name">Perfil de Salud tipo NHS (PSL-NHS)</p>
-                      <p className="home-product__desc">
-                        Diagnóstico comparativo con indicadores de salud del municipio
-                        y valores de referencia. Destinado a alcaldía y corporación municipal.
-                      </p>
-                    </div>
                     <div className="home-product home-product--3">
                       <p className="home-product__name">Plan de Acción Local en Salud</p>
                       <p className="home-product__desc">
@@ -3007,6 +2999,17 @@ export default function App() {
               onCompile={handleCompilePSL}
               onApprove={handleApprovePSL}
             />
+            {/* Representación derivada breve (GOV-P4-01 · PR-E): dentro del único
+                espacio «Perfil de Salud Local», proyectada del documento canónico. */}
+            <NHSHealthProfileView
+              document={(() => {
+                const compiled = workspace.compiledProfiles ?? [];
+                const last = compiled[compiled.length - 1];
+                return last?.canonicalDocument !== undefined
+                  ? readSealedCanonicalDocument(last.canonicalDocument)
+                  : null;
+              })()}
+            />
             <PerfilFuentesPanel workspace={workspace} />
             <PerfilLocalDeSaludPanel
               perfil={workspace.perfilLocalDeSalud}
@@ -3015,19 +3018,6 @@ export default function App() {
               onUpdatePerfil={handleUpdatePerfilLocalDeSalud}
             />
           </>
-        )}
-
-        {/* ── ④b Perfil de Salud Local · representación derivada (GOV-P4-01 · PR-D) ── */}
-        {view === "nhs" && (
-          <NHSHealthProfileView
-            document={(() => {
-              const compiled = workspace.compiledProfiles ?? [];
-              const last = compiled[compiled.length - 1];
-              return last?.canonicalDocument !== undefined
-                ? readSealedCanonicalDocument(last.canonicalDocument)
-                : null;
-            })()}
-          />
         )}
 
         {/* ── ⑤ Priorizaciones — técnica y participativa ──────── */}
