@@ -27,7 +27,9 @@ variación —sin alterar el comportamiento normal de la aplicación— aplicand
   documentos, EvidenceStore, átomos, Informe e IBSE).
 - **Identificadores estables**: `doc-health-report-atarfe` (documento del
   Informe), `health-report-atarfe` (HealthReportDocument), `ibse-study-atarfe`
-  (IBSEStudy) y `doc-ibse-atarfe` (documento IBSE).
+  (IBSEStudy), `doc-ibse-atarfe` (documento IBSE) y `doc-localiza-atarfe`
+  (documento Localiza Salud). Los cinco activos usan IDs de átomo estables
+  `doc-localiza-atarfe-atom-1..5` (no `crypto.randomUUID()`).
 
 Ejecutar `npm run rebuild:atarfe` dos veces sin cambiar las fuentes produce el
 **mismo SHA-256** y deja `git diff` vacío. La prueba `atarfe-canonical-workspace`
@@ -48,9 +50,10 @@ Verificado en la suite (caso 13): si una fuente cambia, la validación falla.
 | Elemento | Valor |
 |---|---|
 | Identidad | `atarfe` · Atarfe · Granada · INE 18022 |
-| Documentos del repositorio | **2** (Informe de Salud + IBSE) |
+| Documentos del repositorio | **3** (Informe de Salud + IBSE + Localiza Salud) |
 | Estudios | **1** (IBSE municipal) |
-| EvidenceAtoms totales | **6** (5 `indicator` + 1 `qualitative-observation`, origen `ibse`) |
+| Activos para la salud (Localiza Salud) | **5** (EvidenceAtoms `asset`, origen `localiza-salud`) |
+| EvidenceAtoms totales | **11** (6 IBSE [5 `indicator` + 1 `qualitative-observation`] + 5 `asset` de Localiza Salud) |
 | Átomos del Informe de Salud | **0** (D-HR-01 / Art. 7 bis §3) |
 | Autoría del Informe | **2 firmantes** (Carlos del Moral Campaña, María José Molina Rueda — Epidemiología, Distrito Granada-Metropolitano) |
 | IBSE (muestra **mixta**) | n=909 · nValid=811 · media IBSE total=63,2 · `sampleScope: "mixed"` · sin desglose etario |
@@ -61,6 +64,42 @@ Verificado en la suite (caso 13): si una fuente cambia, la validación falla.
 |---|---|---|---|
 | `fixtures/health-reports/Informe_Salud_Atarfe.docx` | municipal real (documento primario) | Base epidemiológica oficial (**N**), preservada sin atomizar y con su autoría (Art. 16) | `health-report`, `territorialScale: municipio`, `contentMode: full-text-non-atomized` |
 | `fixtures/ibse-atarfe.csv` | `municipal-demo` (REDCap Monitor IBSE Atarfe 2026) | Único estudio genuinamente municipal (**+1**) → cumple la regla N+1. Muestra **mixta** (`sampleScope: "mixed"`) | `redcap-export` + tag `ibse`, `territorialScale: municipio`, `contentMode: atomized` |
+| Localiza Salud — 5 activos para la salud de Atarfe (portal del Ministerio de Sanidad, [maparecursos](https://localizasalud.sanidad.gob.es/maparecursos/main/)) | municipal real (recursos comunitarios publicados) | Activos para la salud (**+1** comunitario adicional, Art. 7 bis A) | `localiza-salud`, origen `localiza-salud`, `territorialScale: municipio`, `contentMode: atomized`; texto fuente verbatim en `sourceText` |
+
+### Activos para la salud — Localiza Salud (Opción B)
+
+Cinco recursos comunitarios publicados en el portal **Localiza Salud** del
+Ministerio de Sanidad para Atarfe. Se ingieren por la **misma ruta documental**
+que Granada-Zaidín (`kind: "localiza-salud"` → un `EvidenceAtom` `asset` por
+línea, origen `localiza-salud`), sin ampliar `EvidenceAtom` ni ningún contrato
+compartido y sin crear un modelo paralelo.
+
+El texto fuente TSV se conserva **verbatim** en `MunicipalDocument.sourceText`
+(documento `doc-localiza-atarfe`), con columnas separadas por `" | "`:
+
+```
+Nombre | Descripción | Sexo | Grupo | Temas | Provincia | Localidad | IdLocaliza | UrlDetalle
+```
+
+Las dos últimas columnas (**IdLocaliza**, **UrlDetalle**) son el enriquecimiento
+autorizado (Opción B): preservan el identificador externo del portal y la URL de
+detalle de cada recurso. Los **temas múltiples** viajan unidos por `", "` dentro
+de su columna, porque `EvidenceAtom` no admite arrays y **no se extiende** para
+forzar uno. Las **erratas de origen** («útliles», «MUNUMENTOS») se preservan sin
+corrección silenciosa. El **título** de cada átomo es la primera columna (Nombre).
+
+Correspondencia identificador externo (IdLocaliza) → ID interno de átomo:
+
+| Nombre | IdLocaliza (externo) | ID interno de átomo | UrlDetalle |
+|---|---|---|---|
+| Centro de Participación Activa de Atarfe | `61419` | `doc-localiza-atarfe-atom-1` | `…ResourcesSearchDetail.action?id=61419` |
+| Piscina Cubierta Pública Atarfe (Granada) | `47602` | `doc-localiza-atarfe-atom-2` | `…?id=47602` |
+| Punto Vuela Atarfe | `60152` | `doc-localiza-atarfe-atom-3` | `…?id=60152` |
+| Taller de Coro del Centro de Participación Activa de Atarfe | `61425` | `doc-localiza-atarfe-atom-4` | `…?id=61425` |
+| Taller de Senderismo del Centro de Participación Activa de Atarfe | `61429` | `doc-localiza-atarfe-atom-5` | `…?id=61429` |
+
+Dedup por **clave estable** `stableAssetKey(municipio, origen, título)`: hidratar
+Atarfe varias veces **no multiplica** los registros (validado en la suite).
 
 ## Fuentes EXCLUIDAS (y por qué)
 
@@ -94,5 +133,8 @@ Verificado en la suite (caso 13): si una fuente cambia, la validación falla.
   este export». Los átomos cuantitativos dicen «Media de la muestra municipal
   participante», nunca «Media municipal». El documento se titula «Monitor IBSE
   Atarfe 2026 (muestra mixta)».
-- Regla N+1 (Art. 7 bis A): Informe (N) + IBSE municipal (+1). Expediente válido y
-  honesto con las únicas fuentes municipales disponibles hoy.
+- Regla N+1 (Art. 7 bis A): Informe (N) + IBSE municipal + 5 activos Localiza Salud.
+  Hay **dos caminos +1 independientes** (estudio complementario y activos): el
+  Perfil sigue siendo compilable con cualquiera de ellos por separado. El gate
+  `G-LHC-8` solo dispara si se retiran **ambas** fuentes; no se ha alterado el gate
+  para forzar ningún resultado (validado en los casos 17 y 25).

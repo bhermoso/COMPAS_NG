@@ -59,10 +59,12 @@ describe("Generador — expediente canónico de Atarfe", () => {
     expect(workspace.municipality.identity.id).toBe(ATARFE_ID);
     expect(workspace.municipality.identity.ineCode).toBe(ATARFE_INE);
     expect(workspace.schemaVersion).toBe("1.0.0");
-    // Recuentos deterministas: Informe (sin átomos) + IBSE (6 átomos).
-    expect(counts.documents).toBe(2);
+    // Recuentos deterministas: Informe (sin átomos) + IBSE (6 átomos) +
+    // Localiza Salud (5 activos) = 3 documentos y 11 evidencias.
+    expect(counts.documents).toBe(3);
     expect(counts.studyAtoms).toBe(6);
-    expect(counts.totalAtoms).toBe(6);
+    expect(counts.localizaAssets).toBe(5);
+    expect(counts.totalAtoms).toBe(11);
     expect(counts.healthReportAtoms).toBe(0);
 
     // Guardado con el servicio real → serialización idéntica a la de la app.
@@ -100,8 +102,9 @@ describe("Generador — expediente canónico de Atarfe", () => {
         "════ Expediente canónico de Atarfe generado ════",
         `Clave localStorage : ${key}`,
         `Tamaño del valor   : ${value.length} caracteres`,
-        `Documentos         : ${counts.documents} (Informe + IBSE)`,
+        `Documentos         : ${counts.documents} (Informe + IBSE + Localiza Salud)`,
         `Estudios           : ${counts.studies} (IBSE municipal)`,
+        `Activos Localiza   : ${counts.localizaAssets} (activos para la salud, +1)`,
         `Evidencias totales : ${counts.totalAtoms}`,
         `Átomos del Informe : ${counts.healthReportAtoms} (D-HR-01)`,
         `Export             : ${EXPORT_FILE}`,

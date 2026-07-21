@@ -47,6 +47,7 @@ import {
   type AddMunicipalDocumentInput,
   type MunicipalDocument,
 } from "../../src/domain/repository";
+import { transformDocumentToEvidence } from "../../src/application/evidence-pipeline";
 import {
   stableAssetKey,
   upsertEvidenceAtom,
@@ -129,12 +130,51 @@ export const ATARFE_IBSE_SAMPLE_CAUTIONS: readonly string[] = [
   IBSE_PARTICIPANT_SAMPLE_CAUTION,
 ];
 
+// ── Activos para la salud — Localiza Salud (componente +1, Regla N+1) ─────────
+// Cinco recursos comunitarios publicados en el portal Localiza Salud del
+// Ministerio de Sanidad para el municipio de Atarfe. Se ingieren por la ruta
+// documental `localiza-salud` (un EvidenceAtom `asset` por línea, origen
+// "localiza-salud"), IDÉNTICA a la de Granada-Zaidín: NO amplía EvidenceAtom ni
+// ningún contrato compartido y NO crea un modelo paralelo.
+//
+// FIDELIDAD (Opción B autorizada): el texto fuente TSV conserva verbatim en
+// `MunicipalDocument.sourceText` las columnas sustantivas de la ficha —
+//   Nombre | Descripción | Sexo | Grupo | Temas | Provincia | Localidad |
+//   IdLocaliza | UrlDetalle
+// — separadas por " | ". Las dos últimas (IdLocaliza, UrlDetalle) son el
+// enriquecimiento autorizado que preserva el identificador externo y la URL de
+// detalle de cada recurso. Los temas múltiples viajan unidos por ", " dentro de
+// su columna: el contrato EvidenceAtom no admite arrays y no se extiende para
+// forzar uno. Las erratas de origen ("útliles", "MUNUMENTOS") se preservan sin
+// corrección silenciosa. El título del átomo es la primera columna (Nombre).
+export const LOCALIZA_DOCUMENT_ID = "doc-localiza-atarfe"; // documento del repositorio (estable)
+export const LOCALIZA_ASSET_COUNT = 5;
+export const LOCALIZA_SALUD_ATARFE_URL_BASE =
+  "https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=";
+export const LOCALIZA_SALUD_ATARFE_TEXT = [
+  "Centro de Participación Activa de Atarfe | Los Centros de Participación Activa son recursos destinados a mejorar la calidad de vida de las personas mayores, favoreciendo su bienestar, la convivencia, la integración social y su participación en la comunidad. Además sirven de apoyo para la prestación de Servicios Sociales y Asistenciales a otros sectores de la población. Destacan sus talleres de envejecimiento activo, orientados a mantener la autonomía, prevenir la dependencia y el aislamiento, y promover hábitos saludables. Algunos de sus talleres son: Gimnasia de mantenimiento, taller de memoria, baile, castañuelas, manualidades, coro, cocina, informática...(cada centro poner los talleres que ofrece) | Cualquiera | Otros | Cultura y ocio, Alimentación saludable, Actividad física, Envejecimiento activo, Participación y acción comunitaria | Granada | Atarfe | 61419 | https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=61419",
+  "Piscina Cubierta Pública Atarfe (Granada) | Piscina pública cubierta del ayuntamiento de Atarfe, que cuenta tanto con actividades programadas para todas las edades como con la opción de nado libre a precios populares. | Cualquiera | Población general | Actividad física, Envejecimiento activo | Granada | Atarfe | 47602 | https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=47602",
+  "Punto Vuela Atarfe | Los Puntos Vuela son espacios digitales que ofrecen equipamiento, acceso y formación en competencias digitales y tecnologías emergentes a toda la ciudadanía. Con apoyo personalizado, facilitan el acceso a servicios electrónicos y herramientas digitales útliles para la vida diaria, educación, empleo, salud, finanzas o administración. | Cualquiera | Población general | Otros | Granada | Atarfe | 60152 | https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=60152",
+  "Taller de Coro del Centro de Participación Activa de Atarfe | Los Centros de Participación Activa son recursos destinados a mejorar la calidad de vida de las personas mayores, favoreciendo su bienestar, la convivencia, la integración social y su participación en la comunidad. Además sirven de apoyo para la prestación de Servicios Sociales y Asistenciales a otros sectores de la población. Destacan sus talleres de envejecimiento activo, orientados a mantener la autonomía, prevenir la dependencia y el aislamiento, y promover hábitos saludables. Algunos de sus talleres son: Gimnasia de mantenimiento, taller de memoria, baile, castañuelas, manualidades, coro, cocina, informática...(cada centro poner los talleres que ofrece) | Cualquiera | Otros | Bienestar emocional, Cultura y ocio, Alimentación saludable, Envejecimiento activo, Participación y acción comunitaria | Granada | Atarfe | 61425 | https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=61425",
+  "Taller de Senderismo del Centro de Participación Activa de Atarfe | EN ESTE TALLER SE RECOGE DOS PARTES UNA LA ACTIVIDAD FISICA Y LA OTRA LAS VISITAS QUE SE HACEN A LOS DIFERENTES MUNICIPIOS O MUNUMENTOS | Cualquiera | Otros | Actividad física | Granada | Atarfe | 61429 | https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=61429",
+].join("\n");
+
+// Correspondencia identificador externo → título (para trazabilidad de pruebas).
+export const LOCALIZA_ATARFE_EXTERNAL_IDS: readonly string[] = [
+  "61419",
+  "47602",
+  "60152",
+  "61425",
+  "61429",
+];
+
 export interface AtarfeBuildResult {
   workspace: MunicipalityWorkspace;
   counts: {
     documents: number;
     studies: number;
     studyAtoms: number;
+    localizaAssets: number;
     totalAtoms: number;
     healthReportAtoms: number;
   };
@@ -293,11 +333,55 @@ export async function buildAtarfeWorkspace(): Promise<AtarfeBuildResult> {
     ibseAtoms
   );
 
-  // ── 3. Determinización canónica (sello temporal + IDs estables) ────────────
+  // ── 3. Activos para la salud — Localiza Salud (+1) ─────────────────────────
+  // Documento `localiza-salud` con ID estable y sourceText verbatim; la ingesta
+  // se hace con `transformDocumentToEvidence` directamente (no con el servicio de
+  // ingesta manual, que emite `crypto.randomUUID()` y rompería la reproducción).
+  // La determinización de timestamps la aplica `canonicalizeWorkspace` más abajo;
+  // los IDs de documento y de átomos ya son estables por construcción.
+  {
+    const repository = addMunicipalDocument(ws.repository, {
+      id: LOCALIZA_DOCUMENT_ID,
+      kind: "localiza-salud",
+      title:
+        "Localiza Salud — activos para la salud del municipio de Atarfe (Ministerio de Sanidad)",
+      source: {
+        organization: "Ministerio de Sanidad",
+        system: "Localiza Salud — mapa de recursos comunitarios y activos para la salud",
+        url: "https://localizasalud.sanidad.gob.es/maparecursos/main/",
+        collectedAt: CANONICAL_TIMESTAMP,
+      },
+      sourceText: LOCALIZA_SALUD_ATARFE_TEXT,
+      tags: ["localiza-salud", "community-asset", "asset"],
+      territorialScale: "municipio",
+      contentMode: "atomized",
+    });
+    const localizaDocument = repository.documents.find(
+      (d) => d.id === LOCALIZA_DOCUMENT_ID
+    );
+    if (localizaDocument === undefined) {
+      throw new Error("No se pudo registrar el documento Localiza Salud de Atarfe.");
+    }
+    const localizaResult = transformDocumentToEvidence({
+      store: ws.evidenceStore,
+      document: localizaDocument,
+      plainText: LOCALIZA_SALUD_ATARFE_TEXT,
+    });
+    ws = {
+      ...ws,
+      repository,
+      evidenceStore: localizaResult.store,
+    };
+  }
+
+  // ── 4. Determinización canónica (sello temporal + IDs estables) ────────────
   ws = canonicalizeWorkspace(ws);
 
   const healthReportAtoms = ws.evidenceStore.atoms.filter(
     (a) => a.provenance.origin === "health-report"
+  ).length;
+  const localizaAssets = ws.evidenceStore.atoms.filter(
+    (a) => a.provenance.origin === "localiza-salud"
   ).length;
 
   return {
@@ -306,6 +390,7 @@ export async function buildAtarfeWorkspace(): Promise<AtarfeBuildResult> {
       documents: ws.repository.documents.length,
       studies: 1,
       studyAtoms: ibseAtoms.length,
+      localizaAssets,
       totalAtoms: ws.evidenceStore.atoms.length,
       healthReportAtoms,
     },
