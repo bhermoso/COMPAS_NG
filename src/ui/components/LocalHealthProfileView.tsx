@@ -736,7 +736,7 @@ function PSLCArtefactoCard({ artifact }: { artifact: LocalHealthProfileArtifact 
           {areas.length > 0 && (
             <div>
               <p className="psl-artifact-section__label">
-                Cuestiones para contraste ({areas.length})
+                Áreas de intervención ({areas.length})
               </p>
               <div className="psl-artifact-areas">
                 {areas.map((area, i) => (

@@ -90,13 +90,15 @@ describe("Lote B · F2 — jerarquía trazador/indicadores y etiquetas demo/prox
     expect(flat).toContain("1 indicador trazador");
     expect(flat).not.toContain("1 indicadores trazadores");
     const estudios = view.sourceBlocks.find((b) => b.id === "estudios");
-    expect(estudios.whatItAdds).toContain("1 estudio y 1 indicador trazador destacado");
+    expect(estudios).toBeDefined();
+    expect(estudios!.whatItAdds).toContain("1 estudio y 1 indicador trazador destacado");
   });
 
   it("F2.2 REGRESIÓN Granada-Zaidín: concordancia plural intacta", () => {
     const view = viewOf(zaidin, ZAIDIN_INFORME);
     const estudios = view.sourceBlocks.find((b) => b.id === "estudios");
-    expect(estudios.whatItAdds).toContain("13 estudios y 8 indicadores trazadores destacados");
+    expect(estudios).toBeDefined();
+    expect(estudios!.whatItAdds).toContain("13 estudios y 8 indicadores trazadores destacados");
   });
 
   it("F2.3 Atarfe: indicadores locales sin comparador externo (etiqueta «disponibles», no «comparables»)", () => {
@@ -140,8 +142,8 @@ describe("Lote B · F7 — fallback OIT nombra el déficit real, sin gate change
     expect(fallback!.title).toBe("Triangular la base municipal de evidencia");
     expect(fallback!.rationale).toContain("determinantes con evidencia directa");
     expect(fallback!.rationale).toContain("participación");
-    // Reconoce lo que YA existe y no aconseja re-incorporarlo.
-    expect(fallback!.rationale).toContain("ya incorpora 5 activo(s) y 5 indicador(es)");
+    // Reconoce lo que YA existe y no aconseja re-incorporarlo (concordancia real, Lote C-1/O3).
+    expect(fallback!.rationale).toContain("ya incorpora 5 activos y 5 indicadores");
     expect(fallback!.rationale).not.toContain("incorporar determinantes, activos, indicadores");
   });
 
