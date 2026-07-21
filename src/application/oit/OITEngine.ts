@@ -70,15 +70,33 @@ export function generateOIT(lt1: LT1Result): OITResult {
   }
 
   if (opportunities.length === 0) {
+    // El fallback nombra el DÉFICIT REAL derivado de lo que hay y lo que falta para
+    // TRIANGULAR una candidatura (determinantes con activos, o participación con
+    // indicadores). No aconseja incorporar activos ni indicadores cuando ya existen.
+    const presentes: string[] = [];
+    if (lt1.assets.length > 0) presentes.push(`${lt1.assets.length} activo(s)`);
+    if (lt1.indicators.length > 0) presentes.push(`${lt1.indicators.length} indicador(es)`);
+    const faltan: string[] = [];
+    if (lt1.determinants.length === 0) faltan.push("determinantes con evidencia directa");
+    if (lt1.qualitativeFindings.length === 0)
+      faltan.push("participación o conocimiento comunitario primario");
+    if (lt1.assets.length === 0) faltan.push("activos comunitarios");
+    if (lt1.indicators.length === 0) faltan.push("indicadores");
+    const presentesStr =
+      presentes.length > 0 ? `El expediente ya incorpora ${presentes.join(" y ")}, ` : "";
+    const faltanStr =
+      faltan.length > 0 ? faltan.join(" y ") : "fuentes complementarias adicionales";
     opportunities.push({
       id: "oit-expand-evidence-base",
-      title: "Ampliar la base municipal de evidencia",
+      title: "Triangular la base municipal de evidencia",
       rationale:
-        "La información disponible aún no permite formular candidaturas territoriales sustantivas. Conviene incorporar determinantes, activos, indicadores y participación antes de avanzar hacia priorización.",
+        `${presentesStr}pero para formular candidaturas territoriales sustantivas faltan ${faltanStr}: ` +
+        "no hay pares que triangular (determinantes con activos, o participación primaria con indicadores) " +
+        "antes de avanzar hacia priorización.",
       relatedEvidenceIds: lt1.supportingEvidenceIds,
       cautions: [
-        "No iniciar priorización estratégica con base documental insuficiente.",
-        "Registrar fuentes mínimas antes de traducir a EPVSA o Plan de Acción.",
+        "No iniciar priorización estratégica sin triangulación suficiente.",
+        "No procede incorporar activos ni indicadores ya presentes; el déficit está en determinantes con evidencia directa y en participación o conocimiento comunitario que permitan emparejarlos.",
       ],
       isAnalyticalGap: true,
       requiresHumanValidation: true,
