@@ -143,6 +143,15 @@ export interface MunicipalityWorkspace {
    * La ausencia de este campo es válida: workspaces anteriores no lo tienen.
    */
   perfilLocalDeSalud?: PerfilLocalDeSalud;
+  /**
+   * Migraciones incrementales de seed ya aplicadas a ESTE expediente, por marca
+   * versionada (p. ej. "atarfe-localiza-v1"). La presencia de una marca significa
+   * que la migración se ofreció y se resolvió: NO debe volver a aplicarse aunque
+   * el documento correspondiente falte (un borrado deliberado del usuario mediante
+   * «Eliminar» debe respetarse). La ausencia del campo equivale a "ninguna
+   * aplicada" y es válida para workspaces anteriores (compatibilidad legacy).
+   */
+  appliedSeedMigrations?: string[];
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

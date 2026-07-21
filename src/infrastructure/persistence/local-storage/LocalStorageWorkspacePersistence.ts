@@ -152,6 +152,16 @@ export function parseWorkspaceJSON(
       delete parsed.healthReports;
     }
 
+    // Marcas de migración incremental de seed: coerción defensiva. Un valor no-array
+    // persistido (corrupción) se descarta para no confundir a resolveSeedMigration;
+    // su ausencia equivale a "ninguna aplicada" (compatibilidad legacy).
+    if (
+      parsed.appliedSeedMigrations !== undefined &&
+      !Array.isArray(parsed.appliedSeedMigrations)
+    ) {
+      delete parsed.appliedSeedMigrations;
+    }
+
     // Normalizar IBSEStudy: campo añadido en b66193a — rellenar en workspaces anteriores
     if (parsed.ibseStudy && !Array.isArray(parsed.ibseStudy.methodologicalCautions)) {
       parsed.ibseStudy.methodologicalCautions = [];

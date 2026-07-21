@@ -20,6 +20,45 @@ import { hasMunicipalitySeed } from "./infrastructure/seeds";
  * tests SSR no ejecutan efectos) y sin disparar `react-refresh/only-export-components`.
  */
 
+/**
+ * Migración incremental de un documento de seed a un expediente ya persistido.
+ * A diferencia del reemplazo completo (`shouldReplaceWithSeed`), añade ÚNICAMENTE
+ * el documento indicado y sus átomos derivados cuando faltan, preservando todo el
+ * trabajo del usuario. Se controla con una marca versionada (`marker`) en
+ * `MunicipalityWorkspace.appliedSeedMigrations`, de modo que un borrado deliberado
+ * posterior mediante «Eliminar» se respeta (la marca gana a la ausencia del doc).
+ */
+export interface SeedDocumentMigration {
+  municipalityId: string;
+  documentId: string;
+  marker: string;
+}
+
+/**
+ * Lista blanca CERRADA de migraciones incrementales autorizadas. No es una
+ * reconciliación genérica del seed: solo se migra exactamente lo declarado aquí.
+ */
+export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
+  {
+    municipalityId: "atarfe",
+    documentId: "doc-localiza-atarfe",
+    marker: "atarfe-localiza-v1",
+  },
+];
+
+/**
+ * Acción de migración incremental resuelta para un expediente:
+ *   - none               → nada que hacer (marca presente, u otro municipio).
+ *   - backfill-marker     → ya contiene el documento pero falta la marca: se estampa
+ *                           localmente, sin descargar el seed ni duplicar nada.
+ *   - download-and-merge  → falta marca y documento: hay que descargar el seed,
+ *                           fusionar el doc + sus átomos y estampar la marca (atómico).
+ */
+export type SeedMigrationAction =
+  | { kind: "none" }
+  | { kind: "backfill-marker"; migration: SeedDocumentMigration }
+  | { kind: "download-and-merge"; migration: SeedDocumentMigration };
+
 export interface WorkspaceLoadResult {
   workspace: MunicipalityWorkspace;
   protectExistingStorage: boolean;
@@ -30,6 +69,114 @@ export interface WorkspaceLoadResult {
    * persiste (evita la carrera que guarda un expediente vacío antes de la carga).
    */
   seedPending: boolean;
+  /**
+   * Migración incremental pendiente para un expediente CON CONTENIDO (no vacío).
+   * Mutuamente excluyente con `seedPending`: si el expediente se va a reemplazar
+   * entero por el seed, no procede migración incremental. `{ kind: "none" }` cuando
+   * no hay nada que migrar.
+   */
+  seedMigration: SeedMigrationAction;
+}
+
+/**
+ * Resuelve la migración incremental aplicable a un expediente. Predicado puro:
+ * la marca versionada tiene prioridad absoluta sobre la presencia del documento,
+ * de modo que un borrado deliberado posterior (doc ausente, marca presente) NO
+ * reintroduce el documento.
+ */
+export function resolveSeedMigration(
+  current: MunicipalityWorkspace
+): SeedMigrationAction {
+  const id = current.municipality.identity.id;
+  for (const migration of INCREMENTAL_SEED_MIGRATIONS) {
+    if (migration.municipalityId !== id) continue;
+    const hasMarker = (current.appliedSeedMigrations ?? []).includes(
+      migration.marker
+    );
+    if (hasMarker) return { kind: "none" };
+    const hasDoc = current.repository.documents.some(
+      (d) => d.id === migration.documentId
+    );
+    if (hasDoc) return { kind: "backfill-marker", migration };
+    return { kind: "download-and-merge", migration };
+  }
+  return { kind: "none" };
+}
+
+/** Añade una marca de migración al expediente (idempotente). Puro. */
+function withMarker(
+  workspace: MunicipalityWorkspace,
+  marker: string
+): MunicipalityWorkspace {
+  const current = workspace.appliedSeedMigrations ?? [];
+  if (current.includes(marker)) return workspace;
+  return { ...workspace, appliedSeedMigrations: [...current, marker] };
+}
+
+/**
+ * Caso `backfill-marker`: el expediente ya contiene el documento (p. ej. tras una
+ * hidratación limpia previa a esta versión). Solo registra la marca; no descarga
+ * ni duplica. Puro.
+ */
+export function backfillSeedMigrationMarker(
+  current: MunicipalityWorkspace,
+  migration: SeedDocumentMigration
+): MunicipalityWorkspace {
+  return withMarker(current, migration.marker);
+}
+
+/**
+ * Caso `download-and-merge`: fusiona el documento del seed y sus átomos derivados
+ * (los que apuntan a `documentId`) en el expediente actual, y estampa la marca —
+ * TODO en un único objeto devuelto (atómico al persistir). Preserva íntegramente
+ * documentos, evidencias y trabajo del usuario. Determinista: usa el sello canónico
+ * del documento del seed (no `new Date()`). Idempotente por marca y por id de átomo.
+ */
+export function applySeedDocumentMigration(
+  current: MunicipalityWorkspace,
+  seed: MunicipalityWorkspace,
+  migration: SeedDocumentMigration
+): MunicipalityWorkspace {
+  // Ya aplicada: no-op (idempotencia por marca).
+  if ((current.appliedSeedMigrations ?? []).includes(migration.marker)) {
+    return current;
+  }
+  const seedDoc = seed.repository.documents.find(
+    (d) => d.id === migration.documentId
+  );
+  // Defensivo: si el seed no trae el documento, NO se marca (permite reintentar).
+  if (seedDoc === undefined) return current;
+
+  const existingAtomIds = new Set(current.evidenceStore.atoms.map((a) => a.id));
+  const atomsToAdd = seed.evidenceStore.atoms.filter(
+    (a) =>
+      a.provenance.documentId === migration.documentId &&
+      !existingAtomIds.has(a.id)
+  );
+  const alreadyHasDoc = current.repository.documents.some(
+    (d) => d.id === migration.documentId
+  );
+  const stamp = seedDoc.updatedAt;
+
+  const merged: MunicipalityWorkspace = {
+    ...current,
+    repository: alreadyHasDoc
+      ? current.repository
+      : {
+          ...current.repository,
+          documents: [...current.repository.documents, seedDoc],
+          updatedAt: stamp,
+        },
+    evidenceStore:
+      atomsToAdd.length === 0
+        ? current.evidenceStore
+        : {
+            ...current.evidenceStore,
+            atoms: [...current.evidenceStore.atoms, ...atomsToAdd],
+            updatedAt: stamp,
+          },
+  };
+  return withMarker(merged, migration.marker);
 }
 
 /**
@@ -99,6 +246,12 @@ export function loadOrCreateMunicipalityWorkspace(
       workspace: loaded,
       protectExistingStorage: false,
       seedPending: isReplaceablePlaceholder,
+      // La migración incremental solo aplica a un expediente CON contenido que no
+      // se va a reemplazar entero. Si es placeholder reemplazable, el seed completo
+      // (que ya trae el documento y su marca) lo cubre.
+      seedMigration: isReplaceablePlaceholder
+        ? { kind: "none" }
+        : resolveSeedMigration(loaded),
     };
   }
 
@@ -111,5 +264,6 @@ export function loadOrCreateMunicipalityWorkspace(
     protectExistingStorage: hasCorruptLocal,
     // Solo se hidrata desde seed cuando no existe NINGUNA entrada local.
     seedPending: !hasCorruptLocal && hasMunicipalitySeed(municipalityId),
+    seedMigration: { kind: "none" },
   };
 }

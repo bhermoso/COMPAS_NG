@@ -101,6 +101,22 @@ Correspondencia identificador externo (IdLocaliza) → ID interno de átomo:
 Dedup por **clave estable** `stableAssetKey(municipio, origen, título)`: hidratar
 Atarfe varias veces **no multiplica** los registros (validado en la suite).
 
+#### Migración incremental para expedientes ya persistidos (`atarfe-localiza-v1`)
+
+Un navegador con un Atarfe **anterior** a esta feature (2 docs / 6 evidencias) no se
+reemplaza por el seed (la garantía "nunca pisar trabajo del usuario"). Para que esos
+expedientes reciban los activos sin perder trabajo, existe una **migración incremental
+marcada** (`src/appWorkspaceHydration.ts`): añade únicamente `doc-localiza-atarfe` y sus
+5 átomos cuando faltan, y registra la marca versionada `atarfe-localiza-v1` en
+`MunicipalityWorkspace.appliedSeedMigrations`.
+
+- La marca **gana a la ausencia del documento**: si el usuario borra Localiza con
+  «Eliminar» tras la migración, la marca persiste y **no se repone** (se respeta el borrado).
+- El seed canónico lleva la marca estampada, de modo que una hidratación limpia o un
+  reemplazo completo quedan marcados sin volver a proponer la migración.
+- `schemaVersion` permanece en `1.0.0` (el campo es opcional y aditivo; subirlo
+  descartaría todos los expedientes persistidos). Determinista e idempotente.
+
 ## Fuentes EXCLUIDAS (y por qué)
 
 | Fuente | Categoría | Motivo de exclusión |

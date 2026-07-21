@@ -149,6 +149,11 @@ export const ATARFE_IBSE_SAMPLE_CAUTIONS: readonly string[] = [
 // corrección silenciosa. El título del átomo es la primera columna (Nombre).
 export const LOCALIZA_DOCUMENT_ID = "doc-localiza-atarfe"; // documento del repositorio (estable)
 export const LOCALIZA_ASSET_COUNT = 5;
+// Marca versionada de migración incremental. El seed canónico la lleva estampada,
+// de modo que una hidratación limpia o un reemplazo completo quedan marcados como
+// aplicados y no vuelven a proponer la migración. Debe coincidir con la entrada de
+// INCREMENTAL_SEED_MIGRATIONS en src/appWorkspaceHydration.ts (verificado en tests).
+export const LOCALIZA_MIGRATION_MARKER = "atarfe-localiza-v1";
 export const LOCALIZA_SALUD_ATARFE_URL_BASE =
   "https://localizasalud.sanidad.gob.es/maparecursos/main/ResourcesSearchDetail.action?id=";
 export const LOCALIZA_SALUD_ATARFE_TEXT = [
@@ -376,6 +381,11 @@ export async function buildAtarfeWorkspace(): Promise<AtarfeBuildResult> {
 
   // ── 4. Determinización canónica (sello temporal + IDs estables) ────────────
   ws = canonicalizeWorkspace(ws);
+
+  // El seed canónico ya contiene Localiza Salud: se marca la migración incremental
+  // como aplicada, de modo que una hidratación limpia o un reemplazo completo del
+  // seed queden marcados y no vuelvan a proponer la migración (App.tsx).
+  ws = { ...ws, appliedSeedMigrations: [LOCALIZA_MIGRATION_MARKER] };
 
   const healthReportAtoms = ws.evidenceStore.atoms.filter(
     (a) => a.provenance.origin === "health-report"
