@@ -47,6 +47,10 @@ import {
   IBSE_STUDY_ID,
   HEALTH_REPORT_DOCX_PATH,
   IBSE_CSV_PATH,
+  LOCALIZA_DOCUMENT_ID,
+  LOCALIZA_ASSET_COUNT,
+  LOCALIZA_SALUD_ATARFE_TEXT,
+  LOCALIZA_ATARFE_EXTERNAL_IDS,
 } from "../scripts/demo/buildAtarfeWorkspace";
 
 // ── localStorage mínimo ───────────────────────────────────────────────────────
@@ -132,12 +136,12 @@ describe("expediente canónico de Atarfe", () => {
     expect(ws.municipality.identity.ineCode).toBe("18022");
   });
 
-  it("3. recuentos exactos y deterministas (2 documentos, 6 evidencias, 1 estudio IBSE)", () => {
+  it("3. recuentos exactos y deterministas (3 documentos, 11 evidencias, 1 estudio IBSE)", () => {
     const ws = parseWorkspaceJSON(EXPORT_RAW)!;
-    expect(ws.repository.documents).toHaveLength(2);
-    expect(ws.evidenceStore.atoms).toHaveLength(6);
+    expect(ws.repository.documents).toHaveLength(3);
+    expect(ws.evidenceStore.atoms).toHaveLength(11);
     const kinds = ws.repository.documents.map((d) => d.kind).sort();
-    expect(kinds).toEqual(["health-report", "redcap-export"]);
+    expect(kinds).toEqual(["health-report", "localiza-salud", "redcap-export"]);
     expect(ws.ibseStudy?.aggregates.n).toBe(909);
     expect(ws.ibseStudy?.aggregates.nValid).toBe(811);
   });
@@ -152,12 +156,12 @@ describe("expediente canónico de Atarfe", () => {
     const ws = parseWorkspaceJSON(SEED_RAW);
     expect(ws).not.toBeNull();
     expect(ws!.municipality.identity.id).toBe("atarfe");
-    expect(ws!.repository.documents).toHaveLength(2);
-    expect(ws!.evidenceStore.atoms).toHaveLength(6);
+    expect(ws!.repository.documents).toHaveLength(3);
+    expect(ws!.evidenceStore.atoms).toHaveLength(11);
     expect(MUNICIPALITY_SEEDS["atarfe"].path).toBe("seeds/compas-ng-workspace-atarfe.json");
   });
 
-  it("6. placeholder vacío de Atarfe → migra al seed (2 docs / 6 evidencias)", async () => {
+  it("6. placeholder vacío de Atarfe → migra al seed (3 docs / 11 evidencias)", async () => {
     const placeholder = createCompleteMunicipalityWorkspace(ATARFE_INPUT);
     expect(isEmptyWorkspaceForPersistenceGuard(placeholder)).toBe(true);
     expect(saveWorkspaceToLocalStorage(placeholder)).toBe(true);
@@ -171,17 +175,17 @@ describe("expediente canónico de Atarfe", () => {
       fetchImpl: okFetch(SEED_RAW),
     });
     const hydrated = shouldReplaceWithSeed(result.workspace, "atarfe") ? seed : result.workspace;
-    expect(hydrated?.repository.documents).toHaveLength(2);
-    expect(hydrated?.evidenceStore.atoms).toHaveLength(6);
+    expect(hydrated?.repository.documents).toHaveLength(3);
+    expect(hydrated?.evidenceStore.atoms).toHaveLength(11);
   });
 
   it("7. workspace local no vacío de Atarfe → preservado (no se sustituye)", () => {
-    const local = parseWorkspaceJSON(EXPORT_RAW)!; // 2 docs, 6 atoms (contenido real)
+    const local = parseWorkspaceJSON(EXPORT_RAW)!; // 3 docs, 11 atoms (contenido real)
     expect(saveWorkspaceToLocalStorage(local)).toBe(true);
     const result = loadOrCreateMunicipalityWorkspace("atarfe", ATARFE_INPUT);
     expect(result.seedPending).toBe(false);
     expect(shouldReplaceWithSeed(result.workspace, "atarfe")).toBe(false);
-    expect(result.workspace.repository.documents).toHaveLength(2);
+    expect(result.workspace.repository.documents).toHaveLength(3);
   });
 
   it("8. ningún fixture synthetic-validation entra en el expediente", () => {
@@ -198,7 +202,7 @@ describe("expediente canónico de Atarfe", () => {
     }
   });
 
-  it("9. no hay evidencia provincial atribuida a Atarfe (solo IBSE municipal)", () => {
+  it("9. no hay evidencia provincial atribuida a Atarfe (solo IBSE municipal + activos Localiza)", () => {
     const ws = parseWorkspaceJSON(EXPORT_RAW)!;
     for (const field of PROVINCIAL_STUDY_FIELDS) {
       expect((ws as unknown as Record<string, unknown>)[field]).toBeUndefined();
@@ -210,9 +214,12 @@ describe("expediente canónico de Atarfe", () => {
     for (const tag of PROVINCIAL_TAGS) {
       expect(allTags).not.toContain(tag);
     }
-    // Toda evidencia es municipal de Atarfe (origen IBSE).
+    // Toda evidencia es municipal de Atarfe (orígenes IBSE + activos Localiza Salud).
     expect(ws.evidenceStore.atoms.every((a) => a.municipalityId === "atarfe")).toBe(true);
-    expect([...new Set(ws.evidenceStore.atoms.map((a) => a.provenance.origin))]).toEqual(["ibse"]);
+    expect([...new Set(ws.evidenceStore.atoms.map((a) => a.provenance.origin))]).toEqual([
+      "ibse",
+      "localiza-salud",
+    ]);
   });
 
   it("10. no hay átomos huérfanos y todos los documentId referenciados existen", () => {
@@ -240,7 +247,7 @@ describe("expediente canónico de Atarfe", () => {
     });
     expect(requested).toBe("/COMPAS_NG/seeds/compas-ng-workspace-atarfe.json");
     expect(ws?.municipality.identity.id).toBe("atarfe");
-    expect(ws?.evidenceStore.atoms).toHaveLength(6);
+    expect(ws?.evidenceStore.atoms).toHaveLength(11);
   });
 
   it("12. el builder real, serializado por la capa de persistencia, reproduce el export byte a byte", async () => {
@@ -318,9 +325,14 @@ describe("expediente canónico de Atarfe", () => {
     // Las cautelas de muestra mixta y de "muestra participante" viajan con el estudio…
     expect(study.methodologicalCautions).toContain(IBSE_MIXED_SAMPLE_SENTENCE);
     expect(study.methodologicalCautions).toContain(IBSE_PARTICIPANT_SAMPLE_CAUTION);
-    // …y con CADA átomo IBSE (methodology.limitations).
+    // …y con CADA átomo IBSE (methodology.limitations). Se acota a los átomos de
+    // origen "ibse": los activos Localiza Salud no llevan las cautelas del IBSE.
+    const ibseAtoms = workspace.evidenceStore.atoms.filter(
+      (a) => a.provenance.origin === "ibse"
+    );
+    expect(ibseAtoms).toHaveLength(6);
     expect(
-      workspace.evidenceStore.atoms.every(
+      ibseAtoms.every(
         (a) =>
           a.methodology.limitations.includes(IBSE_MIXED_SAMPLE_SENTENCE) &&
           a.methodology.limitations.includes(IBSE_PARTICIPANT_SAMPLE_CAUTION)
@@ -367,13 +379,34 @@ describe("expediente canónico de Atarfe", () => {
     const violations = validateCompilationPreconditions(runtime.psl);
     expect(violations.some((v) => v.gate === "G-LHC-8")).toBe(false);
 
-    // Control (falsabilidad): sin el estudio IBSE desaparece el +1 y G-LHC-8 aparece.
-    // El bloqueo depende de la PRESENCIA del +1, no del recuento de átomos.
-    const sinIbse = { ...workspace, ibseStudy: undefined };
-    const rtSinIbse = createMunicipalityRuntime({ workspace: sinIbse });
-    expect(rtSinIbse.psl.complementaryStudyCount).toBe(0);
-    const violationsSinIbse = validateCompilationPreconditions(rtSinIbse.psl);
-    expect(violationsSinIbse.some((v) => v.gate === "G-LHC-8")).toBe(true);
+    // Control (falsabilidad): G-LHC-8 depende de la PRESENCIA de algún +1, no del
+    // recuento de átomos. En Atarfe hay AHORA dos fuentes +1 independientes (Art.
+    // 7 bis A): el estudio IBSE y los activos Localiza Salud. Para que el gate
+    // dispare hay que retirar AMBAS — retirar solo el IBSE deja los activos como
+    // +1 válido y el Perfil sigue siendo compilable. No se altera el gate.
+    const sinPlusUno = {
+      ...workspace,
+      ibseStudy: undefined,
+      evidenceStore: {
+        ...workspace.evidenceStore,
+        atoms: workspace.evidenceStore.atoms.filter(
+          (a) => a.provenance.origin !== "localiza-salud"
+        ),
+      },
+    };
+    const rtSinPlusUno = createMunicipalityRuntime({ workspace: sinPlusUno });
+    expect(rtSinPlusUno.psl.complementaryStudyCount).toBe(0);
+    expect(rtSinPlusUno.psl.assetCount).toBe(0);
+    const violationsSinPlusUno = validateCompilationPreconditions(rtSinPlusUno.psl);
+    expect(violationsSinPlusUno.some((v) => v.gate === "G-LHC-8")).toBe(true);
+
+    // Prueba positiva del segundo camino N+1: con SOLO los activos (sin IBSE) el
+    // Perfil sigue siendo compilable — los activos son un +1 legítimo por sí solos.
+    const soloActivos = { ...workspace, ibseStudy: undefined };
+    const rtSoloActivos = createMunicipalityRuntime({ workspace: soloActivos });
+    expect(rtSoloActivos.psl.assetCount).toBeGreaterThan(0);
+    const violationsSoloActivos = validateCompilationPreconditions(rtSoloActivos.psl);
+    expect(violationsSoloActivos.some((v) => v.gate === "G-LHC-8")).toBe(false);
   });
 
   it("18. normalización legacy: sampleScope ausente → 'unknown'; strataCounts corrupto → descartado", () => {
@@ -412,5 +445,131 @@ describe("expediente canónico de Atarfe", () => {
 
     // El export real de Atarfe no trae strataCounts (muestra mixta sin desglose).
     expect((base.ibseStudy as Record<string, unknown>).strataCounts).toBeUndefined();
+  });
+
+  // ── VALIDACIÓN — activos para la salud de Localiza Salud (+1) ───────────────
+
+  const EXPECTED_ASSETS: ReadonlyArray<{ id: string; title: string }> = [
+    { id: "61419", title: "Centro de Participación Activa de Atarfe" },
+    { id: "47602", title: "Piscina Cubierta Pública Atarfe (Granada)" },
+    { id: "60152", title: "Punto Vuela Atarfe" },
+    { id: "61425", title: "Taller de Coro del Centro de Participación Activa de Atarfe" },
+    { id: "61429", title: "Taller de Senderismo del Centro de Participación Activa de Atarfe" },
+  ];
+
+  it("19. Atarfe contiene EXACTAMENTE cinco activos de Localiza Salud", () => {
+    const ws = parseWorkspaceJSON(EXPORT_RAW)!;
+    const assets = ws.evidenceStore.atoms.filter(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
+    expect(assets).toHaveLength(LOCALIZA_ASSET_COUNT);
+    expect(LOCALIZA_ASSET_COUNT).toBe(5);
+    // Todos son EvidenceAtom de tipo "asset" enlazados al documento localiza-salud.
+    expect(assets.every((a) => a.kind === "asset")).toBe(true);
+    expect(assets.every((a) => a.provenance.documentId === LOCALIZA_DOCUMENT_ID)).toBe(true);
+    // Los nombres (títulos) coinciden con la primera columna de la ficha.
+    expect(assets.map((a) => a.title)).toEqual(EXPECTED_ASSETS.map((e) => e.title));
+  });
+
+  it("20. los cinco nombres, identificadores externos y URLs de detalle se preservan verbatim", () => {
+    const ws = parseWorkspaceJSON(EXPORT_RAW)!;
+    const assets = ws.evidenceStore.atoms.filter(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
+    for (const expected of EXPECTED_ASSETS) {
+      const atom = assets.find((a) => a.title === expected.title);
+      expect(atom, `activo ${expected.title}`).toBeDefined();
+      // El identificador externo (IdLocaliza) viaja verbatim en el contenido…
+      expect(atom!.content).toContain(`| ${expected.id} |`);
+      // …y su URL de detalle (UrlDetalle) apunta a ese mismo id.
+      expect(atom!.content).toContain(
+        `ResourcesSearchDetail.action?id=${expected.id}`
+      );
+    }
+    // Ids declarados por el builder == ids esperados (sin colisiones ni pérdidas).
+    expect([...LOCALIZA_ATARFE_EXTERNAL_IDS]).toEqual(EXPECTED_ASSETS.map((e) => e.id));
+  });
+
+  it("21. el documento fuente conserva verbatim el TSV enriquecido (sourceText, sin corregir erratas)", () => {
+    const ws = parseWorkspaceJSON(EXPORT_RAW)!;
+    const doc = ws.repository.documents.find((d) => d.id === LOCALIZA_DOCUMENT_ID)!;
+    expect(doc.kind).toBe("localiza-salud");
+    expect(doc.contentMode).toBe("atomized");
+    expect(doc.territorialScale).toBe("municipio");
+    // sourceText == texto fuente TSV íntegro, byte a byte.
+    expect(doc.sourceText).toBe(LOCALIZA_SALUD_ATARFE_TEXT);
+    // Cinco líneas (una por activo) y columnas IdLocaliza/UrlDetalle presentes.
+    expect(doc.sourceText!.split("\n")).toHaveLength(5);
+    expect(doc.sourceText).toContain("ResourcesSearchDetail.action?id=");
+    // Erratas de origen preservadas SIN corrección silenciosa.
+    expect(doc.sourceText).toContain("útliles");
+    expect(doc.sourceText).toContain("MUNUMENTOS");
+    // Procedencia institucional del portal (Ministerio de Sanidad).
+    expect(doc.source.organization).toBe("Ministerio de Sanidad");
+    expect(doc.source.url).toBe(
+      "https://localizasalud.sanidad.gob.es/maparecursos/main/"
+    );
+  });
+
+  it("22. los temas múltiples no se pierden: viajan íntegros en el contenido del activo", () => {
+    const ws = parseWorkspaceJSON(EXPORT_RAW)!;
+    const assets = ws.evidenceStore.atoms.filter(
+      (a) => a.provenance.origin === "localiza-salud"
+    );
+    // El CPA (61419) declara cinco temas: todos deben estar presentes en su átomo.
+    const cpa = assets.find((a) => a.title === "Centro de Participación Activa de Atarfe")!;
+    for (const tema of [
+      "Cultura y ocio",
+      "Alimentación saludable",
+      "Actividad física",
+      "Envejecimiento activo",
+      "Participación y acción comunitaria",
+    ]) {
+      expect(cpa.content).toContain(tema);
+    }
+  });
+
+  it("23. la hidratación es idempotente: reconstruir no multiplica los activos", async () => {
+    // Dos construcciones + dos hidrataciones del seed → siempre 5 activos, sin duplicar.
+    const a = await buildAtarfeWorkspace();
+    const b = await buildAtarfeWorkspace();
+    for (const built of [a, b]) {
+      const assets = built.workspace.evidenceStore.atoms.filter(
+        (x) => x.provenance.origin === "localiza-salud"
+      );
+      expect(assets).toHaveLength(5);
+      // Ids de átomo estables y únicos (dedup por clave estable, sin colisión).
+      const ids = assets.map((x) => x.id);
+      expect(new Set(ids).size).toBe(5);
+    }
+    expect(a.counts.localizaAssets).toBe(5);
+    expect(b.counts.localizaAssets).toBe(5);
+  });
+
+  it("24. el Informe de Salud y el IBSE de Atarfe permanecen intactos junto a los activos", () => {
+    const ws = parseWorkspaceJSON(EXPORT_RAW)!;
+    // Informe: sigue presente, sin átomos (D-HR-01), con su documento estable.
+    expect(ws.healthReport).toBeDefined();
+    expect(
+      ws.evidenceStore.atoms.filter((a) => a.provenance.origin === "health-report")
+    ).toHaveLength(0);
+    expect(
+      ws.repository.documents.some((d) => d.id === HEALTH_REPORT_DOCUMENT_ID)
+    ).toBe(true);
+    // IBSE: sigue siendo el único estudio, con sus 6 átomos municipales.
+    expect(ws.ibseStudy).toBeDefined();
+    expect(
+      ws.evidenceStore.atoms.filter((a) => a.provenance.origin === "ibse")
+    ).toHaveLength(6);
+    expect(ws.ibseStudy?.aggregates.n).toBe(909);
+  });
+
+  it("25. los activos Localiza satisfacen el +1 (N+1) sin alterar el gate", async () => {
+    // El +1 lo aporta el IBSE; los activos son complemento comunitario adicional.
+    // Su presencia NO debe romper la precondición de compilación ni forzar el gate.
+    const { workspace } = await buildAtarfeWorkspace();
+    const runtime = createMunicipalityRuntime({ workspace });
+    const violations = validateCompilationPreconditions(runtime.psl);
+    expect(violations.some((v) => v.gate === "G-LHC-8")).toBe(false);
   });
 });
