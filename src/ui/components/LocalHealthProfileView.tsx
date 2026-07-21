@@ -1001,7 +1001,15 @@ export function LocalHealthProfileView({
               <div className="psl-doc-kpi psl-doc-kpi--indicator">
                 <span className="psl-doc-kpi__value">{psl.indicatorCount}</span>
                 <span className="psl-doc-kpi__label">
-                  {indicatorReferences !== undefined && indicatorReferences.length > 0
+                  {/* F2: «comparables» solo si algún indicador tiene comparador externo
+                      real (referencia provincial o autonómica). Los indicadores locales
+                      de Atarfe no lo tienen: son «disponibles», no «comparables». */}
+                  {indicatorReferences !== undefined &&
+                  indicatorReferences.some(
+                    (r) =>
+                      r.provinceReference !== undefined ||
+                      r.andalusiaReference !== undefined
+                  )
                     ? "Indicadores comparables"
                     : "Indicadores disponibles"}
                 </span>
@@ -1023,7 +1031,15 @@ export function LocalHealthProfileView({
                 </div>
               )}
               <div className="psl-doc-kpi psl-doc-kpi--area">
-                <span className="psl-doc-kpi__value">{psl.areasDeIntervencion.length}</span>
+                {/* F3: el contador «Cuestiones para contraste» cuenta la MISMA agenda
+                    que se muestra en «Qué debe discutir el Grupo Motor»
+                    (integratedEditorialView.groupMotorAgenda), no psl.areasDeIntervencion
+                    (pipeline OIT distinto). Un único origen representacional para
+                    contador y tarjetas. Fallback al recuento previo si no hay vista. */}
+                <span className="psl-doc-kpi__value">
+                  {integratedEditorialView?.groupMotorAgenda.length ??
+                    psl.areasDeIntervencion.length}
+                </span>
                 <span className="psl-doc-kpi__label">Cuestiones para contraste</span>
               </div>
               <div className="psl-doc-kpi psl-doc-kpi--priority">
@@ -1129,16 +1145,16 @@ export function LocalHealthProfileView({
               <details className="psl-doc-annex__details psl-doc-indicator-refs">
                 <summary className="psl-doc-annex__summary">
                   Referencias comparativas por indicador ({indicatorReferences.length})
-                  · valor demo, referencia provincial, referencia Andalucía y procedencia
+                  · valor {indicatorReferences.some((r) => r.demoProxy) ? "demo/proxy" : "de muestra local"}, referencia provincial, referencia Andalucía y procedencia
                 </summary>
                 <p className="panel-note">
                   Los estudios complementarios organizan los instrumentos e
                   indicadores; las referencias comparativas provincial y autonómica
                   proceden de cálculos derivados de microdatos EAS —o de un monitor
-                  provincial equivalente— y se incorporan como base de contraste.
-                  En la demostración actual, los valores marcados como demo/proxy
-                  coinciden con la referencia provincial de Granada: no constituyen
-                  estimación específica del distrito.
+                  provincial equivalente— y se incorporan como base de contraste.{" "}
+                  {indicatorReferences.some((r) => r.demoProxy)
+                    ? "Los valores marcados como demo/proxy coinciden con la referencia provincial de Granada: no constituyen estimación específica del ámbito."
+                    : "Todos los indicadores de este expediente proceden de muestra local del propio ámbito: no hay valores demo/proxy y no existe referencia provincial o autonómica equivalente calculada."}
                 </p>
                 <div style={{ overflowX: "auto" }}>
                   <table className="psl-doc-indicator-refs__table">
@@ -1147,7 +1163,7 @@ export function LocalHealthProfileView({
                         <th>Bloque</th>
                         <th>Instrumento</th>
                         <th>Indicador</th>
-                        <th>Valor demo</th>
+                        <th>{indicatorReferences.some((r) => r.demoProxy) ? "Valor demo" : "Valor (muestra local)"}</th>
                         <th>Ref. Granada/prov.</th>
                         <th>Ref. Andalucía</th>
                         <th>Procedencia</th>

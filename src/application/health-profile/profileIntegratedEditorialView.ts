@@ -770,6 +770,35 @@ function overviewFromMessage(
     };
   }
 
+  // Atribución explícita: «Bienestar escolar» procede del IBSE (no de Localiza) y
+  // «Capacidades comunitarias» de Localiza Salud (no del genérico "Perfil de Salud
+  // Local"). El fallback posicional por índice atribuía mal ambas tarjetas.
+  if (message.id === "bienestar-escolar") {
+    const ibse = findSignalById(context.signals, "trazador-ibse-indice-total");
+    return {
+      id: message.id,
+      title,
+      text: message.texto,
+      signal: ibse?.senal ?? "índice de bienestar socioemocional (IBSE)",
+      source: humanSource(ibse?.fuente ?? "IBSE"),
+      variant: "estudio",
+    };
+  }
+
+  if (message.id === "capacidades") {
+    return {
+      id: message.id,
+      title,
+      text: message.texto,
+      signal:
+        context.totalAssets > 0
+          ? `${context.totalAssets} recursos comunitarios`
+          : "capacidades comunitarias",
+      source: "Localiza Salud",
+      variant: "activo",
+    };
+  }
+
   const signal = context.signals.find((candidate) =>
     includesAny(signalText(candidate), [message.id, title, message.texto])
   );
@@ -823,7 +852,10 @@ function buildClosingColumns(input: {
         sanitarySignal !== undefined
           ? `El Informe de salud fija el hilo sanitario mediante presencia textual de ${sanitarySignal.senal}; no aporta por sí solo distribución interna.`
           : "El hilo sanitario necesita Informe de salud incorporado para sostener la apertura.",
-        `Los estudios complementarios aportan ${answers.referencias.references.filter((r) => r.tracerPriority !== undefined).length} indicadores trazadores para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`,
+        ((n) =>
+          `Los estudios complementarios aportan ${n} ${n === 1 ? "indicador trazador" : "indicadores trazadores"} para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`)(
+          answers.referencias.references.filter((r) => r.tracerPriority !== undefined).length
+        ),
       ].filter((item): item is string => item !== undefined)).slice(0, 3),
     },
     {
@@ -981,7 +1013,11 @@ export function buildProfileIntegratedEditorialView(
       id: "estudios",
       title: "Estudios complementarios",
       whatItAdds:
-        `${answers.estudios.totalStudies} estudio(s) y ${visuals.tablaTrazadores.length} trazador(es) con valores comparables cuando existe referencia equivalente`,
+        ((estudios, trazadores) =>
+          `${estudios} ${estudios === 1 ? "estudio" : "estudios"} y ${trazadores} ${trazadores === 1 ? "indicador trazador destacado" : "indicadores trazadores destacados"} (con valores comparables solo cuando existe referencia equivalente)`)(
+          answers.estudios.totalStudies,
+          visuals.tablaTrazadores.length
+        ),
       whatItDoesNotAllow:
         "no sustituyen la lectura municipal ni convierten una muestra o proxy en verdad territorial completa",
       variant: "estudio",
