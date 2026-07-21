@@ -322,13 +322,21 @@ function detectarConflictosEscala(
   const origenes = mit.origenesPresentes;
   const lt1 = mit.dimensionDiagnostica;
 
-  if (origenes.includes("ibse") && lt1.indicators.length > 0) {
+  // El conflicto multiescala requiere indicadores POBLACIONALES de OTRA procedencia
+  // distinta del IBSE. Los indicadores del propio IBSE son sus agregados (misma
+  // fuente, misma muestra): contarlos como una segunda escala poblacional duplicaría
+  // la misma fuente e inventaría una tensión inexistente (caso Atarfe: solo IBSE).
+  const indicadoresNoIbse = lt1.indicators.filter(
+    (a) => a.provenance.origin !== "ibse"
+  );
+  if (origenes.includes("ibse") && indicadoresNoIbse.length > 0) {
     conflictos.push({
       id: "conflicto-escala-individual-poblacional",
       tipo: "escala",
       descripcion:
-        `IBSE (escala individual) + ${lt1.indicators.length} indicador(es) poblacional(es). ` +
-        "La integración multi-escala requiere decisiones metodológicas explícitas.",
+        `IBSE (muestra individual participante) + ${indicadoresNoIbse.length} indicador(es) ` +
+        "poblacional(es) de otra procedencia. La integración multi-escala requiere " +
+        "decisiones metodológicas explícitas.",
       fuentesImplicadas: [
         "ibse",
         ...origenes.filter((o) => ["cmi", "eas", "health-report"].includes(o)),
@@ -365,14 +373,18 @@ function detectarConflictosTemporales(
   }
 
   if (anterior.totalEvidencias > 0) {
-    const delta = Math.abs(mit.totalEvidencias - anterior.totalEvidencias);
-    if (delta / anterior.totalEvidencias > 0.5) {
+    // Solo un DESCENSO significativo de evidencia es un conflicto interpretativo
+    // (posible pérdida documental o cambio metodológico). Un AUMENTO aditivo —
+    // incluida la incorporación de nuevas fuentes, p. ej. 6→11 al añadir los activos
+    // Localiza— es evolución documental esperada, no una tensión que reconciliar.
+    const descenso = anterior.totalEvidencias - mit.totalEvidencias;
+    if (descenso > 0 && descenso / anterior.totalEvidencias > 0.5) {
       conflictos.push({
         id: "conflicto-temporal-cambio-volumen",
         tipo: "temporal",
         descripcion:
-          `Cambio en volumen de evidencia: ${anterior.totalEvidencias} → ${mit.totalEvidencias} ` +
-          "EvidenceAtom (>50%). Puede indicar incorporación o eliminación de fuentes.",
+          `Descenso en volumen de evidencia: ${anterior.totalEvidencias} → ${mit.totalEvidencias} ` +
+          "EvidenceAtom (>50%). Posible pérdida documental o cambio metodológico.",
         fuentesImplicadas: ["evidence-volume"],
         resolucion: "no-resuelta",
       });
