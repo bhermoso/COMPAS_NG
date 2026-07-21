@@ -18,7 +18,10 @@ import {
   loadOrCreateMunicipalityWorkspace,
   shouldSkipPersistence,
   shouldReplaceWithSeed,
+  applySeedDocumentMigration,
+  backfillSeedMigrationMarker,
   type WorkspaceLoadResult,
+  type SeedDocumentMigration,
 } from "./appWorkspaceHydration";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
@@ -316,8 +319,22 @@ export default function App() {
     const defaultMuni = DEMO_MUNICIPALITIES[0];
     return loadOrCreateMunicipalityWorkspace(defaultMuni.id, defaultMuni);
   });
-  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(
-    initialWorkspaceLoad.workspace
+  const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(() =>
+    // `backfill-marker` es local y determinista: se aplica de forma síncrona en la
+    // carga, sin descargar el seed. `download-and-merge` viaja en `pendingMigration`.
+    initialWorkspaceLoad.seedMigration.kind === "backfill-marker"
+      ? backfillSeedMigrationMarker(
+          initialWorkspaceLoad.workspace,
+          initialWorkspaceLoad.seedMigration.migration
+        )
+      : initialWorkspaceLoad.workspace
+  );
+  // Migración incremental pendiente de descarga+fusión para el municipio actual
+  // (p. ej. añadir doc-localiza-atarfe y sus 5 átomos a un Atarfe ya persistido).
+  const [pendingMigration, setPendingMigration] = useState<SeedDocumentMigration | null>(
+    initialWorkspaceLoad.seedMigration.kind === "download-and-merge"
+      ? initialWorkspaceLoad.seedMigration.migration
+      : null
   );
   const protectedEmptyWorkspaceIdRef = useRef<string | null>(
     initialWorkspaceLoad.protectExistingStorage
@@ -442,6 +459,37 @@ export default function App() {
       cancelled = true;
     };
   }, [pendingSeedId]);
+
+  // Migración incremental (`download-and-merge`): descarga el seed del municipio y
+  // añade ÚNICAMENTE el documento de la migración y sus átomos derivados, con la
+  // marca versionada, sin reemplazar el expediente ni tocar el trabajo del usuario.
+  // Se activa solo cuando `pendingMigration` está fijado. Si la descarga falla, NO
+  // se estampa la marca: se reintentará en la próxima carga del municipio.
+  useEffect(() => {
+    if (pendingMigration === null) return;
+    const migration = pendingMigration;
+    let cancelled = false;
+    void loadMunicipalitySeed(migration.municipalityId, {
+      baseUrl: import.meta.env.BASE_URL,
+    }).then((seedWorkspace) => {
+      if (cancelled) return;
+      if (seedWorkspace !== null) {
+        setWorkspace((current) =>
+          current.municipality.identity.id === migration.municipalityId
+            ? applySeedDocumentMigration(current, seedWorkspace, migration)
+            : current
+        );
+      }
+      // Éxito o fallo, la migración termina. Si falló (seed inaccesible), la marca
+      // no se estampó y `resolveSeedMigration` volverá a proponerla más adelante.
+      setPendingMigration((currentPending) =>
+        currentPending === migration ? null : currentPending
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingMigration]);
 
   const runtime = useMemo(
     () => createMunicipalityRuntime({ workspace }),
@@ -2283,12 +2331,26 @@ export default function App() {
     input: CreateMunicipalityContextInput
   ) {
     const nextWorkspaceLoad = loadOrCreateMunicipalityWorkspace(municipalityId, input);
-    const nextWorkspace = nextWorkspaceLoad.workspace;
+    // `backfill-marker` se aplica de forma síncrona (local); `download-and-merge`
+    // viaja en `pendingMigration` y lo resuelve el efecto asíncrono.
+    const nextWorkspace =
+      nextWorkspaceLoad.seedMigration.kind === "backfill-marker"
+        ? backfillSeedMigrationMarker(
+            nextWorkspaceLoad.workspace,
+            nextWorkspaceLoad.seedMigration.migration
+          )
+        : nextWorkspaceLoad.workspace;
     protectedEmptyWorkspaceIdRef.current = nextWorkspaceLoad.protectExistingStorage
       ? municipalityId
       : null;
     // Activa (o limpia) la hidratación asíncrona del seed para el nuevo municipio.
     setPendingSeedId(nextWorkspaceLoad.seedPending ? municipalityId : null);
+    // Activa (o limpia) la migración incremental pendiente del nuevo municipio.
+    setPendingMigration(
+      nextWorkspaceLoad.seedMigration.kind === "download-and-merge"
+        ? nextWorkspaceLoad.seedMigration.migration
+        : null
+    );
 
     setWorkspace(nextWorkspace);
     setPendingTopics([...(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? [])]);

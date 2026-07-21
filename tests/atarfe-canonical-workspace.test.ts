@@ -51,6 +51,7 @@ import {
   LOCALIZA_ASSET_COUNT,
   LOCALIZA_SALUD_ATARFE_TEXT,
   LOCALIZA_ATARFE_EXTERNAL_IDS,
+  LOCALIZA_MIGRATION_MARKER,
 } from "../scripts/demo/buildAtarfeWorkspace";
 
 // ── localStorage mínimo ───────────────────────────────────────────────────────
@@ -562,6 +563,16 @@ describe("expediente canónico de Atarfe", () => {
       ws.evidenceStore.atoms.filter((a) => a.provenance.origin === "ibse")
     ).toHaveLength(6);
     expect(ws.ibseStudy?.aggregates.n).toBe(909);
+  });
+
+  it("26. el seed lleva estampada la marca de migración incremental aplicada", () => {
+    const ws = parseWorkspaceJSON(EXPORT_RAW)!;
+    expect(ws.appliedSeedMigrations).toEqual([LOCALIZA_MIGRATION_MARKER]);
+    expect(LOCALIZA_MIGRATION_MARKER).toBe("atarfe-localiza-v1");
+    // El seed público lleva la misma marca (copia byte a byte del export).
+    expect(parseWorkspaceJSON(SEED_RAW)!.appliedSeedMigrations).toEqual([
+      LOCALIZA_MIGRATION_MARKER,
+    ]);
   });
 
   it("25. los activos Localiza satisfacen el +1 (N+1) sin alterar el gate", async () => {
