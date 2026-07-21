@@ -594,6 +594,25 @@ export interface BuildIndicatorComparisonReferencesInput {
   indicatorTitles?: string[];
 }
 
+/**
+ * ¿El estudio que respalda este indicador se declara municipal? Se decide por la
+ * ESCALA TERRITORIAL REAL del documento cargado (`territorialScale === "municipio"`),
+ * no por una etiqueta estática del instrumento ni por `sampleScope` (que codifica el
+ * universo etario de la muestra, no el territorial). Así se distingue el IBSE
+ * municipal de Atarfe (documento con `territorialScale: "municipio"`) del monitor
+ * IBSE provincial de Granada-Zaidín (documento sin escala municipal declarada), que
+ * conserva su tratamiento proxy.
+ */
+function studyDocumentIsMunicipal(
+  w: MunicipalityWorkspace,
+  spec: IndicatorSpec
+): boolean {
+  const file = spec.sourceFile(w);
+  if (file === undefined) return false;
+  const doc = w.repository.documents.find((d) => d.sourceFileName === file);
+  return doc?.territorialScale === "municipio";
+}
+
 export function buildIndicatorComparisonReferences(
   input: BuildIndicatorComparisonReferencesInput
 ): ComplementaryIndicatorReferencesReading {
@@ -616,16 +635,26 @@ export function buildIndicatorComparisonReferences(
     if (atomTitle === undefined) continue;
 
     const territorialValue = spec.value(workspace);
-    // En la demo, los valores de los instrumentos EAS/monitor provincial
-    // coinciden con la referencia provincial: mismo fichero, mismo parser.
+    // esLocal: el instrumento es intrínsecamente local (LOCAL_INSTRUMENTS), O el
+    // estudio cargado se declara municipal por la ESCALA TERRITORIAL REAL de su
+    // documento (territorialScale === "municipio"). Deriva de la procedencia real,
+    // no de una etiqueta estática del instrumento.
+    const esLocal =
+      LOCAL_INSTRUMENTS.has(spec.instrument) ||
+      studyDocumentIsMunicipal(workspace, spec);
+    // demoProxy SOLO cuando el valor NO es una medición local del ámbito: un estudio
+    // municipal (p. ej. el IBSE de Atarfe) nunca es proxy provincial ni fabrica una
+    // referencia provincial a partir de su propio valor. Un monitor/EAS provincial
+    // (p. ej. el IBSE de Granada-Zaidín) conserva su tratamiento demo/proxy.
     const demoProxy =
-      spec.provincial !== "ninguna" && typeof territorialValue === "number";
+      spec.provincial !== "ninguna" &&
+      typeof territorialValue === "number" &&
+      !esLocal;
     const provinceReference = demoProxy
       ? (territorialValue as number)
       : undefined;
     const sourceFile = spec.sourceFile(workspace) ?? "fichero no registrado";
     const andalusiaReference = andalusiaEASReferenceForSpec(spec);
-    const esLocal = LOCAL_INSTRUMENTS.has(spec.instrument);
     const sampleSize = SAMPLE_SIZE_ACCESSOR[spec.id]?.(workspace);
     const muestraStr =
       sampleSize !== undefined ? `n=${sampleSize}` : "muestra declarada";
