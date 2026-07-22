@@ -74,8 +74,12 @@ export function generateOIT(lt1: LT1Result): OITResult {
     // TRIANGULAR una candidatura (determinantes con activos, o participación con
     // indicadores). No aconseja incorporar activos ni indicadores cuando ya existen.
     const presentes: string[] = [];
-    if (lt1.assets.length > 0) presentes.push(`${lt1.assets.length} activo(s)`);
-    if (lt1.indicators.length > 0) presentes.push(`${lt1.indicators.length} indicador(es)`);
+    if (lt1.assets.length > 0)
+      presentes.push(`${lt1.assets.length} ${lt1.assets.length === 1 ? "activo" : "activos"}`);
+    if (lt1.indicators.length > 0)
+      presentes.push(
+        `${lt1.indicators.length} ${lt1.indicators.length === 1 ? "indicador" : "indicadores"}`
+      );
     const faltan: string[] = [];
     if (lt1.determinants.length === 0) faltan.push("determinantes con evidencia directa");
     if (lt1.qualitativeFindings.length === 0)
