@@ -25,6 +25,7 @@ import type {
 } from "../../application/reconciliation";
 import type { OITResult, OITOpportunity } from "../../application/oit";
 import type { MunicipalityWorkspace } from "../../domain/workspace";
+import { territorialScopeNoun } from "./territorialGrammar";
 import type { IBSEStudy } from "../../domain/ibse";
 import type {
   LocalHealthProfile,
@@ -54,15 +55,11 @@ const STRATEGIC_FRAMEWORK_SECTION_IDS: string[] = [
 ];
 
 // ── Vocabulario territorial ───────────────────────────────────────────────────
-// El sustantivo con el que el Perfil se refiere a su ámbito se deriva de
-// territorialType: un distrito nunca debe redactarse como "municipio".
-
-export function territorialScopeNoun(territorialType: string | undefined): string {
-  const t = (territorialType ?? "").trim().toLowerCase();
-  if (t === "distrito" || t === "district") return "distrito";
-  if (t === "municipio" || t === "municipality") return "municipio";
-  return "ámbito territorial";
-}
+// El sustantivo con el que el Perfil se refiere a su ámbito se deriva de la
+// identidad territorial (territorialGrammar): un distrito nunca debe redactarse
+// como "municipio", y un municipio con INE no debe caer a "ámbito territorial".
+// Re-exportado desde su fuente única para no romper importadores existentes.
+export { territorialScopeNoun };
 
 // ── Cautelas de escala/proxy ──────────────────────────────────────────────────
 // Detecta cautelas metodológicas que declaran evidencia de escala más amplia
@@ -136,7 +133,7 @@ export function buildLocalHealthProfile(
   const scope: ScopeContext = (() => {
     const studyCautions = collectStudyCautions(workspace);
     return {
-      scopeNoun: territorialScopeNoun(workspace.municipality.identity.territorialType),
+      scopeNoun: territorialScopeNoun(workspace.municipality.identity),
       studyCautions,
       hasProxyScale: studyCautions.some((c) => PROXY_SCALE_RE.test(c)),
     };

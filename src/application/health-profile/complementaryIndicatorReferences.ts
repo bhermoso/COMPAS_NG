@@ -23,6 +23,7 @@
  */
 
 import type { MunicipalityWorkspace } from "../../domain/workspace";
+import { territorialLexicon, type TerritorialLexicon } from "./territorialGrammar";
 import { DIAGNOSTIC_BLOCK_TITLES } from "./complementaryStudiesReading";
 import {
   ANDALUSIA_REFERENCE_VALUE_BY_INDICATOR,
@@ -547,7 +548,7 @@ function andalusiaEASReferenceForSpec(
 export function interpretIndicatorComparison(
   ref: Pick<
     IndicatorComparisonReference,
-    "territorialValue" | "provinceReference" | "demoProxy" | "unit"
+    "territorialValue" | "provinceReference" | "demoProxy" | "unit" | "esLocal"
   >
 ): string {
   if (ref.territorialValue === undefined) {
@@ -580,9 +581,14 @@ export function interpretIndicatorComparison(
       `no implica causalidad.`
     );
   }
+  // Sin referencia comparable: la naturaleza del valor la fija su procedencia
+  // real (Lote D, ajuste 4). Una medición local del propio ámbito (p. ej. el IBSE
+  // municipal de Atarfe) no es una «muestra territorial/demo».
   return (
     "No comparable: sin referencia territorial metodológicamente equivalente; " +
-    "el valor describe la muestra territorial/demo."
+    (ref.esLocal
+      ? "el valor describe la muestra local del ámbito, no representativa."
+      : "el valor describe la muestra territorial/demo.")
   );
 }
 
@@ -617,6 +623,11 @@ export function buildIndicatorComparisonReferences(
   input: BuildIndicatorComparisonReferencesInput
 ): ComplementaryIndicatorReferencesReading {
   const { workspace } = input;
+  // Léxico territorial de la identidad del ámbito (Lote D): un municipio (Atarfe)
+  // no describe su muestra como «del distrito». Zaidín (distrito) lo reproduce.
+  const lex: TerritorialLexicon = territorialLexicon(
+    workspace.municipality.identity
+  );
   const titles =
     input.indicatorTitles ??
     workspace.evidenceStore.atoms
@@ -662,10 +673,10 @@ export function buildIndicatorComparisonReferences(
     // etiquetarse una muestra municipal como «proxy provincial».
     const scaleCaution = esLocal
       ? `Muestra local exploratoria (${muestraStr}) del propio ámbito: señal ` +
-        `orientativa, no representativa ni estimación poblacional del distrito; ` +
+        `orientativa, no representativa ni estimación poblacional ${lex.delScope}; ` +
         `requiere contraste comunitario.`
       : "Evidencia contextual (proxy) de ámbito provincial u origen externo: " +
-        "no constituye estimación específica del distrito y requiere contraste " +
+        `no constituye estimación específica ${lex.delScope} y requiere contraste ` +
         "territorial.";
 
     const ref: IndicatorComparisonReference = {
@@ -675,8 +686,9 @@ export function buildIndicatorComparisonReferences(
       diagnosticBlockId: spec.blockId,
       diagnosticBlockTitle: DIAGNOSTIC_BLOCK_TITLES[spec.blockId] ?? spec.blockId,
       territorialValue,
-      territorialLabel:
-        "valor de la muestra territorial/demo (agregado real del estudio cargado)",
+      territorialLabel: esLocal
+        ? "valor de la muestra local del ámbito (agregado real del estudio cargado)"
+        : "valor de la muestra territorial/demo (agregado real del estudio cargado)",
       provinceReference,
       provinceLabel: PROVINCE_LABEL[spec.provincial],
       andalusiaReference: andalusiaReference?.value,

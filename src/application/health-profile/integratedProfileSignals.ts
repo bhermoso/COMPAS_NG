@@ -23,6 +23,7 @@
 
 import type { DiagnosticAnswers } from "./diagnosticAnswers";
 import type { CausalStatus } from "./profileScientificFramework";
+import type { TerritorialLexicon } from "./territorialGrammar";
 import { formatIndicatorValue } from "./complementaryIndicatorReferences";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -117,7 +118,8 @@ type TipoSenal = "informe" | "trazador" | "contexto";
 
 function desigualdadNoObservable(
   senal: string,
-  tipo: TipoSenal
+  tipo: TipoSenal,
+  lex: TerritorialLexicon
 ): DesigualdadNoObservable {
   const ejesAusentes = ejesAusentesDe(senal);
   // Forma breve, para la prosa: el hilo ya ha nombrado la señal.
@@ -125,7 +127,7 @@ function desigualdadNoObservable(
     tipo === "informe"
       ? "en qué grupos del territorio pesa"
       : tipo === "contexto"
-        ? "cómo se distribuye dentro del distrito"
+        ? `cómo se distribuye ${lex.dentroDelAmbito}`
         : "quién la presenta en peor situación";
   const sujeto =
     tipo === "informe"
@@ -197,6 +199,7 @@ export function buildIntegratedProfileSignals(
   answers: DiagnosticAnswers
 ): IntegratedHealthProfileSignal[] {
   const signals: IntegratedHealthProfileSignal[] = [];
+  const lex = answers.territorial;
 
   // 1. Señales sanitarias del Informe: presencia textual, nunca prevalencia.
   for (const s of answers.sanitaria.senales) {
@@ -204,7 +207,7 @@ export function buildIntegratedProfileSignals(
       id: `informe-${s.dimension.replace(/[^a-záéíóúñ]+/gi, "-").toLowerCase()}`,
       senal: s.dimension,
       fuente: "Informe de salud (fuente diagnóstica primaria)",
-      escala: "ámbito del Informe, sin desagregación distrital",
+      escala: `ámbito del Informe, ${lex.sinDesagregacionInterna}`,
       valor: `presencia textual: ${s.menciones} mención(es) [${s.terminos.join(", ")}]`,
       esMencionTextual: true,
       esProxy: false,
@@ -212,13 +215,13 @@ export function buildIntegratedProfileSignals(
       dimension: "informe-presencia-textual",
       ambito: "informe",
       caracterExploratorio: false,
-      desigualdad: desigualdadNoObservable(s.dimension, "informe"),
+      desigualdad: desigualdadNoObservable(s.dimension, "informe", lex),
       mecanismoPlausible: buscarMecanismo(s.dimension, answers),
       activoRelacionado: buscarAmbito(s.dimension, answers),
       validacionComunitariaPendiente: true,
       estatusCausal: "presencia-textual",
       preguntaGrupoMotor:
-        `¿Cómo se expresa «${s.dimension}» en la vida cotidiana del barrio y ` +
+        `¿Cómo se expresa «${s.dimension}» en la vida cotidiana ${lex.vidaCotidianaLocus} y ` +
         `en qué grupos pesa más?`,
     });
   }
@@ -255,7 +258,7 @@ export function buildIntegratedProfileSignals(
       tamanoMuestra: r.sampleSize,
       caracterExploratorio: r.esLocal,
       tracerPriority: r.tracerPriority,
-      desigualdad: desigualdadNoObservable(r.narrativeLabel, "trazador"),
+      desigualdad: desigualdadNoObservable(r.narrativeLabel, "trazador", lex),
       mecanismoPlausible: mecanismo,
       activoRelacionado: buscarAmbito(bloque?.title ?? r.narrativeLabel, answers),
       validacionComunitariaPendiente: true,
@@ -287,14 +290,15 @@ export function buildIntegratedProfileSignals(
         caracterExploratorio: false,
         desigualdad: desigualdadNoObservable(
           "grado de urbanización del municipio de referencia",
-          "contexto"
+          "contexto",
+          lex
         ),
         mecanismoPlausible: buscarMecanismo("actividad física", answers),
         activoRelacionado: undefined,
         validacionComunitariaPendiente: true,
         estatusCausal: "descriptivo",
         preguntaGrupoMotor:
-          "¿Cómo se vive el entorno urbano del barrio (espacio público, " +
+          `¿Cómo se vive el entorno urbano ${lex.vidaCotidianaLocus} (espacio público, ` +
           "accesibilidad, usos cotidianos) frente a este contexto municipal?",
       });
     }
