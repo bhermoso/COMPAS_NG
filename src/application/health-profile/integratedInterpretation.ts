@@ -25,6 +25,7 @@
 import type { DiagnosticAnswers } from "./diagnosticAnswers";
 import type { UGCAssistanceQuestion } from "../ugc-clinical-assistance";
 import type { ProfileSpace } from "../../domain/health-profile";
+import type { TerritorialLexicon } from "./territorialGrammar";
 import type {
   HealthReportStructuredFinding,
   HealthReportStructuredReading,
@@ -195,6 +196,15 @@ interface InterpretationTheme {
   /** Marco de la lectura territorial específico del tema. */
   territorialFrame: string;
   territorialFrameWithoutLocal?: string;
+  /**
+   * Variantes inframunicipales (Lote D). El texto base se redacta en clave
+   * neutra (municipio/ámbito, «territorio», «zonas»); cuando la identidad es un
+   * distrito, se usan estas formas —léxico de barrios/distrito— que reproducen
+   * exactamente la redacción canónica de Granada-Zaidín. Municipio nunca cae al
+   * vocabulario inframunicipal.
+   */
+  questionDistrito?: string;
+  territorialFrameDistrito?: string;
 }
 
 const THEMES: InterpretationTheme[] = [
@@ -214,6 +224,8 @@ const THEMES: InterpretationTheme[] = [
     mechanismFrame:
       "La cronicidad no se lee aquí como suma de diagnósticos, sino como expresión de condiciones de vida",
     territorialFrame:
+      "La agenda clínica de cronicidad del Informe puede leerse junto a cómo se mueve y se alimenta el territorio",
+    territorialFrameDistrito:
       "La agenda clínica de cronicidad del Informe puede leerse junto a cómo se mueve y se alimenta el barrio",
     territorialFrameWithoutLocal:
       "La cronicidad y el envejecimiento plantean una pregunta territorial sobre movilidad, sedentarismo y alimentación todavía no medida localmente",
@@ -222,6 +234,8 @@ const THEMES: InterpretationTheme[] = [
     id: "apoyo-social-soledad-envejecimiento",
     title: "Apoyo social, soledad y envejecimiento",
     question:
+      "¿A quién no llega la red de apoyo, y qué papel juega la soledad no deseada en el envejecimiento del territorio?",
+    questionDistrito:
       "¿A quién no llega la red de apoyo, y qué papel juega la soledad no deseada en el envejecimiento del barrio?",
     questionWithoutLocal:
       "¿Qué información local sobre apoyo social, soledad y cuidados falta para comprender el envejecimiento del territorio?",
@@ -321,6 +335,8 @@ const THEMES: InterpretationTheme[] = [
     id: "mortalidad-escala-desigualdad",
     title: "Mortalidad y el límite de escala como desigualdad",
     question:
+      "¿Qué desigualdades internas quedan ocultas cuando la mortalidad y la morbilidad solo pueden leerse a escala del conjunto del territorio, no de forma desagregada por sus zonas?",
+    questionDistrito:
       "¿Qué desigualdades internas quedan ocultas cuando la mortalidad y la morbilidad solo pueden leerse a escala municipal o de Unidad Asistencial, no de distrito?",
     spaces: ["desigualdades", "situacion-salud"],
     agendaUses: ["sanitary-thread"],
@@ -331,6 +347,8 @@ const THEMES: InterpretationTheme[] = [
     mechanismFrame:
       "El promedio municipal puede ocultar diferencias internas de mortalidad y morbilidad",
     territorialFrame:
+      "El propio Informe declara que no hay estadísticas fiables desagregadas internamente; la escala es aquí la desigualdad",
+    territorialFrameDistrito:
       "El propio Informe declara que no hay estadísticas fiables por barrios; la escala es aquí la desigualdad",
   },
 ];
@@ -345,6 +363,25 @@ function themeForEvidenceState(
     question: theme.questionWithoutLocal ?? theme.question,
     mechanismFrame: theme.mechanismFrameWithoutLocal ?? theme.mechanismFrame,
     territorialFrame: theme.territorialFrameWithoutLocal ?? theme.territorialFrame,
+  };
+}
+
+/**
+ * Selecciona la variante inframunicipal del tema cuando la identidad territorial
+ * es un distrito (Lote D). El texto base ya es neutro (municipio/ámbito); solo el
+ * distrito adopta el léxico de barrios/distrito. Debe aplicarse ANTES de
+ * `themeForEvidenceState`, para que la variante «sin evidencia local» —siempre
+ * neutra— tenga prioridad cuando corresponda.
+ */
+function themeForScope(
+  theme: InterpretationTheme,
+  scope: TerritorialLexicon["scope"]
+): InterpretationTheme {
+  if (scope !== "distrito") return theme;
+  return {
+    ...theme,
+    question: theme.questionDistrito ?? theme.question,
+    territorialFrame: theme.territorialFrameDistrito ?? theme.territorialFrame,
   };
 }
 
@@ -398,8 +435,16 @@ function presenciaAgenda(
 // material, la EDO/brotes y la correspondencia territorial se recuperaron de
 // forma PARCIAL (municipal-proxy o recuentos absolutos), por lo que sus lagunas
 // se reformulan como estructurales, no como ausencia total.
+// Laguna de desagregación territorial: su redacción depende de la identidad del
+// ámbito (Lote D). Para un distrito reproduce el texto canónico («distrital y por
+// barrios»); para un municipio no puede afirmarse ausencia de desagregación
+// inframunicipal como si fuera un distrito.
+function territorialDisaggregationGap(lex: TerritorialLexicon): string {
+  const eje = lex.scope === "distrito" ? "distrital y por barrios" : "interna por zonas";
+  return `desagregación ${eje} de sociodemografía y desigualdad (los datos recuperados son de escala municipal, proxy)`;
+}
+
 const AUDITED_KNOWN_GAPS = [
-  "desagregación distrital y por barrios de sociodemografía y desigualdad (los datos recuperados son de escala municipal, proxy)",
   "denominadores y tasas de EDO y brotes (los recuentos recuperados son absolutos)",
   "renta, vulnerabilidad y composición social detalladas por sección censal",
   "gran parte de las tablas municipales no priorizadas (natalidad, extranjería, etc.)",
@@ -422,7 +467,8 @@ const KIND_A_DOMINIO: Record<string, string> = {
 };
 
 function buildCoverage(
-  base: HealthReportStructuredReading
+  base: HealthReportStructuredReading,
+  lex: TerritorialLexicon
 ): EpidemiologicalCoverage {
   const structuredFindings = base.findings.filter(
     (f) => f.kind !== "textual-agenda"
@@ -461,6 +507,7 @@ function buildCoverage(
           `${tablasNoEstructuradas} de ${detectedTableCount} tablas detectadas no se estructuraron`,
         ]
       : []),
+    territorialDisaggregationGap(lex),
     ...AUDITED_KNOWN_GAPS,
   ];
 
@@ -491,7 +538,10 @@ function buildCoverage(
   };
 }
 
-function toSignalRef(s: IntegratedHealthProfileSignal): InterpretationSignalRef {
+function toSignalRef(
+  s: IntegratedHealthProfileSignal,
+  lex: TerritorialLexicon
+): InterpretationSignalRef {
   return {
     id: s.id,
     label: s.senal,
@@ -500,8 +550,8 @@ function toSignalRef(s: IntegratedHealthProfileSignal): InterpretationSignalRef 
     esLocal: s.esLocal,
     sampleSize: s.tamanoMuestra,
     caution: s.esLocal
-      ? "muestra exploratoria, no representativa ni estimación poblacional del distrito; requiere contraste comunitario"
-      : "contexto provincial/externo, no estimación distrital",
+      ? `muestra exploratoria, no representativa ni estimación poblacional ${lex.delScope}; requiere contraste comunitario`
+      : `contexto provincial/externo, no estimación ${lex.escalaFinaAdj}`,
   };
 }
 
@@ -646,7 +696,8 @@ function frase(...partes: Array<string | undefined>): string {
 function tramoAgenda(
   theme: InterpretationTheme,
   presence: SanitaryAgendaPresence,
-  note: string | undefined
+  note: string | undefined,
+  lex: TerritorialLexicon
 ): string {
   if (presence === "textual-only") {
     return frase(
@@ -660,7 +711,7 @@ function tramoAgenda(
     return frase(
       `${theme.territorialFrame}.`,
       note !== undefined
-        ? `El Informe documenta ${note} —a su escala, sin desagregación distrital—.`
+        ? `El Informe documenta ${note} —a su escala, ${lex.sinDesagregacionInterna}—.`
         : undefined
     );
   }
@@ -673,14 +724,15 @@ function tramoAgenda(
 
 function tramoLocal(
   local: InterpretationSignalRef[],
-  corroborating: InterpretationSignalRef[]
+  corroborating: InterpretationSignalRef[],
+  lex: TerritorialLexicon
 ): string | undefined {
   if (local.length === 0) return undefined;
   const principal = local[0];
   const otras = [...local.slice(1), ...corroborating].slice(0, 2);
   const base =
     `La evidencia local que ayuda a leerla es «${principal.label}» ` +
-    `(${principal.value}, ${principal.scale}): señal exploratoria, no prevalencia distrital.`;
+    `(${principal.value}, ${principal.scale}): señal exploratoria, no prevalencia ${lex.escalaFinaAdj}.`;
   if (otras.length === 0) return base;
   const listadas = otras.map((s) => `«${s.label}» (${s.value})`).join(", ");
   return frase(
@@ -690,14 +742,15 @@ function tramoLocal(
 }
 
 function tramoContexto(
-  contextual: InterpretationSignalRef[]
+  contextual: InterpretationSignalRef[],
+  lex: TerritorialLexicon
 ): string | undefined {
   if (contextual.length === 0) return undefined;
   const listadas = contextual
     .slice(0, 2)
     .map((s) => `«${s.label}» (${s.value})`)
     .join(", ");
-  return `Como contexto, no como medición distrital, ${listadas}.`;
+  return `Como contexto, no como medición ${lex.escalaFinaAdj}, ${listadas}.`;
 }
 
 function tramoHumano(input: {
@@ -757,11 +810,12 @@ function componerRazonamiento(input: {
   incertidumbres: string[];
   interpretaciones: string[];
   hipotesis: string[];
+  lex: TerritorialLexicon;
 }): string {
   return frase(
-    tramoAgenda(input.theme, input.presence, input.note),
-    tramoLocal(input.local, input.corroborating),
-    tramoContexto(input.contextual),
+    tramoAgenda(input.theme, input.presence, input.note, input.lex),
+    tramoLocal(input.local, input.corroborating, input.lex),
+    tramoContexto(input.contextual, input.lex),
     tramoHumano({
       interpretaciones: input.interpretaciones,
       hipotesis: input.hipotesis,
@@ -778,6 +832,7 @@ export function buildIntegratedInterpretation(
   answers: DiagnosticAnswers
 ): IntegratedInterpretation {
   const base = answers.sanitaria.baseEpidemiologica;
+  const lex = answers.territorial;
   const signalSets = buildIntegratedSignalSets(answers);
   const setPorDimension = new Map<string, IntegratedSignalSet>(
     signalSets.map((s) => [s.dimension, s])
@@ -785,8 +840,8 @@ export function buildIntegratedInterpretation(
 
   const centralUncertainty =
     base.limitations[0] ??
-    "El diagnóstico no dispone de desagregación interna por barrios, sexo, " +
-      "edad ni condición socioeconómica: la desigualdad no se observa, no se " +
+    "El diagnóstico no dispone de desagregación interna " +
+      `${lex.ejesDesagregacionAusente}: la desigualdad no se observa, no se ` +
       "descarta.";
 
   const usadas = new Set<string>();
@@ -815,16 +870,16 @@ export function buildIntegratedInterpretation(
       // Primacía local: la principal local encabeza; si la principal es proxy,
       // pasa a contexto (nunca desplaza una local que no exista).
       if (set.primary.esLocal) {
-        localSignals.push(toSignalRef(set.primary));
+        localSignals.push(toSignalRef(set.primary, lex));
       } else {
-        contextualSignals.push(toSignalRef(set.primary));
+        contextualSignals.push(toSignalRef(set.primary, lex));
       }
       for (const s of set.corroborating) {
         (s.esLocal ? corroboratingSignals : contextualSignals).push(
-          toSignalRef(s)
+          toSignalRef(s, lex)
         );
       }
-      for (const s of set.contextual) contextualSignals.push(toSignalRef(s));
+      for (const s of set.contextual) contextualSignals.push(toSignalRef(s, lex));
       set.all.forEach((s) => usadas.add(s.id));
     }
 
@@ -879,7 +934,13 @@ export function buildIntegratedInterpretation(
         humano.hipotesis.length > 0,
     });
 
-    const reasoningTheme = themeForEvidenceState(theme, localSignals.length > 0);
+    // Primero la identidad territorial (distrito adopta el léxico inframunicipal),
+    // luego el estado de evidencia (la variante «sin evidencia local» es neutra).
+    const scopedTheme = themeForScope(theme, lex.scope);
+    const reasoningTheme = themeForEvidenceState(
+      scopedTheme,
+      localSignals.length > 0
+    );
 
     const reasoning = componerRazonamiento({
       theme: reasoningTheme,
@@ -895,6 +956,7 @@ export function buildIntegratedInterpretation(
       incertidumbres: inequalitiesOrUncertainties,
       interpretaciones: humano.interpretaciones,
       hipotesis: humano.hipotesis,
+      lex,
     });
 
     // La pregunta abierta del equipo, cuando existe, gobierna la unidad; si no,
@@ -961,7 +1023,7 @@ export function buildIntegratedInterpretation(
     (id) => !usadas.has(id)
   );
 
-  const coverage = buildCoverage(base);
+  const coverage = buildCoverage(base, lex);
   const nonExhaustiveNotice =
     "Estos hilos se construyen con la parte del Informe actualmente " +
     "estructurada y con los estudios incorporados. No son una reproducción " +

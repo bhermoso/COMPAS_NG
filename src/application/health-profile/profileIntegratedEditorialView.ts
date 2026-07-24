@@ -23,6 +23,7 @@ import {
   type IntegratedInterpretationStatus,
 } from "./integratedInterpretation";
 import { selectVisibleUGCAssistanceQuestions } from "../ugc-clinical-assistance";
+import type { TerritorialLexicon } from "./territorialGrammar";
 
 export interface ProfileIntegratedEditorialHeader {
   title: string;
@@ -889,7 +890,7 @@ function buildClosingColumns(input: {
       title: "Qué no debe confundirse",
       items: unique([
         "Las menciones del Informe son presencia textual y no prevalencia local.",
-        "Las referencias provinciales, autonómicas o proxy contextualizan; no son medición distrital.",
+        `Las referencias provinciales, autonómicas o proxy contextualizan; no son medición ${answers.territorial.escalaFinaAdj}.`,
         assetsText,
         ...matrix.notasBloque,
       ]).slice(0, 3),
@@ -908,7 +909,8 @@ function variantForUnit(unit: IntegratedInterpretationUnit): EvidenceVariant {
 
 function interpretationUnitToReadingBlock(
   unit: IntegratedInterpretationUnit,
-  visibleAssistanceUnitIds: ReadonlySet<string>
+  visibleAssistanceUnitIds: ReadonlySet<string>,
+  lex: TerritorialLexicon
 ): ProfileIntegratedEditorialReadingBlock {
   const principal = unit.localSignals[0];
   const signal =
@@ -917,7 +919,10 @@ function interpretationUnitToReadingBlock(
   const source = principal !== undefined
     ? `evidencia local + Informe de salud`
     : "Informe de salud + estudios complementarios";
-  const scale = principal?.scale ?? "escala del Informe · contexto provincial";
+  // Fallback neutral (Lote D, ajuste 3): «contexto provincial» solo se afirma
+  // cuando una fuente real acredita origen provincial; no puede derivarse de la
+  // ausencia de señal local.
+  const scale = principal?.scale ?? "escala del Informe";
   return {
     id: unit.id,
     title: unit.title,
@@ -926,7 +931,7 @@ function interpretationUnitToReadingBlock(
     scale,
     reading: unit.reasoning,
     mechanism: unit.plausibleDeterminants[0] ?? "por contrastar con el territorio",
-    exclusion: unit.inequalitiesOrUncertainties[0] ?? "sin desagregación distrital",
+    exclusion: unit.inequalitiesOrUncertainties[0] ?? lex.sinDesagregacionInterna,
     groupMotorQuestion: unit.question,
     motorQuestion: unit.question,
     variant: variantForUnit(unit),
@@ -980,7 +985,11 @@ export function buildProfileIntegratedEditorialView(
   const territorialReadings: ProfileIntegratedEditorialReadingBlock[] =
     interpretation.units.length > 0
       ? interpretation.units.map((unit) =>
-          interpretationUnitToReadingBlock(unit, visibleAssistanceUnitIds)
+          interpretationUnitToReadingBlock(
+            unit,
+            visibleAssistanceUnitIds,
+            answers.territorial
+          )
         )
       : READING_DEFINITIONS.flatMap((definition) => {
           const signal = pickSignal(signals, usedSignals, definition);

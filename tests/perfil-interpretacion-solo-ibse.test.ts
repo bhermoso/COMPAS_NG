@@ -4,6 +4,7 @@ import {
   type DiagnosticAnswers,
 } from "../src/application/health-profile";
 import type { HealthReportStructuredReading } from "../src/domain/health-report";
+import { territorialLexicon } from "../src/application/health-profile/territorialGrammar";
 
 const emptyBase: HealthReportStructuredReading = {
   present: false,
@@ -94,6 +95,8 @@ function answersWithOnlyIBSE(): DiagnosticAnswers {
       charCount: 0,
     },
     ugcAssistanceQuestions: [],
+    // Léxico territorial requerido por la capa (Lote D): fixture municipal neutro.
+    territorial: territorialLexicon({ ineCode: "18000" }),
   };
 }
 

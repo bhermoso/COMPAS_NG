@@ -49,6 +49,7 @@ import {
   buildUGCClinicalAssistanceReading,
   buildUGCAssistanceQuestions,
 } from "../ugc-clinical-assistance";
+import { territorialLexicon, type TerritorialLexicon } from "./territorialGrammar";
 
 // ── Tipos de la capa ──────────────────────────────────────────────────────────
 
@@ -116,6 +117,12 @@ export interface DiagnosticAnswers {
   ugcAssistanceQuestions: UGCAssistanceQuestion[];
   /** Síntesis narrativa del técnico, si existe. */
   sintesisTexto?: string;
+  /**
+   * Léxico territorial derivado de la identidad del ámbito (municipio vs distrito
+   * inframunicipal). Fuente única para adaptar las expresiones generadas de la
+   * lectura sin sustituciones globales. Estructura transitoria (no persistida).
+   */
+  territorial: TerritorialLexicon;
 }
 
 export interface BuildDiagnosticAnswersInput {
@@ -431,5 +438,6 @@ export function buildDiagnosticAnswers(
       buildUGCClinicalAssistanceReading(workspace)
     ),
     sintesisTexto: workspace.perfilLocalDeSalud?.sintesisTexto?.trim() || undefined,
+    territorial: territorialLexicon(workspace.municipality.identity),
   };
 }
