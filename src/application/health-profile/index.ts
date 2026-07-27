@@ -69,6 +69,14 @@ export {
   inferSocialEpidemiologyDeterminants,
   buildSalutogenicReading,
 } from "./diagnosticAnswers";
+export {
+  serializeValidatedAnswers,
+  parseValidatedAnswersSnapshot,
+} from "./validatedAnswersSnapshot";
+export {
+  selectDocumentPreviewContext,
+  type DocumentPreviewContext,
+} from "./documentPreviewContext";
 export type {
   HealthReportSanitaryReading,
   HealthReportSanitarySignal,

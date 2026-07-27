@@ -16,7 +16,8 @@ import { PSLCArtifactViewer } from "./PSLCArtifactViewer";
 import type { DiagnosticAnswers } from "../../application/health-profile";
 import {
   buildMatrizAnexo,
-  buildProfileIntegratedEditorialView,
+  buildCanonicalBuildContext,
+  buildCanonicalEditorialView,
 } from "../../application/health-profile";
 import {
   exportPSLCArtifactToDocxBlob,
@@ -25,8 +26,6 @@ import {
 import {
   readSealedCanonicalDocument,
   PRIORITIZATION_PENDING_DECLARATION,
-  buildAuthoredClosing,
-  buildInstitutionalBoundary,
 } from "../../application/psl-c-canonical";
 import { ProfileIntegratedEditorialPreview } from "./ProfileIntegratedEditorialPreview";
 
@@ -59,6 +58,16 @@ async function descargarPSLCPdf(
 
 interface LocalHealthProfileViewProps {
   psl: LocalHealthProfile;
+  /**
+   * Snapshot que gobierna la PREVISUALIZACIÓN DOCUMENTAL canónica (CONV-A).
+   * Tras validar es `workspace.validatedPSL` —el mismo que sella la compilación—,
+   * de modo que la previsualización y el documento sellado proyectan el mismo
+   * snapshot (vivo ≡ sellado). Antes de validar es `runtime.psl` y la
+   * previsualización se rotula «Borrador vivo sin validar · no institucional».
+   */
+  previewPSL: LocalHealthProfile;
+  /** true si `previewPSL` procede de `validatedPSL` (previsualización institucional). */
+  isValidatedPreview: boolean;
   pslIsStale: boolean;
   municipalityName: string;
   /** Referencias comparativas por indicador para la trazabilidad técnica. */
@@ -787,6 +796,8 @@ function PSLCArtefactoCard({ artifact }: { artifact: LocalHealthProfileArtifact 
 
 export function LocalHealthProfileView({
   psl,
+  previewPSL,
+  isValidatedPreview,
   pslIsStale,
   municipalityName,
   indicatorReferences,
@@ -801,7 +812,10 @@ export function LocalHealthProfileView({
   onCompile,
   onApprove,
 }: LocalHealthProfileViewProps) {
-  const isEmpty = psl.totalEvidenceAtoms === 0;
+  // CONV-A · el gate que puede ocultar/modificar la previsualización documental se
+  // gobierna por el snapshot de preview (validado si lo hay), no por el runtime
+  // vivo: una preview validada con evidencia no desaparece por un runtime vaciado.
+  const isEmpty = previewPSL.totalEvidenceAtoms === 0;
   const doc = buildInstitutionalProfileViewModel(psl);
   // La Vista editorial integrada es la lectura canónica del Perfil: consume las
   // capas puras (síntesis, visuales, señales integradas) internamente. La
@@ -815,14 +829,22 @@ export function LocalHealthProfileView({
     month: "long",
     day: "numeric",
   });
+  // CONV-A · previsualización documental por la RUTA CANÓNICA PÚBLICA: la misma
+  // `CanonicalEditorialView` que sella la compilación, construida efímeramente
+  // desde el MISMO snapshot (`previewPSL`). Así la pantalla respeta readingStatus,
+  // pendencia, señales principales, ranking, cierre y frontera sin props paralelas
+  // (invariante vivo ≡ sellado). `perfil` no interviene en la lectura editorial
+  // (solo modula el espacio técnico), por lo que se omite aquí.
   const integratedEditorialView =
     diagnosticAnswers !== undefined
-      ? buildProfileIntegratedEditorialView(diagnosticAnswers, {
-          territory: municipalityName,
-          status: STATUS_LABEL[psl.status],
-          informeTitulo: doc.primarySource.title,
-          generatedDate,
-        })
+      ? buildCanonicalEditorialView(
+          buildCanonicalBuildContext({
+            psl: previewPSL,
+            perfil: undefined,
+            answers: diagnosticAnswers,
+            territory: municipalityName,
+          })
+        )
       : null;
   // Recuento honesto de fuentes: Informe de salud + estudios complementarios +
   // activos comunitarios. `originsSummary` cuenta clases de origen de átomo
@@ -928,11 +950,17 @@ export function LocalHealthProfileView({
       {/* Composición oficial única. Absorbe la antigua «Salud en síntesis» y */}
       {/* deja el desarrollo capitular fuera de la experiencia principal.     */}
       {!isEmpty && integratedEditorialView !== null && (
-        <ProfileIntegratedEditorialPreview
-          view={integratedEditorialView}
-          humanClosing={buildAuthoredClosing(psl.cierreInterpretativo)}
-          institutionalBoundary={buildInstitutionalBoundary(psl.priorizacion)}
-        />
+        <>
+          {!isValidatedPreview && (
+            <p className="pie-doc-draft-notice" role="status">
+              Borrador vivo sin validar · no institucional
+            </p>
+          )}
+          {/* CONV-A · cierre, frontera y pendencia proceden de la vista canónica
+              (`view.humanClosing` / `view.institutionalBoundary` /
+              `view.pendingDeclaration`); no se pasan por props paralelas. */}
+          <ProfileIntegratedEditorialPreview view={integratedEditorialView} />
+        </>
       )}
 
       {/* ── Espacio técnico del Perfil ──────────────────────────────────── */}

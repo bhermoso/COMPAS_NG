@@ -77,6 +77,8 @@ beforeAll(() => {
   html = renderToStaticMarkup(
     <LocalHealthProfileView
       psl={psl}
+      previewPSL={psl}
+      isValidatedPreview={true}
       pslIsStale={false}
       municipalityName={ws.municipality.identity.name}
       diagnosticAnswers={answers}
