@@ -28,9 +28,11 @@ import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramewo
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import {
   hasPSLHumanContent,
-  buildIndicatorComparisonReferences,
   computePerfilEpistemicMetrics,
   buildDiagnosticAnswers,
+  serializeValidatedAnswers,
+  parseValidatedAnswersSnapshot,
+  selectDocumentPreviewContext,
 } from "./application/health-profile";
 import type { DiagnosticAnswers } from "./application/health-profile";
 import type { PerfilLocalDeSalud } from "./domain/health-profile";
@@ -532,6 +534,12 @@ export default function App() {
     setWorkspace((prev) => ({
       ...prev,
       validatedPSL,
+      // CONV-A · congela ATÓMICAMENTE el snapshot de answers (payload opaco) junto
+      // al PSL validado, para que preview y compilación consuman el mismo snapshot
+      // semántico (psl + answers) y no se recombine con answers vivos.
+      validatedAnswersSnapshot: serializeValidatedAnswers(
+        buildWorkspaceDiagnosticAnswers(prev)
+      ),
       updatedAt: now,
     }));
   }, [runtime.psl]);
@@ -550,7 +558,9 @@ export default function App() {
       return;
     }
     setWorkspace((prev) => {
-      const { validatedPSL: _psl, ...rest } = prev; // eslint-disable-line @typescript-eslint/no-unused-vars
+      // CONV-A · invalidación CONJUNTA de validatedPSL y su snapshot de answers.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { validatedPSL: _psl, validatedAnswersSnapshot: _snap, ...rest } = prev;
       return { ...rest, updatedAt: new Date().toISOString() };
     });
   }, [workspace.validatedPSL]);
@@ -606,7 +616,11 @@ export default function App() {
   const handleCompilePSL = useCallback(() => {
     setWorkspace((prev) => {
       const psl = prev.validatedPSL;
-      if (!psl) return prev;
+      // CONV-A · la compilación consume el MISMO snapshot deserializado que la
+      // preview (no answers vivos). Sin PSL validado o con payload
+      // ausente/ilegible/inválido no se compila: revalidación requerida.
+      const answers = parseValidatedAnswersSnapshot(prev.validatedAnswersSnapshot);
+      if (!psl || answers === null) return prev;
       const result = compileLocalHealthProfile({
         psl,
         // Puente del espacio de conocimiento: sin él, el artefacto congelado
@@ -615,9 +629,9 @@ export default function App() {
         municipalityName: prev.municipality.identity.name,
         municipalityProvince: prev.municipality.identity.province,
         existingArtifactCount: prev.compiledProfiles?.length ?? 0,
-        // Congela el documento canónico (esquema 2): sin estos answers el artefacto
-        // sería legacy y no tendría canonicalDocument/readingStatus/aviso pendiente.
-        diagnosticAnswers: buildWorkspaceDiagnosticAnswers(prev),
+        // Congela el documento canónico (esquema 2) desde el snapshot validado:
+        // vivo ≡ sellado por construcción (mismo psl + answers que la preview).
+        diagnosticAnswers: answers,
       });
       if (!result.ok) return prev;
       return {
@@ -3039,28 +3053,46 @@ export default function App() {
         {/* ── ④ Perfil de Salud Local ──────────────────────── */}
         {view === "psl" && (
           <>
-            <LocalHealthProfileView
-              psl={runtime.psl}
-              pslIsStale={runtime.pslIsStale}
-              municipalityName={municipality.name}
-              indicatorReferences={
-                buildIndicatorComparisonReferences({ workspace }).references
-              }
-              epistemicMetrics={
-                workspace.perfilLocalDeSalud !== undefined
-                  ? computePerfilEpistemicMetrics(workspace.perfilLocalDeSalud)
-                  : undefined
-              }
-              diagnosticAnswers={buildWorkspaceDiagnosticAnswers(workspace)}
-              compiledProfiles={workspace.compiledProfiles}
-              onValidate={handleValidatePSL}
-              onInvalidate={handleInvalidatePSL}
-              onEditConclusion={handleEditPSLConclusion}
-              onEditCierreInterpretativo={handleEditPSLCierreInterpretativo}
-              onDocumentarDeliberacion={handleDocumentarDeliberacion}
-              onCompile={handleCompilePSL}
-              onApprove={handleApprovePSL}
-            />
+            {(() => {
+              // CONV-A · selección del snapshot semántico que gobierna la
+              // previsualización documental. Solo se considera VALIDADA cuando
+              // existen atómicamente `validatedPSL` Y un payload de answers
+              // deserializable y válido; en cualquier otro caso, borrador vivo no
+              // institucional (nunca se recombina validatedPSL con answers vivos).
+              // Preview y compilación consumen el MISMO snapshot deserializado.
+              const previewContext = selectDocumentPreviewContext({
+                validatedPSL: workspace.validatedPSL,
+                validatedAnswersSnapshot: workspace.validatedAnswersSnapshot,
+                livePSL: runtime.psl,
+                liveAnswers: buildWorkspaceDiagnosticAnswers(workspace),
+              });
+              return (
+                <LocalHealthProfileView
+                  psl={runtime.psl}
+                  previewPSL={previewContext.previewPSL}
+                  isValidatedPreview={previewContext.isValidatedPreview}
+                  pslIsStale={runtime.pslIsStale}
+                  municipalityName={municipality.name}
+                  indicatorReferences={
+                    previewContext.previewAnswers.referencias.references
+                  }
+                  epistemicMetrics={
+                    workspace.perfilLocalDeSalud !== undefined
+                      ? computePerfilEpistemicMetrics(workspace.perfilLocalDeSalud)
+                      : undefined
+                  }
+                  diagnosticAnswers={previewContext.previewAnswers}
+                  compiledProfiles={workspace.compiledProfiles}
+                  onValidate={handleValidatePSL}
+                  onInvalidate={handleInvalidatePSL}
+                  onEditConclusion={handleEditPSLConclusion}
+                  onEditCierreInterpretativo={handleEditPSLCierreInterpretativo}
+                  onDocumentarDeliberacion={handleDocumentarDeliberacion}
+                  onCompile={handleCompilePSL}
+                  onApprove={handleApprovePSL}
+                />
+              );
+            })()}
             {/* Representación derivada breve (GOV-P4-01 · PR-E): dentro del único
                 espacio «Perfil de Salud Local», proyectada del documento canónico. */}
             <NHSHealthProfileView

@@ -211,6 +211,8 @@ beforeAll(() => {
   html = renderToStaticMarkup(
     <LocalHealthProfileView
       psl={psl}
+      previewPSL={psl}
+      isValidatedPreview={true}
       pslIsStale={false}
       municipalityName={ws.municipality.identity.name}
       diagnosticAnswers={answers}
@@ -413,6 +415,8 @@ describe("modelo puro — Vista editorial integrada", () => {
     const frozenHtml = renderToStaticMarkup(
       <LocalHealthProfileView
         psl={zagraPsl}
+        previewPSL={zagraPsl}
+        isValidatedPreview={true}
         pslIsStale={false}
         municipalityName="Zagra"
         diagnosticAnswers={zagraAnswers}
@@ -759,13 +763,18 @@ describe("render — perfil de salud local canónico", () => {
     expect(html.match(/Qué debe discutir el Grupo Motor/g)).toHaveLength(1);
   });
 
-  it("subordina la lectura ampliada y el anexo técnico en details", () => {
-    expect(proposalHtml).toContain("<details");
-    expect(proposalHtml).toContain("Lectura territorial ampliada y anexo técnico");
-    // Las columnas generadas se titulan «Cierre de la lectura» (paridad con el
-    // proyector); preceden al anexo técnico colapsado.
-    expect(proposalHtml.indexOf("Cierre de la lectura")).toBeLessThan(
-      proposalHtml.indexOf("<details")
+  it("CONV-A: el borrador vivo es lectura canónica pura; el anexo técnico se subordina en «Espacio técnico del Perfil»", () => {
+    // Tras CONV-A la previsualización viva proyecta la vista CANÓNICA (lectura
+    // pura, vivo ≡ sellado): ya NO embebe la «Lectura territorial ampliada y anexo
+    // técnico» de la forma legacy prevalidación —cuyo material técnico vive ahora
+    // en `technicalSpace`—.
+    expect(proposalHtml).not.toContain("Lectura territorial ampliada y anexo técnico");
+    // El anexo técnico se subordina en un <details> a nivel de documento.
+    expect(html).toContain('<details class="psl-technical-space"');
+    expect(html).toContain("Espacio técnico del Perfil");
+    // El cierre de la lectura precede al espacio técnico colapsado.
+    expect(html.indexOf("Cierre de la lectura")).toBeLessThan(
+      html.indexOf("Espacio técnico del Perfil")
     );
   });
 

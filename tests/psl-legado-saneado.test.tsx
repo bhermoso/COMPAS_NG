@@ -107,6 +107,8 @@ function renderPantalla(): string {
   return renderToStaticMarkup(
     <LocalHealthProfileView
       psl={pslLegado}
+      previewPSL={pslLegado}
+      isValidatedPreview={true}
       pslIsStale={false}
       municipalityName={ws.municipality.identity.name}
       compiledProfiles={[artifactLegado]}

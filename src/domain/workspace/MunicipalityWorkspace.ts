@@ -79,6 +79,18 @@ export interface MunicipalityWorkspace {
    */
   validatedPSL?: LocalHealthProfile;
   /**
+   * Snapshot OPACO (JSON serializado) de las DiagnosticAnswers en el momento de la
+   * validación (CONV-A). Se guarda ATÓMICAMENTE junto a `validatedPSL` para que la
+   * previsualización documental y la compilación consuman el MISMO snapshot
+   * semántico (psl + answers) y no se recombine `validatedPSL` con answers vivos.
+   * El dominio lo trata como `string` opaco —igual que `PSLCSealedCanonicalDocument.payload`—;
+   * la deserialización y validación estructural viven en la capa de aplicación
+   * (`parseValidatedAnswersSnapshot`), preservando `domain ↛ application` y el
+   * estatuto TRANSITORIO (no persistido como estructura tipada) de `DiagnosticAnswers`.
+   * Ausente/ilegible/inválido junto a `validatedPSL` ⇒ revalidación requerida.
+   */
+  validatedAnswersSnapshot?: string;
+  /**
    * PSL-C compilados (LocalHealthProfileArtifact).
    * Acumulativos: cada compilación añade un nuevo artefacto.
    * Inmutables: nunca se sobreescriben. Historial completo por municipio.
