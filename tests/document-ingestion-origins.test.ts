@@ -786,6 +786,21 @@ describe("localiza-salud — copia-pega real: formatos, cabeceras y carga bruta"
     expect(result!.evidenceStore.atoms[0].title).toBe("Cruz Roja Granada");
   });
 
+  it("formato pipe: usa el nombre cuando la primera columna es el orden", () => {
+    const pipeHeader = "Orden|Nombre|Recurso|Direccion";
+    const pipeRow = "1|Centro de Salud La Vega|Centro de Salud|C/ Mayor, 1";
+    const result = ingestManualDocument({
+      repository: makeRepository(),
+      evidenceStore: makeStore(),
+      kind: "localiza-salud",
+      title: "Localiza Salud con orden y separador pipe",
+      plainText: [pipeHeader, pipeRow].join("\n"),
+    });
+    expect(result).not.toBeNull();
+    expect(result!.atomsCreated).toBe(1);
+    expect(result!.evidenceStore.atoms[0].title).toBe("Centro de Salud La Vega");
+  });
+
   it("56 líneas válidas generan exactamente 56 átomos (carga bruta no es error)", () => {
     const lines = Array.from({ length: 56 }, (_, i) =>
       `Activo ${i + 1} | Descripción del activo ${i + 1} en el entorno territorial`
