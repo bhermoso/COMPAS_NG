@@ -342,8 +342,15 @@ function resolveAtomTitle(
 
 function extractLocalizaSaludTitle(content: string, index: number): string {
   if (content.includes("|")) {
-    const first = content.split("|")[0].trim();
-    if (first.length > 0) return first;
+    const pipeFields = content.split("|");
+    const firstField = pipeFields[0].trim();
+    // Los exports de Localiza Salud pueden conservar «Orden» como primera
+    // columna tanto en TSV como en variantes separadas por pipe.
+    if (/^\d+$/.test(firstField) && pipeFields.length > 1) {
+      const secondField = pipeFields[1].trim();
+      if (secondField.length > 0) return secondField;
+    }
+    if (firstField.length > 0) return firstField;
   }
 
   if (content.includes("\t")) {
