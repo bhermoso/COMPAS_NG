@@ -21,6 +21,7 @@ import type { PHQ9Study } from "../phq9";
 import type { PSQIStudy } from "../psqi";
 import type { FagerstromStudy } from "../fagerstrom";
 import type { SBQStudy } from "../sbq";
+import type { DeliberativePrioritySelection } from "../deliberative-prioritisation";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -64,6 +65,11 @@ export interface MunicipalityWorkspace {
   cageStudy?: CAGEStudy;
   thematicPrioritisation?: ThematicPrioritisation;
   thematicPrioritisationStudy?: ThematicPrioritisationStudy;
+  /**
+   * Selección explícita de prioridades adoptada por el Grupo Motor.
+   * Es la compuerta canónica entre MTE y PAI; nunca se deriva automáticamente.
+   */
+  deliberativePrioritySelection?: DeliberativePrioritySelection;
   /**
    * Historial de snapshots del Estado Territorial Evolutivo.
    * Acumulativo: cada versión de la evidencia produce una entrada nueva.

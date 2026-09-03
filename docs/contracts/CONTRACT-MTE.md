@@ -3,7 +3,7 @@
 > Contrato canónico del Motor de Traducción Estratégica de COMPÁS NG.
 > Producto 5.
 > Versión 1.0 — 2026-06-30
-> Estado: VIGENTE — implementación pendiente
+> Estado: VIGENTE — implementación certificada
 >
 > Supersede: CONTRACT-STRATEGIC-TRANSLATION v1.0 (archivado 2026-06-30)
 
@@ -301,7 +301,9 @@ Para que el Producto 5 pueda considerarse certificado, deben cumplirse
 
 La `LecturaEstrategicaLocal` es la entrada del Producto 6 (Plan de Acción).
 
-El Producto 6 itera sobre los `EscenarioEstratégico` para generar objetivos.
+El Producto 6 solo itera sobre los `EscenarioEstratégico` que hayan sido
+seleccionados expresamente por el Grupo Motor mediante una
+`DeliberativePrioritySelection` vigente. El MTE no selecciona prioridades.
 La correspondencia conceptual es:
 
 ```
@@ -311,9 +313,11 @@ EscenarioEstratégico         →  ActionPlanObjectiveCluster
   sinCoberturaMarcal         →  objetivo marcado sin alineación disponible
 ```
 
-El Producto 6 recibe los escenarios como unidades ya coherentes. No hace
+El Producto 6 recibe los escenarios seleccionados como unidades ya coherentes. No hace
 clustering; no busca frameworks; no detecta tensiones. El MTE realizó ese
-trabajo. El Producto 6 convierte los insumos en objetivos y actuaciones,
+trabajo. La compuerta deliberativa documenta por separado las candidaturas
+técnicas, la priorización ciudadana disponible y la decisión motivada del
+Grupo Motor. Solo después, el Producto 6 convierte los insumos seleccionados en objetivos y actuaciones,
 con revisión humana obligatoria.
 
 Cuando el Producto 6 se diseñe, su contrato debe referenciar

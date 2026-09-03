@@ -105,7 +105,7 @@ export function LecturaEstrategicaView({ lectura }: LecturaEstrategicaViewProps)
 
       {/* Cabecera institucional */}
       <section className="workspace-panel lectura-header-panel">
-        <p className="eyebrow">Producto 5 · Motor de Traducción Estratégica</p>
+        <p className="eyebrow">Lectura estratégica · Propuesta asistida</p>
         <h2>Lectura Estratégica Local</h2>
         <p className="panel-note">
           Escenarios estratégicos identificados a partir del diagnóstico territorial y el
@@ -163,7 +163,7 @@ export function LecturaEstrategicaView({ lectura }: LecturaEstrategicaViewProps)
 
       {/* Cautelas invariables */}
       <section className="workspace-panel">
-        <p className="eyebrow">Cautelas del Motor de Traducción Estratégica</p>
+        <p className="eyebrow">Cautelas de la lectura estratégica</p>
         <div className="lectura-cautelas">
           {lectura.cautelas.map((c, i) => (
             <p key={i} className="lectura-cautela-invariable">{c}</p>

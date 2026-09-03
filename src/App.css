@@ -223,6 +223,58 @@ h3 {
   box-shadow: 0 0 0 3px rgba(0, 116, 200, 0.08);
 }
 
+/* PA-RELAS-01 · compuerta humana MTE → selección del Grupo Motor → PAI */
+.deliberative-selection__status {
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #2f7d5b;
+  background: #edf7f2;
+  color: #245c46;
+}
+
+.deliberative-selection__form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.deliberative-selection__form fieldset {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.deliberative-selection__candidate {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.deliberative-selection__label,
+.deliberative-selection__form legend {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 650;
+  color: #243746;
+}
+
+.deliberative-selection__form input[type="text"],
+.deliberative-selection__form input:not([type]),
+.deliberative-selection__form textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.deliberative-selection__violations {
+  margin: 0;
+  padding: 0.75rem 1rem 0.75rem 2rem;
+  border-left: 4px solid #b5473b;
+  background: #fff2f0;
+  color: #7a2f27;
+}
+
 .repo-guide__list {
   margin: 12px 0 0;
   padding: 0 0 0 22px;

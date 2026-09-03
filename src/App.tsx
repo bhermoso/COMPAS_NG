@@ -105,8 +105,8 @@ import { loadMunicipalitySeed } from "./infrastructure/seeds";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
 import { readSealedCanonicalDocument } from "./application/psl-c-canonical";
-import { approvePSL, createFormalValidation } from "./application/institutional-lifecycle";
-import { isFormalValidationStale } from "./domain/institutional-lifecycle";
+import { approvePSL } from "./application/institutional-lifecycle";
+import { createDeliberativePrioritySelection } from "./domain/deliberative-prioritisation";
 
 import {
   LocalHealthPlanningCycle,
@@ -124,13 +124,10 @@ import {
   OITPanel,
   ReconciliacionPanel,
   PrioritizationPanel,
-  EPVSAPanel,
-  ActionPlanPanel,
-  AgendaPanel,
-  MonitoringPanel,
   NHSHealthProfileView,
   LecturaEstrategicaView,
   PAIView,
+  DeliberativePrioritySelectionPanel,
   GESPanel,
   PerfilLocalDeSaludPanel,
   PerfilFuentesPanel,
@@ -665,25 +662,29 @@ export default function App() {
     setWorkspace(prev => ({ ...prev, perfilLocalDeSalud: perfil }));
   }, []);
 
-  const handleFormalValidation = useCallback((
-    target: "action-plan" | "agenda",
-    validatedBy: string,
-    validatedByRole: "coordination" | "group-motor",
-    externalReference?: string,
-  ) => {
-    setWorkspace((prev) => {
-      const psl = prev.validatedPSL;
-      if (!psl) return prev;
-      const result = createFormalValidation({ target, psl, validatedBy, validatedByRole, externalReference });
-      if (!result.ok) return prev;
-      const others = (prev.formalValidations ?? []).filter((r) => r.target !== target);
-      return {
-        ...prev,
-        formalValidations: [...others, result.record],
-        updatedAt: new Date().toISOString(),
-      };
+  const handleSaveDeliberativePrioritySelection = useCallback((input: {
+    selectedScenarioIds: string[];
+    deliberationRationale: string;
+    citizenInfluenceStatement: string;
+    decidedBy: string;
+  }): readonly string[] => {
+    if (runtime.lectura == null) {
+      return ["G-DPS-1: la Lectura Estratégica no está disponible"];
+    }
+    const result = createDeliberativePrioritySelection({
+      lectura: runtime.lectura,
+      citizenPrioritisation: workspace.thematicPrioritisation,
+      ...input,
     });
-  }, []);
+    if (!result.ok) return result.violations;
+
+    setWorkspace((prev) => ({
+      ...prev,
+      deliberativePrioritySelection: result.selection,
+      updatedAt: new Date().toISOString(),
+    }));
+    return [];
+  }, [runtime.lectura, workspace.thematicPrioritisation]);
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -699,19 +700,6 @@ export default function App() {
     (runtime.psl.status === "validated" || runtime.psl.status === "approved") &&
     !runtime.pslIsStale;
   const municipality = runtime.workspace.municipality.identity;
-
-  // Estado derivado de validaciones formales del Nivel 3.
-  // Independiente de compilación y aprobación del PSL.
-  const fvRecordActionPlan = workspace.formalValidations?.find((r) => r.target === "action-plan");
-  const actionPlanFormalValidation = fvRecordActionPlan
-    ? { validatedAt: fvRecordActionPlan.validatedAt, validatedBy: fvRecordActionPlan.validatedBy, isStale: isFormalValidationStale(fvRecordActionPlan, runtime.psl) }
-    : undefined;
-
-  const fvRecordAgenda = workspace.formalValidations?.find((r) => r.target === "agenda");
-  const agendaFormalValidation = fvRecordAgenda
-    ? { validatedAt: fvRecordAgenda.validatedAt, validatedBy: fvRecordAgenda.validatedBy, isStale: isFormalValidationStale(fvRecordAgenda, runtime.psl) }
-    : undefined;
-
 
   const allMunicipalities = useMemo(
     () => [...DEMO_MUNICIPALITIES, ...customMunicipalities],
@@ -3173,27 +3161,20 @@ export default function App() {
           )
         )}
 
-        {/* ── ⑦ Plan de Acción — priorización + encaje EPVSA + plan + agenda + seguimiento */}
+        {/* ── ⑦ Plan de Acción — MTE + selección deliberativa + PAI ── */}
         {view === "plan" && (
-          <>
-            {/* Priorización — integrada en Plan de Acción (antes view independiente) */}
+          runtime.lectura ? (
+            <>
             <section className="workspace-panel">
               <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-              <h2>Priorización territorial</h2>
+              <h2>Plan de Acción</h2>
               <p className="panel-note">
-                La priorización integra dos fuentes complementarias: las áreas
-                candidatas derivadas del Perfil de Salud Local y las temáticas
-                expresadas por la ciudadanía en el proceso de participación.
-                La decisión definitiva corresponde al equipo técnico y a la comunidad,
-                no al sistema.
+                Cadena canónica: Lectura Estratégica Local, selección deliberativa del
+                Grupo Motor y propuesta técnica del Plan de Acción. El sistema aporta candidaturas;
+                no selecciona prioridades ni adopta compromisos municipales.
               </p>
             </section>
-            <PrioritizationPanel
-              prioritization={runtime.prioritization}
-              pslStatus={runtime.psl.status}
-              pslIsStale={runtime.pslIsStale}
-              hasInsufficientEvidence={pipelineIsEmpty}
-            />
+            <LecturaEstrategicaView lectura={runtime.lectura} />
             <div className="repo-section-divider">
               <span className="repo-section-divider__text">Participación ciudadana</span>
             </div>
@@ -3203,30 +3184,38 @@ export default function App() {
               }
               onOpen={handleOpenThematicModal}
             />
-            <EPVSAPanel
-              epvsa={runtime.epvsa}
-              isBlocked={!pslValidated}
+            <DeliberativePrioritySelectionPanel
+              key={`${runtime.lectura.id}-${workspace.deliberativePrioritySelection?.id ?? "pending"}`}
+              lectura={runtime.lectura}
+              citizenPrioritisation={workspace.thematicPrioritisation}
+              selection={workspace.deliberativePrioritySelection}
+              isStale={runtime.prioritySelectionIsStale}
+              onSave={handleSaveDeliberativePrioritySelection}
             />
-            <ActionPlanPanel
-              actionPlan={runtime.actionPlan}
-              isEmpty={pipelineIsEmpty}
-              isBlocked={!pslValidated}
-              formalValidation={actionPlanFormalValidation}
-              onFormalValidate={(vb, role, ref) => handleFormalValidation("action-plan", vb, role, ref)}
-            />
-            <AgendaPanel
-              agenda={runtime.agenda}
-              isEmpty={pipelineIsEmpty}
-              isBlocked={!pslValidated}
-              formalValidation={agendaFormalValidation}
-              onFormalValidate={(vb, role, ref) => handleFormalValidation("agenda", vb, role, ref)}
-            />
-            <MonitoringPanel
-              monitoring={runtime.monitoring}
-              isEmpty={pipelineIsEmpty}
-              isBlocked={!pslValidated}
-            />
-          </>
+            {runtime.pai ? (
+              <PAIView pai={runtime.pai} />
+            ) : (
+              <section className="workspace-panel">
+                <div className="phase-blocked-notice">
+                  <strong>Borrador del Plan de Acción no disponible</strong>
+                  <p>
+                    El Grupo Motor debe registrar una selección vigente antes de generar
+                    cualquier propuesta de objetivos o actuaciones.
+                  </p>
+                </div>
+              </section>
+            )}
+            </>
+          ) : (
+            <section className="workspace-panel">
+              <p className="eyebrow">Plan Local de Salud 2027–2030</p>
+              <h2>Plan de Acción no disponible</h2>
+              <p className="panel-note">
+                Se requiere un Perfil de Salud Local validado y vigente para producir la
+                Lectura Estratégica Local que inicia esta fase.
+              </p>
+            </section>
+          )
         )}
 
         {/* ── ⑧ Plan Local de Salud — espacio canónico (compilador pendiente) */}
