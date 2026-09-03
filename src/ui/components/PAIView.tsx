@@ -50,7 +50,7 @@ function ObjetivoCard({ objetivo }: { objetivo: ObjetivoEstrategicoPAI }) {
                 <p className="pai-section-label">Actuación propuesta</p>
                 <p className="pai-actuacion__desc">{objetivo.actuaciones[0]?.descripcion}</p>
                 <p className="pai-actuacion__nota">
-                  Scaffold institucional. El equipo técnico definirá las actuaciones, responsables, plazos y recursos.
+                  Borrador orientativo. El equipo técnico definirá las actuaciones, responsables, plazos y recursos.
                 </p>
               </div>
 
@@ -124,12 +124,12 @@ export function PAIView({ pai }: PAIViewProps) {
 
       {/* Cabecera institucional */}
       <section className="workspace-panel pai-header-panel">
-        <p className="eyebrow">Producto 6 · Plan de Acción Inteligente</p>
+        <p className="eyebrow">Plan de Acción · Propuesta asistida</p>
         <h2>Borrador de Plan de Acción</h2>
         <p className="panel-note">
           Propuesta técnica estructurada generada a partir de la Lectura Estratégica Local.
-          Cada objetivo deriva directamente de un escenario estratégico identificado en el diagnóstico.
-          Requiere validación del equipo técnico antes de cualquier uso institucional.
+          Solo incorpora los escenarios seleccionados expresamente por el Grupo Motor.
+          Sus objetivos y actuaciones siguen siendo propuestas sujetas a concreción y validación humana.
         </p>
 
         {pai.sinContenidoTraducible ? (

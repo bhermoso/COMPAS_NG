@@ -18,8 +18,8 @@ export function ThematicPrioritisationPanel({
         </div>
         <p className="panel-note">
           Selección de hasta {MAX_SELECTED_TOPICS} temáticas de salud para el Plan Local
-          2027–2030. Refleja una decisión de participación ciudadana o consenso técnico,
-          independiente del análisis automático de evidencia.
+          2027–2030. Refleja resultados documentados del proceso de participación
+          ciudadana; no equivale a la decisión posterior del Grupo Motor.
         </p>
       </div>
 

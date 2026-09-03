@@ -7,6 +7,10 @@
  */
 
 import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
+import {
+  doesDeliberativePrioritySelectionMatchLectura,
+  type DeliberativePrioritySelection,
+} from "../../domain/deliberative-prioritisation";
 import type { FrameworkProvider } from "../mte/FrameworkProvider";
 
 // ── Dominio del PAI ───────────────────────────────────────────────────────────
@@ -52,6 +56,7 @@ export interface BorradorPAI {
   sourceLecturaId: string;
   sourcePSLId: string;
   sourcePSLVersion: string;
+  sourcePrioritySelectionId: string;
   knowledgeBaseVersion: string;
   sinContenidoTraducible: boolean;
   objetivos: ObjetivoEstrategicoPAI[];
@@ -67,7 +72,8 @@ export type PAIResult =
 
 const CAUTELAS_PAI: readonly string[] = Object.freeze([
   "Este borrador de Plan de Acción es una propuesta técnica inicial. No constituye compromiso institucional ni Plan Local de Salud del municipio.",
-  "Cada objetivo, actuación e indicador debe ser revisado por el equipo técnico, validado con la ciudadanía y aprobado por los órganos municipales competentes antes de adquirir carácter vinculante.",
+  "Cada objetivo, actuación e indicador debe ser concretado, adaptado y validado por el Grupo Motor antes de someterse a aprobación institucional.",
+  "La adopción de compromisos, la asignación de responsables y la fijación de plazos y recursos son decisiones exclusivamente humanas.",
   "Las alineaciones con marcos estratégicos institucionales son orientaciones identificadas por el sistema. Su incorporación definitiva al plan es decisión del equipo técnico.",
   "Este borrador requiere validación institucional explícita antes de su uso oficial.",
 ]);
@@ -76,11 +82,13 @@ const CAUTELAS_PAI: readonly string[] = Object.freeze([
 
 /**
  * @param lectura  LecturaEstrategicaLocal producida por el MTE.
+ * @param selection Selección explícita y vigente adoptada por el Grupo Motor.
  * @param provider Acceso al conocimiento estratégico para enriquecimiento de indicadores.
  * @param now      Timestamp inyectable para determinismo en tests.
  */
 export function generatePAI(
   lectura: LecturaEstrategicaLocal | null | undefined,
+  selection: DeliberativePrioritySelection | null | undefined,
   provider: FrameworkProvider | null | undefined,
   now = new Date().toISOString()
 ): PAIResult {
@@ -90,6 +98,12 @@ export function generatePAI(
   }
   if (provider == null) {
     return { ok: false, violations: ["G-PAI-1: FrameworkProvider no disponible"] };
+  }
+  if (selection == null) {
+    return { ok: false, violations: ["G-PAI-2: selección deliberativa del Grupo Motor no disponible"] };
+  }
+  if (!doesDeliberativePrioritySelectionMatchLectura(selection, lectura)) {
+    return { ok: false, violations: ["G-PAI-2: la selección deliberativa no corresponde a la Lectura Estratégica vigente"] };
   }
 
   const elementos = provider.getElements();
@@ -101,6 +115,7 @@ export function generatePAI(
     sourceLecturaId: lectura.id,
     sourcePSLId: lectura.sourcePSLId,
     sourcePSLVersion: lectura.sourcePSLVersion,
+    sourcePrioritySelectionId: selection.id,
     knowledgeBaseVersion: lectura.knowledgeBaseVersion,
     cautelas: [...CAUTELAS_PAI],
     requiresHumanValidation: true as const,
@@ -114,7 +129,10 @@ export function generatePAI(
     };
   }
 
-  const objetivos: ObjetivoEstrategicoPAI[] = lectura.escenarios.map((escenario) => {
+  const selectedIds = new Set(selection.selectedScenarioIds);
+  const objetivos: ObjetivoEstrategicoPAI[] = lectura.escenarios
+    .filter((escenario) => selectedIds.has(escenario.id))
+    .map((escenario) => {
     const objetivoId = `objetivo-${lectura.id}-${escenario.id}`;
 
     // Enriquecer cada referencia con los indicadores del elemento del registro

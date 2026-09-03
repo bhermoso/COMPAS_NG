@@ -6,6 +6,9 @@
 > Motor de Traducción Estratégica, Plan de Acción, Agenda tipo y Seguimiento.
 > No debe modificarse sin revisión explícita y deliberada.
 > Última revisión: 2026-06-24
+> Estado operativo: **LEGACY** desde PA-RELAS-01. Sus motores permanecen en
+> código por compatibilidad, pero ya no constituyen la ruta visible del Plan de
+> Acción. La cadena vigente se define en `CONTRACT-DELIBERATIVE-PRIORITISATION.md`.
 
 ---
 

@@ -32,6 +32,7 @@ import { translate as translateMTE } from "../mte";
 import { StaticFrameworkProvider } from "../mte";
 import type { BorradorPAI } from "../pai";
 import { generatePAI } from "../pai";
+import { isDeliberativePrioritySelectionStale } from "../../domain/deliberative-prioritisation";
 
 // ── Runtime interface ──────────────────────────────────────────────────────
 
@@ -70,6 +71,10 @@ export interface MunicipalityRuntime {
   // Producto 5 — Motor de Traducción Estratégica
   // Disponible solo cuando el PSL está validado o aprobado.
   lectura: LecturaEstrategicaLocal | undefined;
+
+  // Una selección previa queda obsoleta si cambia el PSL, el MTE o la
+  // priorización ciudadana de la que tomó constancia el Grupo Motor.
+  prioritySelectionIsStale: boolean;
 
   // Producto 6 — Plan de Acción Inteligente
   // Disponible solo cuando la lectura estratégica está disponible.
@@ -174,9 +179,24 @@ export function createMunicipalityRuntime(
 
   // ── Producto 6 — Plan de Acción Inteligente
   let pai: BorradorPAI | undefined;
-  if (lectura != null) {
+  const prioritySelectionIsStale = lectura != null && input.workspace.deliberativePrioritySelection != null
+    ? isDeliberativePrioritySelectionStale(
+        input.workspace.deliberativePrioritySelection,
+        lectura,
+        input.workspace.thematicPrioritisation
+      )
+    : false;
+  if (
+    lectura != null &&
+    input.workspace.deliberativePrioritySelection != null &&
+    !prioritySelectionIsStale
+  ) {
     const provider = new StaticFrameworkProvider(getAllStrategicElements(), "1.0.0");
-    const paiResult = generatePAI(lectura, provider);
+    const paiResult = generatePAI(
+      lectura,
+      input.workspace.deliberativePrioritySelection,
+      provider
+    );
     pai = paiResult.ok ? paiResult.borrador : undefined;
   }
 
@@ -202,6 +222,7 @@ export function createMunicipalityRuntime(
     agenda,
     monitoring,
     lectura,
+    prioritySelectionIsStale,
     pai,
   };
 }

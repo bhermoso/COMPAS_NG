@@ -41,6 +41,7 @@ export function isEmptyWorkspaceForPersistenceGuard(
     workspace.sbqStudy === undefined &&
     workspace.thematicPrioritisation === undefined &&
     workspace.thematicPrioritisationStudy === undefined &&
+    workspace.deliberativePrioritySelection === undefined &&
     (workspace.historialEstadosTerritorial?.length ?? 0) === 0 &&
     workspace.validatedPSL === undefined &&
     (workspace.compiledProfiles?.length ?? 0) === 0 &&
