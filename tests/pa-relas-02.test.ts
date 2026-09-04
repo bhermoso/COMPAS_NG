@@ -22,7 +22,10 @@ const lectura: LecturaEstrategicaLocal = {
   escenarios: [agingScenario, addictionsScenario, unrelatedScenario],
 };
 
-function selection(selectedScenarioIds: string[]): DeliberativePrioritySelection {
+function selection(
+  selectedScenarioIds: string[],
+  catalogModuleLinks: Array<{ scenarioId: string; moduleId: string }> = []
+): DeliberativePrioritySelection {
   return {
     id: "selection-pa-relas-02",
     municipalityId: lectura.municipalityId,
@@ -31,6 +34,7 @@ function selection(selectedScenarioIds: string[]): DeliberativePrioritySelection
     sourcePSLVersion: lectura.sourcePSLVersion,
     candidateScenarioIds: lectura.escenarios.map((scenario) => scenario.id),
     selectedScenarioIds,
+    catalogModuleLinks,
     citizenTopicIds: [],
     deliberationRationale: "Selección acordada por el Grupo Motor.",
     citizenInfluenceStatement: "No consta aportación ciudadana específica para esta decisión.",
@@ -51,22 +55,30 @@ describe("PA-RELAS-02 — catálogo temático del Plan de Acción", () => {
     expect(new Set(ACTION_PLAN_CATALOG.flatMap(getCatalogElementIds)).size).toBe(75);
   });
 
-  it("propone solo módulos con correspondencia exacta en escenarios seleccionados", () => {
-    expect(getEligibleActionPlanModules(lectura, selection([agingScenario.id])).map(({ module }) => module.id))
+  it("propone solo módulos vinculados expresamente mediante identificadores estables", () => {
+    expect(getEligibleActionPlanModules(lectura, selection([agingScenario.id], [
+      { scenarioId: agingScenario.id, moduleId: HEALTHY_AGING_MODULE.id },
+    ])).map(({ module }) => module.id))
       .toEqual([HEALTHY_AGING_MODULE.id]);
     expect(getEligibleActionPlanModules(lectura, selection([unrelatedScenario.id]))).toEqual([]);
   });
 
-  it("no confunde una mención parcial con una prioridad catalogada", () => {
-    const partial: LecturaEstrategicaLocal = {
+  it("no depende del texto y exige siempre el vínculo humano explícito", () => {
+    const renamed: LecturaEstrategicaLocal = {
       ...lectura,
-      escenarios: [{ ...agingScenario, id: "partial", tema: "Prevención de aislamiento sin programa de envejecimiento saludable" }],
+      escenarios: [{ ...agingScenario, id: "renamed", tema: "Autonomía y vida activa de las personas mayores" }],
     };
-    expect(getEligibleActionPlanModules(partial, { ...selection(["partial"]), sourceLecturaId: partial.id })).toEqual([]);
+    const withoutLink = { ...selection(["renamed"]), sourceLecturaId: renamed.id };
+    const withLink = {
+      ...withoutLink,
+      catalogModuleLinks: [{ scenarioId: "renamed", moduleId: HEALTHY_AGING_MODULE.id }],
+    };
+    expect(getEligibleActionPlanModules(renamed, withoutLink)).toEqual([]);
+    expect(getEligibleActionPlanModules(renamed, withLink).map(({ module }) => module.id)).toEqual([HEALTHY_AGING_MODULE.id]);
   });
 
   it("crea una revisión pendiente sin aceptar automáticamente ningún elemento", () => {
-    const selected = selection([addictionsScenario.id]);
+    const selected = selection([addictionsScenario.id], [{ scenarioId: addictionsScenario.id, moduleId: ADDICTIONS_MODULE.id }]);
     const eligible = getEligibleActionPlanModules(lectura, selected)[0];
     const review = createPendingModuleReview(lectura.municipalityId, eligible, lectura, selected);
 
@@ -76,7 +88,7 @@ describe("PA-RELAS-02 — catálogo temático del Plan de Acción", () => {
   });
 
   it("exige autoría y texto explícito para toda adaptación", () => {
-    const selected = selection([agingScenario.id]);
+    const selected = selection([agingScenario.id], [{ scenarioId: agingScenario.id, moduleId: HEALTHY_AGING_MODULE.id }]);
     const eligible = getEligibleActionPlanModules(lectura, selected)[0];
     const review = createPendingModuleReview(lectura.municipalityId, eligible, lectura, selected);
     review.decisions[0] = { ...review.decisions[0], status: "adapted", adaptedText: "" };
@@ -88,7 +100,7 @@ describe("PA-RELAS-02 — catálogo temático del Plan de Acción", () => {
   });
 
   it("invalida la revisión cuando cambia la selección deliberativa", () => {
-    const selected = selection([agingScenario.id]);
+    const selected = selection([agingScenario.id], [{ scenarioId: agingScenario.id, moduleId: HEALTHY_AGING_MODULE.id }]);
     const eligible = getEligibleActionPlanModules(lectura, selected)[0];
     const review = createPendingModuleReview(lectura.municipalityId, eligible, lectura, selected);
     const changedSelection = { ...selected, id: "selection-renewed" };

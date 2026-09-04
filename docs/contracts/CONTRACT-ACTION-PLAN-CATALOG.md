@@ -28,10 +28,14 @@ otro municipio.
 
 ## 3. Regla de elegibilidad
 
-Un módulo solo puede mostrarse cuando una prioridad seleccionada expresamente
-por el Grupo Motor coincide de forma exacta con uno de sus nombres temáticos
-declarados. No se permiten equivalencias por coincidencia parcial, inferencia
-semántica, puntuación ni expansión automática de palabras clave.
+Los módulos se muestran siempre como catálogo consultable en el espacio Plan de
+Acción. Sus objetivos e indicadores pueden examinarse antes de decidir, pero no
+pueden aceptarse, adaptarse o rechazarse todavía.
+
+La revisión de un módulo solo se habilita cuando el Grupo Motor vincula
+expresamente una prioridad seleccionada con el identificador estable del módulo.
+No se permiten equivalencias por coincidencia textual, inferencia semántica,
+puntuación ni expansión automática de palabras clave.
 
 ## 4. Revisión humana por elemento
 

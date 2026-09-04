@@ -670,6 +670,7 @@ export default function App() {
 
   const handleSaveDeliberativePrioritySelection = useCallback((input: {
     selectedScenarioIds: string[];
+    catalogModuleLinks: Array<{ scenarioId: string; moduleId: string }>;
     deliberationRationale: string;
     citizenInfluenceStatement: string;
     decidedBy: string;
@@ -3226,18 +3227,16 @@ export default function App() {
               isStale={runtime.prioritySelectionIsStale}
               onSave={handleSaveDeliberativePrioritySelection}
             />
+            <ActionPlanCatalogPanel
+              municipalityId={workspace.municipality.identity.id}
+              lectura={runtime.lectura}
+              selection={workspace.deliberativePrioritySelection}
+              eligibleModules={runtime.eligibleActionPlanModules}
+              reviews={workspace.actionPlanModuleReviews ?? []}
+              onSave={handleSaveActionPlanModuleReview}
+            />
             {runtime.pai ? (
-              <>
-                <ActionPlanCatalogPanel
-                  municipalityId={workspace.municipality.identity.id}
-                  lectura={runtime.lectura}
-                  selection={workspace.deliberativePrioritySelection!}
-                  eligibleModules={runtime.eligibleActionPlanModules}
-                  reviews={workspace.actionPlanModuleReviews ?? []}
-                  onSave={handleSaveActionPlanModuleReview}
-                />
-                <PAIView pai={runtime.pai} />
-              </>
+              <PAIView pai={runtime.pai} />
             ) : (
               <section className="workspace-panel">
                 <div className="phase-blocked-notice">

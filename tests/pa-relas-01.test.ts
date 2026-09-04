@@ -68,6 +68,27 @@ describe("PA-RELAS-01 — compuerta deliberativa MTE → PAI", () => {
     expect(selection.requiresHumanValidation).toBe(true);
   });
 
+  it("rechaza módulos catalogados vinculados a candidaturas no seleccionadas", () => {
+    const result = createDeliberativePrioritySelection({
+      lectura: LECTURA_COMPLEJA,
+      citizenPrioritisation,
+      selectedScenarioIds: [LECTURA_COMPLEJA.escenarios[1].id],
+      catalogModuleLinks: [{
+        scenarioId: LECTURA_COMPLEJA.escenarios[3].id,
+        moduleId: "env-2027-2030",
+      }],
+      deliberationRationale: "El Grupo Motor selecciona una candidatura tras deliberación.",
+      citizenInfluenceStatement: "Se documenta la influencia del conocimiento ciudadano.",
+      decidedBy: "Grupo Motor RELAS de prueba",
+      now: NOW,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.violations).toContain(
+      "G-DPS-7: todo módulo catalogado debe vincularse a una candidatura seleccionada"
+    );
+  });
+
   it("invalida la decisión cuando cambia la priorización ciudadana", () => {
     const selection = validSelection();
     const changedCitizenPrioritisation = {

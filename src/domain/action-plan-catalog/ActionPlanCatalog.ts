@@ -37,7 +37,6 @@ export interface ActionPlanCatalogModule {
   version: string;
   title: string;
   strategicObjective: string;
-  exactPriorityAliases: readonly string[];
   sourceLabel: string;
   sourceDate: string;
   generalObjectives: readonly CatalogGeneralObjectiveTemplate[];
@@ -124,7 +123,6 @@ export const HEALTHY_AGING_MODULE: ActionPlanCatalogModule = {
   version: "3.1",
   title: "Envejecimiento saludable",
   strategicObjective: "Favorecer un envejecimiento saludable, promoviendo la autonomía, el bienestar, las relaciones sociales significativas, la participación y el reconocimiento social de las personas mayores, y fortaleciendo la capacidad comunitaria para prevenir y abordar situaciones de soledad y aislamiento social.",
-  exactPriorityAliases: ["envejecimiento saludable"],
   sourceLabel: "I Plan Local de Salud del Distrito Zaidín 2027–2030 · arquitectura y fichas técnicas",
   sourceDate: "2026-08-26",
   cautions: sharedCautions,
@@ -164,7 +162,6 @@ export const ADDICTIONS_MODULE: ActionPlanCatalogModule = {
   version: "3.1",
   title: "Prevención y abordaje de las adicciones",
   strategicObjective: "Reducir los factores de riesgo y las consecuencias asociadas a las adicciones, reforzando los factores de protección y la respuesta comunitaria.",
-  exactPriorityAliases: ["adicciones", "prevención y abordaje de las adicciones", "prevencion y abordaje de las adicciones"],
   sourceLabel: "I Plan Local de Salud del Distrito Zaidín 2027–2030 · arquitectura y fichas técnicas",
   sourceDate: "2026-08-26",
   cautions: sharedCautions,
@@ -192,21 +189,17 @@ export const ADDICTIONS_MODULE: ActionPlanCatalogModule = {
 
 export const ACTION_PLAN_CATALOG = [HEALTHY_AGING_MODULE, ADDICTIONS_MODULE] as const;
 
-function normalizeTopic(value: string): string {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-}
-
 export function getEligibleActionPlanModules(
   lectura: LecturaEstrategicaLocal,
   selection: DeliberativePrioritySelection
 ): EligibleActionPlanModule[] {
   if (selection.sourceLecturaId !== lectura.id) return [];
-  const selected = lectura.escenarios.filter((scenario) => selection.selectedScenarioIds.includes(scenario.id));
+  const selectedIds = new Set(selection.selectedScenarioIds);
+  const links = selection.catalogModuleLinks ?? [];
   return ACTION_PLAN_CATALOG.flatMap((module) => {
-    const aliases = new Set(module.exactPriorityAliases.map(normalizeTopic));
-    const sourceScenarioIds = selected
-      .filter((scenario) => aliases.has(normalizeTopic(scenario.tema)))
-      .map((scenario) => scenario.id);
+    const sourceScenarioIds = links
+      .filter((link) => link.moduleId === module.id && selectedIds.has(link.scenarioId))
+      .map((link) => link.scenarioId);
     return sourceScenarioIds.length > 0 ? [{ module, sourceScenarioIds }] : [];
   });
 }

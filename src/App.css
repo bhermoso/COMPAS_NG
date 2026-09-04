@@ -251,6 +251,9 @@ h3 {
   align-items: flex-start;
   gap: 0.65rem;
 }
+.deliberative-selection__candidate-block { display: grid; gap: 8px; }
+.deliberative-selection__catalog-links { margin-left: 24px !important; padding: 10px 12px !important; background: #f8fafc; }
+.deliberative-selection__catalog-links label { display: flex; align-items: flex-start; gap: 8px; color: #334155; font-size: 0.84rem; }
 
 .deliberative-selection__label,
 .deliberative-selection__form legend {
@@ -277,9 +280,14 @@ h3 {
 
 /* PA-RELAS-02 · catálogo temático y revisión municipal explícita */
 .pcm-root { display: flex; flex-direction: column; gap: 4px; }
+.pcm-catalog-header { border-left: 4px solid #0074c8; }
 .pcm-module__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .pcm-trace { margin: 16px 0 6px; padding: 10px 12px; border-left: 4px solid #2f7d5b; background: #edf7f2; color: #245c46; }
 .pcm-source { margin: 0 0 16px; color: #64748b; font-size: 0.78rem; }
+.pcm-locked-note { margin: 14px 0 8px; padding: 10px 12px; border-left: 4px solid #d39e22; background: #fff9e8; color: #6f5612; }
+.pcm-counts { margin: 0 0 12px; color: #334155; font-size: 0.82rem; font-weight: 700; }
+.pcm-specifics--preview { padding-top: 12px; }
+.pcm-preview-indicator { margin: 8px 0 0; padding: 8px 10px; background: #f8faff; color: #334155; font-size: 0.82rem; line-height: 1.5; }
 .pcm-bulk-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; color: #526070; font-size: 0.78rem; }
 .pcm-bulk-actions button { padding: 5px 9px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; color: #334155; cursor: pointer; }
 .pcm-bulk-actions button:hover { background: #f1f5f9; }

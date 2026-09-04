@@ -6,13 +6,14 @@ import type {
   MunicipalActionPlanModuleReview,
 } from "../../domain/action-plan-catalog";
 import { createPendingModuleReview, isModuleReviewStale } from "../../domain/action-plan-catalog";
+import { ACTION_PLAN_CATALOG, type ActionPlanCatalogModule } from "../../domain/action-plan-catalog";
 import type { DeliberativePrioritySelection } from "../../domain/deliberative-prioritisation";
 import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
 
 interface ActionPlanCatalogPanelProps {
   municipalityId: string;
   lectura: LecturaEstrategicaLocal;
-  selection: DeliberativePrioritySelection;
+  selection?: DeliberativePrioritySelection;
   eligibleModules: EligibleActionPlanModule[];
   reviews: MunicipalActionPlanModuleReview[];
   onSave: (review: MunicipalActionPlanModuleReview) => readonly string[];
@@ -32,7 +33,8 @@ function ModuleReview({
   eligible,
   savedReview,
   onSave,
-}: Omit<ActionPlanCatalogPanelProps, "eligibleModules" | "reviews"> & {
+}: Omit<ActionPlanCatalogPanelProps, "eligibleModules" | "reviews" | "selection"> & {
+  selection: DeliberativePrioritySelection;
   eligible: EligibleActionPlanModule;
   savedReview?: MunicipalActionPlanModuleReview;
 }) {
@@ -184,30 +186,68 @@ function ModuleReview({
   );
 }
 
-export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
-  if (props.eligibleModules.length === 0) {
-    return (
-      <section className="workspace-panel">
-        <p className="eyebrow">Catálogo RELAS de Plan de Acción</p>
-        <h2>Sin módulos temáticos coincidentes</h2>
-        <p className="panel-note">
-          La selección del Grupo Motor no contiene una prioridad con correspondencia exacta en el catálogo disponible.
-          COMPÁS NG no fuerza equivalencias temáticas ni incorpora contenidos automáticamente.
-        </p>
-      </section>
-    );
-  }
+function AvailableModule({ module }: { module: ActionPlanCatalogModule }) {
+  const specifics = module.generalObjectives.flatMap((general) => general.specificObjectives);
+  return (
+    <article className="workspace-panel pcm-module pcm-module--available">
+      <div className="pcm-module__header">
+        <div>
+          <p className="eyebrow">Línea disponible · versión {module.version}</p>
+          <h2>{module.title}</h2>
+        </div>
+        <span className="status-pill">Consulta</span>
+      </div>
+      <p className="panel-note">{module.strategicObjective}</p>
+      <p className="pcm-locked-note">
+        Puedes examinar su arquitectura. Para aceptar, adaptar o rechazar sus elementos,
+        el Grupo Motor debe relacionar expresamente esta línea con una prioridad seleccionada.
+      </p>
+      <p className="pcm-source">Fuente de la propuesta: {module.sourceLabel} ({module.sourceDate}).</p>
+      <p className="pcm-counts">{module.generalObjectives.length} objetivos generales · {specifics.length} objetivos específicos · {specifics.length} indicadores</p>
+      <div className="pcm-objectives">
+        {module.generalObjectives.map((general) => (
+          <details key={general.code} className="pcm-general">
+            <summary><span>{general.code}</span> {general.title}</summary>
+            <div className="pcm-specifics pcm-specifics--preview">
+              {general.specificObjectives.map((specific) => (
+                <section key={specific.code} className="pcm-specific">
+                  <h3><span>{specific.code}</span> {specific.title}</h3>
+                  <p className="pcm-preview-indicator"><strong>{specific.indicator.code}</strong> {specific.indicator.title}</p>
+                </section>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
+    </article>
+  );
+}
 
+export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
   return (
     <div className="pcm-root">
-      {props.eligibleModules.map((eligible) => (
-        <ModuleReview
-          key={`${eligible.module.id}-${props.selection.id}`}
-          {...props}
-          eligible={eligible}
-          savedReview={props.reviews.find((review) => review.moduleId === eligible.module.id)}
-        />
-      ))}
+      <section className="workspace-panel pcm-catalog-header">
+        <p className="eyebrow">Catálogo RELAS de Plan de Acción</p>
+        <h2>Líneas estratégicas disponibles</h2>
+        <p className="panel-note">
+          Consulta las líneas, objetivos e indicadores documentados. Verlos no los incorpora al Plan:
+          la revisión se habilita solo cuando el Grupo Motor relaciona una línea con una prioridad seleccionada.
+        </p>
+      </section>
+      {ACTION_PLAN_CATALOG.map((module) => {
+        const eligible = props.eligibleModules.find((candidate) => candidate.module.id === module.id);
+        return eligible != null && props.selection != null ? (
+          <ModuleReview
+            key={`${module.id}-${props.selection.id}`}
+            municipalityId={props.municipalityId}
+            lectura={props.lectura}
+            selection={props.selection}
+            onSave={props.onSave}
+            eligible={eligible}
+            savedReview={props.reviews.find((review) => review.moduleId === module.id)}
+          />
+        ) : <AvailableModule key={module.id} module={module} />;
+      })}
     </div>
   );
 }
