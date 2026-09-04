@@ -126,4 +126,25 @@ describe("PA-RELAS-01 — compuerta deliberativa MTE → PAI", () => {
 
     expect(isEmptyWorkspaceForPersistenceGuard(workspace)).toBe(false);
   });
+
+  it("una revisión de módulo PA-RELAS-02 cuenta como contenido persistible", () => {
+    const workspace = {
+      ...createCompleteMunicipalityWorkspace({ id: "municipio-test", name: "Municipio test" }),
+      actionPlanModuleReviews: [{
+        id: "review-1",
+        municipalityId: "municipio-test",
+        moduleId: "adi-2027-2030",
+        moduleVersion: "3.1",
+        sourceLecturaId: "lectura-1",
+        sourcePrioritySelectionId: "selection-1",
+        sourceScenarioIds: ["scenario-1"],
+        decisions: [],
+        reviewedBy: "Grupo Motor",
+        reviewedAt: NOW,
+        requiresHumanValidation: true as const,
+      }],
+    };
+
+    expect(isEmptyWorkspaceForPersistenceGuard(workspace)).toBe(false);
+  });
 });

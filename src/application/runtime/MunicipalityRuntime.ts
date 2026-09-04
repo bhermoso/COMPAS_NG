@@ -33,6 +33,10 @@ import { StaticFrameworkProvider } from "../mte";
 import type { BorradorPAI } from "../pai";
 import { generatePAI } from "../pai";
 import { isDeliberativePrioritySelectionStale } from "../../domain/deliberative-prioritisation";
+import {
+  getEligibleActionPlanModules,
+  type EligibleActionPlanModule,
+} from "../../domain/action-plan-catalog";
 
 // ── Runtime interface ──────────────────────────────────────────────────────
 
@@ -79,6 +83,10 @@ export interface MunicipalityRuntime {
   // Producto 6 — Plan de Acción Inteligente
   // Disponible solo cuando la lectura estratégica está disponible.
   pai: BorradorPAI | undefined;
+
+  // PA-RELAS-02 — módulos documentados que corresponden exactamente a una
+  // prioridad seleccionada por el Grupo Motor. Son propuestas, no adopciones.
+  eligibleActionPlanModules: EligibleActionPlanModule[];
 }
 
 export interface CreateMunicipalityRuntimeInput {
@@ -179,6 +187,7 @@ export function createMunicipalityRuntime(
 
   // ── Producto 6 — Plan de Acción Inteligente
   let pai: BorradorPAI | undefined;
+  let eligibleActionPlanModules: EligibleActionPlanModule[] = [];
   const prioritySelectionIsStale = lectura != null && input.workspace.deliberativePrioritySelection != null
     ? isDeliberativePrioritySelectionStale(
         input.workspace.deliberativePrioritySelection,
@@ -198,6 +207,10 @@ export function createMunicipalityRuntime(
       provider
     );
     pai = paiResult.ok ? paiResult.borrador : undefined;
+    eligibleActionPlanModules = getEligibleActionPlanModules(
+      lectura,
+      input.workspace.deliberativePrioritySelection
+    );
   }
 
   return {
@@ -224,6 +237,7 @@ export function createMunicipalityRuntime(
     lectura,
     prioritySelectionIsStale,
     pai,
+    eligibleActionPlanModules,
   };
 }
 

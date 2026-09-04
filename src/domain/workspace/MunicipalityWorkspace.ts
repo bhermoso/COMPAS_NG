@@ -22,6 +22,7 @@ import type { PSQIStudy } from "../psqi";
 import type { FagerstromStudy } from "../fagerstrom";
 import type { SBQStudy } from "../sbq";
 import type { DeliberativePrioritySelection } from "../deliberative-prioritisation";
+import type { MunicipalActionPlanModuleReview } from "../action-plan-catalog";
 
 /**
  * Snapshot compacto del Estado Territorial Evolutivo.
@@ -70,6 +71,11 @@ export interface MunicipalityWorkspace {
    * Es la compuerta canónica entre MTE y PAI; nunca se deriva automáticamente.
    */
   deliberativePrioritySelection?: DeliberativePrioritySelection;
+  /**
+   * Revisiones humanas de módulos temáticos propuestos para el Plan de Acción.
+   * Conservan la plantilla original, la versión y la decisión municipal por elemento.
+   */
+  actionPlanModuleReviews?: MunicipalActionPlanModuleReview[];
   /**
    * Historial de snapshots del Estado Territorial Evolutivo.
    * Acumulativo: cada versión de la evidencia produce una entrada nueva.

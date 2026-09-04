@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 35195)
+Total output lines: 3346
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type DocumentKind,
@@ -107,6 +110,11 @@ import { compileLocalHealthProfile } from "./application/health-profile-compiler
 import { readSealedCanonicalDocument } from "./application/psl-c-canonical";
 import { approvePSL } from "./application/institutional-lifecycle";
 import { createDeliberativePrioritySelection } from "./domain/deliberative-prioritisation";
+import {
+  validateModuleReview,
+  isModuleReviewStale,
+  type MunicipalActionPlanModuleReview,
+} from "./domain/action-plan-catalog";
 
 import {
   LocalHealthPlanningCycle,
@@ -128,6 +136,7 @@ import {
   LecturaEstrategicaView,
   PAIView,
   DeliberativePrioritySelectionPanel,
+  ActionPlanCatalogPanel,
   GESPanel,
   PerfilLocalDeSaludPanel,
   PerfilFuentesPanel,
@@ -685,6 +694,34 @@ export default function App() {
     }));
     return [];
   }, [runtime.lectura, workspace.thematicPrioritisation]);
+
+  const handleSaveActionPlanModuleReview = useCallback((review: MunicipalActionPlanModuleReview): readonly string[] => {
+    if (runtime.lectura == null || workspace.deliberativePrioritySelection == null) {
+      return ["G-PCM-0: la Lectura Estratégica y la selección deliberativa deben estar vigentes"];
+    }
+    const eligible = runtime.eligibleActionPlanModules.find(({ module }) => module.id === review.moduleId);
+    if (eligible == null) {
+      return ["G-PCM-0: el módulo no corresponde a una prioridad seleccionada por el Grupo Motor"];
+    }
+    if (
+      review.municipalityId !== workspace.municipality.identity.id ||
+      isModuleReviewStale(review, eligible, runtime.lectura, workspace.deliberativePrioritySelection)
+    ) {
+      return ["G-PCM-0: la revisión no corresponde al municipio, módulo o selección vigente"];
+    }
+    const violations = validateModuleReview(review, eligible.module);
+    if (violations.length > 0) return violations;
+
+    setWorkspace((prev) => ({
+      ...prev,
+      actionPlanModuleReviews: [
+        ...(prev.actionPlanModuleReviews ?? []).filter((saved) => saved.moduleId !== review.moduleId),
+        review,
+      ],
+      updatedAt: new Date().toISOString(),
+    }));
+    return [];
+  }, [runtime.eligibleActionPlanModules, runtime.lectura, workspace.deliberativePrioritySelection, workspace.municipality.identity.id]);
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -1451,512 +1488,7 @@ export default function App() {
         methodologicalCautions,
         warnings,
       });
-      const auditcAtoms = attachDocumentIdToAtoms(
-        auditcStudyToEvidenceAtoms(study),
-        documentId
-      );
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(
-          prev.repository,
-          AUDITC_DOCUMENT_TAG
-        );
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId,
-          kind: "redcap-export",
-          title: `AUDIT-C - ${file.name}`,
-          source: {
-            system: "Encuesta municipal propia — exportación REDCap",
-            collectedAt: study.createdAt,
-          },
-          sourceFileName: file.name,
-          tags: ["complementary-study", AUDITC_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) =>
-              atom.municipalityId !== prev.municipality.identity.id ||
-              !(
-                atom.provenance.origin === "complementary-study" &&
-                atom.tags.includes(AUDITC_DOCUMENT_TAG)
-              )
-          ),
-          updatedAt: now,
-        };
-        for (const atom of auditcAtoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return {
-          ...prev,
-          repository: nextRepository,
-          auditcStudy: study,
-          evidenceStore: nextStore,
-          updatedAt: now,
-        };
-      });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      setAuditcMessage(
-        aggregates.nValid > 0
-          ? `AUDIT-C cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Consumo de riesgo (≥4): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${auditcAtoms.length} evidencias incorporadas.${warn}`
-          : `CSV AUDIT-C procesado sin registros con los 3 ítems completos.${warn}`
-      );
-    } catch {
-      setAuditcMessage("Error al procesar el CSV. Verifica que incluya las columnas auditc_q1, auditc_q2 y auditc_q3.");
-    } finally {
-      setIsLoadingAUDITC(false);
-    }
-  }
-
-  async function handleLoadIPAQCSV(file: File): Promise<void> {
-    setIsLoadingIPAQ(true);
-    try {
-      const text = await file.text();
-      const { aggregates, methodologicalCautions, warnings } = parseIPAQCSV(text);
-      const documentId = crypto.randomUUID();
-      const study = createIPAQStudy({
-        municipalityId: workspace.municipality.identity.id,
-        sourceFileName: file.name,
-        aggregates,
-        methodologicalCautions,
-        warnings,
-      });
-      const ipaqAtoms = attachDocumentIdToAtoms(
-        ipaqStudyToEvidenceAtoms(study),
-        documentId
-      );
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(
-          prev.repository,
-          IPAQ_DOCUMENT_TAG
-        );
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId,
-          kind: "complementary-study",
-          title: `IPAQ-EAS - ${file.name}`,
-          source: {
-            system: "Encuesta Andaluza de Salud — campos derivados oficiales",
-            collectedAt: study.createdAt,
-          },
-          sourceFileName: file.name,
-          tags: ["complementary-study", IPAQ_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) =>
-              atom.municipalityId !== prev.municipality.identity.id ||
-              !(
-                atom.provenance.origin === "complementary-study" &&
-                atom.tags.includes(IPAQ_DOCUMENT_TAG)
-              )
-          ),
-          updatedAt: now,
-        };
-        for (const atom of ipaqAtoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return {
-          ...prev,
-          repository: nextRepository,
-          ipaqStudy: study,
-          evidenceStore: nextStore,
-          updatedAt: now,
-        };
-      });
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      setIpaqMessage(
-        aggregates.nValidIPAQ > 0 || aggregates.nValidP34AR > 0
-          ? `IPAQ-EAS cargado: ${aggregates.nValidIPAQ} válidos IPAQ_DICO · alta actividad ${aggregates.pctHigh.toFixed(1)} % (n=${aggregates.nHigh}). Inactividad tiempo libre: ${aggregates.pctInactive.toFixed(1)} %. ${ipaqAtoms.length} evidencias incorporadas.${warn}`
-          : `CSV IPAQ procesado sin registros válidos en IPAQ_DICO ni P34A_R.${warn}`
-      );
-    } catch {
-      setIpaqMessage("Error al procesar el CSV. Verifica que incluya las columnas IPAQ_DICO y/o P34A_R.");
-    } finally {
-      setIsLoadingIPAQ(false);
-    }
-  }
-
-  async function handleLoadGHQ12CSV(file: File): Promise<void> {
-    setIsLoadingGHQ12(true);
-    try {
-      const text = await file.text();
-      const { aggregates, methodologicalCautions, warnings } = parseGHQ12CSV(text);
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      if (aggregates.nValid === 0) {
-        setGhq12Message(`CSV GHQ-12 procesado sin registros con los 12 ítems completos.${warn}`);
-        return;
-      }
-      const documentId = crypto.randomUUID();
-      const study = createGHQ12Study({
-        municipalityId: workspace.municipality.identity.id,
-        sourceFileName: file.name,
-        aggregates,
-        methodologicalCautions,
-        warnings,
-      });
-      const ghq12Atoms = attachDocumentIdToAtoms(
-        ghq12StudyToEvidenceAtoms(study),
-        documentId
-      );
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(
-          prev.repository,
-          GHQ12_DOCUMENT_TAG
-        );
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId,
-          kind: "redcap-export",
-          title: `GHQ-12 - ${file.name}`,
-          source: {
-            system: "Encuesta municipal propia — exportación REDCap",
-            collectedAt: study.createdAt,
-          },
-          sourceFileName: file.name,
-          tags: ["complementary-study", GHQ12_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) =>
-              atom.municipalityId !== prev.municipality.identity.id ||
-              !(
-                atom.provenance.origin === "complementary-study" &&
-                atom.tags.includes(GHQ12_DOCUMENT_TAG)
-              )
-          ),
-          updatedAt: now,
-        };
-        for (const atom of ghq12Atoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return {
-          ...prev,
-          repository: nextRepository,
-          ghq12Study: study,
-          evidenceStore: nextStore,
-          updatedAt: now,
-        };
-      });
-      setGhq12Message(
-        `GHQ-12 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Probable malestar (≥3): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${ghq12Atoms.length} evidencias incorporadas.${warn}`
-      );
-    } catch {
-      setGhq12Message("Error al procesar el CSV. Verifica que incluya las columnas ghq12_q1 a ghq12_q12.");
-    } finally {
-      setIsLoadingGHQ12(false);
-    }
-  }
-
-  async function handleLoadPHQ9CSV(file: File): Promise<void> {
-    setIsLoadingPHQ9(true);
-    try {
-      const text = await file.text();
-      const { aggregates, methodologicalCautions, warnings } = parsePHQ9CSV(text);
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      if (aggregates.nValid === 0) {
-        setPhq9Message(`CSV PHQ-9 procesado sin registros con los 9 ítems completos.${warn}`);
-        return;
-      }
-      const documentId = crypto.randomUUID();
-      const study = createPHQ9Study({
-        municipalityId: workspace.municipality.identity.id,
-        sourceFileName: file.name,
-        aggregates,
-        methodologicalCautions,
-        warnings,
-      });
-      const phq9Atoms = attachDocumentIdToAtoms(phq9StudyToEvidenceAtoms(study), documentId);
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, PHQ9_DOCUMENT_TAG);
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId, kind: "redcap-export",
-          title: `PHQ-9 - ${file.name}`,
-          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
-          sourceFileName: file.name,
-          tags: ["complementary-study", PHQ9_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
-              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(PHQ9_DOCUMENT_TAG))
-          ),
-          updatedAt: now,
-        };
-        for (const atom of phq9Atoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return { ...prev, repository: nextRepository, phq9Study: study, evidenceStore: nextStore, updatedAt: now };
-      });
-      setPhq9Message(
-        `PHQ-9 cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Síntomas mod.+ (≥10): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${phq9Atoms.length} evidencias incorporadas.${warn}`
-      );
-    } catch {
-      setPhq9Message("Error al procesar el CSV. Verifica que incluya las columnas phq9_q1 a phq9_q9.");
-    } finally {
-      setIsLoadingPHQ9(false);
-    }
-  }
-
-  async function handleLoadPSQICSV(file: File): Promise<void> {
-    setIsLoadingPSQI(true);
-    try {
-      const text = await file.text();
-      const { aggregates, methodologicalCautions, warnings } = parsePSQICSV(text);
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      if (aggregates.nValid === 0) {
-        setPsqiMessage(`CSV PSQI procesado sin registros con los 7 componentes completos.${warn}`);
-        return;
-      }
-      const documentId = crypto.randomUUID();
-      const study = createPSQIStudy({
-        municipalityId: workspace.municipality.identity.id,
-        sourceFileName: file.name,
-        aggregates,
-        methodologicalCautions,
-        warnings,
-      });
-      const psqiAtoms = attachDocumentIdToAtoms(psqiStudyToEvidenceAtoms(study), documentId);
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, PSQI_DOCUMENT_TAG);
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId, kind: "redcap-export",
-          title: `PSQI - ${file.name}`,
-          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
-          sourceFileName: file.name,
-          tags: ["complementary-study", PSQI_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
-              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(PSQI_DOCUMENT_TAG))
-          ),
-          updatedAt: now,
-        };
-        for (const atom of psqiAtoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return { ...prev, repository: nextRepository, psqiStudy: study, evidenceStore: nextStore, updatedAt: now };
-      });
-      setPsqiMessage(
-        `PSQI cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Mal dormidor (&gt;5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${psqiAtoms.length} evidencias incorporadas.${warn}`
-      );
-    } catch {
-      setPsqiMessage("Error al procesar el CSV. Verifica que incluya las columnas psqi_c1 a psqi_c7.");
-    } finally {
-      setIsLoadingPSQI(false);
-    }
-  }
-
-  async function handleLoadFagerstromCSV(file: File): Promise<void> {
-    setIsLoadingFagerstrom(true);
-    try {
-      const text = await file.text();
-      const { aggregates, methodologicalCautions, warnings } = parseFagerstromCSV(text);
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      if (aggregates.nValid === 0) {
-        setFagerstromMessage(`CSV Fagerström procesado sin registros con los 6 ítems completos.${warn}`);
-        return;
-      }
-      const documentId = crypto.randomUUID();
-      const study = createFagerstromStudy({
-        municipalityId: workspace.municipality.identity.id,
-        sourceFileName: file.name,
-        aggregates,
-        methodologicalCautions,
-        warnings,
-      });
-      const fagerstromAtoms = attachDocumentIdToAtoms(fagerstromStudyToEvidenceAtoms(study), documentId);
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, FAGERSTROM_DOCUMENT_TAG);
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId, kind: "redcap-export",
-          title: `Fagerström - ${file.name}`,
-          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
-          sourceFileName: file.name,
-          tags: ["complementary-study", FAGERSTROM_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
-              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(FAGERSTROM_DOCUMENT_TAG))
-          ),
-          updatedAt: now,
-        };
-        for (const atom of fagerstromAtoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return { ...prev, repository: nextRepository, fagerstromStudy: study, evidenceStore: nextStore, updatedAt: now };
-      });
-      setFagerstromMessage(
-        `Fagerström cargado: ${aggregates.nValid} fumadores activos de ${aggregates.n}. Dep. mod.+ (≥5): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). ${fagerstromAtoms.length} evidencias incorporadas.${warn}`
-      );
-    } catch {
-      setFagerstromMessage("Error al procesar el CSV. Verifica que incluya las columnas ftnd_q1 a ftnd_q6.");
-    } finally {
-      setIsLoadingFagerstrom(false);
-    }
-  }
-
-  async function handleLoadSBQCSV(file: File): Promise<void> {
-    setIsLoadingSBQ(true);
-    try {
-      const text = await file.text();
-      const { aggregates, methodologicalCautions, warnings } = parseSBQCSV(text);
-      const warn = warnings.length > 0 ? ` Avisos: ${warnings.join(" ")}` : "";
-      if (aggregates.nValid === 0) {
-        setSbqMessage(`CSV SBQ procesado sin registros con los 9 ítems completos.${warn}`);
-        return;
-      }
-      const documentId = crypto.randomUUID();
-      const study = createSBQStudy({
-        municipalityId: workspace.municipality.identity.id,
-        sourceFileName: file.name,
-        aggregates,
-        methodologicalCautions,
-        warnings,
-      });
-      const sbqAtoms = attachDocumentIdToAtoms(sbqStudyToEvidenceAtoms(study), documentId);
-      setWorkspace((prev) => {
-        const now = new Date().toISOString();
-        const repositoryWithoutPrior = removeDocumentsByTag(prev.repository, SBQ_DOCUMENT_TAG);
-        const nextRepository = addMunicipalDocument(repositoryWithoutPrior, {
-          id: documentId, kind: "redcap-export",
-          title: `SBQ - ${file.name}`,
-          source: { system: "Encuesta municipal propia — exportación REDCap", collectedAt: study.createdAt },
-          sourceFileName: file.name,
-          tags: ["complementary-study", SBQ_DOCUMENT_TAG],
-        });
-        let nextStore = {
-          ...prev.evidenceStore,
-          atoms: prev.evidenceStore.atoms.filter(
-            (atom) => atom.municipalityId !== prev.municipality.identity.id ||
-              !(atom.provenance.origin === "complementary-study" && atom.tags.includes(SBQ_DOCUMENT_TAG))
-          ),
-          updatedAt: now,
-        };
-        for (const atom of sbqAtoms) {
-          const key = stableAssetKey(atom.municipalityId, atom.provenance.origin, atom.title);
-          nextStore = upsertEvidenceAtom(nextStore, atom, key);
-        }
-        return { ...prev, repository: nextRepository, sbqStudy: study, evidenceStore: nextStore, updatedAt: now };
-      });
-      setSbqMessage(
-        `SBQ cargado: ${aggregates.nValid} registros válidos de ${aggregates.n}. Alt. sedentario (&gt;8h): ${aggregates.pctPositive.toFixed(1)} % (n=${aggregates.nPositive}). Media: ${aggregates.meanHours.toFixed(2)} h/día. ${sbqAtoms.length} evidencias incorporadas.${warn}`
-      );
-    } catch {
-      setSbqMessage("Error al procesar el CSV. Verifica que incluya las columnas sbq_q1 a sbq_q9.");
-    } finally {
-      setIsLoadingSBQ(false);
-    }
-  }
-
-  function handleTopicToggle(topicId: string) {
-    setPendingTopics((prev) => {
-      if (prev.includes(topicId)) return prev.filter((id) => id !== topicId);
-      if (prev.length >= MAX_SELECTED_TOPICS) return prev;
-      return [...prev, topicId];
-    });
-  }
-
-  function handleSaveThematicPrioritisation() {
-    const prioritisation = createThematicPrioritisation(
-      workspace.municipality.identity.id,
-      pendingTopics
-    );
-    const existingDocument = workspace.repository.documents.find(
-      (document) => isThematicPrioritisationDocument(document)
-    );
-
-    let nextRepository = workspace.repository;
-    let documentId: string;
-
-    if (existingDocument !== undefined) {
-      documentId = existingDocument.id;
-    } else {
-      documentId = crypto.randomUUID();
-      nextRepository = addMunicipalDocument(nextRepository, {
-        id: documentId,
-        kind: "other",
-        title: "Priorización temática — Selección manual",
-        source: {
-          system: "Selección manual COMPÁS NG",
-          collectedAt: new Date().toISOString(),
-        },
-        tags: [THEMATIC_PRIORITISATION_DOCUMENT_TAG],
-      });
-    }
-
-    const tpAtoms = attachDocumentIdToAtoms(
-      thematicPrioritisationToEvidenceAtoms(prioritisation, THEMATIC_TOPICS),
-      documentId
-    );
-
-    const nextWorkspace = {
-      ...workspace,
-      repository: nextRepository,
-      thematicPrioritisation: prioritisation,
-      evidenceStore: {
-        ...workspace.evidenceStore,
-        atoms: [
-          ...workspace.evidenceStore.atoms.filter(
-            (a) => a.provenance.origin !== "citizen-participation"
-          ),
-          ...tpAtoms,
-        ],
-        updatedAt: new Date().toISOString(),
-      },
-      updatedAt: new Date().toISOString(),
-    };
-
-    setWorkspace(nextWorkspace);
-    setPendingTopics([...prioritisation.selectedTopicIds]);
-    setPersistenceMessage(
-      saveWorkspaceToLocalStorage(nextWorkspace)
-        ? null
-        : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE
-    );
-    setIsThematicModalOpen(false);
-  }
-
-  function handleOpenThematicModal() {
-    setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
-    setTpImportMessage(null);
-    setIsThematicModalOpen(true);
-  }
-
-  function handleCloseThematicModal() {
-    setPendingTopics([...(workspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
-    setIsThematicModalOpen(false);
-  }
-
-  async function handleImportThematicCSV(file: File): Promise<void> {
-    setIsImportingTP(true);
-    try {
-      const text = await file.text();
-      const { partialStudy, warnings } = parseThematicPrioritisationCSV(text, file.name);
-      const documentId = crypto.randomUUID();
-      const study: ThematicPrioritisationStudy = {
-        ...partialStudy,
-        municipalityId: workspace.municipality.identity.id,
-        importedAt: new Date().toISOString(),
-      };
-      const importedPrioritisation =
-        study.completeRecords > 0
+      const auditcAtoms = attachDoc…5195 tokens truncated…> 0
           ? createThematicPrioritisation(workspace.municipality.identity.id, study.topFiveTopicIds)
           : null;
       const importedTpAtoms =
@@ -3193,7 +2725,17 @@ export default function App() {
               onSave={handleSaveDeliberativePrioritySelection}
             />
             {runtime.pai ? (
-              <PAIView pai={runtime.pai} />
+              <>
+                <ActionPlanCatalogPanel
+                  municipalityId={workspace.municipality.identity.id}
+                  lectura={runtime.lectura}
+                  selection={workspace.deliberativePrioritySelection!}
+                  eligibleModules={runtime.eligibleActionPlanModules}
+                  reviews={workspace.actionPlanModuleReviews ?? []}
+                  onSave={handleSaveActionPlanModuleReview}
+                />
+                <PAIView pai={runtime.pai} />
+              </>
             ) : (
               <section className="workspace-panel">
                 <div className="phase-blocked-notice">
