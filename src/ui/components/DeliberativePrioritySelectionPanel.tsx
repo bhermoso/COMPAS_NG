@@ -3,6 +3,7 @@ import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
 import type { ThematicPrioritisation } from "../../domain/thematic-prioritisation";
 import { THEMATIC_TOPICS } from "../../domain/thematic-prioritisation";
 import type { DeliberativePrioritySelection } from "../../domain/deliberative-prioritisation";
+import { ACTION_PLAN_CATALOG } from "../../domain/action-plan-catalog";
 
 interface DeliberativePrioritySelectionPanelProps {
   lectura: LecturaEstrategicaLocal;
@@ -11,6 +12,7 @@ interface DeliberativePrioritySelectionPanelProps {
   isStale: boolean;
   onSave: (input: {
     selectedScenarioIds: string[];
+    catalogModuleLinks: Array<{ scenarioId: string; moduleId: string }>;
     deliberationRationale: string;
     citizenInfluenceStatement: string;
     decidedBy: string;
@@ -25,21 +27,36 @@ export function DeliberativePrioritySelectionPanel({
   onSave,
 }: DeliberativePrioritySelectionPanelProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(selection?.selectedScenarioIds ?? []);
+  const [catalogModuleLinks, setCatalogModuleLinks] = useState(selection?.catalogModuleLinks ?? []);
   const [rationale, setRationale] = useState(selection?.deliberationRationale ?? "");
   const [citizenInfluence, setCitizenInfluence] = useState(selection?.citizenInfluenceStatement ?? "");
   const [decidedBy, setDecidedBy] = useState(selection?.decidedBy ?? "");
   const [violations, setViolations] = useState<readonly string[]>([]);
 
   function toggleScenario(id: string) {
-    setSelectedIds((current) =>
-      current.includes(id) ? current.filter((candidateId) => candidateId !== id) : [...current, id]
-    );
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        setCatalogModuleLinks((links) => links.filter((link) => link.scenarioId !== id));
+        return current.filter((candidateId) => candidateId !== id);
+      }
+      return [...current, id];
+    });
+  }
+
+  function toggleCatalogModule(scenarioId: string, moduleId: string) {
+    setCatalogModuleLinks((current) => {
+      const exists = current.some((link) => link.scenarioId === scenarioId && link.moduleId === moduleId);
+      return exists
+        ? current.filter((link) => link.scenarioId !== scenarioId || link.moduleId !== moduleId)
+        : [...current, { scenarioId, moduleId }];
+    });
   }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setViolations(onSave({
       selectedScenarioIds: selectedIds,
+      catalogModuleLinks,
       deliberationRationale: rationale,
       citizenInfluenceStatement: citizenInfluence,
       decidedBy,
@@ -74,16 +91,32 @@ export function DeliberativePrioritySelectionPanel({
       <form className="deliberative-selection__form" onSubmit={submit}>
         <fieldset>
           <legend>Candidaturas de la lectura estratégica</legend>
-          {lectura.escenarios.map((scenario) => (
-            <label key={scenario.id} className="deliberative-selection__candidate">
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(scenario.id)}
-                onChange={() => toggleScenario(scenario.id)}
-              />
-              <span>{scenario.tema}</span>
-            </label>
-          ))}
+          {lectura.escenarios.map((scenario) => {
+            const selected = selectedIds.includes(scenario.id);
+            return (
+              <div key={scenario.id} className="deliberative-selection__candidate-block">
+                <label className="deliberative-selection__candidate">
+                  <input type="checkbox" checked={selected} onChange={() => toggleScenario(scenario.id)} />
+                  <span>{scenario.tema}</span>
+                </label>
+                {selected && (
+                  <fieldset className="deliberative-selection__catalog-links">
+                    <legend>Relacionar esta prioridad con líneas disponibles del catálogo</legend>
+                    {ACTION_PLAN_CATALOG.map((module) => (
+                      <label key={module.id}>
+                        <input
+                          type="checkbox"
+                          checked={catalogModuleLinks.some((link) => link.scenarioId === scenario.id && link.moduleId === module.id)}
+                          onChange={() => toggleCatalogModule(scenario.id, module.id)}
+                        />
+                        <span>{module.title}</span>
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
+              </div>
+            );
+          })}
         </fieldset>
 
         <div>

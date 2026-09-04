@@ -14,6 +14,8 @@ export interface DeliberativePrioritySelection {
   sourcePSLVersion: string;
   candidateScenarioIds: string[];
   selectedScenarioIds: string[];
+  /** Relación explícita y humana entre una prioridad seleccionada y un módulo catalogado. */
+  catalogModuleLinks?: Array<{ scenarioId: string; moduleId: string }>;
   citizenTopicIds: string[];
   sourceCitizenPrioritisationUpdatedAt?: string;
   deliberationRationale: string;
@@ -32,6 +34,7 @@ export interface CreateDeliberativePrioritySelectionInput {
   lectura: LecturaEstrategicaLocal;
   citizenPrioritisation?: ThematicPrioritisation;
   selectedScenarioIds: readonly string[];
+  catalogModuleLinks?: readonly { scenarioId: string; moduleId: string }[];
   deliberationRationale: string;
   citizenInfluenceStatement: string;
   decidedBy: string;
@@ -44,6 +47,9 @@ export function createDeliberativePrioritySelection(
   const candidateScenarioIds = input.lectura.escenarios.map((scenario) => scenario.id);
   const candidateIds = new Set(candidateScenarioIds);
   const selectedScenarioIds = [...new Set(input.selectedScenarioIds)];
+  const catalogModuleLinks = [...new Map(
+    (input.catalogModuleLinks ?? []).map((link) => [`${link.scenarioId}:${link.moduleId}`, { ...link }])
+  ).values()];
   const violations: string[] = [];
 
   if (!input.lectura.hasTranslatableContent || candidateScenarioIds.length === 0) {
@@ -54,6 +60,9 @@ export function createDeliberativePrioritySelection(
   }
   if (selectedScenarioIds.some((id) => !candidateIds.has(id))) {
     violations.push("G-DPS-3: la selección contiene candidaturas ajenas a la Lectura Estratégica");
+  }
+  if (catalogModuleLinks.some((link) => !selectedScenarioIds.includes(link.scenarioId))) {
+    violations.push("G-DPS-7: todo módulo catalogado debe vincularse a una candidatura seleccionada");
   }
   if (input.deliberationRationale.trim().length === 0) {
     violations.push("G-DPS-4: debe documentarse la motivación de la deliberación");
@@ -78,6 +87,7 @@ export function createDeliberativePrioritySelection(
       sourcePSLVersion: input.lectura.sourcePSLVersion,
       candidateScenarioIds,
       selectedScenarioIds,
+      catalogModuleLinks,
       citizenTopicIds: [...(input.citizenPrioritisation?.selectedTopicIds ?? [])],
       sourceCitizenPrioritisationUpdatedAt: input.citizenPrioritisation?.updatedAt,
       deliberationRationale: input.deliberationRationale.trim(),

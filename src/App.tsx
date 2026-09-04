@@ -107,6 +107,11 @@ import { compileLocalHealthProfile } from "./application/health-profile-compiler
 import { readSealedCanonicalDocument } from "./application/psl-c-canonical";
 import { approvePSL } from "./application/institutional-lifecycle";
 import { createDeliberativePrioritySelection } from "./domain/deliberative-prioritisation";
+import {
+  validateModuleReview,
+  isModuleReviewStale,
+  type MunicipalActionPlanModuleReview,
+} from "./domain/action-plan-catalog";
 
 import {
   LocalHealthPlanningCycle,
@@ -128,6 +133,7 @@ import {
   LecturaEstrategicaView,
   PAIView,
   DeliberativePrioritySelectionPanel,
+  ActionPlanCatalogPanel,
   GESPanel,
   PerfilLocalDeSaludPanel,
   PerfilFuentesPanel,
@@ -664,6 +670,7 @@ export default function App() {
 
   const handleSaveDeliberativePrioritySelection = useCallback((input: {
     selectedScenarioIds: string[];
+    catalogModuleLinks: Array<{ scenarioId: string; moduleId: string }>;
     deliberationRationale: string;
     citizenInfluenceStatement: string;
     decidedBy: string;
@@ -685,6 +692,34 @@ export default function App() {
     }));
     return [];
   }, [runtime.lectura, workspace.thematicPrioritisation]);
+
+  const handleSaveActionPlanModuleReview = useCallback((review: MunicipalActionPlanModuleReview): readonly string[] => {
+    if (runtime.lectura == null || workspace.deliberativePrioritySelection == null) {
+      return ["G-PCM-0: la Lectura Estratégica y la selección deliberativa deben estar vigentes"];
+    }
+    const eligible = runtime.eligibleActionPlanModules.find(({ module }) => module.id === review.moduleId);
+    if (eligible == null) {
+      return ["G-PCM-0: el módulo no corresponde a una prioridad seleccionada por el Grupo Motor"];
+    }
+    if (
+      review.municipalityId !== workspace.municipality.identity.id ||
+      isModuleReviewStale(review, eligible, runtime.lectura, workspace.deliberativePrioritySelection)
+    ) {
+      return ["G-PCM-0: la revisión no corresponde al municipio, módulo o selección vigente"];
+    }
+    const violations = validateModuleReview(review, eligible.module);
+    if (violations.length > 0) return violations;
+
+    setWorkspace((prev) => ({
+      ...prev,
+      actionPlanModuleReviews: [
+        ...(prev.actionPlanModuleReviews ?? []).filter((saved) => saved.moduleId !== review.moduleId),
+        review,
+      ],
+      updatedAt: new Date().toISOString(),
+    }));
+    return [];
+  }, [runtime.eligibleActionPlanModules, runtime.lectura, workspace.deliberativePrioritySelection, workspace.municipality.identity.id]);
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -3191,6 +3226,14 @@ export default function App() {
               selection={workspace.deliberativePrioritySelection}
               isStale={runtime.prioritySelectionIsStale}
               onSave={handleSaveDeliberativePrioritySelection}
+            />
+            <ActionPlanCatalogPanel
+              municipalityId={workspace.municipality.identity.id}
+              lectura={runtime.lectura}
+              selection={workspace.deliberativePrioritySelection}
+              eligibleModules={runtime.eligibleActionPlanModules}
+              reviews={workspace.actionPlanModuleReviews ?? []}
+              onSave={handleSaveActionPlanModuleReview}
             />
             {runtime.pai ? (
               <PAIView pai={runtime.pai} />
