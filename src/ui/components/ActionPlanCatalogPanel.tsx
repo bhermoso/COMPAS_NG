@@ -221,6 +221,23 @@ function AvailableModule({ module }: { module: ActionPlanCatalogModule }) {
                 <section key={specific.code} className="pcm-specific">
                   <h3><span>{specific.code}</span> {specific.title}</h3>
                   <p className="pcm-preview-indicator"><strong>{specific.indicator.code}</strong> {specific.indicator.title}</p>
+                  <details className="pcm-sheet">
+                    <summary>Ver ficha técnica propuesta</summary>
+                    <dl>
+                      <div><dt>Fuente propuesta</dt><dd>{specific.indicator.suggestedSource}</dd></div>
+                      <div><dt>Unidad</dt><dd>{specific.indicator.unit}</dd></div>
+                      <div><dt>Periodicidad</dt><dd>{specific.indicator.periodicity}</dd></div>
+                      <div><dt>Sentido</dt><dd>{specific.indicator.direction === "ascending" ? "Ascendente" : "Descendente"}</dd></div>
+                      <div><dt>Definición operacional</dt><dd>{specific.indicator.operationalDefinition}</dd></div>
+                      <div><dt>Método de cálculo</dt><dd>{specific.indicator.calculationMethod}</dd></div>
+                      <div><dt>Desagregación</dt><dd>{specific.indicator.disaggregation}</dd></div>
+                      <div><dt>Línea base</dt><dd>{specific.indicator.baseline}</dd></div>
+                      <div><dt>Meta</dt><dd>{specific.indicator.target}</dd></div>
+                      <div><dt>Responsable del dato</dt><dd>{specific.indicator.dataOwner}</dd></div>
+                      <div><dt>Criterio de calidad</dt><dd>{specific.indicator.qualityCriterion}</dd></div>
+                      <div><dt>Limitación</dt><dd>{specific.indicator.limitation}</dd></div>
+                    </dl>
+                  </details>
                 </section>
               ))}
             </div>

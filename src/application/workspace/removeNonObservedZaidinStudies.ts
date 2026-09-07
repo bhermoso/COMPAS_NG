@@ -54,6 +54,15 @@ export function removeNonObservedZaidinStudies(
     fixtureStudies.some(([key, sourceFileName]) => workspace[key]?.sourceFileName === sourceFileName);
 
   if (seededContentWasPresent) {
+    // Capturar antes de retirar cualquier producto vigente. El JSON opaco no
+    // alimenta el pipeline y conserva decisiones, autoría y fuentes originales.
+    cleaned.nonObservedStudiesArchive = {
+      status: "historical-not-valid",
+      migrationId: ZAIDIN_NON_OBSERVED_STUDIES_REMOVAL_MARKER,
+      archivedAt: now,
+      reason: "Resultados no observados retirados. Productos y decisiones anteriores requieren nueva revisión; no son vigentes.",
+      workspaceJSON: JSON.stringify(workspace),
+    };
     delete cleaned.validatedPSL;
     delete cleaned.validatedAnswersSnapshot;
     delete cleaned.compiledProfiles;

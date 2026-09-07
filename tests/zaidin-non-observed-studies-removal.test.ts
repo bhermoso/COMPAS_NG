@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
+import { parseWorkspaceJSON } from "../src/infrastructure/persistence/local-storage";
 import {
   removeNonObservedZaidinStudies,
   ZAIDIN_NON_OBSERVED_STUDIES_REMOVAL_MARKER,
@@ -69,6 +70,12 @@ describe("Granada-Zaidín — ningún resultado sin aplicación observada", () =
     expect(cleaned.ghq12Study).toBeUndefined();
     expect(cleaned.compiledProfiles).toBeUndefined();
     expect(cleaned.thematicPrioritisation).toEqual(legacy.thematicPrioritisation);
+    expect(cleaned.nonObservedStudiesArchive?.status).toBe("historical-not-valid");
+    expect(JSON.parse(cleaned.nonObservedStudiesArchive!.workspaceJSON)).toEqual(legacy);
+    const reloaded = parseWorkspaceJSON(JSON.stringify(cleaned))!;
+    expect(reloaded.nonObservedStudiesArchive).toEqual(cleaned.nonObservedStudiesArchive);
+    expect(reloaded.ghq12Study).toBeUndefined();
+    expect(reloaded.compiledProfiles).toBeUndefined();
     expect(removeNonObservedZaidinStudies(cleaned)).toBe(cleaned);
   });
 });

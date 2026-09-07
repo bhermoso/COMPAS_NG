@@ -176,6 +176,15 @@ export interface MunicipalityWorkspace {
    * aplicada" y es válida para workspaces anteriores (compatibilidad legacy).
    */
   appliedSeedMigrations?: string[];
+  /** Archivo de recuperación; nunca es evidencia ni validación vigente. */
+  nonObservedStudiesArchive?: {
+    status: "historical-not-valid";
+    migrationId: string;
+    archivedAt: string;
+    reason: string;
+    /** Expediente previo íntegro. Solo para recuperación y auditoría. */
+    workspaceJSON: string;
+  };
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

@@ -40,6 +40,9 @@ describe("PA-RELAS-02 — representación editorial", () => {
     expect(html).toContain("Prevención y abordaje de las adicciones");
     expect(html).toContain("Puedes examinar su arquitectura");
     expect(html).not.toContain("Aceptar todo");
+    expect(html.match(/Ver ficha técnica propuesta/g)).toHaveLength(30);
+    expect(html).toContain("Método de cálculo");
+    expect(html).toContain("Criterio de calidad");
   });
 
   it("identifica propuesta, procedencia, decisiones humanas y ficha técnica", () => {
