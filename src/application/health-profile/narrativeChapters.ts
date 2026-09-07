@@ -353,14 +353,17 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     if (sanitaria?.present && sanitaria.senales.length > 0) {
       const dims = sanitaria.senales.map((s) => s.dimension);
       const destacadas = sanitaria.senales.slice(0, 2).map((s) => s.dimension);
+      const extensionEstudios = bloques.length > 0
+        ? ` Los estudios complementarios amplían este hilo hacia la vida ` +
+          `cotidiana y el bienestar, sin sustituirlo.`
+        : "";
       partes.push(
         `El ${input.healthReportTitle ?? "Informe de salud"} gobierna el hilo ` +
         `sanitario de este capítulo. Su análisis epidemiológico y de problemas ` +
         `de salud trata de forma sustantiva: ${dims.join("; ")} — con atención ` +
         `destacada a ${destacadas.join(" y a ")}. Esta es la fotografía ` +
         `sanitaria de partida del ${scopeNoun}; las magnitudes concretas ` +
-        `constan en el propio Informe. Los estudios complementarios amplían ` +
-        `este hilo hacia la vida cotidiana y el bienestar, sin sustituirlo.`
+        `constan en el propio Informe.${extensionEstudios}`
       );
     }
     if (bloques.length > 0) {

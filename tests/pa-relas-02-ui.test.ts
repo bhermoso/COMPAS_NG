@@ -31,7 +31,6 @@ describe("PA-RELAS-02 — representación editorial", () => {
   it("muestra las dos líneas para consulta aunque aún no exista selección", () => {
     const html = renderToStaticMarkup(createElement(ActionPlanCatalogPanel, {
       municipalityId: lectura.municipalityId,
-      lectura,
       eligibleModules: [],
       reviews: [],
       onSave: () => [],
@@ -56,7 +55,8 @@ describe("PA-RELAS-02 — representación editorial", () => {
     expect(html).toContain("Módulo propuesto");
     expect(html).toContain("Grupo Motor seleccionó la prioridad");
     expect(html).toContain("Aceptar todo");
-    expect(html).toContain("Adaptar");
+    expect(html).toContain("Decisión sobre la línea estratégica");
+    expect(html).toContain("Modificar / adaptar");
     expect(html).toContain("Ver ficha técnica propuesta");
     expect(html).toContain("Pendiente de asignación formal");
     expect(html).toContain("no genera actuaciones");

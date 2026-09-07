@@ -205,10 +205,13 @@ export function getEligibleActionPlanModules(
 }
 
 export function getCatalogElementIds(module: ActionPlanCatalogModule): string[] {
-  return module.generalObjectives.flatMap((general) => [
-    general.code,
-    ...general.specificObjectives.flatMap((specific) => [specific.code, specific.indicator.code]),
-  ]);
+  return [
+    module.id,
+    ...module.generalObjectives.flatMap((general) => [
+      general.code,
+      ...general.specificObjectives.flatMap((specific) => [specific.code, specific.indicator.code]),
+    ]),
+  ];
 }
 
 export function createPendingModuleReview(

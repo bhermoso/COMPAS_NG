@@ -56,7 +56,7 @@ const store = new Map<string, string>();
 
 const EXPORT_PATH = resolve(
   dirname(fileURLToPath(import.meta.url)),
-  "../municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
+  "../fixtures/workspaces/granada-zaidin-synthetic-test.json"
 );
 
 /** Espacio de conocimiento del técnico, como en el flujo real. */

@@ -12,7 +12,7 @@ import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
 
 interface ActionPlanCatalogPanelProps {
   municipalityId: string;
-  lectura: LecturaEstrategicaLocal;
+  lectura?: LecturaEstrategicaLocal;
   selection?: DeliberativePrioritySelection;
   eligibleModules: EligibleActionPlanModule[];
   reviews: MunicipalActionPlanModuleReview[];
@@ -22,7 +22,7 @@ interface ActionPlanCatalogPanelProps {
 const decisionLabels: Record<CatalogDecisionStatus, string> = {
   pending: "Pendiente",
   accepted: "Aceptar",
-  adapted: "Adaptar",
+  adapted: "Modificar / adaptar",
   rejected: "Rechazar",
 };
 
@@ -33,7 +33,8 @@ function ModuleReview({
   eligible,
   savedReview,
   onSave,
-}: Omit<ActionPlanCatalogPanelProps, "eligibleModules" | "reviews" | "selection"> & {
+}: Omit<ActionPlanCatalogPanelProps, "eligibleModules" | "reviews" | "selection" | "lectura"> & {
+  lectura: LecturaEstrategicaLocal;
   selection: DeliberativePrioritySelection;
   eligible: EligibleActionPlanModule;
   savedReview?: MunicipalActionPlanModuleReview;
@@ -61,12 +62,12 @@ function ModuleReview({
     setDecisions((current) => current.map(({ elementId }) => ({ elementId, status })));
   }
 
-  function decisionControl(elementId: string, originalText: string) {
+  function decisionControl(elementId: string, originalText: string, label = "Decisión del Grupo Motor") {
     const decision = byId.get(elementId) ?? { elementId, status: "pending" as const };
     return (
       <div className="pcm-decision">
         <label>
-          <span className="pcm-decision__label">Decisión del Grupo Motor</span>
+          <span className="pcm-decision__label">{label}</span>
           <select
             value={decision.status}
             onChange={(event) => updateDecision(elementId, event.target.value as CatalogDecisionStatus)}
@@ -78,7 +79,7 @@ function ModuleReview({
         </label>
         {decision.status === "adapted" && (
           <label>
-            <span className="pcm-decision__label">Redacción municipal</span>
+            <span className="pcm-decision__label">Nueva redacción municipal</span>
             <textarea
               rows={3}
               value={decision.adaptedText ?? ""}
@@ -112,6 +113,13 @@ function ModuleReview({
         <span className="status-pill">{resolved}/{decisions.length} revisados</span>
       </div>
       <p className="panel-note">{eligible.module.strategicObjective}</p>
+      <div className="pcm-line-decision">
+        {decisionControl(
+          eligible.module.id,
+          `${eligible.module.title}\n${eligible.module.strategicObjective}`,
+          "Decisión sobre la línea estratégica"
+        )}
+      </div>
       <p className="pcm-trace">
         Propuesto porque el Grupo Motor seleccionó la prioridad: {eligible.sourceScenarioIds.map((id) => lectura.escenarios.find((scenario) => scenario.id === id)?.tema ?? id).join(", ")}.
       </p>
@@ -236,7 +244,7 @@ export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
       </section>
       {ACTION_PLAN_CATALOG.map((module) => {
         const eligible = props.eligibleModules.find((candidate) => candidate.module.id === module.id);
-        return eligible != null && props.selection != null ? (
+        return eligible != null && props.selection != null && props.lectura != null ? (
           <ModuleReview
             key={`${module.id}-${props.selection.id}`}
             municipalityId={props.municipalityId}

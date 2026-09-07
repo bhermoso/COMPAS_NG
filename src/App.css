@@ -284,6 +284,7 @@ h3 {
 .pcm-module__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .pcm-trace { margin: 16px 0 6px; padding: 10px 12px; border-left: 4px solid #2f7d5b; background: #edf7f2; color: #245c46; }
 .pcm-source { margin: 0 0 16px; color: #64748b; font-size: 0.78rem; }
+.pcm-line-decision { margin: 12px 0 16px; padding: 12px; border: 1px solid #b9d7ef; border-radius: 7px; background: #f4f9fd; }
 .pcm-locked-note { margin: 14px 0 8px; padding: 10px 12px; border-left: 4px solid #d39e22; background: #fff9e8; color: #6f5612; }
 .pcm-counts { margin: 0 0 12px; color: #334155; font-size: 0.82rem; font-weight: 700; }
 .pcm-specifics--preview { padding-top: 12px; }
