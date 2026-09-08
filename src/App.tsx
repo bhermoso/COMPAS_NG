@@ -1,3 +1,4 @@
+import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type DocumentKind,
@@ -692,6 +693,16 @@ export default function App() {
     }));
     return [];
   }, [runtime.lectura, workspace.thematicPrioritisation]);
+
+  const handleIndicatorWorksheetChange = useCallback((sheet: IndicatorWorksheet) => {
+    setWorkspace((prev) => {
+      if (sheet.context.municipalityId !== prev.municipality.identity.id) return prev;
+      return { ...prev,
+        indicatorWorksheets: [...(prev.indicatorWorksheets ?? []).filter((saved) => worksheetKey(saved.context) !== worksheetKey(sheet.context)), sheet],
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
 
   const handleSaveActionPlanModuleReview = useCallback((review: MunicipalActionPlanModuleReview): readonly string[] => {
     if (runtime.lectura == null || workspace.deliberativePrioritySelection == null) {
@@ -3233,6 +3244,8 @@ export default function App() {
               selection={workspace.deliberativePrioritySelection}
               eligibleModules={runtime.eligibleActionPlanModules}
               reviews={workspace.actionPlanModuleReviews ?? []}
+              worksheets={workspace.indicatorWorksheets ?? []}
+              onWorksheetChange={handleIndicatorWorksheetChange}
               onSave={handleSaveActionPlanModuleReview}
             />
             {runtime.pai ? (
@@ -3250,14 +3263,28 @@ export default function App() {
             )}
             </>
           ) : (
-            <section className="workspace-panel">
-              <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-              <h2>Plan de Acción no disponible</h2>
-              <p className="panel-note">
-                Se requiere un Perfil de Salud Local validado y vigente para producir la
-                Lectura Estratégica Local que inicia esta fase.
-              </p>
-            </section>
+            <>
+              <section className="workspace-panel">
+                <p className="eyebrow">Plan Local de Salud 2027–2030</p>
+                <h2>Plan de Acción · catálogo disponible para consulta</h2>
+                <div className="phase-blocked-notice">
+                  <strong>Revisión municipal todavía no habilitada</strong>
+                  <p>
+                    Puedes examinar las líneas, sus objetivos y sus indicadores. Para aceptar,
+                    rechazar o modificar elementos se requiere un Perfil de Salud Local validado
+                    y vigente, su Lectura Estratégica Local y la selección expresa del Grupo Motor.
+                  </p>
+                </div>
+              </section>
+              <ActionPlanCatalogPanel
+                municipalityId={workspace.municipality.identity.id}
+                eligibleModules={[]}
+                reviews={workspace.actionPlanModuleReviews ?? []}
+              worksheets={workspace.indicatorWorksheets ?? []}
+              onWorksheetChange={handleIndicatorWorksheetChange}
+                onSave={handleSaveActionPlanModuleReview}
+              />
+            </>
           )
         )}
 

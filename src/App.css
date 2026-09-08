@@ -284,6 +284,7 @@ h3 {
 .pcm-module__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .pcm-trace { margin: 16px 0 6px; padding: 10px 12px; border-left: 4px solid #2f7d5b; background: #edf7f2; color: #245c46; }
 .pcm-source { margin: 0 0 16px; color: #64748b; font-size: 0.78rem; }
+.pcm-line-decision { margin: 12px 0 16px; padding: 12px; border: 1px solid #b9d7ef; border-radius: 7px; background: #f4f9fd; }
 .pcm-locked-note { margin: 14px 0 8px; padding: 10px 12px; border-left: 4px solid #d39e22; background: #fff9e8; color: #6f5612; }
 .pcm-counts { margin: 0 0 12px; color: #334155; font-size: 0.82rem; font-weight: 700; }
 .pcm-specifics--preview { padding-top: 12px; }
@@ -10305,3 +10306,21 @@ h3 {
 }
 
 .pie-cierre__items li { margin-bottom: 8px; }
+
+/* Human-authored indicator and action collection sheets */
+.indicator-worksheet { margin-top: 16px; border: 1px solid #bfd5d8; border-radius: 8px; background: #fff; }
+.indicator-worksheet > summary { padding: 14px; color: #135d66; font-weight: 700; cursor: pointer; }
+.indicator-worksheet__body { padding: 0 16px 16px; }
+.indicator-worksheet h4 { font-size: 1rem; margin: 24px 0 12px; color: #135d66; }
+.indicator-worksheet h5 { font-size: .95rem; margin: 18px 0 10px; }
+.indicator-worksheet__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 14px 0; }
+.indicator-worksheet label { display: flex; flex-direction: column; gap: 6px; font-size: .85rem; font-weight: 600; }
+.indicator-worksheet textarea, .indicator-worksheet select { width: 100%; box-sizing: border-box; font: inherit; font-weight: 400; padding: 9px; border: 1px solid #aabac0; border-radius: 4px; background: white; color: #253744; }
+.indicator-worksheet textarea { resize: vertical; min-height: 65px; }
+.indicator-worksheet button { padding: 9px 13px; border: 1px solid #135d66; border-radius: 5px; background: #f1f8f8; color: #135d66; cursor: pointer; }
+.indicator-worksheet button:disabled { opacity: .6; }
+.indicator-worksheet__action, .indicator-worksheet fieldset { margin: 16px 0; padding: 14px; border: 1px solid #cedcdf; border-radius: 6px; min-width: 0; }
+.indicator-worksheet__action > summary { cursor: pointer; font-weight: 700; }
+.indicator-worksheet__footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border-top: 1px solid #cedcdf; padding-top: 14px; }
+.indicator-worksheet__footer span { font-size: .75rem; color: #526070; }
+@media (max-width: 800px) { .indicator-worksheet__fields { grid-template-columns: 1fr; } }

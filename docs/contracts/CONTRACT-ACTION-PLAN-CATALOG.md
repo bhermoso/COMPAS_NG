@@ -39,7 +39,7 @@ puntuación ni expansión automática de palabras clave.
 
 ## 4. Revisión humana por elemento
 
-Objetivos generales, objetivos específicos e indicadores nacen en estado
+Líneas estratégicas, objetivos generales, objetivos específicos e indicadores nacen en estado
 `pending`. El Grupo Motor puede, de forma independiente:
 
 - `accepted`: aceptar la propuesta sin cambios;

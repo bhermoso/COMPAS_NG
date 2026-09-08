@@ -22,8 +22,8 @@ export interface MunicipalitySeed {
  * Registro genérico de seeds canónicos. SOLO se registran municipios con un export
  * real vigente y rehidratable.
  *
- * Estado (2026-07-16): expedientes canónicos cargables = Granada-Zaidín (20
- * documentos, 92 evidencias) y Atarfe (Informe de Salud + IBSE municipal: 2
+ * Estado (2026-09-07): expedientes canónicos cargables = Granada-Zaidín (7
+ * documentos, 56 activos, 0 estudios aplicados) y Atarfe (Informe de Salud + IBSE municipal: 2
  * documentos, 6 evidencias). Alfacar, Churriana de la Vega y Zagra NO tienen
  * export real: se abren vacíos hasta que exista uno (no se inventa contenido; las
  * fixtures sintéticas o provinciales NO se promueven a datos de producción).

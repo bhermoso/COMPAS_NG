@@ -31,9 +31,10 @@ describe("PA-RELAS-02 — representación editorial", () => {
   it("muestra las dos líneas para consulta aunque aún no exista selección", () => {
     const html = renderToStaticMarkup(createElement(ActionPlanCatalogPanel, {
       municipalityId: lectura.municipalityId,
-      lectura,
       eligibleModules: [],
       reviews: [],
+      worksheets: [],
+      onWorksheetChange: () => {},
       onSave: () => [],
     }));
     expect(html).toContain("Líneas estratégicas disponibles");
@@ -41,6 +42,10 @@ describe("PA-RELAS-02 — representación editorial", () => {
     expect(html).toContain("Prevención y abordaje de las adicciones");
     expect(html).toContain("Puedes examinar su arquitectura");
     expect(html).not.toContain("Aceptar todo");
+    expect(html.match(/Ver ficha técnica propuesta/g)).toHaveLength(30);
+    expect(html.match(/Cumplimentar ficha/g)).toHaveLength(30);
+    expect(html).toContain("Método de cálculo");
+    expect(html).toContain("Criterio de calidad");
   });
 
   it("identifica propuesta, procedencia, decisiones humanas y ficha técnica", () => {
@@ -50,13 +55,16 @@ describe("PA-RELAS-02 — representación editorial", () => {
       selection,
       eligibleModules: getEligibleActionPlanModules(lectura, selection),
       reviews: [],
+      worksheets: [],
+      onWorksheetChange: () => {},
       onSave: () => [],
     }));
 
     expect(html).toContain("Módulo propuesto");
     expect(html).toContain("Grupo Motor seleccionó la prioridad");
     expect(html).toContain("Aceptar todo");
-    expect(html).toContain("Adaptar");
+    expect(html).toContain("Decisión sobre la línea estratégica");
+    expect(html).toContain("Modificar / adaptar");
     expect(html).toContain("Ver ficha técnica propuesta");
     expect(html).toContain("Pendiente de asignación formal");
     expect(html).toContain("no genera actuaciones");

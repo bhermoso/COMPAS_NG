@@ -1,29 +1,19 @@
 /**
  * tests/granada-zaidin-reconstruction.test.ts
  *
- * Verificación de la RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (histórica, 15/51)
+ * Verificación de la reconstrucción reproducible sin resultados no observados
  * de Granada-Zaidín
  * (scripts/demo/buildGranadaZaidinWorkspace.ts, ejecutable con
  * `npm run rebuild:zaidin`).
  *
- * LÍNEAS DE REFERENCIA — no confundir:
- *   - 56/92 = EXPORT VIGENTE de trabajo (56 activos Localiza Salud, 92
- *     evidencias), preservado manualmente el 2026-07-08 en
- *     municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json
- *     y protegido por tests/granada-zaidin-vigente-56-92.test.ts.
- *   - 15/51 = RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (HISTÓRICA) que verifica este
- *     fichero: 15 activos del CSV auditado (sin datos personales, RGPD) + 36
- *     evidencias de estudios = 51. Sirve para garantizar que el expediente
- *     puede regenerarse desde fuentes versionadas, NO es la línea vigente y
- *     NUNCA debe sustituir al export 56/92 (el generador escribe en
- *     compas-ng-workspace-granada-zaidin-reproducible-minimo.json).
+ * El constructor incorpora únicamente Informe, activos y documentación real.
+ * Las escalas siguen disponibles para futuras importaciones, sin resultados.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
 import {
   buildGranadaZaidinWorkspace,
   LOCALIZA_ASSET_COUNT,
-  PROXY_CAUTION,
   type GranadaZaidinBuildResult,
 } from "../scripts/demo/buildGranadaZaidinWorkspace";
 import { isEmptyWorkspaceForPersistenceGuard } from "../src/application/workspace";
@@ -67,8 +57,8 @@ const STUDY_KEYS = [
   "sbqStudy",
 ] as const;
 
-const EXPECTED_STUDY_ATOMS = 36;
-const EXPECTED_TOTAL_ATOMS = EXPECTED_STUDY_ATOMS + LOCALIZA_ASSET_COUNT; // 51
+const EXPECTED_STUDY_ATOMS = 0;
+const EXPECTED_TOTAL_ATOMS = LOCALIZA_ASSET_COUNT;
 
 let result: GranadaZaidinBuildResult;
 let ws: MunicipalityWorkspace;
@@ -106,10 +96,10 @@ describe("Granada-Zaidín reconstruido — Informe de Salud (D-HR-01)", () => {
   });
 });
 
-describe("Granada-Zaidín reconstruido — 13 estudios complementarios", () => {
-  it("los 13 estudios están definidos en el workspace", () => {
+describe("Granada-Zaidín reconstruido — instrumentos sin resultados", () => {
+  it("ninguna escala figura como aplicada en el workspace", () => {
     for (const key of STUDY_KEYS) {
-      expect(ws[key], key).toBeDefined();
+      expect(ws[key], key).toBeUndefined();
     }
   });
 
@@ -117,12 +107,6 @@ describe("Granada-Zaidín reconstruido — 13 estudios complementarios", () => {
     expect(result.counts.studyAtoms).toBe(EXPECTED_STUDY_ATOMS);
   });
 
-  it("cada estudio lleva la cautela metodológica de proxy provincial/externo", () => {
-    for (const key of STUDY_KEYS) {
-      const study = ws[key] as { methodologicalCautions: string[] };
-      expect(study.methodologicalCautions, key).toContain(PROXY_CAUTION);
-    }
-  });
 });
 
 describe("Granada-Zaidín reconstruido — activos Localiza Salud", () => {
@@ -176,9 +160,7 @@ describe("Granada-Zaidín reconstruido — totales y persistencia", () => {
     expect(loaded).not.toBeNull();
     expect(loaded!.municipality.identity.territorialType).toBe("distrito");
     expect(loaded!.healthReport).toBeDefined();
-    for (const key of STUDY_KEYS) {
-      expect(loaded![key], key).toBeDefined();
-    }
+    for (const key of STUDY_KEYS) expect(loaded![key], key).toBeUndefined();
     expect(loaded!.evidenceStore.atoms.length).toBe(EXPECTED_TOTAL_ATOMS);
     expect(
       loaded!.evidenceStore.atoms.filter(
@@ -315,9 +297,9 @@ describe("Granada-Zaidín reconstruido — marcos estratégicos y normativos", (
   });
 
   it("los marcos no generan evidencias: los totales auditados no cambian", () => {
-    expect(result.counts.studyAtoms).toBe(36);
+    expect(result.counts.studyAtoms).toBe(0);
     expect(result.counts.localizaAtoms).toBe(15);
-    expect(result.counts.totalAtoms).toBe(51);
+    expect(result.counts.totalAtoms).toBe(15);
     expect(
       ws.evidenceStore.atoms.some((a) => a.provenance.origin === "strategic-framework")
     ).toBe(false);
@@ -491,35 +473,15 @@ describe("Granada-Zaidín — vocabulario territorial y cautelas de escala en el
     expect(textos).toContain("distrito");
   });
 
-  it("el Perfil contiene el bloque de alcance con cautela explícita de escala/proxy", () => {
+  it("el Perfil contiene alcance explícito sin atribuir escalas no aplicadas", () => {
     const psl = createMunicipalityRuntime({ workspace: ws }).psl;
     expect(psl.conclusiones.content).toContain("Alcance y escala de la evidencia disponible");
-    expect(psl.conclusiones.content).toContain("contexto exploratorio");
-    expect(psl.conclusiones.content).toContain("pendiente de contraste territorial");
-    // Las cautelas declaradas por los estudios se propagan literalmente
-    expect(psl.conclusiones.content).toContain(PROXY_CAUTION);
+    expect(psl.conclusiones.content).not.toContain("Los estudios complementarios amplían");
   });
 
-  it("declara que los datos provinciales/contextuales no son estimación específica del distrito", () => {
+  it("no presenta IBSE ni escalas como resultados del distrito", () => {
     const psl = createMunicipalityRuntime({ workspace: ws }).psl;
-    expect(psl.conclusiones.content).toMatch(
-      /no constituyen? (una )?estimación específica del distrito/
-    );
-    expect(psl.cierreInterpretativo.content).toContain("contexto");
-    expect(psl.cierreInterpretativo.content).toContain("contraste territorial");
-  });
-
-  it("IBSE se presenta como referencia contextual, no como valor propio del distrito", () => {
-    const psl = createMunicipalityRuntime({ workspace: ws }).psl;
-    // La cautela de escala se declara en el capítulo I; junto al IBSE se
-    // referencia sin repetirse (contrato de escritura: cautela sin redundancia).
-    expect(psl.conclusiones.content).toMatch(
-      /IBSE[\s\S]{0,400}?cautela de escala del capítulo I/
-    );
-    expect(psl.conclusiones.content).toMatch(
-      /no constituyen? (una )?estimación específica del distrito/
-    );
-    expect(psl.conclusiones.content).toMatch(/IBSE[\s\S]{0,400}?referencia exploratoria/);
+    expect(psl.conclusiones.content).not.toMatch(/IBSE|GHQ-12|PHQ-9|PSQI|Fagerström|AUDIT-C|SBQ/);
   });
 
   it("los estudios siguen disponibles y sin recomendaciones ni actuaciones en el Perfil", () => {
@@ -560,7 +522,7 @@ describe("Granada-Zaidín — el Perfil se organiza en capítulos por determinan
     expect(texto).toContain("entre otros (15 en total)");
     // Fuentes citadas en el capítulo I
     expect(texto).toContain("fuente diagnóstica primaria");
-    expect(texto).toContain("13 estudios");
+    expect(texto).not.toContain("13 estudios");
     // Documentación territorial diagnóstica (Vigía) presente
     expect(texto).toContain("Informe Zaidin Centro Este");
     // La ausencia de desagregaciones se declara como incertidumbre
@@ -569,12 +531,11 @@ describe("Granada-Zaidín — el Perfil se organiza en capítulos por determinan
     expect(texto).toContain("no documenta determinantes");
   });
 
-  it("mantiene cautelas, cualificación IBSE y vocabulario territorial dentro de la nueva estructura", () => {
+  it("mantiene incertidumbres y vocabulario territorial sin valores de escalas", () => {
     const psl = createMunicipalityRuntime({ workspace: ws }).psl;
     const texto = psl.conclusiones.content;
     expect(texto).toContain("Alcance y escala de la evidencia disponible");
-    expect(texto).toContain(PROXY_CAUTION);
-    expect(texto).toMatch(/IBSE[\s\S]{0,400}?referencia exploratoria/);
+    expect(texto).not.toMatch(/IBSE|GHQ-12|PHQ-9|PSQI|Fagerström|AUDIT-C|SBQ/);
     expect(texto).toContain("Incertidumbres del diagnóstico");
     // El capítulo VI declara el límite del Perfil
     expect(texto).toContain("no formula recomendaciones");

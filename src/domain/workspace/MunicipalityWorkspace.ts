@@ -1,3 +1,4 @@
+import type { IndicatorWorksheet } from "../action-plan-catalog/IndicatorWorksheet";
 import type { MunicipalityContext } from "../municipality";
 import type { MunicipalDocumentRepository } from "../repository";
 import type { EvidenceStore } from "../evidence";
@@ -76,6 +77,8 @@ export interface MunicipalityWorkspace {
    * Conservan la plantilla original, la versión y la decisión municipal por elemento.
    */
   actionPlanModuleReviews?: MunicipalActionPlanModuleReview[];
+  /** Human-authored collection sheets; drafts, never diagnostic evidence or approvals. */
+  indicatorWorksheets?: IndicatorWorksheet[];
   /**
    * Historial de snapshots del Estado Territorial Evolutivo.
    * Acumulativo: cada versión de la evidencia produce una entrada nueva.
@@ -176,6 +179,15 @@ export interface MunicipalityWorkspace {
    * aplicada" y es válida para workspaces anteriores (compatibilidad legacy).
    */
   appliedSeedMigrations?: string[];
+  /** Archivo de recuperación; nunca es evidencia ni validación vigente. */
+  nonObservedStudiesArchive?: {
+    status: "historical-not-valid";
+    migrationId: string;
+    archivedAt: string;
+    reason: string;
+    /** Expediente previo íntegro. Solo para recuperación y auditoría. */
+    workspaceJSON: string;
+  };
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;

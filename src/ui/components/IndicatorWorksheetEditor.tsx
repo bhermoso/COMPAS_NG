@@ -1,0 +1,139 @@
+import { useState } from "react";
+import {
+  actionFields, consolidationFields, createIndicatorWorksheet, indicatorFields,
+  returnFields, worksheetContextChanged,
+  type IndicatorWorksheet, type WorksheetContext, type WorksheetValues,
+} from "../../domain/action-plan-catalog/IndicatorWorksheet";
+
+interface Props {
+  context: WorksheetContext;
+  sheet?: IndicatorWorksheet;
+  reviewNotice: string;
+  onChange: (sheet: IndicatorWorksheet) => void;
+}
+
+function Fields({ fields, values, onChange }: {
+  fields: readonly (readonly [string, string])[];
+  values: WorksheetValues;
+  onChange: (values: WorksheetValues) => void;
+}) {
+  return <div className="indicator-worksheet__fields">{fields.map(([key, label]) => (
+    <label key={key}><span>{label}</span>
+      <textarea rows={2} value={values[key] ?? ""} placeholder="Pendiente de cumplimentar"
+        onChange={(event) => onChange({ ...values, [key]: event.target.value })} />
+    </label>
+  ))}</div>;
+}
+
+export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChange }: Props) {
+  const [open, setOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState("");
+  const draft = sheet ?? createIndicatorWorksheet(context);
+  const changed = worksheetContextChanged(draft, context);
+  function update(next: IndicatorWorksheet) {
+    onChange({ ...next, updatedAt: new Date().toISOString() });
+  }
+  async function download(actionId?: string) {
+    setExporting(true);
+    setError("");
+    try {
+      const { downloadIndicatorWorksheet } = await import("../../application/action-plan/exportIndicatorWorksheet");
+      await downloadIndicatorWorksheet(draft, reviewNotice, changed, actionId);
+    } catch {
+      setError("No se pudo descargar la ficha. Tus campos permanecen en el expediente; vuelve a intentarlo.");
+    } finally { setExporting(false); }
+  }
+  return <details className="indicator-worksheet" open={open}
+    onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <summary>Cumplimentar ficha · {context.indicatorCode}{sheet ? " · En preparación" : ""}</summary>
+    {open && <div className="indicator-worksheet__body">
+      <p className="eyebrow">Herramienta de recogida y seguimiento · Borrador de trabajo</p>
+      <h4>Ficha del objetivo e indicador</h4>
+      <p>{reviewNotice}</p>
+      <p className="panel-note">Preparar esta ficha no aprueba el objetivo ni modifica el Perfil de Salud Local.
+        Los campos se incorporan al expediente de este municipio en este navegador. Descarga las fichas para entregarlas a las personas responsables;
+        transcribe aquí las entregas que recibas.</p>
+      {changed && <p role="alert" className="phase-blocked-notice">La redacción o versión de referencia ha cambiado.
+        Esta ficha conserva su referencia anterior: revisa su correspondencia antes de utilizar los datos.</p>}
+      <p><strong>Referencia de la ficha:</strong> {draft.context.objective}<br />{draft.context.indicator}</p>
+      <p className="pcm-source">{draft.context.source} · Versión {draft.context.moduleVersion} · Unidad: {draft.context.unit}</p>
+      <Fields fields={indicatorFields} values={draft.values} onChange={(values) => update({ ...draft, values })} />
+      <h4>Actuaciones que contribuirán al objetivo</h4>
+      <p>Registra cada actuación y qué información entregará su responsable a quien consolida el indicador.
+        No se han añadido actuaciones ni responsables automáticamente.</p>
+      {draft.actions.length === 0 && <p className="panel-note">Todavía no hay actuaciones vinculadas.</p>}
+      {draft.actions.map((action, index) => <details className="indicator-worksheet__action" key={action.id} open>
+        <summary>Actuación {index + 1} · {action.values.name || "Sin nombre"}</summary>
+        <p className="pcm-source">Código de enlace: {action.id}</p>
+        <Fields fields={actionFields} values={action.values} onChange={(values) => update({ ...draft,
+          actions: draft.actions.map((item) => item.id === action.id ? { ...item, values } : item),
+        })} />
+        <button type="button" disabled={exporting} onClick={() => void download(action.id)}>Descargar ficha de esta actuación (Word)</button>
+        <h5>Entregas de datos por periodo</h5>
+        {action.returns.map((delivery, deliveryIndex) => <fieldset key={delivery.id}>
+          <legend>Entrega {deliveryIndex + 1}</legend>
+          <Fields fields={returnFields} values={delivery.values} onChange={(values) => update({ ...draft,
+            actions: draft.actions.map((item) => item.id === action.id ? { ...item,
+              returns: item.returns.map((record) => record.id === delivery.id ? { ...record, values } : record),
+            } : item),
+          })} />
+          <button type="button" onClick={() => {
+            if (window.confirm("¿Eliminar esta entrega de datos?")) update({ ...draft,
+              actions: draft.actions.map((item) => item.id === action.id
+                ? { ...item, returns: item.returns.filter((item) => item.id !== delivery.id) } : item),
+            });
+          }}>Eliminar entrega</button>
+        </fieldset>)}
+        <button type="button" onClick={() => update({ ...draft, actions: draft.actions.map((item) => item.id === action.id
+          ? { ...item, returns: [...item.returns, { id: crypto.randomUUID(), values: {} }] } : item),
+        })}>Añadir entrega de datos</button>
+        <button type="button" onClick={() => {
+          if (window.confirm("¿Eliminar esta actuación y sus entregas de esta ficha?")) update({ ...draft,
+            actions: draft.actions.filter((item) => item.id !== action.id),
+          });
+        }}>Eliminar actuación</button>
+      </details>)}
+      <button type="button" onClick={() => update({ ...draft,
+        actions: [...draft.actions, { id: crypto.randomUUID(), values: {}, returns: [] }],
+      })}>Añadir actuación vinculada</button>
+      <h4>Consolidación del indicador por periodo</h4>
+      <p>No se suman automáticamente las entregas ni se promedian sus porcentajes. La persona responsable
+        comprueba definiciones, periodos y duplicados. Sin dato no equivale a cero; con denominador cero,
+        el porcentaje no es calculable. La actividad realizada no sustituye el resultado del objetivo.</p>
+      {draft.consolidations.map((record, index) => <fieldset key={record.id}>
+        <legend>Consolidación {index + 1}</legend>
+        <label>Estado del dato
+          <select value={record.status} onChange={(event) => update({ ...draft,
+            consolidations: draft.consolidations.map((item) => item.id === record.id
+              ? { ...item, status: event.target.value as typeof record.status } : item),
+          })}>
+            <option value="pending">Sin datos / pendiente</option>
+            <option value="provisional">Provisional</option>
+            <option value="reviewed">Revisado por la persona responsable</option>
+            <option value="not-calculable">No calculable</option>
+          </select>
+        </label>
+        <Fields fields={consolidationFields} values={record.values} onChange={(values) => update({ ...draft,
+          consolidations: draft.consolidations.map((item) => item.id === record.id ? { ...item, values } : item),
+        })} />
+        <button type="button" onClick={() => {
+          if (window.confirm("¿Eliminar este periodo de consolidación?")) update({ ...draft,
+            consolidations: draft.consolidations.filter((item) => item.id !== record.id),
+          });
+        }}>Eliminar periodo</button>
+      </fieldset>)}
+      <button type="button" onClick={() => update({ ...draft,
+        consolidations: [...draft.consolidations, { id: crypto.randomUUID(), status: "pending", values: {} }],
+      })}>Añadir periodo de consolidación</button>
+      <p className="panel-note">Recoge datos agregados y referencias de justificantes. La identificación personal se conserva en la fuente custodiada.</p>
+      <div className="indicator-worksheet__footer">
+        <button type="button" disabled={exporting} onClick={() => void download()}>
+          {exporting ? "Preparando Word…" : "Descargar ficha y actuaciones (Word)"}
+        </button>
+        {sheet?.updatedAt && <span>Última edición: {new Date(sheet.updatedAt).toLocaleString("es-ES")}</span>}
+      </div>
+      {error && <p role="alert">{error}</p>}
+    </div>}
+  </details>;
+}
