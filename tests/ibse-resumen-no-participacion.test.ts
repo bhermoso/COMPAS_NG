@@ -29,8 +29,12 @@ import { parseWorkspaceJSON } from "../src/infrastructure/persistence/local-stor
 import { createMunicipalityRuntime } from "../src/application/runtime";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const loadSeed = (rel: string) =>
-  parseWorkspaceJSON(readFileSync(resolve(root, "public/seeds", rel), "utf8"))!;
+const loadSeed = (rel: string) => {
+  const path = rel === "compas-ng-workspace-granada-zaidin.json"
+    ? resolve(root, "fixtures/workspaces/granada-zaidin-synthetic-test.json")
+    : resolve(root, "public/seeds", rel);
+  return parseWorkspaceJSON(readFileSync(path, "utf8"))!;
+};
 
 function indicatorAtom(id: string): ReturnType<typeof createEvidenceAtom> {
   return createEvidenceAtom({

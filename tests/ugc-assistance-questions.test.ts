@@ -55,7 +55,7 @@ const store = new Map<string, string>();
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const EXPORT_PATH = resolve(
   ROOT,
-  "../municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
+  "../fixtures/workspaces/granada-zaidin-synthetic-test.json"
 );
 const N3_SOURCE = readFileSync(
   resolve(ROOT, "../src/application/health-profile/integratedInterpretation.ts"),
