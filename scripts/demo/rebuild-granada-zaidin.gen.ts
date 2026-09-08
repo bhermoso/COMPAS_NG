@@ -1,12 +1,17 @@
 /**
  * scripts/demo/rebuild-granada-zaidin.gen.ts
  *
- * Generador de la reconstrucción reproducible con fuentes observadas de
+ * Generador de la RECONSTRUCCIÓN MÍNIMA REPRODUCIBLE (HISTÓRICA, 15/51) de
  * Granada-Zaidín. Se ejecuta con: npm run rebuild:zaidin
  * (config dedicada vitest.rebuild.config.ts — NO forma parte de `npm test`).
  *
- * No incorpora resultados de escalas hasta que exista una importación real y
- * trazable. Su salida conserva 15 activos auditados y 0 estudios aplicados.
+ * LÍNEAS DE REFERENCIA — no confundir:
+ *   - 56/92 = EXPORT VIGENTE de trabajo (preservado manualmente):
+ *       municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json
+ *       Este generador NO lo toca. No sustituir 56/92 por 15/51.
+ *   - 15/51 = reconstrucción mínima reproducible desde fuentes auditadas
+ *       (15 activos del CSV auditado + 36 evidencias de estudios). Se escribe en:
+ *       compas-ng-workspace-granada-zaidin-reproducible-minimo.json
  *
  * La serialización se obtiene llamando al servicio real
  * saveWorkspaceToLocalStorage sobre una simulación de localStorage, de modo
@@ -90,7 +95,7 @@ describe("Generador — expediente restaurable de Granada-Zaidín", () => {
     expect(JSON.stringify(JSON.parse(asciiValue))).toBe(JSON.stringify(JSON.parse(value)));
 
     mkdirSync(outDir, { recursive: true });
-    // Salida propia de la reconstrucción reproducible auditada.
+    // Salida propia de la reconstrucción mínima: NUNCA el export vigente 56/92.
     const outFile = "compas-ng-workspace-granada-zaidin-reproducible-minimo.json";
     writeFileSync(resolve(outDir, outFile), asciiValue, "utf8");
 

@@ -50,7 +50,7 @@ const store = new Map<string, string>();
 
 const EXPORT_PATH = resolve(
   dirname(fileURLToPath(import.meta.url)),
-  "../fixtures/workspaces/granada-zaidin-synthetic-test.json"
+  "../municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
 );
 
 function perfilConConocimiento(): PerfilLocalDeSalud {

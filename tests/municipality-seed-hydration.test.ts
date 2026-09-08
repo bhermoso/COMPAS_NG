@@ -120,13 +120,13 @@ describe("hidratación de expedientes municipales desde seed", () => {
     expect(ws?.municipality.identity.name).toBe("Granada-Zaidín");
   });
 
-  it("2. Granada-Zaidín carga 7 documentos reales y 56 evidencias de activos", async () => {
+  it("2. Granada-Zaidín carga exactamente 20 documentos y 92 evidencias", async () => {
     const ws = await loadMunicipalitySeed("granada-zaidin", {
       baseUrl: "/",
       fetchImpl: okFetch(SEED_RAW),
     });
-    expect(ws?.repository.documents.length).toBe(7);
-    expect(ws?.evidenceStore.atoms.length).toBe(56);
+    expect(ws?.repository.documents.length).toBe(20);
+    expect(ws?.evidenceStore.atoms.length).toBe(92);
   });
 
   it("3. un workspace local existente prevalece sobre el seed", () => {
@@ -137,8 +137,8 @@ describe("hidratación de expedientes municipales desde seed", () => {
     const result = loadOrCreateMunicipalityWorkspace("granada-zaidin", GRANADA_INPUT);
     // El seed NO se hidrata (no hay carrera): gana el local.
     expect(result.seedPending).toBe(false);
-    expect(result.workspace.repository.documents.length).toBe(7);
-    expect(result.workspace.evidenceStore.atoms.length).toBe(56);
+    expect(result.workspace.repository.documents.length).toBe(20);
+    expect(result.workspace.evidenceStore.atoms.length).toBe(92);
   });
 
   it("4a. seed con schemaVersion incorrecto → rechazado (null)", async () => {
@@ -244,8 +244,8 @@ describe("hidratación de expedientes municipales desde seed", () => {
     expect(parsed.schemaVersion).toBe("1.0.0");
     expect(parsed.municipality.identity.id).toBe("granada-zaidin");
     expect(parsed.municipality.identity.name).toBe("Granada-Zaidín");
-    expect(parsed.repository.documents.length).toBe(7);
-    expect(parsed.evidenceStore.atoms.length).toBe(56);
+    expect(parsed.repository.documents.length).toBe(20);
+    expect(parsed.evidenceStore.atoms.length).toBe(92);
     // La ruta registrada coincide con el fichero desplegable.
     expect(MUNICIPALITY_SEEDS["granada-zaidin"].path).toBe(
       "seeds/compas-ng-workspace-granada-zaidin.json"
@@ -262,7 +262,7 @@ describe("hidratación de expedientes municipales desde seed", () => {
 
   // ── Migración: placeholder vacío de la versión anterior → seed canónico ────────
 
-  it("6b. MIGRACIÓN: localStorage con Granada-Zaidín válido pero prístino → al arrancar carga el seed (7/56)", async () => {
+  it("6b. MIGRACIÓN: localStorage con Granada-Zaidín válido pero prístino → al arrancar carga el seed (20/92)", async () => {
     // Un navegador de la versión anterior guardó un expediente VÁLIDO pero VACÍO
     // (creado por createCompleteMunicipalityWorkspace). Debe considerarse placeholder.
     const placeholder = createCompleteMunicipalityWorkspace(GRANADA_SEED_INPUT);
@@ -283,8 +283,8 @@ describe("hidratación de expedientes municipales desde seed", () => {
     const hydrated = shouldReplaceWithSeed(result.workspace, "granada-zaidin")
       ? seed
       : result.workspace;
-    expect(hydrated?.repository.documents.length).toBe(7);
-    expect(hydrated?.evidenceStore.atoms.length).toBe(56);
+    expect(hydrated?.repository.documents.length).toBe(20);
+    expect(hydrated?.evidenceStore.atoms.length).toBe(92);
   });
 
   it("7b. un workspace local NO vacío prevalece: no se sustituye por el seed", () => {
@@ -307,7 +307,7 @@ describe("hidratación de expedientes municipales desde seed", () => {
     expect(result.workspace.thematicPrioritisation?.selectedTopicIds).toEqual([
       "bienestar-emocional",
     ]);
-    // No se ha sustituido por el seed canónico.
+    // No se ha sustituido por el seed 20/92.
     expect(result.workspace.repository.documents.length).toBe(0);
   });
 });

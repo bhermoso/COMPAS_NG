@@ -1,3 +1,4 @@
+import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type DocumentKind,
@@ -692,6 +693,16 @@ export default function App() {
     }));
     return [];
   }, [runtime.lectura, workspace.thematicPrioritisation]);
+
+  const handleIndicatorWorksheetChange = useCallback((sheet: IndicatorWorksheet) => {
+    setWorkspace((prev) => {
+      if (sheet.context.municipalityId !== prev.municipality.identity.id) return prev;
+      return { ...prev,
+        indicatorWorksheets: [...(prev.indicatorWorksheets ?? []).filter((saved) => worksheetKey(saved.context) !== worksheetKey(sheet.context)), sheet],
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
 
   const handleSaveActionPlanModuleReview = useCallback((review: MunicipalActionPlanModuleReview): readonly string[] => {
     if (runtime.lectura == null || workspace.deliberativePrioritySelection == null) {
@@ -3233,6 +3244,8 @@ export default function App() {
               selection={workspace.deliberativePrioritySelection}
               eligibleModules={runtime.eligibleActionPlanModules}
               reviews={workspace.actionPlanModuleReviews ?? []}
+              worksheets={workspace.indicatorWorksheets ?? []}
+              onWorksheetChange={handleIndicatorWorksheetChange}
               onSave={handleSaveActionPlanModuleReview}
             />
             {runtime.pai ? (
@@ -3267,6 +3280,8 @@ export default function App() {
                 municipalityId={workspace.municipality.identity.id}
                 eligibleModules={[]}
                 reviews={workspace.actionPlanModuleReviews ?? []}
+              worksheets={workspace.indicatorWorksheets ?? []}
+              onWorksheetChange={handleIndicatorWorksheetChange}
                 onSave={handleSaveActionPlanModuleReview}
               />
             </>

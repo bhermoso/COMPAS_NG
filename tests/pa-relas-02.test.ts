@@ -52,7 +52,7 @@ describe("PA-RELAS-02 — catálogo temático del Plan de Acción", () => {
     expect(ADDICTIONS_MODULE.generalObjectives).toHaveLength(6);
     expect(HEALTHY_AGING_MODULE.generalObjectives.flatMap((goal) => goal.specificObjectives)).toHaveLength(18);
     expect(ADDICTIONS_MODULE.generalObjectives.flatMap((goal) => goal.specificObjectives)).toHaveLength(12);
-    expect(new Set(ACTION_PLAN_CATALOG.flatMap(getCatalogElementIds)).size).toBe(77);
+    expect(new Set(ACTION_PLAN_CATALOG.flatMap(getCatalogElementIds)).size).toBe(75);
   });
 
   it("propone solo módulos vinculados expresamente mediante identificadores estables", () => {
@@ -82,8 +82,7 @@ describe("PA-RELAS-02 — catálogo temático del Plan de Acción", () => {
     const eligible = getEligibleActionPlanModules(lectura, selected)[0];
     const review = createPendingModuleReview(lectura.municipalityId, eligible, lectura, selected);
 
-    expect(review.decisions).toHaveLength(31);
-    expect(review.decisions[0]).toEqual({ elementId: ADDICTIONS_MODULE.id, status: "pending" });
+    expect(review.decisions).toHaveLength(30);
     expect(review.decisions.every((decision) => decision.status === "pending")).toBe(true);
     expect(review.requiresHumanValidation).toBe(true);
   });

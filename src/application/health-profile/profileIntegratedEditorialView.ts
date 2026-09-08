@@ -691,7 +691,6 @@ function overviewFromMessage(
     synthesis: ReturnType<typeof buildProfileSynthesis>;
     informeTitulo?: string;
     totalAssets: number;
-    hasComplementaryStudies: boolean;
   }
 ): ProfileIntegratedEditorialOverviewMessage {
   const title = buildOverviewTitle(message.id, index);
@@ -710,12 +709,9 @@ function overviewFromMessage(
         `${informeRow?.senal ?? informeSignal?.senal ?? "sus dimensiones principales"} ` +
         `constan como presencia textual del documento. Eso aporta la agenda ` +
         `sanitaria de partida; no permite conocer prevalencia local, carga de ` +
-        `enfermedad ni distribución interna.` +
-        (context.hasComplementaryStudies
-          ? ` Los estudios complementarios amplían ese hilo hacia la vida ` +
-            `cotidiana y el bienestar, sin sustituirlo.`
-          : "") +
-        ` Los activos añaden las capacidades del territorio, sin sustituirlo.`,
+        `enfermedad ni distribución interna. Los estudios complementarios amplían ` +
+        `ese hilo hacia la vida cotidiana y el bienestar, y los activos añaden las ` +
+        `capacidades del territorio, sin sustituirlo.`,
       signal: informeRow?.senal ?? "dimensiones sanitarias principales del Informe",
       source: context.informeTitulo ?? informeRow?.fuente ?? "Informe de salud",
       variant: "informe",
@@ -971,7 +967,6 @@ export function buildProfileIntegratedEditorialView(
       synthesis,
       informeTitulo: opts.informeTitulo,
       totalAssets: answers.salutogenica.totalAssets,
-      hasComplementaryStudies: (answers.estudios?.diagnosticBlocks.length ?? 0) > 0,
     })
   );
 

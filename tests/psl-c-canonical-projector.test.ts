@@ -50,9 +50,7 @@ const store = new Map<string, string>();
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const exportPath = (muni: string, file: string) =>
-  muni === "granada-zaidin"
-    ? resolve(DIR, "..", "fixtures", "workspaces", "granada-zaidin-synthetic-test.json")
-    : resolve(DIR, "..", "municipalities", muni, "exports", file);
+  resolve(DIR, "..", "municipalities", muni, "exports", file);
 
 function validatedPSL(base: LocalHealthProfile): LocalHealthProfile {
   return {

@@ -27,11 +27,8 @@ import type { MunicipalityWorkspace } from "../src/domain/workspace";
 
 const _dir = dirname(fileURLToPath(import.meta.url));
 function loadSeed(id: string): MunicipalityWorkspace {
-  const path = id === "granada-zaidin"
-    ? resolve(_dir, "../fixtures/workspaces/granada-zaidin-synthetic-test.json")
-    : resolve(_dir, `../public/seeds/compas-ng-workspace-${id}.json`);
   const raw = readFileSync(
-    path,
+    resolve(_dir, `../public/seeds/compas-ng-workspace-${id}.json`),
     "utf8"
   );
   const ws = parseWorkspaceJSON(raw);

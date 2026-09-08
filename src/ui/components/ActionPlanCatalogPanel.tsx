@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { IndicatorWorksheetEditor } from "./IndicatorWorksheetEditor";
+import { worksheetKey, type IndicatorWorksheet, type WorksheetContext } from "../../domain/action-plan-catalog/IndicatorWorksheet";
+import type { CatalogGeneralObjectiveTemplate, CatalogSpecificObjectiveTemplate } from "../../domain/action-plan-catalog/ActionPlanCatalog";
+type RenderWorksheet = (module: ActionPlanCatalogModule, general: CatalogGeneralObjectiveTemplate, specific: CatalogSpecificObjectiveTemplate) => ReactNode;
 import type {
   CatalogDecisionStatus,
   CatalogElementDecision,
@@ -16,6 +20,8 @@ interface ActionPlanCatalogPanelProps {
   selection?: DeliberativePrioritySelection;
   eligibleModules: EligibleActionPlanModule[];
   reviews: MunicipalActionPlanModuleReview[];
+  worksheets: IndicatorWorksheet[];
+  onWorksheetChange: (sheet: IndicatorWorksheet) => void;
   onSave: (review: MunicipalActionPlanModuleReview) => readonly string[];
 }
 
@@ -33,11 +39,13 @@ function ModuleReview({
   eligible,
   savedReview,
   onSave,
-}: Omit<ActionPlanCatalogPanelProps, "eligibleModules" | "reviews" | "selection" | "lectura"> & {
+  renderWorksheet,
+}: Omit<ActionPlanCatalogPanelProps, "eligibleModules" | "reviews" | "selection" | "lectura" | "worksheets" | "onWorksheetChange"> & {
   lectura: LecturaEstrategicaLocal;
   selection: DeliberativePrioritySelection;
   eligible: EligibleActionPlanModule;
   savedReview?: MunicipalActionPlanModuleReview;
+  renderWorksheet: RenderWorksheet;
 }) {
   const savedIsStale = savedReview != null && isModuleReviewStale(savedReview, eligible, lectura, selection);
   const [initial] = useState(() =>
@@ -169,6 +177,7 @@ function ModuleReview({
                       </dl>
                     </details>
                     {decisionControl(specific.indicator.code, specific.indicator.title)}
+                    {renderWorksheet(eligible.module, general, specific)}
                   </div>
                 </section>
               ))}
@@ -194,7 +203,7 @@ function ModuleReview({
   );
 }
 
-function AvailableModule({ module }: { module: ActionPlanCatalogModule }) {
+function AvailableModule({ module, renderWorksheet }: { module: ActionPlanCatalogModule; renderWorksheet: RenderWorksheet }) {
   const specifics = module.generalObjectives.flatMap((general) => general.specificObjectives);
   return (
     <article className="workspace-panel pcm-module pcm-module--available">
@@ -238,6 +247,7 @@ function AvailableModule({ module }: { module: ActionPlanCatalogModule }) {
                       <div><dt>Limitación</dt><dd>{specific.indicator.limitation}</dd></div>
                     </dl>
                   </details>
+                  {renderWorksheet(module, general, specific)}
                 </section>
               ))}
             </div>
@@ -249,6 +259,33 @@ function AvailableModule({ module }: { module: ActionPlanCatalogModule }) {
 }
 
 export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
+  const renderWorksheet: RenderWorksheet = (module, general, specific) => {
+    const eligible = props.eligibleModules.find((item) => item.module.id === module.id);
+    const review = props.reviews.find((item) => item.moduleId === module.id);
+    const current = review && eligible && props.lectura && props.selection &&
+      !isModuleReviewStale(review, eligible, props.lectura, props.selection);
+    const decisions = current ? review.decisions : [];
+    const title = (id: string, original: string) => {
+      const decision = decisions.find((item) => item.elementId === id);
+      return decision?.status === "adapted" && decision.adaptedText?.trim() ? decision.adaptedText : original;
+    };
+    const ids = [module.id, general.code, specific.code, specific.indicator.code];
+    const rejected = ids.some((id) => decisions.find((item) => item.elementId === id)?.status === "rejected");
+    const accepted = ids.every((id) => ["accepted", "adapted"].includes(decisions.find((item) => item.elementId === id)?.status ?? "pending"));
+    const reviewNotice = rejected ? "Algún elemento de esta línea u objetivo está rechazado. La ficha se conserva como borrador y no representa un compromiso del Plan."
+      : accepted ? "Los elementos cuentan con revisión guardada del Grupo Motor. La definición de medición y las actuaciones de esta ficha requieren sus propios acuerdos."
+      : "Propuesta pendiente de revisión vigente del Grupo Motor. Puedes preparar la recogida de datos sin incorporar el objetivo al Plan.";
+    const context: WorksheetContext = {
+      municipalityId: props.municipalityId, moduleId: module.id, moduleVersion: module.version,
+      line: title(module.id, module.title), generalObjective: `${general.code} · ${title(general.code, general.title)}`,
+      objective: `${specific.code} · ${title(specific.code, specific.title)}`,
+      indicatorCode: specific.indicator.code, indicator: title(specific.indicator.code, specific.indicator.title),
+      unit: specific.indicator.unit, source: module.sourceLabel,
+    };
+    return <IndicatorWorksheetEditor key={worksheetKey(context)} context={context} reviewNotice={reviewNotice}
+      sheet={props.worksheets.find((sheet) => worksheetKey(sheet.context) === worksheetKey(context))}
+      onChange={props.onWorksheetChange} />;
+  };
   return (
     <div className="pcm-root">
       <section className="workspace-panel pcm-catalog-header">
@@ -257,6 +294,7 @@ export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
         <p className="panel-note">
           Consulta las líneas, objetivos e indicadores documentados. Verlos no los incorpora al Plan:
           la revisión se habilita solo cuando el Grupo Motor relaciona una línea con una prioridad seleccionada.
+          Cada indicador dispone de una ficha cumplimentable con actuaciones y entregas de datos, preparable como borrador.
         </p>
       </section>
       {ACTION_PLAN_CATALOG.map((module) => {
@@ -268,10 +306,11 @@ export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
             lectura={props.lectura}
             selection={props.selection}
             onSave={props.onSave}
+            renderWorksheet={renderWorksheet}
             eligible={eligible}
             savedReview={props.reviews.find((review) => review.moduleId === module.id)}
           />
-        ) : <AvailableModule key={module.id} module={module} />;
+        ) : <AvailableModule key={module.id} module={module} renderWorksheet={renderWorksheet} />;
       })}
     </div>
   );

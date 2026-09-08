@@ -7,10 +7,10 @@
  *
  * Fija:
  *   (a) el extractor DOCX es determinista, en Node, y conserva acentos;
- *   (b) los dos documentos `territorial-documentation` del export vigente observado
+ *   (b) los dos documentos `territorial-documentation` del export vigente 56/92
  *       llevan `sourceText` íntegro + metadatos documentales (Opción A);
  *   (c) el cuerpo sobrevive al ciclo real export → restauración → reexport;
- *   (d) los invariantes del piloto (7 docs / 56 evidencias Localiza / 0
+ *   (d) los invariantes del piloto (20 docs / 92 evidencias / 56 Localiza / 0
  *       evidencias nuevas) permanecen intactos;
  *   (e) el fichero sigue siendo 100 % ASCII y vigente == MANUAL byte a byte.
  */
@@ -118,7 +118,7 @@ describe("Extractor DOCX — determinista y Node-safe (conserva acentos)", () =>
   });
 });
 
-describe("Export vigente observado — sourceText íntegro persistido", () => {
+describe("Export vigente 56/92 — sourceText íntegro persistido", () => {
   it("hay exactamente 2 documentos territoriales", () => {
     expect(territorial.length).toBe(2);
     expect(centroEste).toBeTruthy();
@@ -219,19 +219,19 @@ describe("Ciclo de persistencia — el cuerpo sobrevive export → restore → r
   });
 });
 
-describe("Invariantes del piloto — solo fuentes observadas", () => {
-  it("7 documentos: 1 informe, 2 territoriales, 3 marcos y 1 Localiza", () => {
+describe("Invariantes del piloto — 5A no altera la línea 56/92", () => {
+  it("20 documentos, 1 informe, 2 territoriales, 3 marcos, 1 Localiza", () => {
     const docs = ws.repository.documents;
-    expect(docs.length).toBe(7);
+    expect(docs.length).toBe(20);
     expect(docs.filter((d) => d.kind === "health-report").length).toBe(1);
     expect(docs.filter((d) => d.kind === "territorial-documentation").length).toBe(2);
     expect(docs.filter((d) => d.kind === "strategic-framework").length).toBe(3);
     expect(docs.filter((d) => d.kind === "localiza-salud").length).toBe(1);
   });
 
-  it("56 evidencias de Localiza Salud y 0 derivadas de los territoriales", () => {
+  it("92 evidencias, 56 de Localiza Salud, 0 derivadas de los territoriales", () => {
     const atoms = ws.evidenceStore.atoms;
-    expect(atoms.length).toBe(56);
+    expect(atoms.length).toBe(92);
     expect(
       atoms.filter((a) => a.provenance.origin === "localiza-salud").length
     ).toBe(56);

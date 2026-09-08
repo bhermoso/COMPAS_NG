@@ -46,7 +46,7 @@ const store = new Map<string, string>();
 
 const EXPORT_PATH = resolve(
   dirname(fileURLToPath(import.meta.url)),
-  "../fixtures/workspaces/granada-zaidin-synthetic-test.json"
+  "../municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
 );
 
 const TITULO_LEGADO = "Informe Salud Granada Abril2023 estilo Atarfe";

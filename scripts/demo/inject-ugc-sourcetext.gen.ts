@@ -2,7 +2,7 @@
  * scripts/demo/inject-ugc-sourcetext.gen.ts
  *
  * Incremento 5A — persiste el texto íntegro de los dos informes clínico-
- * asistenciales por UGC (Vigía) dentro del export vigente observado y su copia
+ * asistenciales por UGC (Vigía) dentro del EXPORT VIGENTE (56/92) y su copia
  * MANUAL, SIN atomizar ni interpretar.
  *
  * Determinista y reproducible: lee los DOCX fuente con mammoth (sin dependencia
@@ -60,7 +60,7 @@ function toArrayBuffer(path: string): ArrayBuffer {
   ) as ArrayBuffer;
 }
 
-describe("Generador — inyecta sourceText íntegro por UGC en el export observado", () => {
+describe("Generador — inyecta sourceText íntegro por UGC en el export 56/92", () => {
   it("persiste el texto de los dos informes Vigía sin atomizar", async () => {
     // 1. Extraer el texto íntegro de cada DOCX (determinista, con acentos).
     const textByFile: Record<string, string> = {};
@@ -135,7 +135,7 @@ describe("Generador — inyecta sourceText íntegro por UGC en el export observa
 
     process.stdout.write(
       `\nsourceText UGC inyectado en ${EXPORT_FILES.length} exports · ` +
-        `7 docs · 56 evidencias Localiza · 0 estudios · 2 informes Vigía persistidos\n`
+        `20 docs · 92 evidencias · 56 Localiza · 2 informes Vigía persistidos\n`
     );
   }, 60000);
 });

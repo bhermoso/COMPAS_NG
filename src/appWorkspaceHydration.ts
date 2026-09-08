@@ -3,7 +3,6 @@ import type { CreateMunicipalityContextInput } from "./domain/municipality";
 import {
   createCompleteMunicipalityWorkspace,
   isEmptyWorkspaceForPersistenceGuard,
-  removeNonObservedZaidinStudies,
 } from "./application/workspace";
 import {
   loadWorkspaceFromLocalStorage,
@@ -238,14 +237,13 @@ export function loadOrCreateMunicipalityWorkspace(
 ): WorkspaceLoadResult {
   const loaded = loadWorkspaceFromLocalStorage(municipalityId);
   if (loaded !== null) {
-    const migrated = removeNonObservedZaidinStudies(loaded);
     // Placeholder vacío de la versión anterior: sustituible por el seed. Un
     // expediente con contenido real conserva seedPending=false y prevalece.
     const isReplaceablePlaceholder =
-      isEmptyWorkspaceForPersistenceGuard(migrated) &&
+      isEmptyWorkspaceForPersistenceGuard(loaded) &&
       hasMunicipalitySeed(municipalityId);
     return {
-      workspace: migrated,
+      workspace: loaded,
       protectExistingStorage: false,
       seedPending: isReplaceablePlaceholder,
       // La migración incremental solo aplica a un expediente CON contenido que no
@@ -253,7 +251,7 @@ export function loadOrCreateMunicipalityWorkspace(
       // (que ya trae el documento y su marca) lo cubre.
       seedMigration: isReplaceablePlaceholder
         ? { kind: "none" }
-        : resolveSeedMigration(migrated),
+        : resolveSeedMigration(loaded),
     };
   }
 

@@ -44,7 +44,7 @@ const store = new Map<string, string>();
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const EXPORT_PATH = resolve(
   ROOT,
-  "fixtures/workspaces/granada-zaidin-synthetic-test.json"
+  "municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
 );
 const FIXTURE_PATH = resolve(ROOT, "fixtures/badea-19824-contexto-municipal.json");
 
