@@ -8,6 +8,7 @@ import type { EvidenceStore } from "../../domain/evidence";
 import { transformDocumentToEvidence } from "../evidence-pipeline";
 
 export interface IngestManualDocumentInput {
+  documentId?: string;
   repository: MunicipalDocumentRepository;
   evidenceStore: EvidenceStore;
   kind: DocumentKind;
@@ -36,7 +37,7 @@ export function ingestManualDocument(
     return null;
   }
 
-  const documentId = crypto.randomUUID();
+  const documentId = input.documentId ?? crypto.randomUUID();
 
   const nextRepository = addMunicipalDocument(input.repository, {
     id: documentId,

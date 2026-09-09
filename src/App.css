@@ -10348,3 +10348,24 @@ h3 {
 .planning-instruments__filters { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit,minmax(min(100%,200px),1fr)); }
 .planning-instruments label { display: block; min-width: 0; }
 .planning-instruments input,.planning-instruments select { display: block; width: 100%; min-width: 0; box-sizing: border-box; padding: 8px; }
+
+.doc-repo__actions { flex-wrap: wrap; }
+.doc-repo__open {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid #0074c8;
+  border-radius: 5px;
+  color: #0074c8;
+  background: #fff;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.doc-repo__open:hover { background: #f1f5f9; }
+.doc-repo__open:focus-visible { outline: 2px solid #0074c8; outline-offset: 3px; }
+.document-row:has(> .document-access) { flex-wrap: wrap; }
+.document-access { flex-basis: 100%; width: 100%; min-width: 0; margin-top: 12px; }
+.document-access p { overflow-wrap: anywhere; }
+.document-access__attach { display: grid; gap: 6px; margin-top: 12px; }
+.document-access input { max-width: 100%; }
