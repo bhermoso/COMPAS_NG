@@ -12,7 +12,10 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
  renderWorksheet: (module: ActionPlanCatalogModule, general: CatalogGeneralObjectiveTemplate, specific: CatalogSpecificObjectiveTemplate) => ReactNode;
 }) {
  const revised = module.version === ZAIDIN_PROPOSAL_VERSION;
- const textFor = (id: string, text: string) => draft?.decisions[id]?.status === "modified" ? draft.decisions[id].text ?? text : text;
+ // Recupera el énfasis editorial solo cuando coincide exactamente con la fuente.
+ // Nunca sustituye una redacción guardada por la persona usuaria.
+ const emphasized = (text: string) => [proposalStrategicText, ...Object.values(proposalObjectiveTexts), ...proposalBlocks.map(b => b.text)].find(candidate => plainProposalText(candidate) === text) ?? text;
+ const textFor = (id: string, text: string) => draft?.decisions[id]?.status === "modified" ? draft.decisions[id].text ?? text : emphasized(text);
  function control(id: string, source: string, ancestors: string[]) {
   const decision = draft?.decisions[id];
   const excluded = excludedByAncestor(draft, ancestors);
@@ -28,16 +31,27 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
   </div>;
  }
  return <article className="workspace-panel pcm-preparation">
-  <p className="eyebrow">Preparación del Plan · borrador editable</p><h2>{module.title}</h2>
-  <p>{module.sourceLabel} · {module.sourceDate}</p>
-  <p>Selecciona y modifica los elementos para preparar tu propuesta. Estas elecciones no constituyen aprobación del Grupo Motor. Las fichas y sus actuaciones se conservan aunque excluyas un elemento.</p>
-  <p><ProposalText text={textFor(module.id, revised ? proposalStrategicText : module.strategicObjective)}/></p>
+  <header className="pcm-editorial-header">
+   <p className="eyebrow">Preparación del Plan · borrador editable</p>
+   <h2>{module.title}</h2>
+   <p className="pcm-provenance">{module.sourceLabel}<br /><span>Versión de referencia · {module.sourceDate}</span></p>
+  </header>
+  <aside className="pcm-guidance" aria-label="Cómo revisar la propuesta">
+   <p><strong>Cómo revisar la propuesta</strong></p>
+   <p>Selecciona y modifica los elementos para preparar tu propuesta.</p>
+   <p>Estas elecciones <strong>no constituyen aprobación del Grupo Motor</strong>.</p>
+   <p>Las fichas y sus actuaciones <strong>se conservan aunque excluyas un elemento</strong>.</p>
+  </aside>
+  <section className="pcm-strategic" aria-label="Objetivo estratégico propuesto">
+   <h3>Objetivo estratégico propuesto</h3>
+   <p><ProposalText text={textFor(module.id, revised ? proposalStrategicText : module.strategicObjective)}/></p>
+  </section>
   {control(module.id, module.strategicObjective, [])}
   {module.generalObjectives.map(general => {
-   const block = revised ? proposalBlocks.find(b => b.code === general.code) : undefined;
+   const block = proposalBlocks.find(b => b.code === general.code);
    return <details className="pcm-general" key={general.code} open>
     <summary>{block?.name ?? `${general.code} · ${textFor(general.code, general.title)}`}</summary>
-    <p><ProposalText text={textFor(general.code, block?.text ?? general.title)}/></p>
+    <p><ProposalText text={textFor(general.code, (revised ? block?.text : undefined) ?? general.title)}/></p>
     {control(general.code, general.title, [module.id])}
     {general.specificObjectives.map(specific => {
      const indicator = specific.indicator;

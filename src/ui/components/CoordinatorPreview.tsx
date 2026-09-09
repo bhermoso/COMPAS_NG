@@ -1,23 +1,16 @@
 import { useState } from 'react';
 import './CoordinatorPreview.css';
+import { PlanningInstrumentCatalog } from './PlanningInstrumentCatalog';
 import { PlanPreparationPanel } from './PlanPreparationPanel';
 import { ZAIDIN_AGING_PROPOSAL, type PlanPreparationDraft } from '../../domain/action-plan-catalog/PlanPreparationDraft';
 
-// Copia editorial de prueba: no modifica el catálogo ni los expedientes existentes.
-const coordinatorProposal = (() => {
-  const module = structuredClone(ZAIDIN_AGING_PROPOSAL);
-  module.version = 'coordinacion-zaidin-propuesta-v1';
-  module.sourceLabel = 'Propuesta de coordinación · revisión de autonomía y participación';
-  const autonomy = module.generalObjectives.find(g => g.code === 'ENV-B-autonomia')!;
-  const participation = module.generalObjectives.find(g => g.code === 'ENV-B-participacion')!;
-  const accessibility = autonomy.specificObjectives.filter(o => ['ENV-OE8.1', 'ENV-OE8.2'].includes(o.code));
-  autonomy.specificObjectives = autonomy.specificObjectives.filter(o => !accessibility.includes(o));
-  participation.specificObjectives = [...participation.specificObjectives.slice(0, 2), ...accessibility, ...participation.specificObjectives.slice(2)];
-  autonomy.title = 'Preservar y fortalecer la autonomía de las personas mayores para decidir y desarrollar su vida cotidiana, sus relaciones y su participación en la comunidad, contando con los apoyos que necesiten, y promover su bienestar emocional.';
-  autonomy.specificObjectives.find(o => o.code === 'ENV-OE1.1')!.title = 'Mantener y fortalecer la autonomía de las personas mayores participantes para decidir y desarrollar su vida cotidiana, sus relaciones y su participación comunitaria, con los apoyos que necesiten.';
-  participation.title = 'Incrementar la participación significativa y el protagonismo de las personas mayores en la comunidad, reduciendo las barreras de accesibilidad a los recursos, servicios y actividades comunitarias y la brecha digital, y fortaleciendo la coordinación comunitaria.';
-  return module;
-})();
+// Misma propuesta editorial; almacenamiento de demostración separado.
+// Se conserva esta versión de contenedor para recuperar las descargas anteriores.
+const coordinatorProposal = {
+  ...ZAIDIN_AGING_PROPOSAL,
+  version: 'coordinacion-zaidin-propuesta-v1',
+  sourceLabel: 'Propuesta de coordinación · revisión de autonomía y participación',
+};
 
 const DRAFT_KEY = 'compas-ng:demo:coordinacion-zaidin:v1';
 function parseDraft(raw: string): PlanPreparationDraft {
@@ -114,7 +107,7 @@ export default function CoordinatorPreview() {
             <PlanPreparationPanel module={coordinatorProposal} municipalityId="demo-coordinacion-zaidin" draft={draft} onChange={saveDraft}
               persistenceMessage={message}
               renderWorksheet={() => <p className="coord-muted">La ficha de recogida y las aportaciones de agentes se conectarán en una entrega posterior.</p>} />
-          </> : <ul className="coord-cards">{current.items.map(item => <li key={item}>{item}</li>)}</ul>}
+          </> : section === 'Instrumentos y encuestas' ? <PlanningInstrumentCatalog /> : <ul className="coord-cards">{current.items.map(item => <li key={item}>{item}</li>)}</ul>}
           <p className="coord-muted">{current.detail}</p>
         </section>
       </div>

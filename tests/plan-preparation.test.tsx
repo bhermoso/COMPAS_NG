@@ -14,11 +14,23 @@ describe("Preparación independiente del Plan", () => {
  it("reagrupa los 18 objetivos sin cambiar indicadores ni catálogo original", () => {
  const original = HEALTHY_AGING_MODULE.generalObjectives.flatMap(g => g.specificObjectives);
  const next = ZAIDIN_AGING_PROPOSAL.generalObjectives.flatMap(g => g.specificObjectives);
- expect(ZAIDIN_AGING_PROPOSAL.generalObjectives.map(g => g.specificObjectives.length)).toEqual([2,7,4,5]);
+ expect(ZAIDIN_AGING_PROPOSAL.generalObjectives.map(g => g.specificObjectives.length)).toEqual([2,7,2,7]);
  expect(next.map(o => o.code).sort()).toEqual(original.map(o => o.code).sort());
  for (const o of next) expect(o.indicator).toEqual(original.find(x => x.code === o.code)!.indicator);
  expect(HEALTHY_AGING_MODULE.generalObjectives).toHaveLength(9);
  expect(ZAIDIN_AGING_PROPOSAL.generalObjectives[3].specificObjectives.map(o => o.code)).toContain("ENV-OE9.1");
+ });
+ it("conserva el borrador anterior y avisa de la revisión editorial", () => {
+ const previous = {...draft, version: "zaidin-4-bloques-2026-09-09", decisions: {"ENV-OE1.1": {status: "modified" as const, sourceText: "Autonomía funcional anterior", text: "Redacción propia que debe conservarse"}}};
+ const before = JSON.stringify(previous);
+ const html = renderToStaticMarkup(<PlanPreparationPanel module={ZAIDIN_AGING_PROPOSAL} municipalityId={draft.municipalityId} draft={previous} onChange={() => {}} renderWorksheet={() => null}/>);
+ expect(html).toContain("Redacción propia que debe conservarse");
+ expect(html).toContain("La propuesta cambió");
+ expect(JSON.stringify(previous)).toBe(before);
+ const participation = ZAIDIN_AGING_PROPOSAL.generalObjectives.find(g => g.code === "ENV-B-participacion")!;
+ expect(participation.specificObjectives.map(o => o.code)).toEqual(expect.arrayContaining(["ENV-OE8.1", "ENV-OE8.2", "ENV-OE9.1", "ENV-OE9.2"]));
+ expect(html).toContain("Objetivo estratégico propuesto");
+ expect(html).toContain("<strong>envejecimiento saludable</strong>");
  });
  it("persiste decisiones sin crear evidencia ni revisiones formales", () => {
  const workspace = createCompleteMunicipalityWorkspace({id: draft.municipalityId, name: "Prueba"});

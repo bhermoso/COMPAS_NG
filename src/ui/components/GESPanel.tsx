@@ -8,6 +8,7 @@
  *   - QuestionnaireProject (persistido en workspace.questionnaireProjects)
  */
 
+import { CollectionPreparation, COLLECTION_PREPARATION_KEY } from "./CollectionPreparation";
 import { useState, useMemo } from "react";
 import type {
   QuestionnaireProject,
@@ -127,6 +128,7 @@ const EMPTY_FORM: FormState = { name: "", description: "", modules: [], blocks: 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface GESPanelProps {
+  onPreparationDirtyChange?: (dirty: boolean) => void;
   projects:                      QuestionnaireProject[];
   projectDatasetImports?:        ProjectDatasetImport[];
   municipalityName?:             string;
@@ -141,7 +143,8 @@ interface GESPanelProps {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function GESPanel({
-  projects,
+  projects: allProjects,
+  onPreparationDirtyChange,
   projectDatasetImports,
   municipalityName,
   onAddProject,
@@ -151,6 +154,8 @@ export function GESPanel({
   isImportingProjectDataset,
   importProjectDatasetMessage,
 }: GESPanelProps) {
+  const preparations = allProjects.filter(p => p.metadata?.[COLLECTION_PREPARATION_KEY]);
+  const projects = allProjects.filter(p => !p.metadata?.[COLLECTION_PREPARATION_KEY]);
   const [section,    setSection]    = useState<GESSection>("projects");
   const [projView,   setProjView]   = useState<ProjectView>("list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -299,6 +304,7 @@ export function GESPanel({
 
   return (
     <section className="workspace-panel">
+      <CollectionPreparation onDirtyChange={onPreparationDirtyChange} projects={preparations} onSave={project => allProjects.some(p => p.id === project.id) ? onUpdateProject(project) : onAddProject(project)} />
 
       {/* Cabecera */}
       <div className="panel-header">
