@@ -5,7 +5,8 @@ import { excludedByAncestor, plainProposalText, proposalBlocks, proposalObjectiv
 export function ProposalText({text}: {text: string}) {
   return <>{text.split(/(\*\*.*?\*\*)/g).map((part, i) => part.startsWith("**") ? <strong key={i}>{part.slice(2,-2)}</strong> : part)}</>;
 }
-export function PlanPreparationPanel({module, municipalityId, draft, onChange, renderWorksheet}: {
+export function PlanPreparationPanel({module, municipalityId, draft, onChange, renderWorksheet, persistenceMessage}: {
+ persistenceMessage?: string;
  module: ActionPlanCatalogModule; municipalityId: string; draft?: PlanPreparationDraft;
  onChange: (draft: PlanPreparationDraft) => void;
  renderWorksheet: (module: ActionPlanCatalogModule, general: CatalogGeneralObjectiveTemplate, specific: CatalogSpecificObjectiveTemplate) => ReactNode;
@@ -57,6 +58,6 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
     })}
    </details>;
   })}
-  <p role="status">{draft ? "Borrador guardado en este navegador. Para cambiar de equipo, conserva y traslada el expediente." : "Sin elecciones guardadas. Los cambios se guardan en este navegador."}</p>
+  <p role="status">{persistenceMessage ?? (draft ? "Borrador guardado en este navegador. Para cambiar de equipo, conserva y traslada el expediente." : "Sin elecciones guardadas. Los cambios se guardan en este navegador.")}</p>
  </article>;
 }
