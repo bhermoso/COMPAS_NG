@@ -1,3 +1,5 @@
+import { PlanPreparationPanel } from "./PlanPreparationPanel";
+import { ZAIDIN_AGING_PROPOSAL, type PlanPreparationDraft } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 import { useState, type ReactNode } from "react";
 import { IndicatorWorksheetEditor } from "./IndicatorWorksheetEditor";
 import { worksheetKey, type IndicatorWorksheet, type WorksheetContext } from "../../domain/action-plan-catalog/IndicatorWorksheet";
@@ -16,6 +18,8 @@ import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
 
 interface ActionPlanCatalogPanelProps {
   municipalityId: string;
+  drafts?: PlanPreparationDraft[];
+  onDraftChange?: (draft: PlanPreparationDraft) => void;
   lectura?: LecturaEstrategicaLocal;
   selection?: DeliberativePrioritySelection;
   eligibleModules: EligibleActionPlanModule[];
@@ -259,10 +263,10 @@ function AvailableModule({ module, renderWorksheet }: { module: ActionPlanCatalo
 }
 
 export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
-  const renderWorksheet: RenderWorksheet = (module, general, specific) => {
+  const worksheetRenderer = (preparation: boolean): RenderWorksheet => (module, general, specific) => {
     const eligible = props.eligibleModules.find((item) => item.module.id === module.id);
     const review = props.reviews.find((item) => item.moduleId === module.id);
-    const current = review && eligible && props.lectura && props.selection &&
+    const current = !preparation && review && review.moduleVersion === module.version && eligible && props.lectura && props.selection &&
       !isModuleReviewStale(review, eligible, props.lectura, props.selection);
     const decisions = current ? review.decisions : [];
     const title = (id: string, original: string) => {
@@ -286,17 +290,25 @@ export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
       sheet={props.worksheets.find((sheet) => worksheetKey(sheet.context) === worksheetKey(context))}
       onChange={props.onWorksheetChange} />;
   };
+  const renderWorksheet = worksheetRenderer(false);
   return (
     <div className="pcm-root">
       <section className="workspace-panel pcm-catalog-header">
         <p className="eyebrow">Catálogo RELAS de Plan de Acción</p>
         <h2>Líneas estratégicas disponibles</h2>
         <p className="panel-note">
-          Consulta las líneas, objetivos e indicadores documentados. Verlos no los incorpora al Plan:
+          Prepara tu selección de líneas, objetivos e indicadores en el borrador. La aprobación formal es posterior:
           la revisión se habilita solo cuando el Grupo Motor relaciona una línea con una prioridad seleccionada.
           Cada indicador dispone de una ficha cumplimentable con actuaciones y entregas de datos, preparable como borrador.
         </p>
       </section>
+      {props.onDraftChange && ACTION_PLAN_CATALOG.map(original => {
+        const module = props.municipalityId === "granada-zaidin" && original.id === ZAIDIN_AGING_PROPOSAL.id ? ZAIDIN_AGING_PROPOSAL : original;
+        return <PlanPreparationPanel key={`${props.municipalityId}-${module.id}`} municipalityId={props.municipalityId} module={module}
+          draft={props.drafts?.find(d => d.moduleId === module.id && d.municipalityId === props.municipalityId)} onChange={props.onDraftChange!} renderWorksheet={worksheetRenderer(true)}/>;
+      })}
+      <details><summary>Revisión formal y catálogo original · versión 3.1</summary>
+      <p>Las decisiones anteriores se conservan. La propuesta de cuatro bloques requiere su propia revisión; no hereda la aprobación del catálogo original.</p>
       {ACTION_PLAN_CATALOG.map((module) => {
         const eligible = props.eligibleModules.find((candidate) => candidate.module.id === module.id);
         return eligible != null && props.selection != null && props.lectura != null ? (
@@ -312,6 +324,7 @@ export function ActionPlanCatalogPanel(props: ActionPlanCatalogPanelProps) {
           />
         ) : <AvailableModule key={module.id} module={module} renderWorksheet={renderWorksheet} />;
       })}
+      </details>
     </div>
   );
 }
