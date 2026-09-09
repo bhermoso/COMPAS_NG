@@ -1,3 +1,4 @@
+import { saveOriginalFile, deleteOriginalFile } from './infrastructure/document-files/originalFiles';
 import type { PlanPreparationDraft } from "./domain/action-plan-catalog/PlanPreparationDraft";
 import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -841,6 +842,7 @@ export default function App() {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       // Normalizar título: quitar extensión y convertir guiones/subrayados a espacios
       const rawName = file.name
         .replace(/\.(docx?|pdf)$/i, "")
@@ -896,7 +898,7 @@ export default function App() {
       setLastHealthReportMessage(
         "Informe de Salud registrado como fuente diagnóstica primaria. " +
         "Preservado en el Repositorio documental. " +
-        "Para consultarlo, abre el fichero original."
+        "Puedes descargar el original desde el catálogo completo de documentos de este navegador."
       );
     } catch (err) {
       console.error("[health-report-load-error]", err);
@@ -953,6 +955,9 @@ export default function App() {
           return;
         }
 
+        const documentId = crypto.randomUUID();
+        await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
+
         // La ingesta se calcula DENTRO del actualizador funcional, sobre prev:
         // tras los await, el workspace capturado por cierre puede estar obsoleto
         // y fusionarlo pisaría cambios intermedios de repositorio/evidencia.
@@ -987,6 +992,7 @@ export default function App() {
             plainText,
             sourceFileName: file.name,
             sourceSystem: "Archivo DOCX cargado",
+            documentId,
           });
 
           if (result === null) return prev;
@@ -1011,6 +1017,7 @@ export default function App() {
         // El id se genera fuera para que sea estable; el repositorio se
         // deriva de prev dentro del actualizador (mismo motivo que en DOCX).
         const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
         setWorkspace((prev) => {
           // Un marco estratégico recargado sustituye a su versión anterior
           // (mismo fichero o mismo título): nunca se duplica.
@@ -1085,6 +1092,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseIBSECSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createIBSEStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1152,6 +1160,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseDUKECSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createDUKEStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1223,6 +1232,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parsePREDIMEDCSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createPREDIMEDStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1294,6 +1304,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseSF12CSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createSF12Study({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1365,6 +1376,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseSuenoCSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createSuenoStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1436,6 +1448,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseCAGECSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createCAGEStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1507,6 +1520,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseAUDITCCSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createAUDITCStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1578,6 +1592,7 @@ export default function App() {
       const text = await file.text();
       const { aggregates, methodologicalCautions, warnings } = parseIPAQCSV(text);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createIPAQStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1654,6 +1669,7 @@ export default function App() {
         return;
       }
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createGHQ12Study({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1727,6 +1743,7 @@ export default function App() {
         return;
       }
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createPHQ9Study({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1780,6 +1797,7 @@ export default function App() {
         return;
       }
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createPSQIStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1833,6 +1851,7 @@ export default function App() {
         return;
       }
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createFagerstromStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -1886,6 +1905,7 @@ export default function App() {
         return;
       }
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study = createSBQStudy({
         municipalityId: workspace.municipality.identity.id,
         sourceFileName: file.name,
@@ -2013,6 +2033,7 @@ export default function App() {
       const text = await file.text();
       const { partialStudy, warnings } = parseThematicPrioritisationCSV(text, file.name);
       const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       const study: ThematicPrioritisationStudy = {
         ...partialStudy,
         municipalityId: workspace.municipality.identity.id,
@@ -2140,6 +2161,8 @@ export default function App() {
         project.id,
         project.name,
       );
+      const documentId = crypto.randomUUID();
+      await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
       setWorkspace((prev) => {
         let next = { ...prev };
         for (const study of result.succeeded) {
@@ -2147,6 +2170,11 @@ export default function App() {
         }
         return {
           ...next,
+          repository: addMunicipalDocument(next.repository, {
+            id: documentId, kind: 'redcap-export', title: file.name,
+            sourceFileName: file.name, source: {system: 'Datos importados desde el gestor de encuestas'},
+            canGenerateEvidence: false, tags: ['project-dataset'],
+          }),
           projectDatasetImports: [...(next.projectDatasetImports ?? []), result.metadata],
           updatedAt: new Date().toISOString(),
         };
@@ -2172,6 +2200,9 @@ export default function App() {
   }
 
   function handleDeleteDocument(documentId: string) {
+    void deleteOriginalFile(workspace.municipality.identity.id, documentId).catch(error => {
+      window.alert('El registro se ha eliminado, pero no se pudo borrar su archivo original: ' + (error as Error).message);
+    });
     const deletedDocument = workspace.repository.documents.find((d) => d.id === documentId);
 
     setLastProcessedDocument((prev) => (prev?.id === documentId ? null : prev));

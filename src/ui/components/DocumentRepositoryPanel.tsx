@@ -3,6 +3,7 @@ import type {
   MunicipalDocument,
   MunicipalDocumentRepository,
 } from "../../domain/repository";
+import { DocumentAccess } from './DocumentAccess';
 
 const KIND_LABEL: Record<DocumentKind, string> = {
   "health-report": "Informe de Salud",
@@ -134,7 +135,7 @@ function DocumentRow({
       </div>
       <div className="doc-repo__actions">
         <span className="status-pill">
-          {STATUS_LABEL[document.status] ?? document.status}
+          {document.status === 'uploaded' ? 'Registrado' : STATUS_LABEL[document.status] ?? document.status}
         </span>
         {onDelete && (
           <button
@@ -154,6 +155,7 @@ function DocumentRow({
           </button>
         )}
       </div>
+      <DocumentAccess document={document} />
     </article>
   );
 }
@@ -173,6 +175,14 @@ export function DocumentRepositoryPanel({ repository, onDelete }: DocumentReposi
 
   return (
     <>
+      <section className="workspace-panel">
+        <h2>Todos los documentos del expediente</h2>
+        <p>Consulta los originales, el texto conservado y las referencias de todas las categorías. <strong>Registrar un documento no implica conservar su archivo ni aprobarlo.</strong></p>
+        <p>Los archivos que incorpores se conservan en este navegador. <strong>La exportación JSON no incluye los originales:</strong> descárgalos también si vas a trabajar en otro equipo.</p>
+        <details><summary>Abrir catálogo completo · {repository.documents.length} documentos</summary>
+          <div className="document-list">{repository.documents.map(document=><DocumentRow key={document.id} document={document} onDelete={onDelete}/>)}</div>
+        </details>
+      </section>
       <section className="workspace-panel">
         <div className="panel-header">
           <div>
