@@ -10324,3 +10324,27 @@ h3 {
 .indicator-worksheet__footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border-top: 1px solid #cedcdf; padding-top: 14px; }
 .indicator-worksheet__footer span { font-size: .75rem; color: #526070; }
 @media (max-width: 800px) { .indicator-worksheet__fields { grid-template-columns: 1fr; } }
+
+/* Jerarquía editorial del borrador: procedencia, orientación y objetivo. */
+.pcm-preparation .pcm-editorial-header { margin-bottom: 24px; }
+.pcm-preparation .pcm-editorial-header h2 { margin: 8px 0 16px; }
+.pcm-preparation .pcm-provenance { color: #64748b; font-size: 14px; line-height: 1.6; }
+.pcm-preparation .pcm-guidance { margin: 24px 0; padding: 16px 20px; border-left: 3px solid #0074c8; background: #f8fafc; }
+.pcm-preparation .pcm-guidance p + p { margin-top: 10px; }
+.pcm-preparation .pcm-strategic { padding: 24px 0; margin: 0 0 16px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+.pcm-preparation .pcm-strategic h3 { margin: 0 0 16px; color: #0074c8; font-size: 18px; }
+.pcm-preparation .pcm-strategic p { line-height: 1.8; max-width: 70ch; }
+.pcm-preparation .pcm-strategic strong { font-weight: 700; color: #1e293b; }
+.pcm-preparation .pcm-general > p { margin: 16px 0 24px; line-height: 1.7; }
+.pcm-preparation .pcm-specific > h3 { margin: 16px 0 12px; }
+.pcm-preparation .pcm-specific > p { margin-bottom: 20px; line-height: 1.7; }
+
+.planning-instruments { margin: 24px 0; padding: 16px; border: 1px solid #e2e8f0; background: #fff; text-align: left; }
+.planning-instruments summary { color: #0074c8; font-weight: 600; cursor: pointer; }
+.planning-instruments p { margin: 12px 0; line-height: 1.65; }
+.planning-instruments ul { list-style: none; padding: 0; }
+.planning-instruments li { border-top: 1px solid #e2e8f0; padding: 18px 0; }
+.planning-instruments h4 { margin: 0 0 12px; }
+.planning-instruments__filters { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit,minmax(min(100%,200px),1fr)); }
+.planning-instruments label { display: block; min-width: 0; }
+.planning-instruments input,.planning-instruments select { display: block; width: 100%; min-width: 0; box-sizing: border-box; padding: 8px; }

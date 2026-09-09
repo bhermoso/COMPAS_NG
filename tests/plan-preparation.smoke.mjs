@@ -20,6 +20,9 @@ try{
  await panel.getByLabel('Selección de borrador ENV-I5.1',{exact:true}).selectOption('modified');
  await panel.getByLabel('Nueva redacción · ENV-I5.1',{exact:true}).fill('INDICADOR SOLO DE PRUEBA');
  const sheet=ind.locator('.indicator-worksheet');await sheet.locator(':scope > summary').click();
+ await sheet.locator('.planning-instruments > summary').click();
+ await sheet.getByRole('button',{name:'Añadir como opción pendiente a la ficha · CENVE',exact:true}).click();
+ assert.match(await sheet.locator('label').filter({has:page.locator('span').filter({hasText:/^Instrumento o registro, versión y procedimiento de recogida$/})}).locator('textarea').inputValue(),/CENVE/);
  await sheet.getByLabel('Persona y entidad responsables de consolidar el indicador',{exact:true}).fill('RESPONSABLE SOLO DE PRUEBA');
  await sheet.getByRole('button',{name:'Añadir actuación vinculada',exact:true}).click();
  await sheet.getByLabel('Nombre de la actuación o programa',{exact:true}).fill('ACTUACIÓN SOLO DE PRUEBA');
@@ -32,6 +35,7 @@ try{
  await panel.locator('.pcm-specific').first().locator('.pcm-sheet > summary').click();
  assert.equal(await panel.getByLabel('Nueva redacción · ENV-I5.1',{exact:true}).inputValue(),'INDICADOR SOLO DE PRUEBA');
  const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('compas-ng:workspace:granada-zaidin')));
+ assert.match(after.indicatorWorksheets[0].values.instrument,/CENVE/);
  assert.equal(after.indicatorWorksheets[0].actions[0].values.name,'ACTUACIÓN SOLO DE PRUEBA');
  assert.equal(after.indicatorWorksheets[0].values.owner,'RESPONSABLE SOLO DE PRUEBA');
  assert.deepEqual(after.evidenceStore,before.evidenceStore);assert.deepEqual(after.actionPlanModuleReviews,before.actionPlanModuleReviews);

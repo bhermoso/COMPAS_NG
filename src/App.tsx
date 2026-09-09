@@ -318,7 +318,16 @@ function attachDocumentIdToAtoms(
 // ── Componente principal ─────────────────────────────────────
 
 export default function App() {
-  const [view, setView] = useState<AppView>("inicio");
+  const [view, setViewState] = useState<AppView>("inicio");
+  const preparationDirtyRef = useRef(false);
+  const onPreparationDirtyChange = useCallback((dirty: boolean) => { preparationDirtyRef.current = dirty; }, []);
+  function canLeavePreparation() {
+    return !preparationDirtyRef.current || window.confirm("Hay cambios sin guardar en la propuesta de recogida. ¿Quieres descartarlos y continuar?");
+  }
+  function setView(next: AppView) {
+    if (next === view || !canLeavePreparation()) return;
+    setViewState(next);
+  }
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
   const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
 
@@ -2386,6 +2395,7 @@ export default function App() {
     municipalityId: string,
     input: CreateMunicipalityContextInput
   ) {
+    if (!canLeavePreparation()) return;
     const nextWorkspaceLoad = loadOrCreateMunicipalityWorkspace(municipalityId, input);
     // `backfill-marker` se aplica de forma síncrona (local); `download-and-merge`
     // viaja en `pendingMigration` y lo resuelve el efecto asíncrono.
@@ -3350,6 +3360,8 @@ export default function App() {
         {/* ── Gestor de Encuestas de Salud (GES) */}
         {view === "ges" && (
           <GESPanel
+            key={municipality.id}
+            onPreparationDirtyChange={onPreparationDirtyChange}
             projects={workspace.questionnaireProjects ?? []}
             projectDatasetImports={workspace.projectDatasetImports}
             municipalityName={municipality.name}

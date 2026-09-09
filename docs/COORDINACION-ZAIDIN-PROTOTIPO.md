@@ -35,9 +35,9 @@ separadores. Los seis colores no se asignan a los cuatro ejes del plan.
 
 ## Recorrido editable
 
-El Plan de Acción reutiliza PlanPreparationPanel con 41 controles. La copia de
-propuesta de coordinación traslada OE8.1/OE8.2 a Participación y ofrece la
-redacción ampliada de autonomía para revisión. No cambia el catálogo original.
+El Plan de Acción reutiliza PlanPreparationPanel con 41 controles. La propuesta compartida con el editor habitual traslada OE8.1/OE8.2 a
+Participación y ofrece la redacción ampliada de autonomía para revisión.
+El catálogo formal original 3.1 permanece intacto.
 Las decisiones se guardan en una clave exclusiva de demostración del navegador
 (`compas-ng:demo:coordinacion-zaidin:v1`), y se recuperan al recargar.
 Se pueden descargar y recuperar en JSON, con validación de ámbito, versión e
@@ -45,3 +45,14 @@ identificadores y confirmación antes de sustituir el borrador. Si falla el
 almacenamiento se informa y se ofrece la descarga. No existe guardado remoto ni transferencia al expediente municipal.
 Las fichas de recogida aún no están conectadas. Los indicadores originales
 se muestran explícitamente pendientes de revisión metodológica.
+
+## Consolidación editorial
+
+La versión de propuesta `zaidin-4-bloques-2026-09-09-r2` conserva los
+identificadores de objetivos, indicadores y fichas. Las decisiones anteriores
+se recuperan por módulo y territorio; las redacciones propias no se reemplazan.
+El panel señala las decisiones que requieren revisión al cambiar la fuente.
+
+La presentación distingue procedencia, instrucciones y objetivo estratégico,
+con espacios y negritas selectivas. Se utiliza español estándar. La corrección
+«enviarlo para su aprobación» será el criterio de redacción del circuito futuro.

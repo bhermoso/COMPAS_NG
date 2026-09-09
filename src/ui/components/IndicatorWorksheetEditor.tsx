@@ -1,3 +1,4 @@
+import { PlanningInstrumentCatalog } from "./PlanningInstrumentCatalog";
 import { useState } from "react";
 import {
   actionFields, consolidationFields, createIndicatorWorksheet, indicatorFields,
@@ -19,7 +20,7 @@ function Fields({ fields, values, onChange }: {
 }) {
   return <div className="indicator-worksheet__fields">{fields.map(([key, label]) => (
     <label key={key}><span>{label}</span>
-      <textarea rows={2} value={values[key] ?? ""} placeholder="Pendiente de cumplimentar"
+      <textarea aria-label={label} rows={2} value={values[key] ?? ""} placeholder="Pendiente de cumplimentar"
         onChange={(event) => onChange({ ...values, [key]: event.target.value })} />
     </label>
   ))}</div>;
@@ -58,6 +59,10 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
         Esta ficha conserva su referencia anterior: revisa su correspondencia antes de utilizar los datos.</p>}
       <p><strong>Referencia de la ficha:</strong> {draft.context.objective}<br />{draft.context.indicator}</p>
       <p className="pcm-source">{draft.context.source} · Versión {draft.context.moduleVersion} · Unidad: {draft.context.unit}</p>
+      <PlanningInstrumentCatalog indicatorCode={context.indicatorCode} onSelect={(instrument,use) => {
+        const note = `[OPCIÓN PENDIENTE DE REVISIÓN] ${instrument.name} · ${use}. Población: ${instrument.population}. ${instrument.limitation}${instrument.reference ? ` Fuente: ${instrument.reference}` : ''}`;
+        if (!(draft.values.instrument ?? '').includes(note)) update({...draft, values:{...draft.values,instrument:[draft.values.instrument,note].filter(Boolean).join('\n\n')}});
+      }} />
       <Fields fields={indicatorFields} values={draft.values} onChange={(values) => update({ ...draft, values })} />
       <h4>Actuaciones que contribuirán al objetivo</h4>
       <p>Registra cada actuación y qué información entregará su responsable a quien consolida el indicador.

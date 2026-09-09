@@ -1,5 +1,5 @@
 import { HEALTHY_AGING_MODULE, type ActionPlanCatalogModule } from "./ActionPlanCatalog";
-export const ZAIDIN_PROPOSAL_VERSION = "zaidin-4-bloques-2026-09-09";
+export const ZAIDIN_PROPOSAL_VERSION = "zaidin-4-bloques-2026-09-09-r2";
 export const plainProposalText = (text: string) => text.replaceAll("**", "");
 export const proposalStrategicText = "**Favorecer** el **envejecimiento saludable** de las personas mayores del Zaidín mediante la **reducción del edadismo**, la **prevención y el abordaje de la soledad no deseada**, el **mantenimiento de la autonomía** y el **fortalecimiento de la participación comunitaria**.";
 export const proposalObjectiveTexts: Record<string, string> = {
@@ -12,7 +12,7 @@ export const proposalObjectiveTexts: Record<string, string> = {
   "ENV-OE6.1": "Aumentar la **capacidad de los agentes comunitarios** para **identificar y canalizar situaciones de soledad o riesgo de aislamiento social**.",
   "ENV-OE6.2": "Incrementar la **implicación de los activos comunitarios** en **actuaciones orientadas a favorecer relaciones sociales y prevenir la soledad**.",
   "ENV-OE7.2": "Mejorar la **continuidad entre la detección comunitaria, la valoración y la respuesta ante situaciones de soledad o aislamiento**.",
-  "ENV-OE1.1": "Mantener la **autonomía funcional de las personas mayores** que **participan en actuaciones de promoción de la salud**.",
+  "ENV-OE1.1": "Mantener y fortalecer la **autonomía de las personas mayores participantes para decidir y desarrollar su vida cotidiana, sus relaciones y su participación comunitaria**, con los **apoyos que necesiten**.",
   "ENV-OE1.2": "Mejorar el **bienestar emocional de las personas mayores** participantes en **intervenciones específicamente dirigidas a este fin**.",
   "ENV-OE8.1": "Reducir las **barreras de accesibilidad identificadas como prioritarias en los espacios y equipamientos comunitarios**.",
   "ENV-OE8.2": "Mejorar la **accesibilidad a los recursos y actividades comunitarias dirigidos o abiertos a las personas mayores**.",
@@ -49,21 +49,21 @@ export const proposalBlocks = [
   {
     "code": "ENV-B-autonomia",
     "name": "Autonomía",
-    "text": "Preservar la **autonomía y el bienestar de las personas mayores**, mejorando la **accesibilidad de los entornos y el acceso a los recursos comunitarios**.",
+    "text": "Preservar y fortalecer la **autonomía de las personas mayores para decidir y desarrollar su vida cotidiana, sus relaciones y su participación en la comunidad**, contando con los **apoyos que necesiten**, y promover su **bienestar emocional**.",
     "objectives": [
       "ENV-OE1.1",
-      "ENV-OE1.2",
-      "ENV-OE8.1",
-      "ENV-OE8.2"
+      "ENV-OE1.2"
     ]
   },
   {
     "code": "ENV-B-participacion",
     "name": "Participación",
-    "text": "Incrementar la participación significativa y el protagonismo de las personas mayores, **reduciendo la brecha digital y fortaleciendo la coordinación comunitaria**.",
+    "text": "Incrementar la **participación significativa** y el **protagonismo de las personas mayores en la comunidad**, reduciendo las **barreras de accesibilidad a los recursos, servicios y actividades comunitarias** y la **brecha digital**, y fortaleciendo la **coordinación comunitaria**.",
     "objectives": [
       "ENV-OE4.1",
       "ENV-OE4.2",
+      "ENV-OE8.1",
+      "ENV-OE8.2",
       "ENV-OE9.1",
       "ENV-OE9.2",
       "ENV-OE7.1"
