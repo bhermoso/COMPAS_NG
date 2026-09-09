@@ -21,7 +21,7 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
     municipalityId, moduleId: module.id, version: module.version, updatedAt: new Date().toISOString(),
     decisions: {...draft?.decisions, [id]: {status: e.target.value as NonNullable<typeof decision>["status"], sourceText: source, text: decision?.text ?? source}}
    })}><option value="pending">Pendiente</option><option value="included">Incluir</option><option value="excluded">Excluir</option><option value="modified">Modificar</option></select></label>
-   {decision?.status === "modified" && <label>Nueva redacción · {id}<textarea value={decision.text ?? source} rows={3} onChange={e => onChange({...draft!, decisions: {...draft!.decisions, [id]: {...decision, text: e.target.value}}, updatedAt: new Date().toISOString()})}/>{!decision.text?.trim() && <p role="alert">Completa la redacción; esta modificación está pendiente.</p>}</label>}
+   {decision?.status === "modified" && <label>Nueva redacción · {id}<textarea aria-label={`Nueva redacción · ${id}`} value={decision.text ?? source} rows={3} onChange={e => onChange({...draft!, decisions: {...draft!.decisions, [id]: {...decision, text: e.target.value}}, updatedAt: new Date().toISOString()})}/>{!decision.text?.trim() && <p role="alert">Completa la redacción; esta modificación está pendiente.</p>}</label>}
    {excluded && <p className="panel-note">Fuera del borrador porque un elemento superior está excluido. Se conservan la elección individual, la ficha y las actuaciones.</p>}
    {stale && <p role="status">La propuesta cambió. Se conserva tu decisión anterior; vuelve a revisarla.</p>}
   </div>;
