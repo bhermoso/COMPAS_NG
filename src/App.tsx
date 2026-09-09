@@ -1,3 +1,4 @@
+import type { PlanPreparationDraft } from "./domain/action-plan-catalog/PlanPreparationDraft";
 import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -693,6 +694,13 @@ export default function App() {
     }));
     return [];
   }, [runtime.lectura, workspace.thematicPrioritisation]);
+
+  const handlePlanPreparationChange = useCallback((draft: PlanPreparationDraft) => {
+    setWorkspace(prev => draft.municipalityId !== prev.municipality.identity.id ? prev : ({...prev,
+      planPreparationDrafts: [...(prev.planPreparationDrafts ?? []).filter(item => item.moduleId !== draft.moduleId), draft],
+      updatedAt: new Date().toISOString(),
+    }));
+  }, []);
 
   const handleIndicatorWorksheetChange = useCallback((sheet: IndicatorWorksheet) => {
     setWorkspace((prev) => {
@@ -3244,6 +3252,8 @@ export default function App() {
               selection={workspace.deliberativePrioritySelection}
               eligibleModules={runtime.eligibleActionPlanModules}
               reviews={workspace.actionPlanModuleReviews ?? []}
+              drafts={workspace.planPreparationDrafts ?? []}
+              onDraftChange={handlePlanPreparationChange}
               worksheets={workspace.indicatorWorksheets ?? []}
               onWorksheetChange={handleIndicatorWorksheetChange}
               onSave={handleSaveActionPlanModuleReview}
@@ -3266,12 +3276,11 @@ export default function App() {
             <>
               <section className="workspace-panel">
                 <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-                <h2>Plan de Acción · catálogo disponible para consulta</h2>
+                <h2>Plan de Acción · preparación del borrador</h2>
                 <div className="phase-blocked-notice">
                   <strong>Revisión municipal todavía no habilitada</strong>
                   <p>
-                    Puedes examinar las líneas, sus objetivos y sus indicadores. Para aceptar,
-                    rechazar o modificar elementos se requiere un Perfil de Salud Local validado
+                    Puedes preparar y guardar tu selección de líneas, objetivos e indicadores como borrador. Para la revisión formal se requiere un Perfil de Salud Local validado
                     y vigente, su Lectura Estratégica Local y la selección expresa del Grupo Motor.
                   </p>
                 </div>
@@ -3280,6 +3289,8 @@ export default function App() {
                 municipalityId={workspace.municipality.identity.id}
                 eligibleModules={[]}
                 reviews={workspace.actionPlanModuleReviews ?? []}
+              drafts={workspace.planPreparationDrafts ?? []}
+              onDraftChange={handlePlanPreparationChange}
               worksheets={workspace.indicatorWorksheets ?? []}
               onWorksheetChange={handleIndicatorWorksheetChange}
                 onSave={handleSaveActionPlanModuleReview}

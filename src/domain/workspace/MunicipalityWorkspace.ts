@@ -1,3 +1,4 @@
+import type { PlanPreparationDraft } from "../action-plan-catalog/PlanPreparationDraft";
 import type { IndicatorWorksheet } from "../action-plan-catalog/IndicatorWorksheet";
 import type { MunicipalityContext } from "../municipality";
 import type { MunicipalDocumentRepository } from "../repository";
@@ -78,6 +79,7 @@ export interface MunicipalityWorkspace {
    */
   actionPlanModuleReviews?: MunicipalActionPlanModuleReview[];
   /** Human-authored collection sheets; drafts, never diagnostic evidence or approvals. */
+  planPreparationDrafts?: PlanPreparationDraft[];
   indicatorWorksheets?: IndicatorWorksheet[];
   /**
    * Historial de snapshots del Estado Territorial Evolutivo.

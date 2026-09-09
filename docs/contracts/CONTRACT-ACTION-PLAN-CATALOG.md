@@ -75,3 +75,18 @@ fuente, desagregaciones, línea base, meta y responsable del dato.
 El catálogo no inventa actuaciones ni asigna responsables, plazos, recursos,
 presupuestos o compromisos institucionales. Estas decisiones pertenecen al
 municipio y son posteriores a PA-RELAS-02.
+
+## 7. Preparación editable previa — actualización autorizada 2026-09-09
+
+La preparación de un borrador puede realizarse antes de la elegibilidad formal.
+Se guarda separadamente en `planPreparationDrafts`, por municipio y módulo, y no
+alimenta la selección deliberativa, el PAI ni las revisiones formales. Permite
+incluir, excluir, modificar o dejar pendientes elementos. Excluir un ascendiente
+retira sus descendientes del borrador sin borrar sus decisiones, fichas o actuaciones.
+
+Para El Zaidín se presenta la propuesta editorial 92418 en cuatro bloques, con los
+18 códigos específicos y sus indicadores originales. El catálogo 3.1 y sus
+revisiones se conservan como referencia formal anterior. No se traslada aprobación
+entre versiones ni se aplica esta redacción local a otros municipios. La adopción
+formal de la nueva versión requiere una integración posterior explícita; esta
+entrega habilita preparación y revisión metodológica, no aprobación automática.
