@@ -1,47 +1,44 @@
-# Administración general y accesos territoriales
+# Administración general y accesos por plan
 
-## Condición del titular
+Blas es el administrador general de todo COMPAS. Las asignaciones de responsables nunca deben limitar sus permisos ni permitir la eliminación de su administración general.
 
-COMPAS debe utilizar exclusivamente capacidades gratuitas. No incorporar integraciones que requieran ampliar el plan, introducir medios de cobro o aceptar cargos. Si una función no puede prestarse bajo esta condición, explicarlo antes de implementarla.
+## Entrada y alcance
 
-Blas es el administrador general. Los permisos territoriales de otras cuentas no pueden limitarle.
+COMPAS sigue abriendo directamente en la URL principal. El enlace **Administración** abre el panel en otra pestaña, sin desmontar el trabajo abierto. La gestión de cuentas requiere identificar la cuenta administradora mediante correo/contraseña de Firebase o Google. Esta comprobación de identidad no es una restricción territorial.
 
-## Implementación preparada
+El administrador se reconoce mediante `compas_admins/UID` con `active: true`. Ese registro solo se modifica desde la consola propietaria; ninguna cuenta web puede modificarlo, ni siquiera el propio administrador. No hay excepciones de permisos por UID o correo incluidas en JavaScript.
 
-- Entrada personal y panel de administración general.
-- Acceso del titular al COMPAS completo y a los borradores compartidos de cualquier ámbito.
-- Cuentas parciales limitadas a sus ámbitos y al rol de coordinación o consulta.
-- Enlaces explícitos a la consola propietaria de Firebase para crear cuentas, cambiar contraseñas y asignar permisos.
+## Alta de responsables desde el panel
 
-La creación automática de cuentas y la generación de claves dentro del panel no están implementadas. No se muestran botones que simulen esas funciones.
+1. Elegir el plan, inicialmente Granada · Zaidín.
+2. Indicar el correo de la persona responsable, que será su usuario.
+3. Elegir coordinación o consulta.
+4. Crear usuario, contraseña y acceso.
+5. Guardar las credenciales generadas y entregarlas al responsable por el canal elegido por el administrador. COMPAS no envía mensajes automáticamente.
 
-## Autorización general
+La cuenta nueva se crea mediante una instancia separada de Firebase Authentication, exclusivamente en memoria, que no sustituye la sesión del administrador. La contraseña aleatoria solo se mantiene en pantalla durante la sesión; no se guarda en Firestore, archivos, registros ni almacenamiento local.
 
-El documento `compas_admins/UID_DEL_TITULAR` con `active` booleano `true` concede administración general. Es independiente de las membresías territoriales y solo se modifica desde la consola propietaria. Ninguna cuenta web, incluida la general, puede eliminar o modificar ese documento mediante las reglas de la aplicación.
+La asignación y el registro de acceso se guardan juntos en una operación atómica de Firestore. Si el alta de Authentication termina pero falla la asignación, se muestra **Cuenta creada: permiso pendiente** y se permite reintentar sin duplicar la cuenta. No se anuncia acceso concedido hasta confirmar la escritura. Si se abandona la pantalla en ese estado, la cuenta puede revisarse o recuperarse desde la consola.
 
-No se incluyen excepciones por UID o correo en JavaScript. Las reglas del servidor deciden el acceso. La cuenta propietaria de Google/Firebase proporciona una vía de recuperación independiente del inicio de sesión en COMPAS.
+Cada cuenta creada desde el panel tiene un plan asignado. La lista permite retirar y reactivar ese acceso, conservando borradores e historial. Las cuentas o asignaciones anteriores no aparecen automáticamente en este registro. Si un correo ya existe, no se sobrescribe su contraseña ni se reasignan sus permisos.
 
-## Gestión de accesos
+## Capacidades y límites de datos
 
-1. Crear la cuenta en Authentication de Firebase y copiar su UID.
-2. En Firestore, crear `relas_memberships/UID/scopes/ID_DEL_AMBITO`.
-3. Campos: `active` booleano `true`, `role` texto `coordinator` o `reader`.
-4. Para revocar ese ámbito, cambiar `active` a `false`. Para retirar el acceso a todos los ámbitos, desactivar todas sus asignaciones y suspender la cuenta en Authentication.
-5. Gestionar la contraseña desde Authentication. No guardar contraseñas en el repositorio ni en documentos Firestore.
+El responsable accede al espacio compartido de su plan; coordinación puede editar borradores y consulta solo puede leerlos. Estos permisos no constituyen aprobación del administrador ni del Grupo Motor.
 
-El rol territorial histórico `administrator` no equivale a administración general.
+El espacio territorial actual incluye el borrador compartido y su historial. No se han migrado automáticamente a Firebase todos los perfiles, indicadores ni documentos locales. Los archivos incluidos en el repositorio público y en la web continúan siendo públicos: las reglas territoriales protegen los datos compartidos de Firestore y no convierten esos archivos en privados.
 
-## Activación pendiente
+La creación, revocación y reactivación utilizan los servicios existentes de Authentication y Firestore. No se incorporan Cloud Functions, planes de suscripción ni servicios que requieran ampliar el plan o aceptar cargos.
 
-Antes de sustituir la portada publicada, crear el documento global del titular, publicar las reglas actualizadas de Firestore y superar las pruebas de permisos. Después comprobar su entrada al panel y al COMPAS completo. La interfaz preparada no debe desplegarse antes de asegurar esa entrada.
+## Activación de reglas
 
-## Datos y conservación
+El usuario confirmó la creación del registro general y la publicación de las reglas anteriores. Aquellas reglas permitían trabajar con borradores pero prohibían crear asignaciones desde la web. La nueva gestión requiere publicar la versión de `firebase/firestore.rules` incluida con este panel. El código no puede publicar reglas ni elevar permisos por sí mismo.
 
-Los datos locales de los navegadores no se trasladan automáticamente a Firebase. Los archivos ya publicados en GitHub siguen siendo públicos. El panel no convierte esos archivos en privados ni sustituye sus copias de seguridad.
+La entrada directa al COMPAS completo se mantiene con independencia de esa actualización. Solo el alta y la gestión de accesos dependen de las nuevas reglas.
 
 ## Verificación
 
-- `npm run build`.
-- `node tests/relas-login.smoke.mjs`.
-- `node tests/admin-panel.smoke.mjs`.
-- `npm run test:relas`: aislamiento territorial, historial y protección de administración general.
+- Compilación de la aplicación.
+- Prueba de pantalla: navegación visible, entrada directa, alta con error parcial y reintento, retirada y ocultación de credenciales.
+- Reglas: aislamiento territorial, solo administración general puede asignar accesos, protección del titular y consistencia del registro con la asignación.
+- Integración con emuladores de Authentication y Firestore: cuenta real de prueba, sesión del titular intacta, permisos del responsable y revocación con sesión abierta.

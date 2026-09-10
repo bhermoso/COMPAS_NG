@@ -2577,6 +2577,7 @@ export default function App() {
             COMPÁS <span className="app-nav__brand-ng">NG</span>
           </span>
           <div className="app-nav__tabs">
+            <a className="app-nav__tab" href="?vista=administracion" target="_blank" rel="noopener noreferrer">Administración</a>
             {NAV_ITEMS.map((item, index) => (
               <button
                 key={item.id}

@@ -6,6 +6,7 @@ on:
       - 'src/ui/components/AdministrationPanel*'
       - 'src/ui/components/TerritorialWorkspace*'
       - 'tests/admin-*'
+      - 'vitest.admin.config.ts'
       - 'firebase/**'
       - 'firebase.json'
       - 'src/infrastructure/relas/**'

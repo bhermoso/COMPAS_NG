@@ -6,12 +6,14 @@ service cloud.firestore {
     exists(/databases/$(database)/documents/compas_admins/$(request.auth.uid)) &&
     get(/databases/$(database)/documents/compas_admins/$(request.auth.uid)).data.active == true;
   }
-  function accountEnabled() {
+  function accountEnabled(scope) {
    return !exists(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)) ||
-    get(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)).data.active == true;
+    (get(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)).data.active == true &&
+     (!('scope' in get(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)).data) ||
+      get(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)).data.scope == scope));
   }
   function member(scope) {
-   return isAdministrator() || (request.auth != null && accountEnabled() &&
+   return isAdministrator() || (request.auth != null && accountEnabled(scope) &&
     get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.active == true &&
     get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role in ['reader', 'coordinator', 'administrator']);
   }
@@ -30,9 +32,25 @@ service cloud.firestore {
    allow get: if request.auth != null && request.auth.uid == uid;
    allow list, write: if false;
   }
+  function manageable(uid) {
+   return isAdministrator() && request.auth.uid != uid &&
+    !exists(/databases/$(database)/documents/compas_admins/$(uid));
+  }
+  function validAccount(uid) {
+   let d = request.resource.data;
+   let membership = getAfter(/databases/$(database)/documents/relas_memberships/$(uid)/scopes/$(d.scope)).data;
+   return d.keys().hasAll(['email','scope','role','active']) &&
+    d.keys().hasOnly(['email','scope','role','active']) &&
+    d.email is string && d.email.size() > 3 && d.email.size() <= 254 &&
+    d.scope is string && d.scope.matches('^[a-z0-9][a-z0-9-]{0,79}$') &&
+    d.role in ['coordinator','reader'] && d.active is bool &&
+    membership.active == d.active && membership.role == d.role;
+  }
   match /compas_access_accounts/{uid} {
    allow read: if isAdministrator();
-   allow write: if false;
+   allow create: if manageable(uid) && validAccount(uid);
+   allow update: if manageable(uid) && validAccount(uid) && request.resource.data.scope == resource.data.scope;
+   allow delete: if false;
   }
   match /compas_access_audit/{id} {
    allow read: if isAdministrator();
@@ -40,7 +58,15 @@ service cloud.firestore {
   }
   match /relas_memberships/{uid}/scopes/{scope} {
    allow read: if isAdministrator() || (request.auth != null && request.auth.uid == uid);
-   allow write: if false;
+   function managedMembership() {
+    let d = request.resource.data;
+    let account = getAfter(/databases/$(database)/documents/compas_access_accounts/$(uid)).data;
+    return d.keys().hasAll(['active','role']) && d.keys().hasOnly(['active','role']) &&
+     d.active is bool && d.role in ['coordinator','reader'] &&
+     account.scope == scope && account.active == d.active && account.role == d.role;
+   }
+   allow create, update: if manageable(uid) && managedMembership();
+   allow delete: if false;
   }
   match /relas_scopes/{scope}/drafts/{moduleId} {
    allow read: if member(scope);

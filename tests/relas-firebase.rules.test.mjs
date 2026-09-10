@@ -66,3 +66,29 @@ test('managed suspension denies existing token even if old membership remains ac
  await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_access_accounts/coord'),{active:false}));
  await assertFails(getDoc(doc(db('coord'),path)));await assertFails(save('coord',2));
 });
+function manage(actor,uid,active=true,role='coordinator',s=scope) {
+ const d=db(actor);const batch=writeBatch(d);
+ batch.set(doc(d,`compas_access_accounts/${uid}`),{email:`${uid}@example.test`,scope:s,role,active});
+ batch.set(doc(d,`relas_memberships/${uid}/scopes/${s}`),{active,role});
+ return batch.commit();
+}
+async function owner(){await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_admins/owner'),{active:true}));}
+test('owner creates and revokes a scoped account without losing own access',async()=>{
+ await owner();await assertSucceeds(manage('owner','new'));
+ await assertSucceeds(save('new'));await assertFails(getDoc(doc(db('new'),'relas_scopes/atarfe/drafts/aging')));
+ await assertSucceeds(manage('owner','new',false));await assertFails(getDoc(doc(db('new'),path)));
+ await assertSucceeds(save('owner',2));await assertSucceeds(manage('owner','new',true));await assertSucceeds(getDoc(doc(db('new'),path)));
+});
+test('partial users cannot create other accounts, self-authorize or read account catalogue',async()=>{
+ await assertFails(manage('coord','new'));await assertFails(manage('reader','reader'));
+ await assertFails(getDoc(doc(db('coord'),'compas_access_accounts/other')));
+});
+test('owner cannot alter protected administrators or grant global authority through territorial roles',async()=>{
+ await owner();await assertFails(manage('owner','owner',false));await assertFails(manage('owner','new',true,'administrator'));
+ await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_admins/other-owner'),{active:true}));
+ await assertFails(manage('owner','other-owner',false));
+});
+test('account registry and membership must agree; managed plan cannot be silently changed',async()=>{
+ await owner();await assertFails(setDoc(doc(db('owner'),'compas_access_accounts/new'),{email:'new@example.test',scope,role:'coordinator',active:true}));
+ await assertSucceeds(manage('owner','new'));await assertFails(manage('owner','new',true,'coordinator','atarfe'));
+});
