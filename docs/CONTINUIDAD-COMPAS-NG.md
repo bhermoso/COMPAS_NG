@@ -16,6 +16,14 @@ significa que se haya aplicado. Un PDF incorporado no acredita que se hayan
 revisado las conclusiones del Perfil. Un borrador de coordinación no equivale a
 aprobación del Grupo Motor.
 
+## Consolidación posterior
+
+La PR #44 ya está publicada: commit b4545894ab2ca8c53f39243c69bf4e7309eda556,
+GitHub Actions 34468459584 correcto y PDF público verificado por SHA-256.
+Leer docs/RECUPERACION-Y-CONSOLIDACION.md para la nueva copia con originales,
+sus pruebas, el inventario de copias antiguas y los límites pendientes.
+Las referencias a intentos de publicación siguientes describen el estado histórico.
+
 ## Repositorio y publicación
 
 - Repositorio: https://github.com/bhermoso/COMPAS_NG
@@ -79,7 +87,8 @@ Archivos de entrada:
 El acceso de coordinación es todavía una demostración: no acredita autenticación
 ni aislamiento municipal en un servidor. Los archivos adjuntos se conservan en
 IndexedDB del navegador; la exportación JSON del expediente no incluye esos
-archivos. No afirmar que existe sincronización distribuida o recuperación
+archivos. La nueva copia versionada accesible desde «Copias y recuperación» sí
+incluye los originales disponibles y señala los ausentes. No afirmar que existe sincronización distribuida o recuperación
 completa entre equipos. Los cuatro PDF incorporados al código sí se distribuyen
 con la aplicación.
 
