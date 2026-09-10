@@ -10369,3 +10369,19 @@ h3 {
 .document-access p { overflow-wrap: anywhere; }
 .document-access__attach { display: grid; gap: 6px; margin-top: 12px; }
 .document-access input { max-width: 100%; }
+.hr-viewer__source-access { margin: 16px 0; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #0074c8; }
+.hr-viewer__source-access p { margin: 10px 0; line-height: 1.6; }
+
+/* Document references share the same access point across the municipal workspace. */
+.document-reference { border: 0; background: transparent; color: #0064ad; text-decoration: underline; text-underline-offset: .2em; font: inherit; text-align: left; cursor: pointer; padding: .15em 0; overflow-wrap: anywhere; }
+.document-reference:focus-visible, .documentation-launcher:focus-visible { outline: 3px solid #0074c8; outline-offset: 3px; }
+.documentation-launcher { display: block; margin: 2rem auto; padding: .8rem 1.2rem; border: 1px solid #0074c8; border-radius: .5rem; color: #0064ad; background: white; cursor: pointer; }
+.documentation-dialog { width: min(760px, calc(100vw - 2rem)); max-height: 85vh; overflow: auto; border: 1px solid #0074c8; border-radius: .75rem; padding: 1.5rem; color: #243444; }
+.documentation-dialog::backdrop { background: #10263799; }
+.documentation-dialog header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.documentation-dialog h2 { margin: 0; font-size: 1.4rem; }
+.documentation-dialog p { line-height: 1.65; margin: 1rem 0; }
+.documentation-dialog input[type=search] { display: block; width: 100%; box-sizing: border-box; padding: .75rem; margin-top: .5rem; }
+.documentation-dialog li { margin: 1rem 0; }
+.documentation-dialog small { display: block; overflow-wrap: anywhere; color: #536271; }
+.documentation-text { white-space: pre-wrap; }

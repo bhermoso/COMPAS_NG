@@ -1,3 +1,5 @@
+import { FrameworkReference } from "./FrameworkReference";
+import { DocumentReference } from "./Documentation";
 import type {
   DocumentKind,
   MunicipalDocument,
@@ -44,6 +46,7 @@ const STUDY_LABEL_BY_TAG: Record<string, string> = {
 };
 
 function getDocumentKindLabel(document: MunicipalDocument): string {
+  if (document.kind === 'territorial-documentation' && document.sourceText?.includes('VIGILANCIA INTEGRAL DE LA SALUD')) return 'Informe de Vigilancia Integral de la Salud · UGC';
   const studyTag = document.tags.find((tag) => STUDY_LABEL_BY_TAG[tag] !== undefined);
   if (studyTag !== undefined) {
     return `${STUDY_LABEL_BY_TAG[studyTag]} · ${KIND_LABEL[document.kind]}`;
@@ -128,7 +131,7 @@ function DocumentRow({
         <p className="document-kind">
           {getDocumentKindLabel(document)}
         </p>
-        <h3>{document.title}</h3>
+        <h3><DocumentReference documentId={document.id}>{document.title}</DocumentReference></h3>
         {document.source.system && (
           <p className="doc-repo__source">{document.source.system}</p>
         )}
@@ -226,7 +229,7 @@ export function DocumentRepositoryPanel({ repository, onDelete }: DocumentReposi
               </h2>
             </div>
             <p className="panel-note">
-              Marcos estratégicos y normativos de referencia (EPVSA, ESCA, planes
+              Marcos estratégicos y normativos de referencia (<FrameworkReference name="epvsa" />, <FrameworkReference name="esca" />, planes
               autonómicos). Son insumo para la fase de Plan de Acción / Plan Local
               de Salud: no forman parte de la evidencia diagnóstica del Perfil ni
               generan conclusiones o recomendaciones dentro de él.

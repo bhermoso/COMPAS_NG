@@ -1,3 +1,4 @@
+import { DocumentReference } from "../Documentation";
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
 import { getBadeaMunicipalContext } from "../../../application/badea";
 
@@ -200,6 +201,8 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
         evidencia; no sustituyen la interpretación técnica del equipo y no
         producen recomendaciones ni actuaciones.
       </p>
+
+      <details><summary>Consultar las fuentes del expediente ({docs.length})</summary><ul>{docs.map(document => <li key={document.id}><DocumentReference documentId={document.id}>{document.title}</DocumentReference></li>)}</ul></details>
 
       <h3 className="ekc-panel__subtitle">
         Dimensiones diagnósticas del Perfil: cobertura actual

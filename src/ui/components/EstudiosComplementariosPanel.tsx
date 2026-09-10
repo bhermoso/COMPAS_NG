@@ -1,3 +1,4 @@
+import { DocumentReference } from "./Documentation";
 import { useEffect, useState } from "react";
 import {
   loadGranadaTerritorialReferences,
@@ -93,7 +94,7 @@ function StudyRow({
             <>
               <span className="ec-study-row__record">{recordSummary ?? "Cargado"}</span>
               {sourceFileName && (
-                <span className="ec-study-row__file">{sourceFileName}</span>
+                <span className="ec-study-row__file"><DocumentReference fileName={sourceFileName}>{sourceFileName}</DocumentReference></span>
               )}
             </>
           ) : (

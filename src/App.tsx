@@ -1,3 +1,6 @@
+import { DocumentationProvider } from "./ui/components/Documentation";
+import { profileSourceChanged } from './application/health-profile/profileSourceChanged';
+import { DocumentAccess } from './ui/components/DocumentAccess';
 import { saveOriginalFile, deleteOriginalFile } from './infrastructure/document-files/originalFiles';
 import type { PlanPreparationDraft } from "./domain/action-plan-catalog/PlanPreparationDraft";
 import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
@@ -635,7 +638,7 @@ export default function App() {
       // preview (no answers vivos). Sin PSL validado o con payload
       // ausente/ilegible/inválido no se compila: revalidación requerida.
       const answers = parseValidatedAnswersSnapshot(prev.validatedAnswersSnapshot);
-      if (!psl || answers === null) return prev;
+      if (!psl || answers === null || profileSourceChanged(psl, prev)) return prev;
       const result = compileLocalHealthProfile({
         psl,
         // Puente del espacio de conocimiento: sin él, el artefacto congelado
@@ -664,7 +667,7 @@ export default function App() {
   ) => {
     setWorkspace((prev) => {
       const psl = prev.validatedPSL;
-      if (!psl) return prev;
+      if (!psl || profileSourceChanged(psl, prev)) return prev;
       const result = approvePSL({ psl, approvedBy, approvedByRole, approvingBody });
       if (!result.ok) return prev;
       return {
@@ -2512,7 +2515,7 @@ export default function App() {
   // ── Render ──────────────────────────────────────────────────
 
   return (
-    <>
+    <DocumentationProvider key={municipality.id} workspace={workspace}>
       {/* Barra de navegación con contexto municipal */}
       <nav className={view === "inicio" ? "app-nav app-nav--home" : "app-nav"}>
         <div className="app-nav__bar" />
@@ -3008,6 +3011,7 @@ export default function App() {
             {/* ── Capas del diagnóstico ── */}
             <HealthReportViewer
               healthReport={runtime.workspace.healthReport}
+              repository={runtime.workspace.repository}
             />
             <EstudiosComplementariosPanel
               municipalityName={municipality.name}
@@ -3136,6 +3140,14 @@ export default function App() {
         {/* ── ④ Perfil de Salud Local ──────────────────────── */}
         {view === "psl" && (
           <>
+            <section className="workspace-panel">
+              <h2>Fuente principal y revisión del Perfil</h2>
+              <p><strong>Informe de referencia:</strong> {workspace.healthReport?.title ?? 'Sin informe registrado'}</p>
+              {workspace.repository.documents.filter(d => d.id === workspace.healthReport?.linkedDocumentId).map(d => <DocumentAccess key={d.id} document={d} />)}
+              {runtime.pslIsStale && <p role="alert"><strong>Perfil pendiente de revisión.</strong> Han cambiado las fuentes o la evidencia desde su validación. El perfil anterior y sus documentos compilados se conservan como antecedentes; sus conclusiones requieren contraste antes de volver a validarse.</p>}
+              {workspace.healthReport?.body.format === 'plain' && <p><strong>El PDF está disponible para consulta.</strong> Su incorporación no equivale a haber revisado ni actualizado las conclusiones del Perfil. Comprueba las fechas, la escala territorial y las páginas que sustentan cada conclusión.</p>}
+              <p>Los informes de Vigilancia Integral de la Salud de las UGC son fuentes complementarias y deben interpretarse según su ámbito asistencial.</p>
+            </section>
             {(() => {
               // CONV-A · selección del snapshot semántico que gobierna la
               // previsualización documental. Solo se considera VALIDADA cuando
@@ -3421,6 +3433,6 @@ export default function App() {
         onImportCSV={handleImportThematicCSV}
         onApplyTopFive={handleApplyTopFive}
       />
-    </>
+    </DocumentationProvider>
   );
 }

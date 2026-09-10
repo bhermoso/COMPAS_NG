@@ -1,3 +1,4 @@
+import { DocumentReference } from "./Documentation";
 import { useState } from "react";
 import type { LocalHealthProfile, PSLScaffoldChapter } from "../../domain/health-profile";
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
@@ -931,10 +932,10 @@ export function LocalHealthProfileView({
           </div>
         )}
 
-      {psl.status === "validated" && pslIsStale && (
+      {(psl.status === "validated" || psl.status === "approved") && pslIsStale && (
         <div className="psl-doc-stale-notice">
           <span className="psl-doc-stale-notice__label">Perfil desactualizado</span>
-          La evidencia ha cambiado desde la validación del{" "}
+          La fuente documental o la evidencia han cambiado desde la validación del{" "}
           {psl.validatedAt ? formatDate(psl.validatedAt) : "perfil"}.
           Este perfil puede no reflejar la situación territorial actual.{" "}
           <button
@@ -1083,11 +1084,11 @@ export function LocalHealthProfileView({
               <div className="psl-doc-primary-source__body">
                 <p className="psl-doc-primary-source__eyebrow">Fuente diagnóstica primaria</p>
                 <p className="psl-doc-primary-source__title">
-                  {doc.primarySource.title ?? "Sin Informe de Salud registrado"}
+                  {psl.healthReportDocumentId ? <DocumentReference documentId={psl.healthReportDocumentId}>{doc.primarySource.title ?? psl.healthReportTitle ?? "Consultar informe de salud"}</DocumentReference> : (doc.primarySource.title ?? "Sin Informe de Salud registrado")}
                 </p>
                 {psl.healthReportTitle && (
                   <p className="psl-doc-primary-source__meta">
-                    Fuente primaria · Preservado íntegramente en el Repositorio documental
+                    Fuente primaria · Consulta la referencia para comprobar la disponibilidad del original
                   </p>
                 )}
               </div>
