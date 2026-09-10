@@ -1,0 +1,7 @@
+.relas-access form { display: grid; gap: 1.25rem; max-width: 30rem; margin: 1.5rem 0; }
+.relas-access form label { display: grid; gap: .45rem; font-weight: 600; }
+.relas-access form input { padding: .8rem; border: 1px solid #94a3b8; border-radius: .5rem; font: inherit; width: 100%; box-sizing: border-box; }
+.relas-access button { min-height: 44px; padding: .65rem 1rem; cursor: pointer; }
+.relas-access button:disabled { cursor: default; opacity: .6; }
+.relas-access [role=status] { padding: 1rem; border-left: 4px solid #2563eb; background: #eff6ff; color: #172554; }
+.relas-access .backup-panel__actions { display: flex; gap: .75rem; flex-wrap: wrap; margin: 1rem 0; }
