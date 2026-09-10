@@ -1,5 +1,7 @@
 # Perfil del Zaidín: procesamiento documental y acceso RELAS
 
+> Actualización de referencia — 10/09/2026: las secciones históricas de este documento no describen todas las capacidades actuales. Ya existe autenticación y almacenamiento territorial parcial en Firebase. Consultar [inventario funcional y hoja de ruta](planning/INVENTARIO-Y-HOJA-DE-RUTA-COMPAS.md) y [administración general](ADMINISTRACION-GENERAL-COMPAS.md) antes de continuar. Se conserva el texto anterior como historial.
+
 ## Incidencia corregida
 
 El PDF original del informe de abril de 2023 estaba incorporado y accesible,

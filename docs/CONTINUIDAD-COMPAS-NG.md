@@ -1,5 +1,7 @@
 # Continuidad verificable de COMPÁS NG
 
+> Actualización de referencia — 10/09/2026: las secciones históricas de este documento no describen todas las capacidades actuales. Ya existe autenticación y almacenamiento territorial parcial en Firebase. Consultar [inventario funcional y hoja de ruta](planning/INVENTARIO-Y-HOJA-DE-RUTA-COMPAS.md) y [administración general](ADMINISTRACION-GENERAL-COMPAS.md) antes de continuar. Se conserva el texto anterior como historial.
+
 Actualizado: 10 de septiembre de 2026. Este documento es un punto de entrada;
 el estado efectivo se comprueba en Git, los expedientes y los despliegues.
 No se debe reconstruir el proyecto a partir de una conversación.
