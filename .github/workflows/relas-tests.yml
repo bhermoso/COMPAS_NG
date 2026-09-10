@@ -1,0 +1,30 @@
+name: Verify RELAS Firebase permissions
+on:
+  pull_request:
+    paths:
+      - 'firebase/**'
+      - 'firebase.json'
+      - 'src/infrastructure/relas/**'
+      - 'src/ui/components/RelasAccess*'
+      - 'tests/relas-*'
+      - 'package*.json'
+      - '.github/workflows/relas-tests.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test:relas
