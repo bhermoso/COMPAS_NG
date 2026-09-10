@@ -151,7 +151,7 @@ export function DocumentIngestionPanel({
             técnico debe tener presente al interpretar el territorio.
           </p>
 
-          {/* Vía A: subir documento completo (DOCX → extrae texto; PDF → referencia) */}
+          {/* Vía A: subir documento completo (DOCX y PDF → extraen texto cuando está disponible) */}
           <div className="docx-upload__zone">
             <label htmlFor="sf-file-input" className="docx-upload__label">
               Subir documento (.docx o .pdf)

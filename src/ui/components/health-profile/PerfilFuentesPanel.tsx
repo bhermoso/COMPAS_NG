@@ -1,27 +1,14 @@
+import type { ReactNode } from 'react';
 import { DocumentReference } from "../Documentation";
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
 import { getBadeaMunicipalContext } from "../../../application/badea";
 
-/**
- * PerfilFuentesPanel — «Enriquecimiento de fuentes del Perfil».
- *
- * VISTA DE IMPACTO, no cargador: este bloque NO carga documentos ni
- * sustituye al Repositorio documental. Resume cómo las fuentes ya
- * incorporadas enriquecen la lectura del Perfil y qué DIMENSIONES
- * diagnósticas siguen pendientes. La carga de nuevas fuentes se hace
- * siempre desde el selector/cargador documental habitual (pestaña
- * «Diagnóstico territorial» · Repositorio documental).
- *
- * Reglas:
- *   - Sin categorías de carga propias: solo dimensiones de impacto.
- *   - Las fuentes candidatas (BADEA/IECA) se citan dentro de la dimensión
- *     a la que servirían, pendientes de carga por el cargador habitual,
- *     nunca como incorporadas.
- *   - No es requisito de compilación y no produce recomendaciones.
- */
-
 interface PerfilFuentesPanelProps {
   workspace: MunicipalityWorkspace;
+  children?: ReactNode;
+  onProcessReport?: () => void;
+  processing?: boolean;
+  message?: string | null;
 }
 
 type EstadoDimension = "cubierta" | "parcial" | "pendiente";
@@ -38,7 +25,7 @@ const MARCA: Record<EstadoDimension, string> = {
   pendiente: "○",
 };
 
-export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
+export function PerfilFuentesPanel({ workspace, children, onProcessReport, processing, message }: PerfilFuentesPanelProps) {
   const nombre = workspace.municipality.identity.name;
   const docs = workspace.repository.documents;
   const atoms = workspace.evidenceStore.atoms;
@@ -98,12 +85,12 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
   const dimensiones: DimensionImpacto[] = [
     {
       dimension: "Situación de salud",
-      estado: tieneInforme || estudios > 0 ? "cubierta" : "pendiente",
+      estado: estudios > 0 ? "parcial" : tieneInforme ? "parcial" : "pendiente",
       detalle:
         tieneInforme || estudios > 0
           ? `${tieneInforme ? "Informe de Salud" : "Sin Informe"} + ${estudios} ` +
             `estudio(s) complementario(s) con ${indicadores} indicador(es): ` +
-            `alimentan los capítulos de situación de salud y bienestar.`
+            `fuentes disponibles para revisar la situación de salud y bienestar; su presencia no acredita cobertura completa.`
           : "Sin fuente diagnóstica primaria ni estudios todavía.",
     },
     {
@@ -193,14 +180,19 @@ export function PerfilFuentesPanel({ workspace }: PerfilFuentesPanelProps) {
       </p>
       <h2 className="ekc-panel__title">Enriquecimiento de fuentes del Perfil</h2>
       <p className="panel-note">
-        Este bloque no carga documentos. Resume cómo las fuentes incorporadas
-        al Repositorio documental enriquecen la lectura del Perfil y qué
-        dimensiones siguen pendientes. Para cargar nuevas fuentes, usa el
-        selector/cargador documental habitual (pestaña «Diagnóstico
-        territorial» · Repositorio documental). Las fuentes amplían la base de
-        evidencia; no sustituyen la interpretación técnica del equipo y no
-        producen recomendaciones ni actuaciones.
+        Incorpora nuevas fuentes desde el cargador de esta sección. Los PDF y DOCX
+        con texto se procesan; una imagen escaneada necesita transcripción u OCR.
+        Incorporar o procesar una fuente no valida las conclusiones del Perfil.
       </p>
+
+      <div className="workspace-panel">
+        <h3>Informe de Salud incorporado</h3>
+        <p>{workspace.healthReport?.title ?? 'No hay un informe principal registrado.'}</p>
+        <p>{workspace.healthReport?.body.charCount ? `Texto disponible: ${workspace.healthReport.body.charCount.toLocaleString('es-ES')} caracteres.` : 'No hay texto procesado del informe principal.'}</p>
+        {workspace.healthReport && /\.pdf$/i.test(workspace.healthReport.sourceFileName) && onProcessReport && <button className="doc-repo__open" type="button" disabled={processing} onClick={onProcessReport}>{processing ? 'Procesando informe…' : 'Procesar el PDF ya incorporado'}</button>}
+        {message && <p role="status">{message}</p>}
+      </div>
+      {children}
 
       <details><summary>Consultar las fuentes del expediente ({docs.length})</summary><ul>{docs.map(document => <li key={document.id}><DocumentReference documentId={document.id}>{document.title}</DocumentReference></li>)}</ul></details>
 

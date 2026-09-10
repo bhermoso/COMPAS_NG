@@ -1,3 +1,7 @@
+import { processPdfHealthReport } from './application/health-report/ProcessPdfHealthReport';
+import { extractPdfText } from './infrastructure/pdf/extractPdfText';
+import { loadOriginalFile } from './infrastructure/document-files/originalFiles';
+import { bundledDocuments } from './ui/components/documentAccess';
 import { BackupPanel } from './ui/components/BackupPanel';
 import { DocumentationProvider } from "./ui/components/Documentation";
 import { profileSourceChanged } from './application/health-profile/profileSourceChanged';
@@ -376,6 +380,7 @@ export default function App() {
   const [lastProcessedDocument, setLastProcessedDocument] =
     useState<MunicipalDocument | null>(null);
   const [lastAtomCount, setLastAtomCount] = useState<number>(0);
+  const reportProcessingAttempts = useRef(new Set<string>());
   const [isLoadingHealthReport, setIsLoadingHealthReport] = useState(false);
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
   const [isLoadingDocumentFile, setIsLoadingDocumentFile] = useState(false);
@@ -841,6 +846,7 @@ export default function App() {
     }
 
     const isPdf = /\.pdf$/i.test(file.name);
+    if (!isPdf && !/\.docx$/i.test(file.name)) { setLastHealthReportMessage("Sube un fichero PDF o DOCX."); return; }
 
     setIsLoadingHealthReport(true);
     try {
@@ -867,14 +873,14 @@ export default function App() {
       };
 
       const healthReport = isPdf
-        ? createHealthReportDocumentFromPdf({
-            arrayBuffer,          // no usado internamente; incluido por compatibilidad de tipo
+        ? await processPdfHealthReport(createHealthReportDocumentFromPdf({
+            arrayBuffer,
             municipalityId,
             linkedDocumentId: documentId,
             sourceFileName: file.name,
             title: docTitle,
             authors: [],
-          })
+          }), arrayBuffer)
         : await createHealthReportDocumentFromDocx({
             arrayBuffer,
             municipalityId,
@@ -886,9 +892,10 @@ export default function App() {
 
       // D-HR-01: health-report nunca genera EvidenceAtom, ni DOCX ni PDF.
       // El EvidenceStore se limpia de átomos residuales de versiones anteriores.
-      setWorkspace((prev) => ({
+      setWorkspace((prev) => prev.municipality.identity.id !== municipalityId ? prev : ({
         ...prev,
-        repository: replaceMunicipalDocumentByKind(prev.repository, newDocInput),
+        previousHealthReports: prev.healthReport ? [...(prev.previousHealthReports ?? []),prev.healthReport] : prev.previousHealthReports,
+        repository: replaceMunicipalDocumentByKind({...prev.repository, documents: prev.repository.documents.map(d => d.kind === "health-report" ? {...d,kind:"other" as const,status:"archived" as const} : d)}, newDocInput),
         healthReport,
         evidenceStore: {
           ...prev.evidenceStore,
@@ -900,7 +907,7 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       }));
       setLastHealthReportMessage(
-        "Informe de Salud registrado como fuente diagnóstica primaria. " +
+        (healthReport.body.charCount > 0 ? `Informe procesado: ${healthReport.body.charCount.toLocaleString("es-ES")} caracteres disponibles para la lectura del Perfil. ` : "Original conservado, sin texto extraíble; requiere transcripción u OCR. ") +
         "Preservado en el Repositorio documental. " +
         "Puedes descargar el original desde el catálogo completo de documentos de este navegador."
       );
@@ -916,10 +923,51 @@ export default function App() {
     }
   }
 
+  async function handleProcessExistingHealthReport(): Promise<void> {
+    const report = workspace.healthReport;
+    if (!report || !/\.pdf$/i.test(report.sourceFileName)) return;
+    const targetMunicipalityId = workspace.municipality.identity.id;
+    setIsLoadingHealthReport(true); setLastHealthReportMessage("Extrayendo texto del informe incorporado…");
+    try {
+      let file: Blob | undefined = await loadOriginalFile(targetMunicipalityId, report.linkedDocumentId);
+      if (!file) {
+        const source = workspace.repository.documents.find(d => d.id === report.linkedDocumentId)?.source.url;
+        if (source && Object.hasOwn(bundledDocuments, source)) {
+          const response = await fetch(bundledDocuments[source]);
+          if (!response.ok) throw new Error("No se pudo abrir el PDF incorporado.");
+          file = await response.blob();
+        }
+      }
+      if (!file) throw new Error("El original no está disponible en este navegador. Carga el archivo desde esta sección.");
+      const processed = await processPdfHealthReport(report, await file.arrayBuffer());
+      setWorkspace(prev => prev.municipality.identity.id !== targetMunicipalityId || prev.healthReport?.id !== report.id ? prev : ({
+        ...prev, healthReport:processed,
+        repository:{...prev.repository, documents:prev.repository.documents.map(d => d.id === report.linkedDocumentId ? {...d,sourceText:processed.body.originalText,updatedAt:processed.updatedAt} : d),updatedAt:processed.updatedAt},
+        evidenceStore:{...prev.evidenceStore,updatedAt:processed.updatedAt},updatedAt:processed.updatedAt,
+      }));
+      setLastHealthReportMessage(processed.body.charCount > 0
+        ? `Informe procesado: ${processed.pdfExtraction!.pageCount} páginas y ${processed.body.charCount.toLocaleString('es-ES')} caracteres. La lectura del borrador dispone del texto; los perfiles validados requieren revisión.`
+        : "PDF conservado, sin texto extraíble. Necesita transcripción u OCR antes de alimentar la lectura del Perfil.");
+    } catch(error) {setLastHealthReportMessage((error as Error).message);} finally {setIsLoadingHealthReport(false);}
+  }
+
+  // The bundled Zaidín PDF was previously registered without text. Process it once
+  // when encountered; never replace later reports or validated snapshots.
+  useEffect(() => {
+    const report = workspace.healthReport;
+    if (!report || report.body.charCount || report.pdfExtraction || isLoadingHealthReport || pendingSeedId) return;
+    const source = workspace.repository.documents.find(d => d.id === report.linkedDocumentId)?.source.url;
+    if (!source || !Object.hasOwn(bundledDocuments, source) || !/\.pdf$/i.test(report.sourceFileName)) return;
+    const key = workspace.municipality.identity.id + ':' + report.id;
+    if (reportProcessingAttempts.current.has(key)) return;
+    reportProcessingAttempts.current.add(key);
+    void handleProcessExistingHealthReport();
+  }, [workspace.healthReport?.id, pendingSeedId, isLoadingHealthReport]);
+
   // ── Carga de archivo para tipos documentales con extracción de texto ─────────
   // Aplica a: strategic-framework, territorial-documentation, qualitative-material.
   // DOCX → extrae texto vía mammoth → genera EvidenceAtoms del tipo correspondiente.
-  // PDF  → registra como referencia documental sin texto; usuario pega extractos por textarea.
+  // PDF → extrae texto; si no lo hay, conserva la referencia e informa de la limitación.
   // D-HR-01 no aplica aquí: estos tipos SÍ pueden generar EvidenceAtoms.
   async function handleLoadDocumentFile(file: File): Promise<void> {
     const isLegacyDoc = /\.doc$/i.test(file.name) && !/\.docx$/i.test(file.name);
@@ -947,10 +995,12 @@ export default function App() {
 
     setIsLoadingDocumentFile(true);
     setDocumentFileMessage(null);
+    const targetMunicipalityId = workspace.municipality.identity.id;
     try {
-      if (isDocx) {
-        const arrayBuffer = await file.arrayBuffer();
-        const plainText = await extractDocxText(arrayBuffer);
+      const arrayBuffer = await file.arrayBuffer();
+      const extractedText = isDocx ? await extractDocxText(arrayBuffer) : (await extractPdfText(arrayBuffer)).text;
+      if (isDocx || extractedText.trim()) {
+        const plainText = extractedText;
 
         if (plainText.trim().length === 0) {
           setDocumentFileMessage(
@@ -966,6 +1016,7 @@ export default function App() {
         // tras los await, el workspace capturado por cierre puede estar obsoleto
         // y fusionarlo pisaría cambios intermedios de repositorio/evidencia.
         setWorkspace((prev) => {
+          if (prev.municipality.identity.id !== targetMunicipalityId) return prev;
           // Un marco estratégico recargado sustituye a su versión anterior
           // (mismo fichero o mismo título): nunca se duplica.
           const replaced =
@@ -995,7 +1046,7 @@ export default function App() {
             title: docTitle,
             plainText,
             sourceFileName: file.name,
-            sourceSystem: "Archivo DOCX cargado",
+            sourceSystem: isDocx ? "Archivo DOCX cargado" : "Texto extraído de PDF, con marcas de página",
             documentId,
           });
 
@@ -1023,6 +1074,7 @@ export default function App() {
         const documentId = crypto.randomUUID();
       await saveOriginalFile(workspace.municipality.identity.id, documentId, file);
         setWorkspace((prev) => {
+          if (prev.municipality.identity.id !== targetMunicipalityId) return prev;
           // Un marco estratégico recargado sustituye a su versión anterior
           // (mismo fichero o mismo título): nunca se duplica.
           const replaced =
@@ -1083,7 +1135,7 @@ export default function App() {
     } catch (err) {
       console.error("[document-file-load-error]", err);
       setDocumentFileMessage(
-        "Error al procesar el archivo. Verifica que sea un .docx válido y no esté dañado."
+        "Error al procesar el archivo. Verifica que sea un PDF o DOCX válido, no protegido ni dañado."
       );
     } finally {
       setIsLoadingDocumentFile(false);
@@ -3201,7 +3253,26 @@ export default function App() {
                   : null;
               })()}
             />
-            <PerfilFuentesPanel workspace={workspace} />
+            <PerfilFuentesPanel workspace={workspace} onProcessReport={handleProcessExistingHealthReport} processing={isLoadingHealthReport} message={lastHealthReportMessage}>
+            <DocumentIngestionPanel
+              documentKinds={DOCUMENT_KINDS}
+              kind={kind}
+              title={title}
+              plainText={plainText}
+              lastProcessedDocument={lastProcessedDocument}
+              atomsCreated={lastAtomCount}
+              isLoadingHealthReport={isLoadingHealthReport}
+              healthReportMessage={lastHealthReportMessage}
+              onKindChange={setKind}
+              onTitleChange={setTitle}
+              onPlainTextChange={setPlainText}
+              onProcessDocument={handleProcessDocument}
+              onLoadHealthReport={handleLoadHealthReport}
+              onLoadDocumentFile={handleLoadDocumentFile}
+              isLoadingDocumentFile={isLoadingDocumentFile}
+              documentFileMessage={documentFileMessage}
+            />
+            </PerfilFuentesPanel>
             <PerfilLocalDeSaludPanel
               perfil={workspace.perfilLocalDeSalud}
               municipalityId={municipality.id}
