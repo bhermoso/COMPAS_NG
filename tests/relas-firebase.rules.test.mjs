@@ -47,3 +47,22 @@ test('missing history, stale version and deletion rejected',async()=>{
  await save('coord');await save('coord',2);
  await assertFails(save('coord',2));await assertFails(deleteDoc(doc(db('coord'),path)));
 });
+test('general administrator accesses every scope without territorial membership',async()=>{
+ await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_admins/owner'),{active:true}));
+ await assertSucceeds(save('owner'));
+ await assertSucceeds(getDoc(doc(db('owner'),'relas_scopes/atarfe/drafts/aging')));
+ await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),`relas_memberships/owner/scopes/${scope}`),{active:false,role:'reader'}));
+ await assertSucceeds(save('owner',2));
+});
+test('partial accounts cannot become administrator and owner cannot self-remove through the client',async()=>{
+ await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_admins/owner'),{active:true}));
+ await assertFails(setDoc(doc(db('coord'),'compas_admins/coord'),{active:true}));
+ await assertFails(deleteDoc(doc(db('owner'),'compas_admins/owner')));
+ await assertFails(setDoc(doc(db('owner'),'compas_admins/owner'),{active:false}));
+ await assertFails(setDoc(doc(db('owner'),`relas_memberships/coord/scopes/atarfe`),{active:true,role:'coordinator'}));
+});
+test('managed suspension denies existing token even if old membership remains active',async()=>{
+ await save('coord');
+ await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_access_accounts/coord'),{active:false}));
+ await assertFails(getDoc(doc(db('coord'),path)));await assertFails(save('coord',2));
+});

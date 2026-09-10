@@ -5,3 +5,11 @@
 .relas-access button:disabled { cursor: default; opacity: .6; }
 .relas-access [role=status] { padding: 1rem; border-left: 4px solid #2563eb; background: #eff6ff; color: #172554; }
 .relas-access .backup-panel__actions { display: flex; gap: .75rem; flex-wrap: wrap; margin: 1rem 0; }
+.admin-banner { padding: 1.25rem; border-radius: .6rem; background: linear-gradient(110deg,#e0f2fe,#f0fdf4,#fef3c7); color: #172554; margin: 1rem 0 2rem; }
+.admin-banner strong { font-size: 1.4rem; }
+.admin-section { padding: 1.5rem 0; border-top: 1px solid #cbd5e1; }
+.admin-section h2 { margin-top: 0; }
+.admin-scope { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; margin-top: 1.5rem; }
+.admin-scope label { display: grid; gap: .5rem; }
+.relas-access select { padding: .7rem; font: inherit; max-width: 100%; }
+.admin-full-nav { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; padding: 1rem; background: #172554; color: white; }
