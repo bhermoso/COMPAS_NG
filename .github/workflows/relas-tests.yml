@@ -2,6 +2,10 @@ name: Verify RELAS Firebase permissions
 on:
   pull_request:
     paths:
+      - 'src/main.tsx'
+      - 'src/ui/components/AdministrationPanel*'
+      - 'src/ui/components/TerritorialWorkspace*'
+      - 'tests/admin-*'
       - 'firebase/**'
       - 'firebase.json'
       - 'src/infrastructure/relas/**'

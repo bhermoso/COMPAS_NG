@@ -1,13 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function member(scope) {
+  function isAdministrator() {
    return request.auth != null &&
+    exists(/databases/$(database)/documents/compas_admins/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/compas_admins/$(request.auth.uid)).data.active == true;
+  }
+  function accountEnabled() {
+   return !exists(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)) ||
+    get(/databases/$(database)/documents/compas_access_accounts/$(request.auth.uid)).data.active == true;
+  }
+  function member(scope) {
+   return isAdministrator() || (request.auth != null && accountEnabled() &&
     get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.active == true &&
-    get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role in ['reader', 'coordinator', 'administrator'];
+    get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role in ['reader', 'coordinator', 'administrator']);
   }
   function canWrite(scope) {
-   return member(scope) && get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role in ['coordinator', 'administrator'];
+   return isAdministrator() || (member(scope) && get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role in ['coordinator', 'administrator']);
   }
   function validDraft(scope, moduleId) {
    let d = request.resource.data;
@@ -17,9 +26,21 @@ service cloud.firestore {
     d.payload.municipalityId == scope && d.payload.moduleId == moduleId &&
     d.payload.decisions is map && d.updatedBy == request.auth.uid && d.updatedAt == request.time;
   }
-  match /relas_memberships/{uid}/scopes/{scope} {
+  match /compas_admins/{uid} {
    allow get: if request.auth != null && request.auth.uid == uid;
    allow list, write: if false;
+  }
+  match /compas_access_accounts/{uid} {
+   allow read: if isAdministrator();
+   allow write: if false;
+  }
+  match /compas_access_audit/{id} {
+   allow read: if isAdministrator();
+   allow write: if false;
+  }
+  match /relas_memberships/{uid}/scopes/{scope} {
+   allow read: if isAdministrator() || (request.auth != null && request.auth.uid == uid);
+   allow write: if false;
   }
   match /relas_scopes/{scope}/drafts/{moduleId} {
    allow read: if member(scope);

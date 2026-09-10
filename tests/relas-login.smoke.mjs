@@ -11,7 +11,7 @@ try {
  // No real account or network request to Firebase is needed for this rendering check.
  await page.route(/https:\/\/(.*googleapis.com|.*firebaseapp.com)\/.*/,r=>r.abort());
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/COMPAS_NG/?vista=relas-zaidin`);
- await page.getByRole('heading',{name:'RELAS Zaidín · Acceso del equipo'}).waitFor();
+ await page.getByRole('heading',{name:'COMPAS · Acceso'}).waitFor();
  assert.equal(await page.getByLabel('Correo electrónico').count(),1);
  assert.equal(await page.getByLabel('Contraseña').getAttribute('type'),'password');
  assert.equal(await page.getByRole('button',{name:'Guardar borrador compartido'}).count(),0);

@@ -40,3 +40,20 @@ La demostración `?vista=coordinacion-zaidin` y los documentos públicos de GitH
 Correo electrónico/contraseña y Google aparecen habilitados en Authentication. El titular ha creado Firestore y ha copiado sus reglas iniciales: denegación total `allow read, write: if false`. Se entrega el bloque RELAS para publicación manual; todavía no se ha confirmado que esté publicado ni existen membresías verificadas. La región seleccionada no se ha confirmado. Las reglas incluyen comprobación de rol válido también para lectura.
 
 El titular confirma que ha publicado las reglas RELAS, creado su cuenta, guardado la membresía `scopes/granada-zaidin` con `active: true` y `role: administrator`, y autorizado `bhermoso.github.io`. Estos pasos están confirmados por la conversación, pendientes de verificación mediante un inicio de sesión real. No se guarda su UID en el repositorio. Se añade una comprobación de permisos en GitHub Actions (Java 21 y emulador ficticio), previa al despliegue.
+
+## Publicación confirmada — cierre de la integración
+
+PR https://github.com/bhermoso/COMPAS_NG/pull/47 fusionada. Commit publicado: `7a7a2eb222eda903a457cfe5e3dd485ed19bde4a`. Pruebas Firestore: seis aprobadas y cero fallos en https://github.com/bhermoso/COMPAS_NG/actions/runs/34481910438. Despliegue GitHub Pages completado con éxito en https://github.com/bhermoso/COMPAS_NG/actions/runs/34482121399.
+
+Entrada: https://bhermoso.github.io/COMPAS_NG/?vista=relas-zaidin
+
+Pendiente: comprobación de inicio de sesión por el titular con su contraseña. El navegador de este entorno no ha podido abrir la URL pública (`ERR_EMPTY_RESPONSE`), aunque la pantalla pasó la prueba local y el despliegue fue satisfactorio. No se afirma que el inicio de sesión real esté probado. Este apartado sustituye los estados pendientes históricos anteriores para CI y publicación.
+
+## Incidencia y requisito posterior del titular
+
+El titular informa de mensaje de cuenta sin acceso tras el despliegue. No se ha observado el documento remoto ni la identidad de la sesión; causa pendiente de diagnóstico. La implementación actual solo tiene administrador por ámbito y NO tiene administrador global ni gestión de cuentas dentro de COMPAS. El titular exige control central de accesos parciales y conservar acceso a todos los ámbitos. Pendiente diseñar e implementar autorización global de servidor y recuperación independiente mediante titularidad Firebase; no usar una excepción de correo/UID en JavaScript.
+
+Inventario comprobado: GitHub master `7a7a2eb`; copia PUBLICACION basada en ese commit con anotaciones locales posteriores; RECUPERADO y copia instalador en `73ffd26` con cambios locales, parte idénticos a master y parte distintos; copias anteriores `5715672` y revisión Atarfe `e45d378` también con diferencias. Ninguna declarada eliminable. Todos los archivos modificados/no seguidos inspeccionados tienen ruta equivalente publicada, pero eso NO prueba equivalencia de contenido. Copias de Drive/Windows/disco externo no inspeccionadas. GitHub no respalda automáticamente los espacios de trabajo guardados en cada navegador ni los registros de Firebase.
+
+
+Condición vigente del titular: utilizar únicamente capacidades gratuitas. Se ha retirado la generación automática de cuentas del panel pendiente y sus dependencias. La administración general se conserva y las operaciones de cuentas y claves se remiten explícitamente a la consola propietaria de Firebase. Estado y activación: `docs/ADMINISTRACION-GENERAL-COMPAS.md`. Esta preparación aún no sustituye la versión publicada.

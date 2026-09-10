@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeAuth, inMemoryPersistence, type Auth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer, runTransaction, serverTimestamp, type Firestore } from 'firebase/firestore';
+import { getFirestore, doc, collection, getDocs, getDocFromServer, runTransaction, serverTimestamp, type Firestore } from 'firebase/firestore';
 import type { PlanPreparationDraft } from '../../domain/action-plan-catalog/PlanPreparationDraft';
 
 // Public web configuration supplied by the project owner; this does not grant data access.
@@ -19,14 +19,22 @@ export function createRelasClient(): RelasClient {
  instance = {auth: initializeAuth(app, {persistence: inMemoryPersistence}), db: getFirestore(app)};
  return instance;
 }
-export async function readMembership(client: RelasClient, scope: string) {
+export interface AccessProfile { administrator: boolean; scopes: {id:string;role:string}[] }
+export async function readAccessProfile(client: RelasClient): Promise<AccessProfile> {
  const user = client.auth.currentUser;
- if (!user) throw new Error('No se ha podido comprobar la sesión.');
+ if (!user) throw new Error('Inicia sesión para acceder.');
  await user.reload();
- const snapshot = await getDocFromServer(doc(client.db, 'relas_memberships', user.uid, 'scopes', scope));
- const membership = snapshot.data();
- if (!membership?.active || !['reader','coordinator','administrator'].includes(membership.role)) throw new Error('La cuenta no tiene acceso activo a RELAS Zaidín.');
- return membership.role as string;
+ const owner = await getDocFromServer(doc(client.db, 'compas_admins', user.uid));
+ if (owner.data()?.active === true) return {administrator:true,scopes:[]};
+ const scopes = await getDocs(collection(client.db,'relas_memberships',user.uid,'scopes'));
+ return {administrator:false, scopes:scopes.docs.filter(s=>s.data().active===true && ['reader','coordinator','administrator'].includes(s.data().role)).map(s=>({id:s.id,role:s.data().role}))};
+}
+export async function readMembership(client: RelasClient, scope: string) {
+ const profile = await readAccessProfile(client);
+ if (profile.administrator) return 'administrator';
+ const access = profile.scopes.find(s=>s.id===scope);
+ if (!access) throw new Error('La cuenta no tiene acceso activo a este ámbito.');
+ return access.role;
 }
 export async function readRelasDraft(client: RelasClient, scope: string, moduleId: string): Promise<RelasDraftRow | null> {
  const snapshot = await getDocFromServer(doc(client.db, 'relas_scopes', scope, 'drafts', moduleId));
