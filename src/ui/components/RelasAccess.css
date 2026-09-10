@@ -13,3 +13,9 @@
 .admin-scope label { display: grid; gap: .5rem; }
 .relas-access select { padding: .7rem; font: inherit; max-width: 100%; }
 .admin-full-nav { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; padding: 1rem; background: #172554; color: white; }
+
+.admin-credentials { padding: 1.5rem; margin: 1.5rem 0; border: 2px solid #16766b; border-radius: .75rem; background: #f0fdfa; overflow-wrap: anywhere; }
+.admin-credentials label { display: grid; gap: .5rem; font-weight: 600; }
+.admin-credentials input { padding: .75rem; font: inherit; width: 100%; box-sizing: border-box; }
+.admin-accounts { padding: 0; list-style: none; display: grid; gap: 1rem; }
+.admin-accounts li { border: 1px solid #cbd5e1; border-radius: .6rem; padding: 1rem; overflow-wrap: anywhere; }
