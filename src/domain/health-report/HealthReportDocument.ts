@@ -46,6 +46,7 @@ export interface HealthReportSection {
 }
 
 export interface HealthReportDocument {
+  pdfExtraction?: { version: 1; processedAt: string; pageCount: number; emptyPages: number[]; sha256: string };
   id: string;
   municipalityId: MunicipalityId;
   linkedDocumentId: DocumentId;

@@ -4,6 +4,9 @@ Actualizado: 10 de septiembre de 2026. Este documento es un punto de entrada;
 el estado efectivo se comprueba en Git, los expedientes y los despliegues.
 No se debe reconstruir el proyecto a partir de una conversación.
 
+Leer también docs/PERFIL-PROCESAMIENTO-PDF-Y-RELAS.md: procesamiento del PDF
+original, cargador en enriquecimiento y estado real del acceso RELAS Zaidín.
+
 ## Regla fundamental
 
 COMPÁS NG debe funcionar y ser mantenible sin memoria conversacional. Las
