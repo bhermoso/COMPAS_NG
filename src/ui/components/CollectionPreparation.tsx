@@ -43,7 +43,7 @@ export function CollectionPreparation({projects,onSave,onDirtyChange}:{projects:
   const now=new Date().toISOString(); const existing=projects.find(p=>p.id===id);const projectId=id ?? crypto.randomUUID();
   const project:QuestionnaireProject={id:projectId,name:name.trim(),description:'Preparación metodológica. No administrable.',status:'draft',createdAt:existing?.createdAt ?? now,updatedAt:now,
    questionnaire:{id:existing?.questionnaire.id ?? crypto.randomUUID(),name:name.trim(),methodologicalModules:[],classificationBlocks:[],outputs:['json','documentation']},requestedOutputs:['json','documentation'],metadata:{[COLLECTION_PREPARATION_KEY]:JSON.stringify(config)}};
-  onSave(project);setId(projectId);setName(project.name);setBaseline(JSON.stringify({name:project.name,config}));setMessage('Propuesta incorporada al expediente de este ámbito. Utiliza la exportación del expediente para trasladarla a otro equipo.');
+  onSave(project);setId(projectId);setName(project.name);setBaseline(JSON.stringify({name:project.name,config}));setMessage('Propuesta incorporada al expediente de este ámbito. Utiliza «Copias y recuperación del trabajo» para trasladarla junto al expediente a otro equipo.');
  }
  function download(){
   const text=JSON.stringify({title:name,purpose:'Preparación metodológica: no es un cuestionario administrable',configuration:config,instruments:selected},null,2);

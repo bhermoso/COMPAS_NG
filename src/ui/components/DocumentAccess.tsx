@@ -24,7 +24,7 @@ export function DocumentAccess({document:doc}:{document:MunicipalDocument}){
    <input type="file" aria-label={`Adjuntar original: ${doc.title}`} onChange={async e=>{
     const input=e.currentTarget;const next=input.files?.[0];if(!next)return;
     if(!window.confirm(`¿Vincular «${next.name}» a «${doc.title}»? Comprueba que corresponde a este documento. Sus datos y evidencias no se recalcularán.`)){input.value='';return;}
-    try{await saveOriginalFile(doc.municipalityId,doc.id,next);setFile(next);setMessage('Archivo conservado. Descárgalo para trasladarlo a otro equipo; la exportación JSON del expediente no incluye los archivos originales.');}
+    try{await saveOriginalFile(doc.municipalityId,doc.id,next);setFile(next);setMessage('Archivo conservado. Para trasladarlo junto al expediente, utiliza «Copias y recuperación del trabajo» y descarga la copia con originales.');}
     catch(error){setMessage((error as Error).message);}
     input.value='';
    }}/>

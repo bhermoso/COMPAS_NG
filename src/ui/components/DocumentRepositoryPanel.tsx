@@ -181,7 +181,7 @@ export function DocumentRepositoryPanel({ repository, onDelete }: DocumentReposi
       <section className="workspace-panel">
         <h2>Todos los documentos del expediente</h2>
         <p>Consulta los originales, el texto conservado y las referencias de todas las categorías. <strong>Registrar un documento no implica conservar su archivo ni aprobarlo.</strong></p>
-        <p>Los archivos que incorpores se conservan en este navegador. <strong>La exportación JSON no incluye los originales:</strong> descárgalos también si vas a trabajar en otro equipo.</p>
+        <p>Los archivos que incorpores se conservan en este navegador. <strong>Para trasladarlos a otro equipo,</strong> utiliza «Copias y recuperación del trabajo» y descarga la copia con originales.</p>
         <details><summary>Abrir catálogo completo · {repository.documents.length} documentos</summary>
           <div className="document-list">{repository.documents.map(document=><DocumentRow key={document.id} document={document} onDelete={onDelete}/>)}</div>
         </details>
