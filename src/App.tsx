@@ -1,3 +1,4 @@
+import { BackupPanel } from './ui/components/BackupPanel';
 import { DocumentationProvider } from "./ui/components/Documentation";
 import { profileSourceChanged } from './application/health-profile/profileSourceChanged';
 import { DocumentAccess } from './ui/components/DocumentAccess';
@@ -2592,6 +2593,7 @@ export default function App() {
       )}
 
       <main className="app-shell">
+        <details><summary>Copias y recuperación del trabajo</summary><BackupPanel workspace={workspace} ready={pendingSeedId === null && pendingMigration === null} /></details>
         {persistenceMessage !== null && (
           <div className="app-persistence-warning" role="alert">
             {persistenceMessage}
@@ -2602,9 +2604,9 @@ export default function App() {
         {showMunicipalitySelector && (
           <section className="municipality-selector">
             <p className="municipality-selector__warning">
-              Cambiar de ámbito territorial reiniciará el espacio de trabajo
-              local actual. Los documentos y evidencias de esta sesión se
-              eliminarán.
+              Cada ámbito conserva su expediente en este navegador. Al cambiar,
+              se carga el ámbito seleccionado. Descarga una copia para conservar
+              el trabajo fuera de este equipo.
             </p>
             <div className="municipality-selector__options">
               {allMunicipalities.map((m) => (
