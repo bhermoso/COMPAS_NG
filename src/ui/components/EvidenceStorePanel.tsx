@@ -1,3 +1,4 @@
+import { DocumentReference } from "./Documentation";
 import { useState } from "react";
 import type {
   EvidenceStore,
@@ -106,7 +107,7 @@ export function EvidenceStorePanel({ evidenceStore, defaultOpen = true }: Eviden
                       <h3>{atom.title}</h3>
                       <p className="evidence-atom__content">{atom.content}</p>
                       <p className="panel-note">
-                        Fuente: {ORIGIN_LABEL[atom.provenance.origin as EvidenceOrigin] ?? atom.provenance.origin}
+                        Fuente: {atom.provenance.documentId ? <DocumentReference documentId={atom.provenance.documentId}>{ORIGIN_LABEL[atom.provenance.origin as EvidenceOrigin] ?? atom.provenance.origin}</DocumentReference> : (ORIGIN_LABEL[atom.provenance.origin as EvidenceOrigin] ?? atom.provenance.origin)}
                       </p>
                     </div>
                     <span className="status-pill">

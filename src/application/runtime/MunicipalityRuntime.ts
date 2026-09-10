@@ -1,3 +1,4 @@
+import { profileSourceChanged } from '../health-profile/profileSourceChanged';
 import type { MunicipalityWorkspace } from "../../domain/workspace";
 import type { CompasPipelineResult, PipelineTraceItem, PipelineStatus } from "../../domain/pipeline";
 import type { LT1Result } from "../lt1";
@@ -163,8 +164,9 @@ export function createMunicipalityRuntime(
 
   // Detectar si la evidencia cambió desde la validación del PSL.
   const pslIsStale =
-    psl.status === "validated" &&
-    psl.evidenceStoreVersion !== integrityGuard.sanitizedStore.updatedAt;
+    (psl.status === "validated" || psl.status === "approved") &&
+    (psl.evidenceStoreVersion !== integrityGuard.sanitizedStore.updatedAt ||
+     profileSourceChanged(psl, input.workspace));
 
   // ── Nivel 3: Capa de Decisión (alimentada exclusivamente por el PSL)
   const prioritization = generatePrioritization(psl);

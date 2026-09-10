@@ -1,3 +1,4 @@
+import { FrameworkReference } from "./FrameworkReference";
 import type {
   DocumentKind,
   MunicipalDocument,
@@ -140,9 +141,8 @@ export function DocumentIngestionPanel({
           </select>
           <p className="ingestion-hint">
             Registra marcos estratégicos, planes normativos o guías metodológicas que
-            orientan el diagnóstico y la planificación local de salud: EPVSA, ESCA,
-            Plan Estratégico de Mayores de Andalucía, Estrategia Estatal de Personas Mayores,
-            Guías RELAS, En Buena Edad u otros marcos programáticos autonómicos o estatales.
+            orientan el diagnóstico y la planificación local de salud: <FrameworkReference name="epvsa" />, <FrameworkReference name="esca" />,
+            <FrameworkReference name="mayores" /> u otros marcos programáticos autonómicos o estatales.
           </p>
           <p className="ingestion-hint">
             Estos marcos orientan el diagnóstico y la planificación participativa, pero

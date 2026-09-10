@@ -14,7 +14,7 @@ describe('Acceso a documentos del repositorio', () => {
    expect(documentAccessUrl(document.source.url)).toMatch(/\.pdf/);
   }
   const html = renderToStaticMarkup(<DocumentRepositoryPanel repository={repository}/>);
-  expect(html.match(/class="doc-repo__open"/g)).toHaveLength(6);
+  expect(html.match(/class="doc-repo__open"/g)).toHaveLength(7);
   expect(html).toContain('Todos los documentos del expediente');
  });
  it('no convierte rutas desconocidas o esquemas ejecutables en enlaces', () => {

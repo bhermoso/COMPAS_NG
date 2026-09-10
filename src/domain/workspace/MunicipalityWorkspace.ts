@@ -60,6 +60,7 @@ export interface MunicipalityWorkspace {
   repository: MunicipalDocumentRepository;
   evidenceStore: EvidenceStore;
   healthReport?: HealthReportDocument;
+  previousHealthReports?: HealthReportDocument[];
   ibseStudy?: IBSEStudy;
   dukeStudy?: DUKEStudy;
   predimedStudy?: PREDIMEDStudy;
@@ -95,6 +96,7 @@ export interface MunicipalityWorkspace {
    * Se invalida explícitamente por el usuario cuando la evidencia cambia.
    */
   validatedPSL?: LocalHealthProfile;
+  previousProfileRevisions?: Array<{profile: LocalHealthProfile; answers?: MunicipalityWorkspace["validatedAnswersSnapshot"]}>;
   /**
    * Snapshot OPACO (JSON serializado) de las DiagnosticAnswers en el momento de la
    * validación (CONV-A). Se guarda ATÓMICAMENTE junto a `validatedPSL` para que la

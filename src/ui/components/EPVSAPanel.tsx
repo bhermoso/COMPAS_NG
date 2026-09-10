@@ -1,3 +1,4 @@
+import { FrameworkReference } from "./FrameworkReference";
 import type { EPVSATranslationResult } from "../../application/epvsa";
 
 interface EPVSAPanelProps {
@@ -14,7 +15,7 @@ export function EPVSAPanel({ epvsa, isBlocked = false }: EPVSAPanelProps) {
           <h2>Traducción estratégica inicial</h2>
         </div>
         <p className="panel-note">
-          Sugerencias prudentes de encaje con el marco EPVSA. No sustituyen
+          Sugerencias prudentes de encaje con el marco <FrameworkReference name="epvsa" />. No sustituyen
           validación técnica, institucional ni comunitaria.
         </p>
       </div>

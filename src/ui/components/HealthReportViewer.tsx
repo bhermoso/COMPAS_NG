@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { institutionalHealthReportTitle } from "../../application/health-profile";
 import type { HealthReportDocument, HealthReportSection } from "../../domain/health-report";
+import type { MunicipalDocumentRepository } from '../../domain/repository';
+import { DocumentAccess } from './DocumentAccess';
 
 interface HealthReportViewerProps {
   healthReport?: HealthReportDocument;
+  repository?: MunicipalDocumentRepository;
 }
 
-export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
+export function HealthReportViewer({ healthReport, repository }: HealthReportViewerProps) {
   const [open, setOpen] = useState(false);
 
   const loaded = healthReport !== undefined;
+  const sourceDocument = repository?.documents.find(d => d.id === healthReport?.linkedDocumentId);
 
   const toggleRow = (
     <button
@@ -42,15 +46,16 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
                 <h2>Informe de Situación de Salud</h2>
               </div>
               <p className="panel-note">
-                Cuando se cargue el Informe de Salud del municipio se mostrará aquí
-                íntegramente, sin resumir ni interpretar, como fuente primaria literal
-                firmada por el equipo epidemiológico.
+                Cuando se registre el Informe de Salud se podrá consultar su archivo
+                original, si está disponible, y el texto que se haya conservado.
               </p>
             </div>
             <p className="empty-state">
               No hay ningún Informe de Salud cargado en este espacio de trabajo.
             </p>
           </div>
+
+
         )}
       </section>
     );
@@ -92,6 +97,14 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
             </div>
           </div>
 
+          <div className="hr-viewer__source-access">
+            <h3>Documento fuente</h3>
+            <p><strong>Título registrado:</strong> {healthReport.title}</p>
+            {sourceDocument ? <DocumentAccess key={sourceDocument.id} document={sourceDocument} /> : <p>No se ha localizado el registro documental vinculado a este informe.</p>}
+            {healthReport.body.format === 'html' && <p><strong>Vista convertida del Word.</strong> Las imágenes, gráficos y el formato pueden no haberse conservado. Consulta el archivo original para comprobarlos.</p>}
+            {/estilo[_ ]Atarfe/i.test(healthReport.sourceFileName) && <p><strong>Versión adaptada.</strong> Este registro procede de «{healthReport.sourceFileName}». No acredita la conservación del PDF original del distrito.</p>}
+          </div>
+
           {/* Autoría institucional — solo para DOCX con autoría registrada */}
           {authors.length > 0 && (
             <div className="hr-viewer__authors">
@@ -131,14 +144,14 @@ export function HealthReportViewer({ healthReport }: HealthReportViewerProps) {
             </div>
           ) : (
             <div className="hr-viewer__section-ocr-notice">
-              <p className="hr-viewer__section-ocr-label">Fuente primaria preservada</p>
+              <p className="hr-viewer__section-ocr-label">Informe registrado en PDF</p>
               <p className="hr-viewer__section-ocr-note">
                 Documento PDF cargado como fuente diagnóstica primaria.
-                Preservado en el Repositorio documental.
+                La disponibilidad del original se indica en «Documento fuente».
                 No se ha convertido en evidencia estructurada ni se ha usado para generar análisis automático.
               </p>
               <p className="hr-viewer__section-ocr-note">
-                Para consultar el informe, abre el fichero original:{" "}
+                Archivo de referencia:{" "}
                 <strong>{healthReport.sourceFileName}</strong>
               </p>
             </div>
