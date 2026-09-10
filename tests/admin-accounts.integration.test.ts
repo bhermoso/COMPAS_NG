@@ -4,7 +4,7 @@ import {initializeTestEnvironment} from '@firebase/rules-unit-testing';
 import {deleteApp,initializeApp} from 'firebase/app';
 import {connectAuthEmulator,createUserWithEmailAndPassword,initializeAuth,inMemoryPersistence,signInWithEmailAndPassword} from 'firebase/auth';
 import {connectFirestoreEmulator,doc,getDoc,getFirestore,setDoc} from 'firebase/firestore';
-import {createTerritorialAccount,saveManagedAccess,listManagedAccounts} from '../src/infrastructure/relas/AdminAccounts';
+import {createTerritorialAccount,createTerritorialSpace,listTerritorialSpaces,saveManagedAccess,listManagedAccounts} from '../src/infrastructure/relas/AdminAccounts';
 import {readAccessProfile,type RelasClient} from '../src/infrastructure/relas/RelasClient';
 const projectId='demo-compas-relas';
 const clients:RelasClient[]=[];
@@ -21,6 +21,9 @@ test('actual account creation preserves owner session; scoped grants and revocat
  const owner=client('owner-integration');const email=`owner-${Date.now()}@example.test`;
  const root=await createUserWithEmailAndPassword(owner.auth,email,'TestOwner8!local');
  await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),`compas_admins/${root.user.uid}`),{active:true}));
+ await createTerritorialSpace(owner,{id:'granada-zaidin',name:'Granada · Zaidín',type:'distrito-municipal'});
+ expect((await listTerritorialSpaces(owner))[0].type).toBe('distrito-municipal');
+ await expect(createTerritorialSpace(owner,{id:'granada-zaidin',name:'No sobrescribir',type:'municipio'})).rejects.toThrow('Ya existe');
  const created=await createTerritorialAccount(owner,`plan-${Date.now()}@example.test`);
  expect(owner.auth.currentUser?.uid).toBe(root.user.uid);
  expect((await readAccessProfile(owner)).administrator).toBe(true);

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 const server=await createServer({plugins:[{
  name:'admin-preview',enforce:'pre',
  resolveId(source){if(/\/AdminAccounts(?:\.ts)?$/.test(source))return '\0admin-test-actions';},
- load(id){if(id==='\0admin-test-actions')return `export const listManagedAccounts=async()=>[];export const accessError=e=>e.message;export async function createTerritorialAccount(client,email){window.createdCount=(window.createdCount||0)+1;return {uid:'test-account',email,password:'Example-only-8!'};}export async function saveManagedAccess(){window.grantCount=(window.grantCount||0)+1;if(window.grantCount===1)throw new Error('Permiso pendiente: reintenta la asignación');}`;},
+ load(id){if(id==='\0admin-test-actions')return `export const listTerritorialSpaces=async()=>[{id:'granada-zaidin',name:'Granada · Zaidín',type:'distrito-municipal'},{id:'atarfe',name:'Atarfe',type:'municipio'}];export const createTerritorialSpace=async()=>{};export const listManagedAccounts=async()=>[];export const accessError=e=>e.message;export async function createTerritorialAccount(client,email){window.createdCount=(window.createdCount||0)+1;return {uid:'test-account',email,password:'Example-only-8!'};}export async function saveManagedAccess(){window.grantCount=(window.grantCount||0)+1;if(window.grantCount===1)throw new Error('Permiso pendiente: reintenta la asignación');}`;},
  configureServer(s){s.middlewares.use('/admin-test',async(req,res)=>{res.setHeader('Content-Type','text/html');res.end(await s.transformIndexHtml('/admin-test',`<html><body><div id="root"></div><script type="module">import React from 'react';import {createRoot} from 'react-dom/client';import Panel from '/src/ui/components/AdministrationPanel.tsx';import '/src/index.css';import '/src/ui/components/BackupPanel.css';import '/src/ui/components/RelasAccess.css';createRoot(document.getElementById('root')).render(React.createElement('main',{className:'backup-recovery relas-access'},React.createElement('section',{className:'backup-panel'},React.createElement(Panel,{client:{},onOpenApp:()=>document.title='full-app',onOpenScope:s=>document.title=s}))));</script></body></html>`));});}
 }],server:{host:'127.0.0.1',port:0}});
 await server.listen();let browser;
@@ -13,6 +13,7 @@ try {
  const page=await browser.newPage({viewport:{width:1280,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base=`http://127.0.0.1:${server.httpServer.address().port}`;
  await page.goto(`${base}/admin-test`);
+ await page.getByLabel('Plan de salud').selectOption('granada-zaidin');
  assert.equal(await page.getByLabel('Plan de salud').inputValue(),'granada-zaidin');
  await page.getByLabel('Usuario: correo de la persona responsable').fill('responsable@example.test');
  await page.getByRole('button',{name:'Crear usuario, contraseña y acceso'}).click();

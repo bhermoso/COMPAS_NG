@@ -8,6 +8,12 @@ COMPAS sigue abriendo directamente en la URL principal. El enlace **Administraci
 
 El administrador se reconoce mediante `compas_admins/UID` con `active: true`. Ese registro solo se modifica desde la consola propietaria; ninguna cuenta web puede modificarlo, ni siquiera el propio administrador. No hay excepciones de permisos por UID o correo incluidas en JavaScript.
 
+## Espacios territoriales
+
+Se utiliza un único proyecto Firebase, con un documento `relas_scopes/ID_DEL_AMBITO` por espacio y subcolecciones de datos propias. El administrador crea cada ámbito desde el panel con nombre, identificador estable y tipo: municipio, mancomunidad o distrito municipal. La pertenencia geográfica no concede permisos por herencia.
+
+El formulario comienza preparado para crear Granada · Zaidín como distrito municipal; no se afirma que ya esté creado en el servidor. La lista se obtiene de Firestore y únicamente muestra espacios realmente guardados. La creación no sobrescribe un espacio existente ni sus borradores. Los responsables solo pueden leer la información del ámbito que tienen asignado; no pueden enumerar todos los ámbitos ni crearlos.
+
 ## Alta de responsables desde el panel
 
 1. Elegir el plan, inicialmente Granada · Zaidín.

@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {test, before, after, beforeEach} from 'node:test';
 import assert from 'node:assert/strict';
 import {initializeTestEnvironment, assertFails, assertSucceeds} from '@firebase/rules-unit-testing';
-import {doc, getDoc, setDoc, writeBatch, serverTimestamp, deleteDoc} from 'firebase/firestore';
+import {doc, getDoc, setDoc, writeBatch, serverTimestamp, deleteDoc, getDocs, collection} from 'firebase/firestore';
 let env;
 const scope='granada-zaidin';
 const path=`relas_scopes/${scope}/drafts/aging`;
@@ -11,6 +11,7 @@ after(async()=>{await env?.cleanup();});
 beforeEach(async()=>{
  await env.clearFirestore();
  await env.withSecurityRulesDisabled(async ctx=>{
+  for(const id of [scope,'atarfe']) await setDoc(doc(ctx.firestore(),`relas_scopes/${id}`),{name:id,type:id===scope?'distrito-municipal':'municipio'});
   for(const [uid,s,role] of [['coord',scope,'coordinator'],['reader',scope,'reader'],['other','atarfe','coordinator']]) await setDoc(doc(ctx.firestore(),`relas_memberships/${uid}/scopes/${s}`),{active:true,role});
  });
 });
@@ -91,4 +92,15 @@ test('owner cannot alter protected administrators or grant global authority thro
 test('account registry and membership must agree; managed plan cannot be silently changed',async()=>{
  await owner();await assertFails(setDoc(doc(db('owner'),'compas_access_accounts/new'),{email:'new@example.test',scope,role:'coordinator',active:true}));
  await assertSucceeds(manage('owner','new'));await assertFails(manage('owner','new',true,'coordinator','atarfe'));
+});
+
+test('territory catalogue is owner-only; partial users see only assigned metadata and cannot create territories',async()=>{
+ await owner();await assertSucceeds(getDocs(collection(db('owner'),'relas_scopes')));
+ await assertSucceeds(getDoc(doc(db('coord'),`relas_scopes/${scope}`)));
+ await assertFails(getDoc(doc(db('coord'),'relas_scopes/atarfe')));
+ await assertFails(getDocs(collection(db('coord'),'relas_scopes')));
+ const space={name:'Mancomunidad de prueba',type:'mancomunidad',createdBy:'owner',createdAt:serverTimestamp()};
+ await assertSucceeds(setDoc(doc(db('owner'),'relas_scopes/mancomunidad-prueba'),space));
+ await assertFails(setDoc(doc(db('coord'),'relas_scopes/distrito-nuevo'),{...space,createdBy:'coord'}));
+ await assertFails(deleteDoc(doc(db('owner'),'relas_scopes/mancomunidad-prueba')));
 });

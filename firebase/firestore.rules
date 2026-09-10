@@ -44,6 +44,7 @@ service cloud.firestore {
     d.email is string && d.email.size() > 3 && d.email.size() <= 254 &&
     d.scope is string && d.scope.matches('^[a-z0-9][a-z0-9-]{0,79}$') &&
     d.role in ['coordinator','reader'] && d.active is bool &&
+    exists(/databases/$(database)/documents/relas_scopes/$(d.scope)) &&
     membership.active == d.active && membership.role == d.role;
   }
   match /compas_access_accounts/{uid} {
@@ -67,6 +68,17 @@ service cloud.firestore {
    }
    allow create, update: if manageable(uid) && managedMembership();
    allow delete: if false;
+  }
+  match /relas_scopes/{scope} {
+   allow get: if member(scope);
+   allow list: if isAdministrator();
+   allow create: if isAdministrator() && scope.matches('^[a-z0-9][a-z0-9-]{0,79}$') &&
+    request.resource.data.keys().hasAll(['name','type','createdBy','createdAt']) &&
+    request.resource.data.keys().hasOnly(['name','type','createdBy','createdAt']) &&
+    request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 200 &&
+    request.resource.data.type in ['municipio','mancomunidad','distrito-municipal'] &&
+    request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time;
+   allow update, delete: if false;
   }
   match /relas_scopes/{scope}/drafts/{moduleId} {
    allow read: if member(scope);

@@ -1,13 +1,30 @@
 import {deleteApp, initializeApp} from 'firebase/app';
 import {connectAuthEmulator, createUserWithEmailAndPassword, initializeAuth, inMemoryPersistence, signOut} from 'firebase/auth';
-import {collection, doc, getDocs, writeBatch} from 'firebase/firestore';
+import {collection, doc, getDocs, runTransaction, serverTimestamp, writeBatch} from 'firebase/firestore';
 import {readAccessProfile, type RelasClient} from './RelasClient';
 
 export interface ManagedAccount {uid:string;email:string;scope:string;role:'coordinator'|'reader';active:boolean}
 export interface NewAccount {uid:string;email:string;password:string}
+export interface TerritorialSpace {id:string;name:string;type:'municipio'|'mancomunidad'|'distrito-municipal'}
 
 async function requireAdministrator(client:RelasClient) {
  if (!(await readAccessProfile(client)).administrator) throw new Error('Esta operación requiere administración general.');
+}
+
+export async function listTerritorialSpaces(client:RelasClient):Promise<TerritorialSpace[]> {
+ await requireAdministrator(client);
+ const rows=await getDocs(collection(client.db,'relas_scopes'));
+ return rows.docs.map(d=>({id:d.id,name:d.data().name,type:d.data().type}) as TerritorialSpace).sort((a,b)=>a.name.localeCompare(b.name,'es'));
+}
+
+export async function createTerritorialSpace(client:RelasClient,space:TerritorialSpace) {
+ await requireAdministrator(client);
+ if(!/^[a-z0-9][a-z0-9-]{0,79}$/.test(space.id)||!space.name.trim()) throw new Error('Indica el nombre y un identificador válido para el ámbito.');
+ const ref=doc(client.db,'relas_scopes',space.id);
+ await runTransaction(client.db,async tx=>{
+  if((await tx.get(ref)).exists()) throw new Error('Ya existe un espacio con ese identificador. No se ha modificado.');
+  tx.set(ref,{name:space.name.trim(),type:space.type,createdBy:client.auth.currentUser!.uid,createdAt:serverTimestamp()});
+ });
 }
 
 export async function listManagedAccounts(client:RelasClient):Promise<ManagedAccount[]> {
