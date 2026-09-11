@@ -23,30 +23,10 @@ export const proposalObjectiveTexts: Record<string, string> = {
   "ENV-OE7.1": "Consolidar la **participación estable de los recursos sanitarios, sociales, municipales y comunitarios en la coordinación de la línea de envejecimiento saludable**."
 };
 export const proposalBlocks = [
-  {
-    "code": "ENV-B-edadismo",
-    "name": "Edadismo",
-    "text": "**Reducir el edadismo entre la población escolarizada y promover en el ámbito comunitario el reconocimiento social de las personas mayores (CAMPAÑA/FESTIVAL ZAIDÍN SENIOR FEST).**",
-    "objectives": ["ENV-OE5.1", "ENV-OE5.2"]
-  },
-  {
-    "code": "ENV-B-soledad",
-    "name": "Soledad no deseada",
-    "text": "Prevenir y reducir la **soledad no deseada** y el **aislamiento social**, fortaleciendo las **relaciones**, el **apoyo social** y la **respuesta comunitaria**.",
-    "objectives": ["ENV-OE2.1", "ENV-OE2.2", "ENV-OE3.1", "ENV-OE3.2", "ENV-OE6.1", "ENV-OE6.2", "ENV-OE7.2"]
-  },
-  {
-    "code": "ENV-B-autonomia",
-    "name": "Autonomía",
-    "text": "Preservar y fortalecer la **autonomía de las personas mayores para decidir y desarrollar su vida cotidiana, sus relaciones y su participación en la comunidad**, contando con los **apoyos que necesiten**, y promover su **bienestar emocional**.",
-    "objectives": ["ENV-OE1.1", "ENV-OE1.2"]
-  },
-  {
-    "code": "ENV-B-participacion",
-    "name": "Participación",
-    "text": "Incrementar la **participación significativa** y el **protagonismo de las personas mayores en la comunidad**, reduciendo las **barreras de accesibilidad a los recursos, servicios y actividades comunitarias** y la **brecha digital**, y fortaleciendo la **coordinación comunitaria**.",
-    "objectives": ["ENV-OE4.1", "ENV-OE4.2", "ENV-OE8.1", "ENV-OE8.2", "ENV-OE9.1", "ENV-OE9.2", "ENV-OE7.1"]
-  }
+  {"code":"ENV-B-edadismo","name":"Edadismo","text":"**Reducir el edadismo entre la población escolarizada y promover en el ámbito comunitario el reconocimiento social de las personas mayores (CAMPAÑA/FESTIVAL ZAIDÍN SENIOR FEST).**","objectives":["ENV-OE5.1","ENV-OE5.2"]},
+  {"code":"ENV-B-soledad","name":"Soledad no deseada","text":"Prevenir y reducir la **soledad no deseada** y el **aislamiento social**, fortaleciendo las **relaciones**, el **apoyo social** y la **respuesta comunitaria**.","objectives":["ENV-OE2.1","ENV-OE2.2","ENV-OE3.1","ENV-OE3.2","ENV-OE6.1","ENV-OE6.2","ENV-OE7.2"]},
+  {"code":"ENV-B-autonomia","name":"Autonomía","text":"Preservar y fortalecer la **autonomía de las personas mayores para decidir y desarrollar su vida cotidiana, sus relaciones y su participación en la comunidad**, contando con los **apoyos que necesiten**, y promover su **bienestar emocional**.","objectives":["ENV-OE1.1","ENV-OE1.2"]},
+  {"code":"ENV-B-participacion","name":"Participación","text":"Incrementar la **participación significativa** y el **protagonismo de las personas mayores en la comunidad**, reduciendo las **barreras de accesibilidad a los recursos, servicios y actividades comunitarias** y la **brecha digital**, y fortaleciendo la **coordinación comunitaria**.","objectives":["ENV-OE4.1","ENV-OE4.2","ENV-OE8.1","ENV-OE8.2","ENV-OE9.1","ENV-OE9.2","ENV-OE7.1"]}
 ];
 export const ZAIDIN_AGING_PROPOSAL: ActionPlanCatalogModule = {
  ...HEALTHY_AGING_MODULE, version: ZAIDIN_PROPOSAL_VERSION,
@@ -87,6 +67,8 @@ export interface PlanPreparationReview {
  municipalityId: string;
  moduleId: string;
  sourceVersion: string;
+ /** Server version of the territorial draft reviewed by the administrator. */
+ sourceDraftVersion: number;
  updatedAt: string;
  decisions: Record<string, PlanPreparationReviewDecision>;
 }
