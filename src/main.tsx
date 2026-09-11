@@ -10,7 +10,7 @@ const params = new URLSearchParams(window.location.search)
 const view = params.get('vista')
 const coordinatorPreview = view === 'coordinacion-zaidin'
 const publicApp = view === 'publica' || view === 'demo'
-const relasEntry = ['relas-zaidin', 'administracion', 'acceso'].includes(view ?? '') || (!view && !publicApp)
+const relasEntry = ['relas-zaidin', 'administracion', 'acceso', 'app'].includes(view ?? '') || (!view && !publicApp)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

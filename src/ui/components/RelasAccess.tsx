@@ -7,21 +7,25 @@ import './BackupPanel.css';
 import './RelasAccess.css';
 const FullApp=lazy(()=>import('../../App'));
 export default function RelasAccess(){
- const adminEntry=new URLSearchParams(window.location.search).get('vista')==='administracion';
+ const view=new URLSearchParams(window.location.search).get('vista');
+ const adminEntry=view==='administracion';
+ const appEntry=view==='app';
  const client=useMemo(()=>createRelasClient(),[]);
  const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [profile,setProfile]=useState<AccessProfile>();
- const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [scope,setScope]=useState<string>();const [fullApp,setFullApp]=useState(false);
+ const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [scope,setScope]=useState<string>();const [fullApp,setFullApp]=useState(appEntry);
  const clear=()=>{setProfile(undefined);setScope(undefined);setFullApp(false);setPassword('');};
  useEffect(()=>onAuthStateChanged(client.auth,user=>{if(!user)clear();}),[client]);
  async function logout(){setBusy(true);try{await signOut(client.auth);clear();setMessage('Sesión cerrada.');}catch{setMessage('No se pudo cerrar la sesión.');}finally{setBusy(false);}}
- if(profile?.administrator&&fullApp)return <><nav className="admin-full-nav"><strong>Administración general · COMPAS completo</strong><button onClick={()=>setFullApp(false)}>Volver al panel de administración</button></nav><Suspense fallback={<p>Cargando COMPAS…</p>}><FullApp/></Suspense></>;
+ function openFullApp(){window.history.replaceState(null,'',`${import.meta.env.BASE_URL}?vista=app`);setFullApp(true);}
+ function openAdministration(){window.history.replaceState(null,'',`${import.meta.env.BASE_URL}?vista=administracion`);setFullApp(false);}
+ if(profile?.administrator&&fullApp)return <><nav className="admin-full-nav"><strong>Administración general · COMPAS completo</strong><button onClick={openAdministration}>Volver al panel de administración</button></nav><Suspense fallback={<p>Cargando COMPAS…</p>}><FullApp/></Suspense></>;
  return <main className="backup-recovery relas-access"><section className="backup-panel">
-  <a href={import.meta.env.BASE_URL}>Volver a COMPAS</a>
+  <a href={`${import.meta.env.BASE_URL}?vista=app`}>Abrir COMPAS completo</a>
   <h1>COMPAS · {profile?.administrator?'Panel de administración':adminEntry?'Administración general':'Acceso'}</h1>
   {!profile&&adminEntry&&<p>Desde aquí crearás usuarios y contraseñas para cada plan. Identifícate con tu cuenta de administrador para gestionar los accesos. Esta comprobación no limita tu acceso a ningún plan.</p>}
   {!profile?<form onSubmit={async e=>{
    e.preventDefault();setBusy(true);setMessage('Comprobando acceso…');
-   try{await signInWithEmailAndPassword(client.auth,email.trim(),password);setPassword('');const next=await readAccessProfile(client);setProfile(next);setMessage(next.administrator?'':next.scopes.length?'Selecciona tu ámbito de trabajo.':'Tu cuenta está identificada, pero no tiene ámbitos activos. Contacta con el administrador.');}
+   try{await signInWithEmailAndPassword(client.auth,email.trim(),password);setPassword('');const next=await readAccessProfile(client);setProfile(next);if(next.administrator&&appEntry)setFullApp(true);setMessage(next.administrator?'':next.scopes.length?'Selecciona tu ámbito de trabajo.':'Tu cuenta está identificada, pero no tiene ámbitos activos. Contacta con el administrador.');}
    catch(e){clear();await signOut(client.auth).catch(()=>{});const code=(e as {code?:string}).code;setMessage(code==='permission-denied'?'La configuración de permisos del servidor necesita actualizarse. No se han modificado tus datos.':'No se pudo completar el acceso. Usa el correo y la contraseña de tu cuenta de COMPAS. Si accedes con tu cuenta de Google, pulsa Identificarme con Google.');}finally{setBusy(false);}
   }}><p>Inicia sesión con tu cuenta. El administrador general conserva el control de COMPAS; cada acceso territorial recibe únicamente los ámbitos asignados.</p>
    <label>Correo electrónico<input type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)}/></label>
@@ -34,7 +38,7 @@ export default function RelasAccess(){
      const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
      await signInWithPopup(client.auth,provider,browserPopupRedirectResolver);
      identified=true;setMessage('Identidad comprobada. Consultando permisos de COMPAS…');
-     const next=await readAccessProfile(client);setProfile(next);
+     const next=await readAccessProfile(client);setProfile(next);if(next.administrator&&appEntry)setFullApp(true);
      setMessage(adminEntry&&!next.administrator?'Google ha identificado tu cuenta, pero todavía no tiene administración general en COMPAS. Comprueba el registro compas_admins con el identificador que aparece debajo.':'');
     } catch(e) {
      clear();
@@ -57,7 +61,7 @@ export default function RelasAccess(){
    }}>Identificarme con Google</button>
   </form>:scope?<TerritorialWorkspace key={scope} client={client} scope={scope} role={profile.administrator?'administrator':profile.scopes.find(s=>s.id===scope)?.role??'reader'} onBack={()=>setScope(undefined)}/>:<>
    <p>Sesión: {client.auth.currentUser?.email}</p>
-   {profile.administrator?<AdministrationPanel client={client} onOpenApp={()=>setFullApp(true)} onOpenScope={setScope}/>:<section><h2>Mis ámbitos</h2>{profile.scopes.map(s=><p key={s.id}><button onClick={()=>setScope(s.id)}>Abrir {s.id}</button> · {s.role==='reader'?'Consulta':'Coordinación'}</p>)}</section>}
+   {profile.administrator?<AdministrationPanel client={client} onOpenApp={openFullApp} onOpenScope={setScope}/>:<section><h2>Mis ámbitos</h2>{profile.scopes.map(s=><p key={s.id}><button onClick={()=>setScope(s.id)}>Abrir {s.id}</button> · {s.role==='reader'?'Consulta':'Coordinación'}</p>)}</section>}
    <button disabled={busy} onClick={()=>void logout()}>Cerrar sesión</button>
   </>}
   {message&&<p role="status">{message}</p>}
