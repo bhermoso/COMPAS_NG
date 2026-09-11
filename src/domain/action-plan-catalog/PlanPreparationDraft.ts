@@ -27,47 +27,25 @@ export const proposalBlocks = [
     "code": "ENV-B-edadismo",
     "name": "Edadismo",
     "text": "**Reducir el edadismo entre la población escolarizada y promover en el ámbito comunitario el reconocimiento social de las personas mayores (CAMPAÑA/FESTIVAL ZAIDÍN SENIOR FEST).**",
-    "objectives": [
-      "ENV-OE5.1",
-      "ENV-OE5.2"
-    ]
+    "objectives": ["ENV-OE5.1", "ENV-OE5.2"]
   },
   {
     "code": "ENV-B-soledad",
     "name": "Soledad no deseada",
     "text": "Prevenir y reducir la **soledad no deseada** y el **aislamiento social**, fortaleciendo las **relaciones**, el **apoyo social** y la **respuesta comunitaria**.",
-    "objectives": [
-      "ENV-OE2.1",
-      "ENV-OE2.2",
-      "ENV-OE3.1",
-      "ENV-OE3.2",
-      "ENV-OE6.1",
-      "ENV-OE6.2",
-      "ENV-OE7.2"
-    ]
+    "objectives": ["ENV-OE2.1", "ENV-OE2.2", "ENV-OE3.1", "ENV-OE3.2", "ENV-OE6.1", "ENV-OE6.2", "ENV-OE7.2"]
   },
   {
     "code": "ENV-B-autonomia",
     "name": "Autonomía",
     "text": "Preservar y fortalecer la **autonomía de las personas mayores para decidir y desarrollar su vida cotidiana, sus relaciones y su participación en la comunidad**, contando con los **apoyos que necesiten**, y promover su **bienestar emocional**.",
-    "objectives": [
-      "ENV-OE1.1",
-      "ENV-OE1.2"
-    ]
+    "objectives": ["ENV-OE1.1", "ENV-OE1.2"]
   },
   {
     "code": "ENV-B-participacion",
     "name": "Participación",
     "text": "Incrementar la **participación significativa** y el **protagonismo de las personas mayores en la comunidad**, reduciendo las **barreras de accesibilidad a los recursos, servicios y actividades comunitarias** y la **brecha digital**, y fortaleciendo la **coordinación comunitaria**.",
-    "objectives": [
-      "ENV-OE4.1",
-      "ENV-OE4.2",
-      "ENV-OE8.1",
-      "ENV-OE8.2",
-      "ENV-OE9.1",
-      "ENV-OE9.2",
-      "ENV-OE7.1"
-    ]
+    "objectives": ["ENV-OE4.1", "ENV-OE4.2", "ENV-OE8.1", "ENV-OE8.2", "ENV-OE9.1", "ENV-OE9.2", "ENV-OE7.1"]
   }
 ];
 export const ZAIDIN_AGING_PROPOSAL: ActionPlanCatalogModule = {
@@ -81,8 +59,47 @@ export const ZAIDIN_AGING_PROPOSAL: ActionPlanCatalogModule = {
  return {...original, title: plainProposalText(proposalObjectiveTexts[code])};
  })}))
 };
-export interface PlanPreparationDecision { status: "pending" | "included" | "excluded" | "modified"; text?: string; sourceText: string }
-export interface PlanPreparationDraft { municipalityId: string; moduleId: string; version: string; updatedAt: string; decisions: Record<string, PlanPreparationDecision> }
+
+export interface PlanPreparationDecision {
+ status: "pending" | "included" | "excluded" | "modified";
+ /** Territorial proposal text. It never becomes canonical by itself. */
+ text?: string;
+ sourceText: string;
+}
+export interface PlanPreparationDraft {
+ municipalityId: string;
+ moduleId: string;
+ version: string;
+ updatedAt: string;
+ decisions: Record<string, PlanPreparationDecision>;
+}
+
+export type PlanPreparationReviewStatus = "accepted" | "rejected" | "reformulated";
+export interface PlanPreparationReviewDecision {
+ status: PlanPreparationReviewStatus;
+ sourceText: string;
+ proposedText?: string;
+ /** Required when the administrator reformulates the territorial proposal. */
+ consolidatedText?: string;
+ reviewedAt: string;
+}
+export interface PlanPreparationReview {
+ municipalityId: string;
+ moduleId: string;
+ sourceVersion: string;
+ updatedAt: string;
+ decisions: Record<string, PlanPreparationReviewDecision>;
+}
+
+export function proposedTextFor(decision: PlanPreparationDecision | undefined, sourceText: string): string {
+ return decision?.status === "modified" && decision.text?.trim() ? decision.text.trim() : sourceText;
+}
+export function consolidatedTextFor(sourceText: string, proposal: PlanPreparationDecision | undefined, review: PlanPreparationReviewDecision | undefined): string {
+ if (!review) return sourceText;
+ if (review.status === "accepted") return proposedTextFor(proposal, sourceText);
+ if (review.status === "reformulated" && review.consolidatedText?.trim()) return review.consolidatedText.trim();
+ return sourceText;
+}
 export function excludedByAncestor(draft: PlanPreparationDraft | undefined, ancestors: string[]): boolean {
  return ancestors.some(id => draft?.decisions[id]?.status === "excluded");
 }
