@@ -36,6 +36,10 @@ const decisionLabels: Record<CatalogDecisionStatus, string> = {
   rejected: "Rechazar",
 };
 
+export function resolvedActionPlanText(decision: CatalogElementDecision | undefined, originalText: string): string {
+  return decision?.status === "adapted" && decision.adaptedText?.trim() ? decision.adaptedText : originalText;
+}
+
 function ModuleReview({
   municipalityId,
   lectura,
@@ -61,6 +65,7 @@ function ModuleReview({
   const [reviewedBy, setReviewedBy] = useState(initial.reviewedBy);
   const [violations, setViolations] = useState<readonly string[]>([]);
   const byId = new Map(decisions.map((decision) => [decision.elementId, decision]));
+  const visibleText = (elementId: string, originalText: string) => resolvedActionPlanText(byId.get(elementId), originalText);
 
   function updateDecision(elementId: string, status: CatalogDecisionStatus, adaptedText?: string) {
     setDecisions((current) => current.map((decision) =>
@@ -82,7 +87,10 @@ function ModuleReview({
           <span className="pcm-decision__label">{label}</span>
           <select
             value={decision.status}
-            onChange={(event) => updateDecision(elementId, event.target.value as CatalogDecisionStatus)}
+            onChange={(event) => {
+              const status = event.target.value as CatalogDecisionStatus;
+              updateDecision(elementId, status, status === "adapted" ? decision.adaptedText ?? originalText : undefined);
+            }}
           >
             {Object.entries(decisionLabels).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
@@ -94,8 +102,7 @@ function ModuleReview({
             <span className="pcm-decision__label">Nueva redacción municipal</span>
             <textarea
               rows={3}
-              value={decision.adaptedText ?? ""}
-              placeholder={originalText}
+              value={decision.adaptedText ?? originalText}
               onChange={(event) => updateDecision(elementId, "adapted", event.target.value)}
             />
           </label>
@@ -152,15 +159,15 @@ function ModuleReview({
       <div className="pcm-objectives">
         {eligible.module.generalObjectives.map((general) => (
           <details key={general.code} className="pcm-general">
-            <summary><span>{general.code}</span> {general.title}</summary>
+            <summary><span>{general.code}</span> {visibleText(general.code, general.title)}</summary>
             {decisionControl(general.code, general.title)}
             <div className="pcm-specifics">
               {general.specificObjectives.map((specific) => (
                 <section key={specific.code} className="pcm-specific">
-                  <h3><span>{specific.code}</span> {specific.title}</h3>
+                  <h3><span>{specific.code}</span> {visibleText(specific.code, specific.title)}</h3>
                   {decisionControl(specific.code, specific.title)}
                   <div className="pcm-indicator">
-                    <p><strong>{specific.indicator.code}</strong> {specific.indicator.title}</p>
+                    <p><strong>{specific.indicator.code}</strong> {visibleText(specific.indicator.code, specific.indicator.title)}</p>
                     <dl>
                       <div><dt>Fuente propuesta</dt><dd>{specific.indicator.suggestedSource}</dd></div>
                       <div><dt>Unidad</dt><dd>{specific.indicator.unit}</dd></div>
