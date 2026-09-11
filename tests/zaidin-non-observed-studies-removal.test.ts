@@ -7,6 +7,10 @@ import {
   removeNonObservedZaidinStudies,
   ZAIDIN_NON_OBSERVED_STUDIES_REMOVAL_MARKER,
 } from "../src/application/workspace";
+import {
+  ZAIDIN_PDF_DOCUMENT_ID,
+  ZAIDIN_PDF_SOURCE,
+} from "../src/application/workspace/correctZaidinHealthReport";
 
 const seed = JSON.parse(readFileSync(
   resolve(process.cwd(), "public/seeds/compas-ng-workspace-granada-zaidin.json"),
@@ -21,7 +25,26 @@ const studyKeys = [
 
 describe("Granada-Zaidín — ningún resultado sin aplicación observada", () => {
   it("el seed conserva las fuentes reales y no publica resultados de fixtures", () => {
-    expect(seed.repository.documents).toHaveLength(7);
+    const originalPdf = seed.repository.documents.find(
+      (document) => document.id === ZAIDIN_PDF_DOCUMENT_ID
+    );
+    const historicalConversion = seed.repository.documents.find(
+      (document) => document.sourceFileName === "Informe_Salud_Granada_Abril2023_estilo_Atarfe.docx"
+    );
+
+    expect(originalPdf).toMatchObject({
+      kind: "health-report",
+      status: "uploaded",
+      sourceFileName: "informe salud granada-zaidin completo abril 2023.pdf",
+      source: { url: ZAIDIN_PDF_SOURCE },
+    });
+    expect(historicalConversion).toMatchObject({
+      kind: "other",
+      status: "archived",
+    });
+    expect(historicalConversion?.tags).toContain("historical-conversion");
+    expect(seed.repository.documents.filter((document) => document.kind === "health-report")).toHaveLength(1);
+
     expect(seed.evidenceStore.atoms).toHaveLength(56);
     expect(seed.evidenceStore.atoms.every((atom) => atom.kind === "asset")).toBe(true);
     for (const key of studyKeys) expect(seed[key], key).toBeUndefined();
