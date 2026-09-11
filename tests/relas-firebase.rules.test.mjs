@@ -48,12 +48,14 @@ test('missing history, stale version and deletion rejected',async()=>{
  await save('coord');await save('coord',2);
  await assertFails(save('coord',2));await assertFails(deleteDoc(doc(db('coord'),path)));
 });
-test('general administrator accesses every scope without territorial membership',async()=>{
+test('general administrator reads every scope without territorial membership but cannot overwrite territorial proposals',async()=>{
  await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_admins/owner'),{active:true}));
- await assertSucceeds(save('owner'));
+ await assertSucceeds(getDoc(doc(db('owner'),path)));
  await assertSucceeds(getDoc(doc(db('owner'),'relas_scopes/atarfe/drafts/aging')));
+ await assertFails(save('owner'));
  await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),`relas_memberships/owner/scopes/${scope}`),{active:false,role:'reader'}));
- await assertSucceeds(save('owner',2));
+ await assertSucceeds(getDoc(doc(db('owner'),path)));
+ await assertFails(save('owner',2));
 });
 test('partial accounts cannot become administrator and owner cannot self-remove through the client',async()=>{
  await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'compas_admins/owner'),{active:true}));
@@ -78,7 +80,8 @@ test('owner creates and revokes a scoped account without losing own access',asyn
  await owner();await assertSucceeds(manage('owner','new'));
  await assertSucceeds(save('new'));await assertFails(getDoc(doc(db('new'),'relas_scopes/atarfe/drafts/aging')));
  await assertSucceeds(manage('owner','new',false));await assertFails(getDoc(doc(db('new'),path)));
- await assertSucceeds(save('owner',2));await assertSucceeds(manage('owner','new',true));await assertSucceeds(getDoc(doc(db('new'),path)));
+ await assertSucceeds(getDoc(doc(db('owner'),path)));await assertFails(save('owner',2));
+ await assertSucceeds(manage('owner','new',true));await assertSucceeds(getDoc(doc(db('new'),path)));
 });
 test('partial users cannot create other accounts, self-authorize or read account catalogue',async()=>{
  await assertFails(manage('coord','new'));await assertFails(manage('reader','reader'));
