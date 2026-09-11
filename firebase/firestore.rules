@@ -36,8 +36,8 @@ service cloud.firestore {
     d.keys().hasOnly(['version','payload','updatedBy','updatedAt']) &&
     d.version is int && d.version > 0 && d.payload is map &&
     d.payload.municipalityId == scope && d.payload.moduleId == moduleId &&
-    d.payload.sourceVersion is string && d.payload.decisions is map &&
-    d.updatedBy == request.auth.uid && d.updatedAt == request.time;
+    d.payload.sourceVersion is string && d.payload.sourceDraftVersion is int && d.payload.sourceDraftVersion > 0 &&
+    d.payload.decisions is map && d.updatedBy == request.auth.uid && d.updatedAt == request.time;
   }
   match /compas_admins/{uid} {
    allow get: if request.auth != null && request.auth.uid == uid;
