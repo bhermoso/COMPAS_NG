@@ -5,7 +5,8 @@ import {deleteApp,initializeApp} from 'firebase/app';
 import {connectAuthEmulator,createUserWithEmailAndPassword,initializeAuth,inMemoryPersistence,signInWithEmailAndPassword} from 'firebase/auth';
 import {connectFirestoreEmulator,doc,getDoc,getFirestore,setDoc} from 'firebase/firestore';
 import {createTerritorialAccount,createTerritorialSpace,listTerritorialSpaces,saveManagedAccess,listManagedAccounts} from '../src/infrastructure/relas/AdminAccounts';
-import {readAccessProfile,type RelasClient} from '../src/infrastructure/relas/RelasClient';
+import {readAccessProfile,saveRelasDraft,saveRelasReview,type RelasClient} from '../src/infrastructure/relas/RelasClient';
+import type {PlanPreparationDraft,PlanPreparationReview} from '../src/domain/action-plan-catalog/PlanPreparationDraft';
 const projectId='demo-compas-relas';
 const clients:RelasClient[]=[];
 let env:Awaited<ReturnType<typeof initializeTestEnvironment>>;
@@ -35,6 +36,14 @@ test('actual account creation preserves owner session; scoped grants and revocat
  await expect(getDoc(doc(partial.db,'relas_scopes/atarfe/drafts/aging'))).rejects.toMatchObject({code:'permission-denied'});
  await expect(createTerritorialAccount(partial,'unauthorised@example.test')).rejects.toThrow('administración general');
  await expect(saveManagedAccess(owner,{...account,uid:root.user.uid,active:false})).rejects.toThrow('Tu administración general');
+
+ const draft:PlanPreparationDraft={municipalityId:'granada-zaidin',moduleId:'aging',version:'test-v1',updatedAt:new Date().toISOString(),decisions:{'ENV-OE1.1':{status:'modified',sourceText:'Texto vigente',text:'Propuesta territorial'}}};
+ await expect(saveRelasDraft(owner,draft,null)).rejects.toThrow();
+ const savedDraft=await saveRelasDraft(partial,draft,null);expect(savedDraft.version).toBe(1);
+ const review:PlanPreparationReview={municipalityId:'granada-zaidin',moduleId:'aging',sourceVersion:'test-v1',sourceDraftVersion:1,updatedAt:new Date().toISOString(),decisions:{'ENV-OE1.1':{status:'accepted',sourceText:'Texto vigente',proposedText:'Propuesta territorial',reviewedAt:new Date().toISOString()}}};
+ await expect(saveRelasReview(partial,review,null)).rejects.toThrow();
+ const savedReview=await saveRelasReview(owner,review,null);expect(savedReview.version).toBe(1);
+
  await getDoc(doc(partial.db,'relas_scopes/granada-zaidin/drafts/aging'));
  await saveManagedAccess(owner,{...account,active:false});
  await expect(getDoc(doc(partial.db,'relas_scopes/granada-zaidin/drafts/aging'))).rejects.toMatchObject({code:'permission-denied'});

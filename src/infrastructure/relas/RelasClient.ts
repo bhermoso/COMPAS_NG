@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeAuth, inMemoryPersistence, type Auth } from 'firebase/auth';
 import { getFirestore, doc, collection, getDocs, getDocFromServer, runTransaction, serverTimestamp, type Firestore } from 'firebase/firestore';
-import type { PlanPreparationDraft } from '../../domain/action-plan-catalog/PlanPreparationDraft';
+import type { PlanPreparationDraft, PlanPreparationReview } from '../../domain/action-plan-catalog/PlanPreparationDraft';
 
 // Public web configuration supplied by the project owner; this does not grant data access.
 const config = {
@@ -12,6 +12,7 @@ const config = {
 };
 export interface RelasClient { auth: Auth; db: Firestore }
 export interface RelasDraftRow { version: number; payload: PlanPreparationDraft }
+export interface RelasReviewRow { version: number; payload: PlanPreparationReview }
 let instance: RelasClient | undefined;
 export function createRelasClient(): RelasClient {
  if (instance) return instance;
@@ -56,5 +57,27 @@ export async function saveRelasDraft(client: RelasClient, draft: PlanPreparation
   });
  } catch {
   throw new Error('No se ha guardado: comprueba la conexión y tus permisos o recupera la versión actual del servidor. Tus cambios en pantalla se conservan.');
+ }
+}
+export async function readRelasReview(client: RelasClient, scope: string, moduleId: string): Promise<RelasReviewRow | null> {
+ const snapshot = await getDocFromServer(doc(client.db, 'relas_scopes', scope, 'reviews', moduleId));
+ return snapshot.exists() ? snapshot.data() as RelasReviewRow : null;
+}
+export async function saveRelasReview(client: RelasClient, review: PlanPreparationReview, expectedVersion: number | null): Promise<RelasReviewRow> {
+ const uid = client.auth.currentUser?.uid;
+ if (!uid) throw new Error('Inicia sesión para consolidar.');
+ const ref = doc(client.db, 'relas_scopes', review.municipalityId, 'reviews', review.moduleId);
+ try {
+  return await runTransaction(client.db, async tx => {
+   const current = await tx.get(ref);
+   if ((current.exists() ? current.data().version : null) !== expectedVersion) throw new Error('conflict');
+   const version = (expectedVersion ?? 0) + 1;
+   const row = {version, payload: JSON.parse(JSON.stringify(review)) as PlanPreparationReview, updatedBy: uid, updatedAt: serverTimestamp()};
+   tx.set(ref, row);
+   tx.set(doc(ref, 'history', String(version)), row);
+   return {version, payload: row.payload};
+  });
+ } catch {
+  throw new Error('No se ha consolidado: comprueba la conexión y que tu cuenta tenga administración general, o recupera la revisión actual.');
  }
 }
