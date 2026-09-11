@@ -38,13 +38,13 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
  const consolidatedText = (id: string, text: string) => consolidatedTextFor(text, draft?.decisions[id], reviewIsCurrent ? review?.decisions[id] : undefined);
 
  function updateReview(id: string, source: string, patch: Partial<PlanPreparationReviewDecision>) {
-  if (!canReview || !onReviewChange || !draft) return;
-  const proposal = proposedTextFor(draft.decisions[id], source);
+  if (!canReview || !onReviewChange) return;
+  const proposal = proposedTextFor(draft?.decisions[id], source);
   const previous = review?.decisions[id];
   const next: PlanPreparationReviewDecision = {
-   status: patch.status ?? previous?.status ?? "accepted",
+   status: patch.status ?? previous?.status ?? "reformulated",
    sourceText: source,
-   proposedText: proposal,
+   proposedText: draft?.decisions[id]?.status === "modified" ? proposal : undefined,
    consolidatedText: patch.consolidatedText ?? previous?.consolidatedText,
    reviewedAt: new Date().toISOString(),
   };
@@ -59,30 +59,31 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
  }
 
  function reviewControl(id: string, source: string) {
+  if (!canReview) return null;
   const proposal = draft?.decisions[id];
-  if (!canReview || proposal?.status !== "modified") return null;
+  const hasTerritorialProposal = proposal?.status === "modified";
   const reviewed = reviewIsCurrent ? review?.decisions[id] : undefined;
   const status = reviewed?.status ?? "";
   const effective = consolidatedTextFor(source, proposal, reviewed);
   return <fieldset className="pcm-admin-review">
-   <legend>Revisión administrativa · {id}</legend>
-   {!reviewIsCurrent && review && <p role="alert">La revisión guardada corresponde a una versión anterior del borrador territorial. Debe revisarse de nuevo.</p>}
+   <legend>Edición administrativa · {id}</legend>
+   {!reviewIsCurrent && review && <p role="alert">La revisión guardada corresponde a una versión anterior. Debe revisarse de nuevo antes de consolidar.</p>}
    <p><strong>Texto vigente:</strong> {source}</p>
-   <p><strong>Propuesta territorial:</strong> {proposedTextFor(proposal, source)}</p>
-   <label>Decisión administrativa
+   {hasTerritorialProposal && <p><strong>Propuesta territorial:</strong> {proposedTextFor(proposal, source)}</p>}
+   <label>Acción administrativa
     <select aria-label={`Revisión administrativa ${id}`} value={status} onChange={e => {
      const value=e.target.value as PlanPreparationReviewStatus | "";
      if (!value) return;
-     updateReview(id, source, {status:value, consolidatedText:value === "reformulated" ? (reviewed?.consolidatedText ?? proposedTextFor(proposal, source)) : undefined});
+     updateReview(id, source, {status:value, consolidatedText:value === "reformulated" ? (reviewed?.consolidatedText ?? (hasTerritorialProposal ? proposedTextFor(proposal, source) : source)) : undefined});
     }}>
-     <option value="">Pendiente de revisión</option>
-     <option value="accepted">Aceptar propuesta</option>
-     <option value="rejected">Rechazar y mantener texto vigente</option>
-     <option value="reformulated">Reformular</option>
+     <option value="">Sin cambio administrativo</option>
+     {hasTerritorialProposal && <option value="accepted">Aceptar propuesta territorial</option>}
+     {hasTerritorialProposal && <option value="rejected">Rechazar propuesta y mantener texto vigente</option>}
+     <option value="reformulated">Modificar texto directamente</option>
     </select>
    </label>
-   {status === "reformulated" && <label>Redacción administrativa consolidada
-    <textarea aria-label={`Redacción administrativa consolidada ${id}`} rows={3} value={reviewed?.consolidatedText ?? ""} onChange={e=>updateReview(id,source,{status:"reformulated",consolidatedText:e.target.value})}/>
+   {status === "reformulated" && <label>Nueva redacción administrativa
+    <textarea aria-label={`Nueva redacción administrativa ${id}`} rows={3} value={reviewed?.consolidatedText ?? ""} onChange={e=>updateReview(id,source,{status:"reformulated",consolidatedText:e.target.value})}/>
    </label>}
    {status && <p><strong>Texto resultante:</strong> {effective}</p>}
   </fieldset>;
@@ -112,8 +113,8 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
    <p className="pcm-provenance">{module.sourceLabel}<br /><span>Versión de referencia · {module.sourceDate}</span></p>
   </header>
   <aside className="pcm-guidance" aria-label="Cómo revisar la propuesta">
-   <p><strong>{canReview ? "Revisión administrativa" : "Cómo revisar la propuesta"}</strong></p>
-   {canReview ? <><p>El responsable territorial propone. La administración general acepta, rechaza o reformula antes de consolidar.</p><p>La consolidación administrativa <strong>no constituye aprobación del Grupo Motor</strong>.</p></> : <><p>Selecciona y modifica los elementos para preparar tu propuesta.</p><p>Estas elecciones <strong>no constituyen aprobación del Grupo Motor</strong>.</p><p>Las modificaciones se envían como <strong>propuestas territoriales pendientes de revisión administrativa</strong>.</p></>}
+   <p><strong>{canReview ? "Edición y revisión administrativa" : "Cómo revisar la propuesta"}</strong></p>
+   {canReview ? <><p>Puedes modificar directamente cualquier objetivo o indicador y guardar la nueva redacción como texto consolidado.</p><p>Si existe una propuesta territorial, también puedes aceptarla, rechazarla o reformularla. La consolidación administrativa <strong>no constituye aprobación del Grupo Motor</strong>.</p></> : <><p>Selecciona y modifica los elementos para preparar tu propuesta.</p><p>Estas elecciones <strong>no constituyen aprobación del Grupo Motor</strong>.</p><p>Las modificaciones se envían como <strong>propuestas territoriales pendientes de revisión administrativa</strong>.</p></>}
   </aside>
   <section className="pcm-strategic" aria-label="Objetivo estratégico propuesto">
    <h3>Objetivo estratégico propuesto</h3>
