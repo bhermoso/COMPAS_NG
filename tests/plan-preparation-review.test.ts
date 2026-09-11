@@ -16,4 +16,13 @@ describe('Plan de Acción — consolidación administrativa',()=>{
   expect(consolidatedTextFor(source,proposal,rejected)).toBe(source);
   expect(consolidatedTextFor(source,proposal,reformulated)).toBe('Redacción administrativa');
  });
+ it('permite una modificación administrativa directa aunque no exista propuesta territorial',()=>{
+  const direct:PlanPreparationReviewDecision={
+   status:'reformulated',
+   sourceText:source,
+   consolidatedText:'Cambio directo del administrador',
+   reviewedAt:'2026-09-11T10:30:00.000Z',
+  };
+  expect(consolidatedTextFor(source,undefined,direct)).toBe('Cambio directo del administrador');
+ });
 });
