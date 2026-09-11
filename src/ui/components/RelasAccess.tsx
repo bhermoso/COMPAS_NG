@@ -14,7 +14,15 @@ export default function RelasAccess(){
  const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [profile,setProfile]=useState<AccessProfile>();
  const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [scope,setScope]=useState<string>();const [fullApp,setFullApp]=useState(appEntry);
  const clear=()=>{setProfile(undefined);setScope(undefined);setFullApp(false);setPassword('');};
- useEffect(()=>onAuthStateChanged(client.auth,user=>{if(!user)clear();}),[client]);
+ useEffect(()=>onAuthStateChanged(client.auth,user=>{
+  if(!user){clear();return;}
+  setBusy(true);
+  readAccessProfile(client).then(next=>{
+   setProfile(next);
+   if(next.administrator&&appEntry)setFullApp(true);
+   if(!next.administrator&&!next.scopes.length)setMessage('Tu cuenta está identificada, pero no tiene ámbitos activos. Contacta con el administrador.');
+  }).catch(()=>setMessage('La sesión existe, pero COMPAS no ha podido recuperar tus permisos.')).finally(()=>setBusy(false));
+ }),[client,appEntry]);
  async function logout(){setBusy(true);try{await signOut(client.auth);clear();setMessage('Sesión cerrada.');}catch{setMessage('No se pudo cerrar la sesión.');}finally{setBusy(false);}}
  function openFullApp(){window.history.replaceState(null,'',`${import.meta.env.BASE_URL}?vista=app`);setFullApp(true);}
  function openAdministration(){window.history.replaceState(null,'',`${import.meta.env.BASE_URL}?vista=administracion`);setFullApp(false);}
