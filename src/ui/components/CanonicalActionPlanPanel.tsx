@@ -3,7 +3,7 @@ import {createRelasClient,readAccessProfile} from '../../infrastructure/relas/Re
 import TerritorialWorkspace from './TerritorialWorkspace';
 import {LegacyActionPlanCatalogPanel,type LegacyActionPlanCatalogPanelProps} from './LegacyActionPlanCatalogPanel';
 
-export function CanonicalActionPlanPanel(props:LegacyActionPlanCatalogPanelProps){
+export function ActionPlanCatalogPanel(props:LegacyActionPlanCatalogPanelProps){
  const authenticatedEntry=new URLSearchParams(window.location.search).get('vista')==='app';
  const client=useMemo(()=>createRelasClient(),[]);
  const [administrator,setAdministrator]=useState<boolean|null>(authenticatedEntry?null:false);
