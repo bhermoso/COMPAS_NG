@@ -40,5 +40,5 @@ export * from "./PSLCArtifactViewer";
 export * from "./LecturaEstrategicaView";
 export * from "./PAIView";
 export * from "./DeliberativePrioritySelectionPanel";
-export * from "./ActionPlanCatalogPanel";
+export { ActionPlanCatalogPanel } from "./BrowserCanonicalActionPlanPanel";
 export * from "./PerfilLocalDeSaludPanel";
