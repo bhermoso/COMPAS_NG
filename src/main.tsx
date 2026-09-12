@@ -2,7 +2,7 @@ import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-const RelasAccess = lazy(() => import('./ui/components/RelasAccess'))
+const RelasAccess = lazy(() => import('./ui/components/BrowserRelasAccess'))
 import { BackupPanel } from './ui/components/BackupPanel'
 import CoordinatorPreview from './ui/components/CoordinatorPreview.tsx'
 
