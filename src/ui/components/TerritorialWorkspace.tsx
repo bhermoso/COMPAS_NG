@@ -61,15 +61,15 @@ export default function TerritorialWorkspace({client,scope,role,onBack}:{client:
   setDraft(row?.payload);setVersion(row?.version??null);setDirty(false);
   setReview(reviewRow?.payload);setReviewVersion(reviewRow?.version??null);setReviewDirty(false);
   setReady(true);
-  if(isAdministrator&&reviewRow&&reviewRow.payload.sourceDraftVersion!==(row?.version??0))setMessage('Estado recuperado. La revisión administrativa existente corresponde a otra versión territorial y debe revisarse de nuevo.');
-  else setMessage(row?'Borrador recuperado.':'No hay propuesta territorial guardada. La administración puede editar directamente el texto consolidado.');
+  if(isAdministrator&&reviewRow&&reviewRow.payload.sourceDraftVersion!==(row?.version??0))setMessage('Estado recuperado. La consolidación administrativa existente corresponde a otra versión territorial y debe revisarse de nuevo.');
+  else setMessage(row?'Borrador recuperado.':'No hay propuesta territorial guardada. La administración puede modificar y consolidar directamente el texto vigente.');
  }
 
  useEffect(()=>{let cancelled=false;Promise.all([readRelasDraft(client,scope,module.id),readRelasReview(client,scope,module.id)]).then(([row,reviewRow])=>{
   if(cancelled)return;
   if(row&&(row.payload.municipalityId!==scope||row.payload.moduleId!==module.id||row.payload.version!==module.version||!row.payload.decisions))throw new Error('El borrador guardado requiere revisión.');
   setDraft(row?.payload);setVersion(row?.version??null);setReview(reviewRow?.payload);setReviewVersion(reviewRow?.version??null);setReady(true);
-  if(isAdministrator&&reviewRow&&reviewRow.payload.sourceDraftVersion!==(row?.version??0))setMessage('Estado recuperado. La revisión administrativa debe repetirse porque la propuesta territorial ha cambiado.');
+  if(isAdministrator&&reviewRow&&reviewRow.payload.sourceDraftVersion!==(row?.version??0))setMessage('Estado recuperado. La consolidación administrativa debe revisarse porque la propuesta territorial ha cambiado.');
   else setMessage(row?'Borrador recuperado.':'No hay propuesta territorial guardada.');
  }).catch(e=>{if(!cancelled)setMessage(e.message);}).finally(()=>{if(!cancelled)setBusy(false);});return()=>{cancelled=true;};},[client,scope,module.id,module.version,isAdministrator]);
 
@@ -93,19 +93,19 @@ export default function TerritorialWorkspace({client,scope,role,onBack}:{client:
    const current={...review,sourceDraftVersion:currentDraftVersion,sourceVersion:module.version,updatedAt:new Date().toISOString()};
    const row=await saveRelasReview(client,current,reviewVersion);
    setReviewVersion(row.version);setReview(row.payload);setReviewDirty(false);
-   setMessage('Cambio administrativo guardado. Las propuestas revisadas quedan registradas sin constituir aprobación del Grupo Motor.');
+   setMessage('Cambios administrativos consolidados. El texto resultante queda vigente en COMPAS sin constituir aprobación del Grupo Motor.');
   }catch(e){setMessage((e as Error).message);}finally{setBusy(false);}
  }
 
  const actionBar=<div className="backup-panel__actions" aria-label="Acciones de guardado">
   {isCoordinator&&<button disabled={!ready||busy||!dirty||!draft} onClick={saveCoordinatorProposal}>Guardar propuesta territorial</button>}
-  {isAdministrator&&<button disabled={!ready||busy||!reviewDirty||!review} onClick={saveAdministrativeReview}>Guardar cambios administrativos</button>}
+  {isAdministrator&&<button disabled={!ready||busy||!reviewDirty||!review} onClick={saveAdministrativeReview}>Consolidar cambios administrativos</button>}
   <button disabled={busy} onClick={async()=>{if(hasUnsaved&&!window.confirm('¿Descartar cambios y recuperar el servidor?'))return;setBusy(true);try{await load();}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}}}>Recuperar versión del servidor</button>
  </div>;
 
  return <section><button onClick={()=>{if(!hasUnsaved||window.confirm('Hay cambios sin guardar. ¿Volver y descartarlos?'))onBack();}}>Volver al panel</button>
   <h2>Ámbito: {scope}</h2>
-  <p>{isAdministrator?'Edición administrativa del Plan. Puedes modificar directamente objetivos e indicadores o revisar propuestas territoriales.':'Preparación del Plan. Guardar una modificación crea una propuesta territorial y no cambia por sí sola el texto consolidado.'}</p>
+  <p>{isAdministrator?'Edición administrativa del Plan. Puedes modificar directamente objetivos e indicadores y consolidar esos cambios sin generar una propuesta para revisión. Si existe una propuesta territorial, puedes aceptarla, rechazarla o reformularla.':'Preparación del Plan. Guardar una modificación crea una propuesta territorial y no cambia por sí sola el texto consolidado.'}</p>
   {actionBar}
   {isAdministrator&&ready&&<section className="workspace-panel" aria-label="Propuestas territoriales pendientes">
    <p className="eyebrow">Revisión administrativa</p>
@@ -143,7 +143,7 @@ export default function TerritorialWorkspace({client,scope,role,onBack}:{client:
    canReview={isAdministrator}
    reviewIsCurrent={effectiveReviewIsCurrent}
    renderWorksheet={()=><p>Las fichas y sus documentos aún se gestionan en el espacio de trabajo completo.</p>}
-   persistenceMessage={isAdministrator?(reviewDirty?'Cambios administrativos pendientes de guardar. Usa «Guardar cambios administrativos».':reviewIsCurrent?'Texto administrativo consolidado para el estado territorial actual.':'Sin cambios administrativos guardados para el estado territorial actual.'):(dirty?'Propuesta territorial pendiente de guardar. Usa «Guardar propuesta territorial».':'Sin cambios territoriales pendientes.')}
+   persistenceMessage={isAdministrator?(reviewDirty?'Cambios administrativos pendientes de consolidar. Usa «Consolidar cambios administrativos».':reviewIsCurrent?'Texto administrativo consolidado para el estado territorial actual.':'Sin cambios administrativos pendientes de consolidación.'):(dirty?'Propuesta territorial pendiente de guardar. Usa «Guardar propuesta territorial».':'Sin cambios territoriales pendientes.')}
   /></fieldset>}
   {actionBar}
   <p role="status">{message}</p>
