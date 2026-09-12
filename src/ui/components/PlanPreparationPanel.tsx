@@ -65,16 +65,18 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
   const reviewed = reviewIsCurrent ? review?.decisions[id] : undefined;
   const status = reviewed?.status ?? "";
   const effective = consolidatedTextFor(source, proposal, reviewed);
+  const sourceDiffersFromCurrent = effective !== source;
   return <fieldset className="pcm-admin-review">
    <legend>Edición administrativa · {id}</legend>
    {!reviewIsCurrent && review && <p role="alert">La revisión guardada corresponde a una versión anterior. Debe revisarse de nuevo antes de consolidar.</p>}
-   <p><strong>Texto vigente:</strong> {source}</p>
+   <p><strong>Texto vigente consolidado:</strong> {effective}</p>
+   {sourceDiffersFromCurrent && <details className="pcm-trace"><summary>Ver texto fuente anterior</summary><p>{source}</p></details>}
    {hasTerritorialProposal && <p><strong>Propuesta territorial:</strong> {proposedTextFor(proposal, source)}</p>}
    <label>Acción administrativa
     <select aria-label={`Revisión administrativa ${id}`} value={status} onChange={e => {
      const value=e.target.value as PlanPreparationReviewStatus | "";
      if (!value) return;
-     updateReview(id, source, {status:value, consolidatedText:value === "reformulated" ? (reviewed?.consolidatedText ?? (hasTerritorialProposal ? proposedTextFor(proposal, source) : source)) : undefined});
+     updateReview(id, source, {status:value, consolidatedText:value === "reformulated" ? (reviewed?.consolidatedText ?? (hasTerritorialProposal ? proposedTextFor(proposal, source) : effective)) : undefined});
     }}>
      <option value="">Sin cambio administrativo</option>
      {hasTerritorialProposal && <option value="accepted">Aceptar propuesta territorial</option>}
@@ -83,9 +85,8 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
     </select>
    </label>
    {status === "reformulated" && <label>Nueva redacción administrativa
-    <textarea aria-label={`Nueva redacción administrativa ${id}`} rows={3} value={reviewed?.consolidatedText ?? ""} onChange={e=>updateReview(id,source,{status:"reformulated",consolidatedText:e.target.value})}/>
+    <textarea aria-label={`Nueva redacción administrativa ${id}`} rows={3} value={reviewed?.consolidatedText ?? effective} onChange={e=>updateReview(id,source,{status:"reformulated",consolidatedText:e.target.value})}/>
    </label>}
-   {status && <p><strong>Texto resultante:</strong> {effective}</p>}
   </fieldset>;
  }
 
