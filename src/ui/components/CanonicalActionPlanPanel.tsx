@@ -1,12 +1,9 @@
 import {useEffect,useMemo,useState} from 'react';
 import {createRelasClient,readAccessProfile} from '../../infrastructure/relas/RelasClient';
 import TerritorialWorkspace from './TerritorialWorkspace';
-import {ActionPlanCatalogPanel} from './ActionPlanCatalogPanel';
-import type {ComponentProps} from 'react';
+import {LegacyActionPlanCatalogPanel,type LegacyActionPlanCatalogPanelProps} from './LegacyActionPlanCatalogPanel';
 
-type CatalogProps=ComponentProps<typeof ActionPlanCatalogPanel>;
-
-export function CanonicalActionPlanPanel(props:CatalogProps){
+export function CanonicalActionPlanPanel(props:LegacyActionPlanCatalogPanelProps){
  const authenticatedEntry=new URLSearchParams(window.location.search).get('vista')==='app';
  const client=useMemo(()=>createRelasClient(),[]);
  const [administrator,setAdministrator]=useState<boolean|null>(authenticatedEntry?null:false);
@@ -20,5 +17,5 @@ export function CanonicalActionPlanPanel(props:CatalogProps){
 
  if(authenticatedEntry&&administrator===null)return <section className="workspace-panel"><p>Recuperando el Plan de Acción compartido…</p></section>;
  if(authenticatedEntry&&administrator)return <TerritorialWorkspace client={client} scope={props.municipalityId} role="administrator" onBack={()=>{}}/>;
- return <ActionPlanCatalogPanel {...props}/>;
+ return <LegacyActionPlanCatalogPanel {...props}/>;
 }
