@@ -1,2 +1,2 @@
 export * from './components/index';
-export {ActionPlanCatalogPanel} from './components/CanonicalActionPlanPanel';
+export {ActionPlanCatalogPanel} from './components/BrowserCanonicalActionPlanPanel';
