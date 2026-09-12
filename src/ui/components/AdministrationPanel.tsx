@@ -14,7 +14,7 @@ export default function AdministrationPanel({client,onOpenApp,onOpenScope}:{clie
  async function grant(account:NewAccount&{scope:string;role:'coordinator'|'reader'}) {
   const managed={uid:account.uid,email:account.email,scope:account.scope,role:account.role,active:true};
   await saveManagedAccess(client,managed);
-  setCreated({...account,granted:true});setAccounts(rows=>[...rows.filter(a=>a.uid!==managed.uid),managed]);setMessage('Acceso territorial concedido. Entrega las credenciales a la persona responsable.');
+  setCreated({...account,granted:true});setAccounts(rows=>[...rows.filter(a=>a.uid!==managed.uid),managed]);setMessage('Acceso territorial concedido. Entrega el correo y la contraseña generada a la persona responsable.');
  }
  async function changeAccess(account:ManagedAccount) {
   setBusy(true);setMessage('');
@@ -32,7 +32,7 @@ export default function AdministrationPanel({client,onOpenApp,onOpenScope}:{clie
     <button disabled={busy||!spaceName.trim()||!spaceId}>Crear espacio territorial</button>
    </form>
   </section>
-  <section className="admin-section"><h2>Crear acceso para un plan de salud</h2><p>Indica el correo de la persona responsable y su plan. COMPAS generará la contraseña. La cuenta de coordinación podrá consultar y editar su borrador compartido; sus propuestas quedan pendientes de aprobación.</p>
+  <section className="admin-section"><h2>Crear acceso para un plan de salud</h2><p>Indica el correo de la persona responsable y su plan. COMPAS creará una contraseña aleatoria y la mostrará una sola vez. Para entrar, la persona usará como usuario ese correo y como contraseña la contraseña generada que le entregues. La cuenta de coordinación podrá consultar y editar su borrador compartido; sus cambios quedarán como propuestas pendientes de revisión administrativa.</p>
    <form onSubmit={async e=>{e.preventDefault();setBusy(true);setMessage('Creando cuenta…');try{const account={...await createTerritorialAccount(client,email),scope:selectedScope,role};setCreated({...account,granted:false});await grant(account);}catch(error){setMessage(accessError(error));}finally{setBusy(false);}}}>
     <label>Plan de salud<select disabled={busy||!!created} value={selectedScope} onChange={e=>setSelectedScope(e.target.value)}>{spaces.length===0&&<option value="">Crea primero el espacio territorial</option>}{spaces.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
     <label>Usuario: correo de la persona responsable<input disabled={busy||!!created} required type="email" autoComplete="off" value={email} onChange={e=>setEmail(e.target.value)}/></label>
@@ -40,8 +40,8 @@ export default function AdministrationPanel({client,onOpenApp,onOpenScope}:{clie
     <button disabled={busy||!!created||!email||!spaces.some(s=>s.id===selectedScope)}>Crear usuario, contraseña y acceso</button>
    </form>
    {created&&<section className="admin-credentials" aria-label="Credenciales de la nueva cuenta"><h3>{created.granted?'Acceso preparado':'Cuenta creada: permiso pendiente'}</h3>
-    <p>{created.granted?'Estas credenciales solo se muestran durante esta sesión.':'No entregues todavía estas credenciales. La cuenta existe, pero falta confirmar la asignación territorial.'}</p>
-    <p>Usuario: <strong>{created.email}</strong></p><label>Contraseña generada<input readOnly value={created.password}/></label>
+    <p>{created.granted?'Guarda y entrega estas credenciales ahora: la contraseña generada solo se muestra durante esta sesión.':'No entregues todavía estas credenciales. La cuenta existe, pero falta confirmar la asignación territorial.'}</p>
+    <p>Usuario (correo): <strong>{created.email}</strong></p><label>Contraseña generada<input readOnly value={created.password}/></label>
     <p>Entrada del equipo: <a href={accessUrl}>{accessUrl}</a></p><p>Plan: <strong>{created.scope}</strong> · {created.role==='coordinator'?'Coordinación':'Consulta'}</p>
     {!created.granted?<button disabled={busy} onClick={async()=>{setBusy(true);try{await grant(created);}catch(e){setMessage(accessError(e));}finally{setBusy(false);}}}>Reintentar asignación</button>:<button onClick={()=>{setCreated(undefined);setEmail('');}}>He guardado las credenciales</button>}
    </section>}
