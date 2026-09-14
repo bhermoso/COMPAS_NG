@@ -25,6 +25,9 @@ export interface DefinitiveActionPlanModuleProjection {
 export const selectedPlanDecision = (decision: PlanPreparationDecision | undefined) =>
   decision?.status === "included" || decision?.status === "modified";
 
+const excludedPlanDecision = (decision: PlanPreparationDecision | undefined) =>
+  decision?.status === "excluded";
+
 export const resolvedPlanDecisionText = (decision: PlanPreparationDecision | undefined, source: string) =>
   cleanActionPlanProposalText(decision?.status === "modified" && decision.text?.trim() ? decision.text.trim() : source);
 
@@ -80,7 +83,7 @@ export function pendingPreparationDecisionCount(module: ActionPlanCatalogModule,
       if (excluded(draft, [module.id, general.code])) continue;
       if (!draft.decisions[specific.code] || draft.decisions[specific.code].status === "pending") count += 1;
       if (excluded(draft, [module.id, general.code, specific.code])) continue;
-      if (!draft.decisions[specific.indicator.code] || draft.decisions[specific.indicator.code].status === "pending") count += 1;
+      if (!selectedPlanDecision(draft.decisions[specific.code]) && (!draft.decisions[specific.indicator.code] || draft.decisions[specific.indicator.code].status === "pending")) count += 1;
     }
   }
   return count;
@@ -100,6 +103,7 @@ export function buildDefinitiveActionPlanProjection(
         const objectiveDecision = cleanedDecision(draft?.decisions[specific.code]);
         const indicatorDecision = cleanedDecision(draft?.decisions[specific.indicator.code]);
         const objectiveIncluded = selectedPlanDecision(objectiveDecision) || selectedPlanDecision(indicatorDecision);
+        const indicatorIncluded = selectedPlanDecision(indicatorDecision) || (selectedPlanDecision(objectiveDecision) && !excludedPlanDecision(indicatorDecision));
         if (!objectiveIncluded) return [];
         return [{
           general,
@@ -107,7 +111,7 @@ export function buildDefinitiveActionPlanProjection(
           generalDecision: cleanedDecision(draft?.decisions[general.code]),
           objectiveDecision,
           indicatorDecision,
-          indicatorIncluded: selectedPlanDecision(indicatorDecision),
+          indicatorIncluded,
         }];
       });
     }).sort((left, right) =>
