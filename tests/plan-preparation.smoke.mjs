@@ -16,6 +16,7 @@ try{
  assert.equal(await panel.locator('select').count(),41);
  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('compas-ng:workspace:granada-zaidin')));
  await panel.getByLabel('Estado del Plan ENV-OE5.1',{exact:true}).selectOption('included');
+ await panel.getByLabel('Estado del Plan ENV-OE5.2',{exact:true}).selectOption('included');
  const ind=panel.locator('.pcm-specific').first().locator('.pcm-sheet');await ind.locator(':scope > summary').click();
  await panel.getByLabel('Estado del Plan ENV-I5.1',{exact:true}).selectOption('modified');
  await panel.getByLabel('Redacción vigente · ENV-I5.1',{exact:true}).fill('INDICADOR SOLO DE PRUEBA');
@@ -46,6 +47,7 @@ try{
  await result.getByRole('button',{name:'Generar Plan de Acción',exact:true}).click();
  await result.getByText('Plan generado con la selección actual.',{exact:true}).waitFor();
  assert.match(await result.locator('.pcm-generated-plan').innerText(),/ENV-OE5\.1[\s\S]*ENV-I5\.1/);
+ assert.match(await result.locator('.pcm-generated-plan').innerText(),/ENV-OE5\.2[\s\S]*ENV-I5\.2/);
  if(process.env.COMPAS_TEST_SCREENSHOT) await page.screenshot({path:process.env.COMPAS_TEST_SCREENSHOT});
  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  assert.deepEqual(errors,[]);console.log('PASS: 4 bloques, 41 controles, editar/excluir/recargar/recuperar/generar, ficha y actuación conservadas, evidencia y revisión formal intactas, sin errores JS ni desbordamiento móvil');
