@@ -1,4 +1,4 @@
-import { documentAccessUrl } from './documentAccess';
+import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccess';
 const frameworks = {
  epvsa: ['EPVSA', 'docs/source-material/strategic-frameworks/08_Lineas_EPVSA_02abril24.pdf'],
  esca: ['ESCA', 'docs/source-material/strategic-frameworks/Estrategia de Salud Comunitaria de Andalucia 2026-2030-ESCA.pdf'],
@@ -6,5 +6,9 @@ const frameworks = {
 } as const;
 export function FrameworkReference({ name }: { name: keyof typeof frameworks }) {
  const [label, path] = frameworks[name];
- return <a href={documentAccessUrl(path)} target="_blank" rel="noopener noreferrer" aria-label={`${label} (PDF, nueva pestaña)`}>{label}</a>;
+ const url = documentAccessUrl(path);
+ if (!url) return <>{label}</>;
+ return isPdfDocumentAccess(path)
+  ? <a href={url} download={documentDownloadFileName(path, label)} aria-label={`${label} (descargar PDF)`}>{label}</a>
+  : <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${label} (nueva pestaña)`}>{label}</a>;
 }

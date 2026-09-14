@@ -9,7 +9,7 @@ export function ActionPlanCatalogPanel(props:LegacyActionPlanCatalogPanelProps){
  const [administrator,setAdministrator]=useState<boolean|null>(authenticatedEntry?null:false);
 
  useEffect(()=>{
-  if(!authenticatedEntry){setAdministrator(false);return;}
+  if(!authenticatedEntry)return;
   let cancelled=false;
   readAccessProfile(client).then(profile=>{if(!cancelled)setAdministrator(profile.administrator);}).catch(()=>{if(!cancelled)setAdministrator(false);});
   return()=>{cancelled=true;};

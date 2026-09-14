@@ -9,7 +9,7 @@
  * (config vitest.rebuild.config.ts — NO forma parte de `npm test`).
  *
  * El fragmento resultante es 100 % ASCII (el export vigente ya lo es) y no
- * no puede reintroducir resultados procedentes de fixtures.
+ * puede reintroducir resultados procedentes de fixtures.
  */
 
 import { describe, it, expect } from "vitest";
@@ -25,12 +25,19 @@ const exportsDir = resolve(
 const VIGENTE = "compas-ng-workspace-granada-zaidin.json";
 const KEY = "compas-ng:workspace:granada-zaidin";
 
+function isAsciiOnly(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) > 0x7f) return false;
+  }
+  return true;
+}
+
 describe("Generador — restore de Granada-Zaidín desde el export vigente", () => {
   it("produce restore-granada-zaidin.console.js desde el expediente observado", () => {
     const value = readFileSync(resolve(exportsDir, VIGENTE), "utf8");
 
     // El export vigente debe ser ASCII puro y no contener resultados no observados.
-    expect(/^[\x00-\x7F]*$/.test(value)).toBe(true);
+    expect(isAsciiOnly(value)).toBe(true);
     const ws = JSON.parse(value);
     const atoms = ws.evidenceStore.atoms;
     expect(ws.municipality.identity.territorialType).toBe("distrito");
@@ -54,7 +61,7 @@ describe("Generador — restore de Granada-Zaidín desde el export vigente", () 
       `console.log("Granada-Zaidin observado restaurado:", localStorage.getItem(${JSON.stringify(KEY)}).length, "caracteres");`,
       "",
     ].join("\n");
-    expect(/^[\x00-\x7F]*$/.test(snippet)).toBe(true);
+    expect(isAsciiOnly(snippet)).toBe(true);
 
     writeFileSync(resolve(exportsDir, "restore-granada-zaidin.console.js"), snippet, "utf8");
 

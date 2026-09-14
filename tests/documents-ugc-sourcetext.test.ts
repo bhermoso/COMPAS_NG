@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -58,6 +58,23 @@ const DOCX_DIR = resolve(
   "../docs/source-material/territorial-cases/granada-zaidin"
 );
 const KEY = "compas-ng:workspace:granada-zaidin";
+const UGC_DOCX_FILES = [
+  resolve(DOCX_DIR, "Informe Zaidin Centro Este.docx"),
+  resolve(DOCX_DIR, "Informe Zaidin Sur.docx"),
+] as const;
+const RECONSTRUCTION_DOCX_FILES = [
+  ...UGC_DOCX_FILES,
+  resolve(DOCX_DIR, "Informe_Salud_Granada_Abril2023_estilo_Atarfe.docx"),
+] as const;
+const hasUgcDocxSources = UGC_DOCX_FILES.every(existsSync);
+const hasReconstructionDocxSources = RECONSTRUCTION_DOCX_FILES.every(existsSync);
+
+function isAsciiOnly(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) > 0x7f) return false;
+  }
+  return true;
+}
 
 function toArrayBuffer(path: string): ArrayBuffer {
   const buf = readFileSync(path);
@@ -89,7 +106,7 @@ beforeAll(() => {
 }, 60000);
 
 describe("Extractor DOCX — determinista y Node-safe (conserva acentos)", () => {
-  it("extrae el texto del informe Centro-Este con acentos y sin XML", async () => {
+  it.skipIf(!hasUgcDocxSources)("extrae el texto del informe Centro-Este con acentos y sin XML", async () => {
     const text = await extractDocxText(
       toArrayBuffer(resolve(DOCX_DIR, "Informe Zaidin Centro Este.docx"))
     );
@@ -99,7 +116,7 @@ describe("Extractor DOCX — determinista y Node-safe (conserva acentos)", () =>
     expect(text).not.toContain("<w:t");
   });
 
-  it("es determinista: dos extracciones del mismo DOCX coinciden", async () => {
+  it.skipIf(!hasUgcDocxSources)("es determinista: dos extracciones del mismo DOCX coinciden", async () => {
     const path = toArrayBuffer(resolve(DOCX_DIR, "Informe Zaidin Sur.docx"));
     const a = await extractDocxText(path);
     const b = await extractDocxText(
@@ -109,7 +126,7 @@ describe("Extractor DOCX — determinista y Node-safe (conserva acentos)", () =>
     expect(a).toContain("Zaidín Sur");
   });
 
-  it("preserva la estructura de áreas del informe (5 ÁREA)", async () => {
+  it.skipIf(!hasUgcDocxSources)("preserva la estructura de áreas del informe (5 ÁREA)", async () => {
     const text = await extractDocxText(
       toArrayBuffer(resolve(DOCX_DIR, "Informe Zaidin Centro Este.docx"))
     );
@@ -220,10 +237,11 @@ describe("Ciclo de persistencia — el cuerpo sobrevive export → restore → r
 });
 
 describe("Invariantes del piloto — solo fuentes observadas", () => {
-  it("7 documentos: 1 informe, 2 territoriales, 3 marcos y 1 Localiza", () => {
+  it("8 documentos: 1 informe, 1 histórico archivado, 2 territoriales, 3 marcos y 1 Localiza", () => {
     const docs = ws.repository.documents;
-    expect(docs.length).toBe(7);
+    expect(docs.length).toBe(8);
     expect(docs.filter((d) => d.kind === "health-report").length).toBe(1);
+    expect(docs.filter((d) => d.kind === "other" && d.status === "archived").length).toBe(1);
     expect(docs.filter((d) => d.kind === "territorial-documentation").length).toBe(2);
     expect(docs.filter((d) => d.kind === "strategic-framework").length).toBe(3);
     expect(docs.filter((d) => d.kind === "localiza-salud").length).toBe(1);
@@ -247,7 +265,7 @@ describe("Invariantes del piloto — solo fuentes observadas", () => {
 });
 
 describe("Reconstrucción — el build registra los territoriales con sourceText", () => {
-  it("buildGranadaZaidinWorkspace persiste el texto y metadatos por UGC", async () => {
+  it.skipIf(!hasReconstructionDocxSources)("buildGranadaZaidinWorkspace persiste el texto y metadatos por UGC", async () => {
     const { workspace } = await buildGranadaZaidinWorkspace();
     const td = workspace.repository.documents.filter(
       (d) => d.kind === "territorial-documentation"
@@ -278,7 +296,7 @@ describe("Reconstrucción — el build registra los territoriales con sourceText
 
 describe("Integridad del fichero — ASCII y copia MANUAL idéntica", () => {
   it("el export vigente es 100 % ASCII (acentos \\u-escapados)", () => {
-    expect(/^[\x00-\x7F]*$/.test(raw)).toBe(true);
+    expect(isAsciiOnly(raw)).toBe(true);
     expect(raw).toContain("Zaid\\u00edn");
     expect(raw).toContain("VIGILANCIA INTEGRAL DE LA SALUD");
   });

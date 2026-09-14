@@ -21,7 +21,7 @@ const studyKeys = [
 
 describe("Granada-Zaidín — ningún resultado sin aplicación observada", () => {
   it("el seed conserva las fuentes reales y no publica resultados de fixtures", () => {
-    expect(seed.repository.documents).toHaveLength(7);
+    expect(seed.repository.documents).toHaveLength(8);
     expect(seed.evidenceStore.atoms).toHaveLength(56);
     expect(seed.evidenceStore.atoms.every((atom) => atom.kind === "asset")).toBe(true);
     for (const key of studyKeys) expect(seed[key], key).toBeUndefined();

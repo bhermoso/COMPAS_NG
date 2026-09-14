@@ -2,7 +2,7 @@ import { useState } from "react";
 import { institutionalHealthReportTitle } from "../../application/health-profile";
 import type { HealthReportDocument, HealthReportSection } from "../../domain/health-report";
 import type { MunicipalDocumentRepository } from '../../domain/repository';
-import { DocumentAccess } from './DocumentAccess';
+import { DocumentAccess } from './DocumentAccess.tsx';
 
 interface HealthReportViewerProps {
   healthReport?: HealthReportDocument;

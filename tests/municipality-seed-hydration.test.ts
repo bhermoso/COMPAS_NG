@@ -59,7 +59,8 @@ const SEED_PATH = resolve(
 );
 const SEED_RAW = readFileSync(SEED_PATH, "utf8");
 
-// Export canónico de origen: el seed desplegable debe ser una copia byte a byte.
+// Export restaurable de origen. El seed desplegable puede conservar material
+// histórico adicional, pero debe mantener las fuentes observadas y los activos.
 const CANONICAL_EXPORT_PATH = resolve(
   dirname(fileURLToPath(import.meta.url)),
   "../municipalities/granada-zaidin/exports/compas-ng-workspace-granada-zaidin.json"
@@ -120,12 +121,12 @@ describe("hidratación de expedientes municipales desde seed", () => {
     expect(ws?.municipality.identity.name).toBe("Granada-Zaidín");
   });
 
-  it("2. Granada-Zaidín carga 7 documentos reales y 56 evidencias de activos", async () => {
+  it("2. Granada-Zaidín carga 8 documentos reales y 56 evidencias de activos", async () => {
     const ws = await loadMunicipalitySeed("granada-zaidin", {
       baseUrl: "/",
       fetchImpl: okFetch(SEED_RAW),
     });
-    expect(ws?.repository.documents.length).toBe(7);
+    expect(ws?.repository.documents.length).toBe(8);
     expect(ws?.evidenceStore.atoms.length).toBe(56);
   });
 
@@ -137,7 +138,7 @@ describe("hidratación de expedientes municipales desde seed", () => {
     const result = loadOrCreateMunicipalityWorkspace("granada-zaidin", GRANADA_INPUT);
     // El seed NO se hidrata (no hay carrera): gana el local.
     expect(result.seedPending).toBe(false);
-    expect(result.workspace.repository.documents.length).toBe(7);
+    expect(result.workspace.repository.documents.length).toBe(8);
     expect(result.workspace.evidenceStore.atoms.length).toBe(56);
   });
 
@@ -244,7 +245,7 @@ describe("hidratación de expedientes municipales desde seed", () => {
     expect(parsed.schemaVersion).toBe("1.0.0");
     expect(parsed.municipality.identity.id).toBe("granada-zaidin");
     expect(parsed.municipality.identity.name).toBe("Granada-Zaidín");
-    expect(parsed.repository.documents.length).toBe(7);
+    expect(parsed.repository.documents.length).toBe(8);
     expect(parsed.evidenceStore.atoms.length).toBe(56);
     // La ruta registrada coincide con el fichero desplegable.
     expect(MUNICIPALITY_SEEDS["granada-zaidin"].path).toBe(
@@ -252,17 +253,36 @@ describe("hidratación de expedientes municipales desde seed", () => {
     );
   });
 
-  it("8b. el seed desplegable es copia BYTE A BYTE del export canónico de municipalities/", () => {
-    // Detecta cualquier divergencia futura entre la copia desplegable (public/) y el
-    // export canónico de origen (municipalities/…/exports/).
-    const seedBuf = readFileSync(SEED_PATH);
-    const canonicalBuf = readFileSync(CANONICAL_EXPORT_PATH);
-    expect(seedBuf.equals(canonicalBuf)).toBe(true);
+  it("8b. el seed desplegable conserva las fuentes del export restaurable y añade solo el histórico archivado", () => {
+    const seed = parseWorkspaceJSON(SEED_RAW)!;
+    const canonicalRawText = readFileSync(CANONICAL_EXPORT_PATH, "utf8");
+    const canonicalRaw = JSON.parse(canonicalRawText) as MunicipalityWorkspace;
+    const canonical = parseWorkspaceJSON(canonicalRawText)!;
+    expect(seed.repository.documents.length).toBe(8);
+    expect(canonicalRaw.repository.documents.length).toBe(7);
+    expect(canonical.repository.documents.length).toBe(8);
+    expect(seed.repository.documents.map((document) => document.id).sort()).toEqual(
+      canonical.repository.documents.map((document) => document.id).sort()
+    );
+    expect(seed.evidenceStore.atoms.length).toBe(canonicalRaw.evidenceStore.atoms.length);
+    expect(seed.evidenceStore.atoms.length).toBe(56);
+    expect(new Set(seed.evidenceStore.atoms.map((atom) => atom.id))).toEqual(
+      new Set(canonicalRaw.evidenceStore.atoms.map((atom) => atom.id))
+    );
+    const canonicalIds = new Set(canonicalRaw.repository.documents.map((document) => document.id));
+    const seedIds = new Set(seed.repository.documents.map((document) => document.id));
+    for (const id of canonicalIds) expect(seedIds.has(id), id).toBe(true);
+    const extraDocs = seed.repository.documents.filter((document) => !canonicalIds.has(document.id));
+    expect(extraDocs).toHaveLength(1);
+    expect(extraDocs[0].kind).toBe("health-report");
+    const historical = seed.repository.documents.find((document) => document.id === "1ca11945-44a2-4af5-b779-bb02582eb516");
+    expect(historical?.kind).toBe("other");
+    expect(historical?.status).toBe("archived");
   });
 
   // ── Migración: placeholder vacío de la versión anterior → seed canónico ────────
 
-  it("6b. MIGRACIÓN: localStorage con Granada-Zaidín válido pero prístino → al arrancar carga el seed (7/56)", async () => {
+  it("6b. MIGRACIÓN: localStorage con Granada-Zaidín válido pero prístino → al arrancar carga el seed (8/56)", async () => {
     // Un navegador de la versión anterior guardó un expediente VÁLIDO pero VACÍO
     // (creado por createCompleteMunicipalityWorkspace). Debe considerarse placeholder.
     const placeholder = createCompleteMunicipalityWorkspace(GRANADA_SEED_INPUT);
@@ -283,7 +303,7 @@ describe("hidratación de expedientes municipales desde seed", () => {
     const hydrated = shouldReplaceWithSeed(result.workspace, "granada-zaidin")
       ? seed
       : result.workspace;
-    expect(hydrated?.repository.documents.length).toBe(7);
+    expect(hydrated?.repository.documents.length).toBe(8);
     expect(hydrated?.evidenceStore.atoms.length).toBe(56);
   });
 

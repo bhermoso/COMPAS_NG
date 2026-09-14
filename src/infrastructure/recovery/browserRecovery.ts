@@ -106,7 +106,7 @@ export async function restoreBackup(text: string): Promise<CheckedBackup> {
     }
   } catch (error) {
     for (const entry of written) if (localStorage.getItem(entry.key) === entry.value) localStorage.removeItem(entry.key);
-    throw new Error('No se pudo completar la recuperación: ' + (error as Error).message + ' Los expedientes anteriores se conservan. Los originales ya copiados permanecen disponibles; conserva la copia y vuelve a intentarlo con espacio suficiente.');
+    throw new Error('No se pudo completar la recuperación: ' + (error as Error).message + ' Los expedientes anteriores se conservan. Los originales ya copiados permanecen disponibles; conserva la copia y vuelve a intentarlo con espacio suficiente.', { cause: error });
   }
   return checked;
 }

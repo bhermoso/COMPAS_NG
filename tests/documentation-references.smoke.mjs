@@ -3,7 +3,7 @@ import {createServer} from 'vite';
 import {chromium} from 'playwright';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-const server=await createServer({server:{host:'127.0.0.1',port:0}});await server.listen();let browser;
+const server=await createServer({server:{host:'127.0.0.1',port:0,strictPort:false}});await server.listen();let browser;
 try{
  browser=await chromium.launch({executablePath:process.env.COMPAS_TEST_CHROMIUM,headless:true,args:['--no-sandbox']});
  const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.httpServer.address().port+'/COMPAS_NG/');
@@ -22,7 +22,7 @@ try{
    React.createElement(DocumentRepositoryPanel,{repository:seed.repository})));
  });
  const root=page.locator('#report-check');await root.locator('.fde-source-toggle').click();
- const link=root.locator('.hr-viewer__source-access').getByRole('link',{name:/Abrir documento/});
+ const link=root.locator('.hr-viewer__source-access').getByRole('link',{name:/Descargar PDF original/});
  await link.waitFor();
  const response=await page.request.get(new URL(await link.getAttribute('href'),page.url()).href);assert.equal(response.status(),200);
  const digest=b=>createHash('sha256').update(b).digest('hex');
@@ -41,7 +41,7 @@ try{
  await dialog.getByText(/No se ha localizado/).waitFor();
  await dialog.getByRole('searchbox').fill('EPVSA');
  await dialog.getByRole('button',{name:/EPVSA/}).click();
- const framework=dialog.getByRole('link',{name:/Abrir documento/});
+ const framework=dialog.getByRole('link',{name:/Descargar PDF original/});
  assert.equal((await page.request.get(new URL(await framework.getAttribute('href'),page.url()).href)).status(),200);
  await dialog.getByRole('button',{name:'Cerrar',exact:true}).click();
  console.log('PASS: references, missing document, catalogue search, original PDF and retained UGC texts');

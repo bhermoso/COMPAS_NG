@@ -5,7 +5,7 @@ import { bundledDocuments } from './ui/components/documentAccess';
 import { BackupPanel } from './ui/components/BackupPanel';
 import { DocumentationProvider } from "./ui/components/Documentation";
 import { profileSourceChanged } from './application/health-profile/profileSourceChanged';
-import { DocumentAccess } from './ui/components/DocumentAccess';
+import { DocumentAccess } from './ui/components/DocumentAccess.tsx';
 import { saveOriginalFile, deleteOriginalFile } from './infrastructure/document-files/originalFiles';
 import type { PlanPreparationDraft } from "./domain/action-plan-catalog/PlanPreparationDraft";
 import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
@@ -31,6 +31,8 @@ import {
   shouldReplaceWithSeed,
   applySeedDocumentMigration,
   backfillSeedMigrationMarker,
+  readActiveMunicipalityId,
+  saveActiveMunicipalityId,
   type WorkspaceLoadResult,
   type SeedDocumentMigration,
 } from "./appWorkspaceHydration";
@@ -179,8 +181,29 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
 ];
 
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
+const DEFAULT_MUNICIPALITY_ID = "granada-zaidin";
 const WORKSPACE_PERSISTENCE_FAILURE_MESSAGE =
   "No se pudo guardar el espacio de trabajo en este navegador. La selección puede perderse al recargar.";
+
+function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextInput[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
+    return raw ? (JSON.parse(raw) as CreateMunicipalityContextInput[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function resolveInitialMunicipality(
+  customMunicipalities: readonly CreateMunicipalityContextInput[]
+): CreateMunicipalityContextInput {
+  const municipalities = [...DEMO_MUNICIPALITIES, ...customMunicipalities];
+  const fallback =
+    municipalities.find((municipality) => municipality.id === DEFAULT_MUNICIPALITY_ID) ??
+    DEMO_MUNICIPALITIES[0];
+  const activeId = readActiveMunicipalityId(municipalities, fallback.id);
+  return municipalities.find((municipality) => municipality.id === activeId) ?? fallback;
+}
 
 function slugifyMunicipalityId(name: string): string {
   return name
@@ -339,10 +362,19 @@ export default function App() {
   }
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
   const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
+  const [initialCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(
+    readCustomMunicipalitiesFromLocalStorage
+  );
+  const [customMunicipalities, setCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(
+    () => initialCustomMunicipalities
+  );
 
   const [initialWorkspaceLoad] = useState<WorkspaceLoadResult>(() => {
-    const defaultMuni = DEMO_MUNICIPALITIES[0];
-    return loadOrCreateMunicipalityWorkspace(defaultMuni.id, defaultMuni);
+    const initialMunicipality = resolveInitialMunicipality(initialCustomMunicipalities);
+    return loadOrCreateMunicipalityWorkspace(
+      initialMunicipality.id,
+      initialMunicipality
+    );
   });
   const [workspace, setWorkspace] = useState<MunicipalityWorkspace>(() =>
     // `backfill-marker` es local y determinista: se aplica de forma síncrona en la
@@ -420,14 +452,6 @@ export default function App() {
   const [importProjectDatasetMessage, setImportProjectDatasetMessage] = useState<string | null>(null);
   const [persistenceMessage, setPersistenceMessage] = useState<string | null>(null);
 
-  const [customMunicipalities, setCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(() => {
-    try {
-      const raw = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
-      return raw ? (JSON.parse(raw) as CreateMunicipalityContextInput[]) : [];
-    } catch {
-      return [];
-    }
-  });
   const [newMuniName, setNewMuniName] = useState("");
   const [newMuniProvince, setNewMuniProvince] = useState("");
   const [newMuniType, setNewMuniType] = useState("municipio");
@@ -716,7 +740,9 @@ export default function App() {
 
   const handlePlanPreparationChange = useCallback((draft: PlanPreparationDraft) => {
     setWorkspace(prev => draft.municipalityId !== prev.municipality.identity.id ? prev : ({...prev,
-      planPreparationDrafts: [...(prev.planPreparationDrafts ?? []).filter(item => item.moduleId !== draft.moduleId), draft],
+      planPreparationDrafts: [...(prev.planPreparationDrafts ?? []).filter(item =>
+        item.moduleId !== draft.moduleId || item.municipalityId !== draft.municipalityId
+      ), draft],
       updatedAt: new Date().toISOString(),
     }));
   }, []);
@@ -923,7 +949,7 @@ export default function App() {
     }
   }
 
-  async function handleProcessExistingHealthReport(): Promise<void> {
+  const handleProcessExistingHealthReport = useCallback(async (): Promise<void> => {
     const report = workspace.healthReport;
     if (!report || !/\.pdf$/i.test(report.sourceFileName)) return;
     const targetMunicipalityId = workspace.municipality.identity.id;
@@ -949,7 +975,7 @@ export default function App() {
         ? `Informe procesado: ${processed.pdfExtraction!.pageCount} páginas y ${processed.body.charCount.toLocaleString('es-ES')} caracteres. La lectura del borrador dispone del texto; los perfiles validados requieren revisión.`
         : "PDF conservado, sin texto extraíble. Necesita transcripción u OCR antes de alimentar la lectura del Perfil.");
     } catch(error) {setLastHealthReportMessage((error as Error).message);} finally {setIsLoadingHealthReport(false);}
-  }
+  }, [workspace.healthReport, workspace.municipality.identity.id, workspace.repository.documents]);
 
   // The bundled Zaidín PDF was previously registered without text. Process it once
   // when encountered; never replace later reports or validated snapshots.
@@ -962,7 +988,7 @@ export default function App() {
     if (reportProcessingAttempts.current.has(key)) return;
     reportProcessingAttempts.current.add(key);
     void handleProcessExistingHealthReport();
-  }, [workspace.healthReport?.id, pendingSeedId, isLoadingHealthReport]);
+  }, [workspace.healthReport, workspace.municipality.identity.id, workspace.repository.documents, pendingSeedId, isLoadingHealthReport, handleProcessExistingHealthReport]);
 
   // ── Carga de archivo para tipos documentales con extracción de texto ─────────
   // Aplica a: strategic-framework, territorial-documentation, qualitative-material.
@@ -2504,6 +2530,7 @@ export default function App() {
         ? nextWorkspaceLoad.seedMigration.migration
         : null
     );
+    saveActiveMunicipalityId(municipalityId);
 
     setWorkspace(nextWorkspace);
     setPendingTopics([...(nextWorkspace.thematicPrioritisation?.selectedTopicIds ?? [])]);
@@ -2577,7 +2604,6 @@ export default function App() {
             COMPÁS <span className="app-nav__brand-ng">NG</span>
           </span>
           <div className="app-nav__tabs">
-            <a className="app-nav__tab" href="?vista=administracion" target="_blank" rel="noopener noreferrer">Administración</a>
             {NAV_ITEMS.map((item, index) => (
               <button
                 key={item.id}
@@ -3390,10 +3416,10 @@ export default function App() {
             ) : (
               <section className="workspace-panel">
                 <div className="phase-blocked-notice">
-                  <strong>Borrador del Plan de Acción no disponible</strong>
+                  <strong>Borrador automático de actuaciones no disponible</strong>
                   <p>
-                    El Grupo Motor debe registrar una selección vigente antes de generar
-                    cualquier propuesta de objetivos o actuaciones.
+                    La edición directa de objetivos e indicadores se guarda arriba en el expediente territorial.
+                    Para generar automáticamente actuaciones, el Grupo Motor debe registrar una selección vigente.
                   </p>
                 </div>
               </section>
@@ -3403,12 +3429,12 @@ export default function App() {
             <>
               <section className="workspace-panel">
                 <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-                <h2>Plan de Acción · preparación del borrador</h2>
+                <h2>Plan de Acción · edición directa</h2>
                 <div className="phase-blocked-notice">
-                  <strong>Revisión municipal todavía no habilitada</strong>
+                  <strong>Edición territorial disponible</strong>
                   <p>
-                    Puedes preparar y guardar tu selección de líneas, objetivos e indicadores como borrador. Para la revisión formal se requiere un Perfil de Salud Local validado
-                    y vigente, su Lectura Estratégica Local y la selección expresa del Grupo Motor.
+                    Puedes seleccionar, excluir y modificar líneas, objetivos e indicadores. Al elegir Modificar,
+                    la nueva redacción se guarda en este expediente territorial sin revisión administrativa intermedia.
                   </p>
                 </div>
               </section>

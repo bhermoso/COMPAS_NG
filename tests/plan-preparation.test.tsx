@@ -1,3 +1,4 @@
+import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { HEALTHY_AGING_MODULE } from "../src/domain/action-plan-catalog/ActionPlanCatalog";
@@ -10,6 +11,21 @@ import { createIndicatorWorksheet, worksheetContextChanged, worksheetKey } from 
 const draft: PlanPreparationDraft = { municipalityId: "granada-zaidin", moduleId: ZAIDIN_AGING_PROPOSAL.id, version: ZAIDIN_AGING_PROPOSAL.version, updatedAt: "2026-09-09", decisions: {
  "ENV-OE5.1": {status: "excluded", sourceText: "anterior"}, "ENV-I5.1": {status: "modified", text: "Indicador adaptado", sourceText: "original"}
 }};
+
+function findElement(node: ReactNode, predicate: (element: ReactElement<Record<string, unknown>>) => boolean): ReactElement<Record<string, unknown>> | undefined {
+ if (Array.isArray(node)) {
+  for (const child of node) {
+   const found = findElement(child, predicate);
+   if (found) return found;
+  }
+  return undefined;
+ }
+ if (!isValidElement(node)) return undefined;
+ const element = node as ReactElement<Record<string, unknown> & {children?: ReactNode}>;
+ if (predicate(element)) return element;
+ return findElement(element.props.children, predicate);
+}
+
 describe("Preparación independiente del Plan", () => {
  it("reagrupa los 18 objetivos sin cambiar indicadores ni catálogo original", () => {
  const original = HEALTHY_AGING_MODULE.generalObjectives.flatMap(g => g.specificObjectives);
@@ -25,11 +41,11 @@ describe("Preparación independiente del Plan", () => {
  const before = JSON.stringify(previous);
  const html = renderToStaticMarkup(<PlanPreparationPanel module={ZAIDIN_AGING_PROPOSAL} municipalityId={draft.municipalityId} draft={previous} onChange={() => {}} renderWorksheet={() => null}/>);
  expect(html).toContain("Redacción propia que debe conservarse");
- expect(html).toContain("La propuesta cambió");
+ expect(html).toContain("La referencia de partida ha cambiado");
  expect(JSON.stringify(previous)).toBe(before);
  const participation = ZAIDIN_AGING_PROPOSAL.generalObjectives.find(g => g.code === "ENV-B-participacion")!;
  expect(participation.specificObjectives.map(o => o.code)).toEqual(expect.arrayContaining(["ENV-OE8.1", "ENV-OE8.2", "ENV-OE9.1", "ENV-OE9.2"]));
- expect(html).toContain("Objetivo estratégico propuesto");
+ expect(html).toContain("Objetivo estratégico vigente");
  expect(html).toContain("<strong>envejecimiento saludable</strong>");
  });
  it("persiste decisiones sin crear evidencia ni revisiones formales", () => {
@@ -50,10 +66,49 @@ describe("Preparación independiente del Plan", () => {
  it("permite elegir en borrador sin perfil, muestra negritas y avisa cambios previos", () => {
  const html = renderToStaticMarkup(<PlanPreparationPanel module={ZAIDIN_AGING_PROPOSAL} municipalityId={draft.municipalityId} draft={draft} onChange={() => {}} renderWorksheet={() => null}/>);
  expect((html.match(/<select /g) ?? []).length).toBe(41);
- expect(html).toContain("La propuesta cambió");
- expect(html).toContain("Fuera del borrador");
+ expect(html).toContain("La referencia de partida ha cambiado");
+ expect(html).toContain("Fuera del Plan");
  expect(html).toContain("<strong>soledad percibida</strong>");
  expect(html).toContain("Indicador adaptado");
+ });
+ it("guarda inmediatamente la redacción modificada sin crear revisión administrativa", () => {
+ const changes: PlanPreparationDraft[] = [];
+ const source = ZAIDIN_AGING_PROPOSAL.generalObjectives[0].specificObjectives[1].title;
+ const first = PlanPreparationPanel({module: ZAIDIN_AGING_PROPOSAL, municipalityId: draft.municipalityId, onChange: next => changes.push(next), renderWorksheet: () => null});
+ const select = findElement(first, element => element.type === "select" && element.props["aria-label"] === "Estado del Plan ENV-OE5.2");
+ expect(select).toBeDefined();
+ (select!.props.onChange as (event: {target: {value: string}}) => void)({target: {value: "modified"}});
+ expect(changes).toHaveLength(1);
+ expect(changes[0].decisions["ENV-OE5.2"]).toMatchObject({status: "modified", sourceText: source, text: source});
+ expect(changes[0].decisions[ZAIDIN_AGING_PROPOSAL.id]).toMatchObject({status: "included"});
+ expect(changes[0].decisions[ZAIDIN_AGING_PROPOSAL.generalObjectives[0].code]).toMatchObject({status: "included"});
+ const second = PlanPreparationPanel({module: ZAIDIN_AGING_PROPOSAL, municipalityId: draft.municipalityId, draft: changes[0], onChange: next => changes.push(next), renderWorksheet: () => null});
+ const textarea = findElement(second, element => element.type === "textarea" && element.props["aria-label"] === "Redacción vigente · ENV-OE5.2");
+ expect(textarea).toBeDefined();
+ const saveButton = findElement(second, element => element.type === "button" && element.props["aria-label"] === "Guardar redacción vigente · ENV-OE5.2");
+ expect(saveButton).toBeDefined();
+ (textarea!.props.onChange as (event: {target: {value: string}}) => void)({target: {value: "Texto definitivo de prueba"}});
+ expect(changes).toHaveLength(2);
+ expect(changes[1].decisions["ENV-OE5.2"]).toMatchObject({status: "modified", sourceText: source, text: "Texto definitivo de prueba"});
+ });
+ it("sanea propuestas antiguas guardadas con campañas entre paréntesis", () => {
+ const campaign = ["CAMPAÑA", "FESTIVAL"].join("/");
+ const fest = ["ZAIDÍN", "SENIOR", "FEST"].join(" ");
+ const oldText = `Incrementar la visibilidad de las personas mayores (${campaign} ${fest}).`;
+ const previous: PlanPreparationDraft = {
+  ...draft,
+  decisions: {
+   "ENV-OE5.2": {
+    status: "modified",
+    sourceText: oldText,
+    text: oldText,
+   },
+  },
+ };
+ const html = renderToStaticMarkup(<PlanPreparationPanel module={ZAIDIN_AGING_PROPOSAL} municipalityId={draft.municipalityId} draft={previous} onChange={() => {}} renderWorksheet={() => null}/>);
+ expect(html).toContain("Incrementar la visibilidad de las personas mayores.");
+ expect(html).not.toContain(fest);
+ expect(html).not.toContain(campaign);
  });
  it("conserva identidad de fichas al cambiar versión y objetivo general", () => {
  const context = {municipalityId:draft.municipalityId,moduleId:draft.moduleId,indicatorCode:"ENV-I5.1"};

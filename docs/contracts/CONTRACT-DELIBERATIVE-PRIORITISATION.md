@@ -1,17 +1,37 @@
 # CONTRATO DE SELECCIÓN DELIBERATIVA
 
-> PA-RELAS-01 · Versión 1.0 — 2026-09-03
+> PA-RELAS-01 · Versión 1.1 — 2026-09-13
 > Estado: VIGENTE
 
 ## 1. Cadena canónica
 
-La única ruta visible hacia el Plan de Acción es:
+La ruta canónica para generar automáticamente un borrador técnico del Plan de
+Acción es:
 
 `PSL validado → Lectura Estratégica Local → selección del Grupo Motor → borrador del Plan de Acción`
 
 Los motores históricos `PrioritizationEngine`, `EPVSATranslator`,
 `ActionPlanEngine`, `AgendaEngine` y `MonitoringEngine` no son una segunda
 fuente de verdad y no se muestran en el espacio Plan de Acción.
+
+### 1.1 Edición directa del Plan de Acción
+
+La edición territorial directa del catálogo del Plan de Acción es una operación
+manual sobre el expediente local, no una generación automática.
+
+Cuando el usuario selecciona `Modificar` y edita el texto de un objetivo,
+indicador o bloque del catálogo:
+
+- se crea o actualiza inmediatamente un `PlanPreparationDraft` del ámbito;
+- el texto modificado pasa a ser la redacción vigente del expediente local;
+- no se exige una `PlanPreparationReview` ni una fase administrativa intermedia;
+- el cambio no acredita por sí solo una decisión deliberativa del Grupo Motor ni
+  un compromiso institucional municipal.
+
+Esta ruta permite trabajar el contenido del Plan de Acción sin bloquear la
+edición por falta de PSL aprobado, MTE o selección deliberativa. Esas compuertas
+siguen aplicando a la generación automática de propuestas y a la futura
+compilación institucional del Plan Local de Salud.
 
 ## 2. Separación de aportaciones y decisión
 
@@ -29,8 +49,8 @@ COMPÁS NG no puntúa, ordena ni selecciona prioridades.
 
 ## 3. Compuerta humana
 
-El borrador del Plan de Acción permanece bloqueado mientras no exista una
-`DeliberativePrioritySelection` explícita y vigente. La decisión debe:
+El borrador automático del Plan de Acción permanece bloqueado mientras no exista
+una `DeliberativePrioritySelection` explícita y vigente. La decisión debe:
 
 - seleccionar al menos una candidatura existente;
 - identificar al Grupo Motor que la adopta;

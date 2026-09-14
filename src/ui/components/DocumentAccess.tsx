@@ -1,11 +1,13 @@
 import { useEffect,useState } from 'react';
 import type { MunicipalDocument } from '../../domain/repository';
 import { loadOriginalFile,saveOriginalFile } from '../../infrastructure/document-files/originalFiles';
-import { documentAccessUrl } from './documentAccess';
+import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccess';
 
 export function DocumentAccess({document:doc}:{document:MunicipalDocument}){
  const [file,setFile]=useState<File>();const [message,setMessage]=useState('');
  const [loading,setLoading]=useState(true);
+ // La consulta IndexedDB depende del documento; el reset evita mostrar un original anterior.
+ // eslint-disable-next-line react-hooks/set-state-in-effect
  useEffect(()=>{let active=true;setFile(undefined);setLoading(true);setMessage('');
  loadOriginalFile(doc.municipalityId,doc.id).then(f=>{if(active)setFile(f);}).catch(e=>{if(active)setMessage(e.message);}).finally(()=>{if(active)setLoading(false);});
  return ()=>{active=false;};},[doc.id,doc.municipalityId]);
@@ -16,7 +18,12 @@ export function DocumentAccess({document:doc}:{document:MunicipalDocument}){
   a.href=href;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(href),1000);
  }
  return <div className="document-access">
-  {url && <a className="doc-repo__open" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir documento: ${doc.title} (nueva pestaña)`}>Abrir documento ↗</a>}
+  {url && isPdfDocumentAccess(doc.source.url) && <div className="document-access__links">
+   <a className="doc-repo__open" href={url} download={doc.sourceFileName ?? documentDownloadFileName(doc.source.url, doc.title)} aria-label={`Descargar PDF original: ${doc.title}`}>Descargar PDF original</a>
+   <a className="doc-repo__open doc-repo__open--secondary" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir PDF en nueva pestaña: ${doc.title}`}>Abrir en nueva pestaña</a>
+   <p className="document-access__notice">Si el visor integrado muestra una pestaña vacía, usa la descarga del PDF original.</p>
+  </div>}
+  {url && !isPdfDocumentAccess(doc.source.url) && <a className="doc-repo__open" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir documento: ${doc.title} (nueva pestaña)`}>Abrir documento ↗</a>}
   {file && <p><button type="button" onClick={download}>Descargar original · {file.name}</button> <small>Conservado en este navegador.</small></p>}
   {!loading && !file && !url && <p><strong>Archivo original no disponible.</strong> {doc.sourceText?.trim() ? 'Puedes consultar el texto conservado.' : 'Solo se conserva la referencia o los datos derivados.'}</p>}
   {doc.sourceText?.trim() && <details><summary>Consultar texto conservado</summary><p style={{whiteSpace:'pre-wrap'}}>{doc.sourceText}</p></details>}

@@ -40,16 +40,24 @@ const UGC_SOURCE_SYSTEM =
   "Informe clínico-asistencial por UGC (Vigilancia Integral de la Salud) — " +
   "texto íntegro persistido, no atomizado ni interpretado";
 
-const NON_ASCII = new RegExp("[^\\x00-\\x7F]", "g");
+function isAsciiOnly(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) > 0x7f) return false;
+  }
+  return true;
+}
 
 /** Serializa a JSON 2-espacios forzando ASCII puro (acentos `\uXXXX`). */
 function serializeAscii(value: unknown): string {
-  return (
-    JSON.stringify(value, null, 2).replace(
-      NON_ASCII,
-      (ch) => "\\u" + ch.charCodeAt(0).toString(16).padStart(4, "0")
-    ) + "\n"
-  );
+  const json = JSON.stringify(value, null, 2);
+  let ascii = "";
+  for (let i = 0; i < json.length; i++) {
+    const code = json.charCodeAt(i);
+    ascii += code <= 0x7f
+      ? json[i]
+      : "\\u" + code.toString(16).padStart(4, "0");
+  }
+  return ascii + "\n";
 }
 
 function toArrayBuffer(path: string): ArrayBuffer {
@@ -122,7 +130,7 @@ describe("Generador — inyecta sourceText íntegro por UGC en el export observa
       }
 
       const out = serializeAscii(ws);
-      expect(/^[\x00-\x7F]*$/.test(out)).toBe(true);
+      expect(isAsciiOnly(out)).toBe(true);
       rendered[file] = out;
     }
 

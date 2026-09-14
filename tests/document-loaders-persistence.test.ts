@@ -24,7 +24,7 @@ import {
   loadWorkspaceFromLocalStorage,
 } from "../src/infrastructure/persistence/local-storage";
 import { addMunicipalDocument } from "../src/domain/repository";
-import { getCategory } from "../src/ui/components/DocumentRepositoryPanel";
+import { getCategory } from "../src/ui/components/documentRepositoryCategorization";
 import type { MunicipalityWorkspace } from "../src/domain/workspace";
 
 // ── Simulación de localStorage ────────────────────────────────────────────────

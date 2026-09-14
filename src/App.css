@@ -314,6 +314,17 @@ h3 {
 .pcm-decision label { display: block; }
 .pcm-decision__label { display: block; margin-bottom: 4px; color: #526070; font-size: 0.74rem; font-weight: 700; }
 .pcm-decision select, .pcm-decision input, .pcm-decision textarea, .pcm-review-footer input { box-sizing: border-box; width: 100%; }
+.pcm-save-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.pcm-save-row button { padding: 7px 11px; border: 1px solid #0f766e; border-radius: 5px; background: #ecfdf5; color: #115e59; font-weight: 700; cursor: pointer; }
+.pcm-save-row button:hover { background: #d1fae5; }
+.pcm-save-confirmation { color: #047857; font-size: 0.78rem; font-weight: 700; }
+.pcm-generation-actions { margin: 12px 0; }
+.pcm-generation-actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+.pcm-generation-prompt { margin: 10px 0 0; padding: 12px 14px; border-left: 4px solid #0074c8; background: #f4f9fd; color: #1e3a5f; }
+.pcm-generation-prompt p { margin: 4px 0 0; }
+.pcm-generated-plan { margin-top: 16px; display: grid; gap: 14px; }
+.pcm-generated-objectives { display: grid; gap: 10px; margin: 12px 0 0; padding-left: 28px; }
+.pcm-generated-objectives > li::marker { color: #0074c8; font-weight: 800; }
 .pcm-review-footer { display: grid; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
 .pcm-cautions { margin-top: 18px; padding: 12px 14px; border-left: 3px solid #c0d8f0; background: #f8faff; color: #526070; font-size: 0.82rem; }
 .pcm-cautions ul { margin-bottom: 0; }
@@ -10364,9 +10375,12 @@ h3 {
 }
 .doc-repo__open:hover { background: #f1f5f9; }
 .doc-repo__open:focus-visible { outline: 2px solid #0074c8; outline-offset: 3px; }
+.doc-repo__open--secondary { border-color: #cbd5e1; color: #334155; }
 .document-row:has(> .document-access) { flex-wrap: wrap; }
 .document-access { flex-basis: 100%; width: 100%; min-width: 0; margin-top: 12px; }
 .document-access p { overflow-wrap: anywhere; }
+.document-access__links { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; }
+.document-access__notice { flex-basis: 100%; margin: 4px 0 0; color: #64748b; font-size: 0.8rem; }
 .document-access__attach { display: grid; gap: 6px; margin-top: 12px; }
 .document-access input { max-width: 100%; }
 .hr-viewer__source-access { margin: 16px 0; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #0074c8; }

@@ -37,10 +37,6 @@ const providerAtarfe = new StaticFrameworkProvider(
 // Replica fielmente el fixture institucional del municipio piloto.
 // Dos áreas de intervención (diagnóstico real 2025).
 
-function scaffoldChapter(): PSLScaffoldChapter {
-  return { content: "Orientación técnica del sistema.", status: "scaffold", authorshipNote: "Requiere autoría humana." };
-}
-
 function authoredChapter(content: string): PSLScaffoldChapter {
   return { content, status: "authored", authorshipNote: "Requiere autoría humana." };
 }

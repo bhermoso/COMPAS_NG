@@ -306,8 +306,8 @@ describe("N1b — separación de N1a/N3/N4 y no creación de evidencias", () => 
     ).toBe(0);
   });
 
-  it("24-26. invariantes del piloto: 7 docs / 56 evidencias Localiza", () => {
-    expect(ws.repository.documents.length).toBe(7);
+  it("24-26. invariantes del piloto: 8 docs / 56 evidencias Localiza", () => {
+    expect(ws.repository.documents.length).toBe(8);
     expect(ws.evidenceStore.atoms.length).toBe(56);
     expect(
       ws.evidenceStore.atoms.filter((a) => a.provenance.origin === "localiza-salud").length

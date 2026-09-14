@@ -311,7 +311,7 @@ describe("Granada-Zaidín reconstruido — marcos estratégicos y normativos", (
 // strategic-framework, pero son insumo del Plan de Acción: no computan como
 // fuente diagnóstica del Perfil, no generan átomos y no alimentan conclusiones.
 
-import { getCategory } from "../src/ui/components/DocumentRepositoryPanel";
+import { getCategory } from "../src/ui/components/documentRepositoryCategorization";
 import { generateLT1 } from "../src/application/lt1";
 import { createEvidenceStore, createEvidenceAtom } from "../src/domain/evidence";
 

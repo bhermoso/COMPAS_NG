@@ -61,6 +61,13 @@ const STUDY_KEYS = [
   "sbqStudy",
 ] as const;
 
+function isAsciiOnly(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) > 0x7f) return false;
+  }
+  return true;
+}
+
 let raw: string;
 let ws: MunicipalityWorkspace;
 let psl: LocalHealthProfile;
@@ -76,7 +83,7 @@ beforeAll(() => {
 
 describe("Línea vigente observada — integridad del fichero exportado", () => {
   it("es 100 % ASCII, sin patrones de corrupción CP850/CP1252", () => {
-    expect(/^[\x00-\x7F]*$/.test(raw)).toBe(true);
+    expect(isAsciiOnly(raw)).toBe(true);
     for (const mojibake of ["├¡", "Ã­", "ÔÇö", "Ã©", "┬"]) {
       expect(raw.includes(mojibake), mojibake).toBe(false);
     }
@@ -96,10 +103,11 @@ describe("Línea vigente observada — composición del expediente", () => {
     expect(ws.municipality.identity.ineCode).toBeUndefined();
   });
 
-  it("7 documentos: 1 informe, 1 Localiza, 2 territoriales y 3 marcos", () => {
+  it("8 documentos: 1 informe, 1 histórico archivado, 1 Localiza, 2 territoriales y 3 marcos", () => {
     const docs = ws.repository.documents;
-    expect(docs.length).toBe(7);
+    expect(docs.length).toBe(8);
     expect(docs.filter((d) => d.kind === "health-report").length).toBe(1);
+    expect(docs.filter((d) => d.kind === "other" && d.status === "archived").length).toBe(1);
     expect(docs.filter((d) => d.kind === "territorial-documentation").length).toBe(2);
     expect(docs.filter((d) => d.kind === "strategic-framework").length).toBe(3);
     expect(docs.filter((d) => d.kind === "localiza-salud").length).toBe(1);
@@ -129,9 +137,14 @@ describe("Línea vigente observada — composición del expediente", () => {
     ).toBe(false);
   });
 
-  it("la rehidratación no pierde nada respecto al fichero", () => {
+  it("la rehidratación conserva el export y aplica la migración documental vigente", () => {
     const crudo = JSON.parse(raw);
-    expect(ws.repository.documents.length).toBe(crudo.repository.documents.length);
+    expect(crudo.repository.documents.length).toBe(7);
+    expect(ws.repository.documents.length).toBeGreaterThanOrEqual(crudo.repository.documents.length);
+    const ids = new Set(ws.repository.documents.map((document) => document.id));
+    for (const document of crudo.repository.documents) {
+      expect(ids.has(document.id), document.id).toBe(true);
+    }
     expect(ws.evidenceStore.atoms.length).toBe(crudo.evidenceStore.atoms.length);
   });
 });
