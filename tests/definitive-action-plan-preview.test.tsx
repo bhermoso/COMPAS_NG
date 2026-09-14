@@ -102,6 +102,54 @@ describe("Plan de Acción resultante", () => {
     }
   });
 
+  it("incluye por defecto el indicador asociado a un objetivo incluido salvo exclusión explícita", () => {
+    const baseDraft: PlanPreparationDraft = {
+      municipalityId: "granada-zaidin",
+      moduleId: ZAIDIN_AGING_PROPOSAL.id,
+      version: ZAIDIN_AGING_PROPOSAL.version,
+      updatedAt: "2026-09-14",
+      decisions: {
+        [ZAIDIN_AGING_PROPOSAL.id]: {
+          status: "included",
+          sourceText: ZAIDIN_AGING_PROPOSAL.strategicObjective,
+        },
+        "ENV-B-edadismo": {
+          status: "included",
+          sourceText: ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title,
+        },
+        "ENV-OE5.2": {
+          status: "included",
+          sourceText: "Incrementar la visibilidad de las personas mayores.",
+        },
+      },
+    };
+
+    const [withDefaultIndicator] = buildDefinitiveActionPlanProjection(
+      "granada-zaidin",
+      [ZAIDIN_AGING_PROPOSAL],
+      [baseDraft]
+    );
+    expect(withDefaultIndicator.rows).toHaveLength(1);
+    expect(withDefaultIndicator.rows[0].specific.code).toBe("ENV-OE5.2");
+    expect(withDefaultIndicator.rows[0].indicatorIncluded).toBe(true);
+
+    const [withExcludedIndicator] = buildDefinitiveActionPlanProjection(
+      "granada-zaidin",
+      [ZAIDIN_AGING_PROPOSAL],
+      [{
+        ...baseDraft,
+        decisions: {
+          ...baseDraft.decisions,
+          "ENV-I5.2": {
+            status: "excluded",
+            sourceText: "Indicador de visibilidad comunitaria",
+          },
+        },
+      }]
+    );
+    expect(withExcludedIndicator.rows[0].indicatorIncluded).toBe(false);
+  });
+
   it("sanea textos antiguos guardados antes de generar el plan", () => {
     const dirty = `Incrementar la visibilidad de las personas mayores (${["CAMPAÑA", "FESTIVAL"].join("/")} ${["ZAIDÍN", "SENIOR", "FEST"].join(" ")}).`;
     const resultDraft: PlanPreparationDraft = {
