@@ -1,48 +1,17 @@
 import { FrameworkReference } from "./FrameworkReference";
 import { DocumentReference } from "./Documentation";
 import type {
-  DocumentKind,
   MunicipalDocument,
   MunicipalDocumentRepository,
 } from "../../domain/repository";
-import { DocumentAccess } from './DocumentAccess';
-
-const KIND_LABEL: Record<DocumentKind, string> = {
-  "health-report": "Informe de Salud",
-  "localiza-salud": "Localiza Salud",
-  "strategic-framework": "Marco estratégico y normativo",
-  "complementary-study": "Estudio complementario",
-  "eas-variable": "Variable EAS",
-  "cmi-indicator": "Indicador CMI",
-  "community-asset": "Activo comunitario",
-  "redcap-export": "Exportación REDCap",
-  "territorial-documentation": "Documentación territorial",
-  "qualitative-material": "Material cualitativo",
-  "longitudinal-evidence": "Evidencia longitudinal",
-  other: "Otro documento",
-};
+import { DocumentAccess } from './DocumentAccess.tsx';
+import { getCategory, KIND_LABEL, STUDY_LABEL_BY_TAG } from "./documentRepositoryCategorization";
 
 const STATUS_LABEL: Record<string, string> = {
   uploaded: "Cargado",
   validated: "Validado",
   rejected: "Rechazado",
   archived: "Archivado",
-};
-
-const STUDY_LABEL_BY_TAG: Record<string, string> = {
-  ibse: "IBSE",
-  "duke-eas": "DUKE-EAS",
-  "predimed-eas": "PREDIMED-EAS",
-  "sf12-eas": "SF-12 EAS",
-  "sueno-eas": "Sueño EAS",
-  "cage-eas": "CAGE-EAS",
-  auditc: "AUDIT-C",
-  "ipaq-eas": "IPAQ-EAS",
-  ghq12: "GHQ-12",
-  phq9: "PHQ-9",
-  psqi: "PSQI",
-  fagerstrom: "Fagerström",
-  sbq: "SBQ",
 };
 
 function getDocumentKindLabel(document: MunicipalDocument): string {
@@ -52,37 +21,6 @@ function getDocumentKindLabel(document: MunicipalDocument): string {
     return `${STUDY_LABEL_BY_TAG[studyTag]} · ${KIND_LABEL[document.kind]}`;
   }
   return KIND_LABEL[document.kind] ?? document.kind;
-}
-
-// ── Categorías del repositorio documental ─────────────────────────────────────
-// Jerarquía institucional:
-// 1. Fuente documental primaria (Informe de Salud)
-// 2. Estudios complementarios (IBSE, EAS)
-// 3. Activos comunitarios y territorio
-// 4. Otras fuentes diagnósticas
-// 5. Insumo estratégico para planificación (NO es fuente diagnóstica del Perfil)
-
-export type DocCategory =
-  | "primary-source"
-  | "complementary-study"
-  | "community-asset"
-  | "strategic-input"
-  | "other-source";
-
-export function getCategory(document: MunicipalDocument): DocCategory {
-  if (document.kind === "health-report") return "primary-source";
-  if (document.kind === "community-asset" || document.kind === "localiza-salud") return "community-asset";
-  if (
-    document.kind === "complementary-study" ||
-    (document.kind === "redcap-export" && document.tags.some((t) => STUDY_LABEL_BY_TAG[t]))
-  ) {
-    return "complementary-study";
-  }
-  // Los marcos estratégicos y normativos son insumo de la fase de Plan de
-  // Acción / Plan Local de Salud. El Perfil concluye, pero no recomienda:
-  // estos documentos no forman parte del diagnóstico territorial.
-  if (document.kind === "strategic-framework") return "strategic-input";
-  return "other-source";
 }
 
 const STUDY_TAG_ORDER: Record<string, number> = {

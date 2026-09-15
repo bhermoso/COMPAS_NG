@@ -69,4 +69,25 @@ describe("PA-RELAS-02 — representación editorial", () => {
     expect(html).toContain("Pendiente de asignación formal");
     expect(html).toContain("no genera actuaciones");
   });
+
+  it("cuando hay edición directa no muestra la revisión formal legacy", () => {
+    const html = renderToStaticMarkup(createElement(ActionPlanCatalogPanel, {
+      municipalityId: "granada-zaidin",
+      lectura,
+      selection,
+      eligibleModules: getEligibleActionPlanModules(lectura, selection),
+      reviews: [],
+      drafts: [],
+      onDraftChange: () => {},
+      worksheets: [],
+      onWorksheetChange: () => {},
+      onSave: () => [],
+    }));
+
+    expect(html).toContain("Plan de Acción · edición territorial directa");
+    expect(html).toContain("la nueva redacción queda guardada como texto vigente");
+    expect(html).not.toContain("Revisión formal y catálogo original");
+    expect(html).not.toContain("Guardar revisión del módulo");
+    expect(html).not.toContain("Acción administrativa");
+  });
 });

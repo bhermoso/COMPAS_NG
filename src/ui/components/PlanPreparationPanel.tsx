@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ActionPlanCatalogModule, CatalogGeneralObjectiveTemplate, CatalogSpecificObjectiveTemplate } from "../../domain/action-plan-catalog/ActionPlanCatalog";
 import {
+  cleanActionPlanProposalText,
   consolidatedTextFor,
   excludedByAncestor,
   plainProposalText,
@@ -9,6 +10,7 @@ import {
   proposalStrategicText,
   proposedTextFor,
   ZAIDIN_PROPOSAL_VERSION,
+  type PlanPreparationDecision,
   type PlanPreparationDraft,
   type PlanPreparationReview,
   type PlanPreparationReviewDecision,
@@ -34,9 +36,48 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
 }) {
  const revised = module.version === ZAIDIN_PROPOSAL_VERSION;
  const directTerritorialEdit = canEditProposal && !canReview;
- const emphasized = (text: string) => [proposalStrategicText, ...Object.values(proposalObjectiveTexts), ...proposalBlocks.map(b => b.text)].find(candidate => plainProposalText(candidate) === text) ?? text;
- const territorialText = (id: string, text: string) => draft?.decisions[id]?.status === "modified" ? draft.decisions[id].text ?? text : emphasized(text);
+ const emphasized = (text: string) => cleanActionPlanProposalText([proposalStrategicText, ...Object.values(proposalObjectiveTexts), ...proposalBlocks.map(b => b.text)].find(candidate => plainProposalText(candidate) === cleanActionPlanProposalText(text)) ?? text);
+ const territorialText = (id: string, text: string) => draft?.decisions[id]?.status === "modified" ? cleanActionPlanProposalText(draft.decisions[id].text ?? text) : emphasized(text);
  const consolidatedText = (id: string, text: string) => consolidatedTextFor(text, draft?.decisions[id], reviewIsCurrent ? review?.decisions[id] : undefined);
+ const sourceTextById = new Map<string, string>([[module.id, cleanActionPlanProposalText(module.strategicObjective)]]);
+ for (const general of module.generalObjectives) {
+  sourceTextById.set(general.code, cleanActionPlanProposalText(general.title));
+  for (const specific of general.specificObjectives) {
+   sourceTextById.set(specific.code, cleanActionPlanProposalText(specific.title));
+   sourceTextById.set(specific.indicator.code, cleanActionPlanProposalText(specific.indicator.title));
+  }
+ }
+
+ function updateDraftDecision(id: string, source: string, status: PlanPreparationDecision["status"], textOverride?: string, ancestors: string[] = []) {
+  const decisions = {...draft?.decisions};
+  const cleanSource = cleanActionPlanProposalText(source);
+  if (status === "included" || status === "modified") {
+   for (const ancestorId of ancestors) {
+    const previousAncestor = decisions[ancestorId];
+    if (previousAncestor?.status === "included" || previousAncestor?.status === "modified" || previousAncestor?.status === "excluded") continue;
+    decisions[ancestorId] = {
+     status: "included",
+     sourceText: sourceTextById.get(ancestorId) ?? previousAncestor?.sourceText ?? ancestorId,
+    };
+   }
+  }
+  const previous = decisions[id];
+  const text = status === "modified"
+   ? cleanActionPlanProposalText(textOverride ?? previous?.text ?? cleanSource)
+   : previous?.text !== undefined ? cleanActionPlanProposalText(previous.text) : undefined;
+  const next: PlanPreparationDecision = {
+   status,
+   sourceText: cleanSource,
+   ...(text !== undefined ? {text} : {}),
+  };
+  onChange({
+   municipalityId,
+   moduleId: module.id,
+   version: module.version,
+   updatedAt: new Date().toISOString(),
+   decisions: {...decisions, [id]: next},
+  });
+ }
 
  function updateReview(id: string, source: string, patch: Partial<PlanPreparationReviewDecision>) {
   if (!canReview || !onReviewChange) return;
@@ -94,13 +135,14 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
  function control(id: string, source: string, ancestors: string[]) {
   const decision = draft?.decisions[id];
   const excluded = excludedByAncestor(draft, ancestors);
-  const stale = decision && (decision.sourceText !== source || draft?.version !== module.version);
+  const stale = decision && cleanActionPlanProposalText(decision.sourceText) !== cleanActionPlanProposalText(source);
+  const statusLabel = directTerritorialEdit ? `Estado del Plan · ${id}` : `Selección de borrador · ${id}`;
+  const statusAriaLabel = directTerritorialEdit ? `Estado del Plan ${id}` : `Selección de borrador ${id}`;
+  const textLabel = directTerritorialEdit ? `Redacción vigente · ${id}` : `Nueva redacción · ${id}`;
+  const textareaText = cleanActionPlanProposalText(decision?.text ?? source);
   return <div className="pcm-decision">
-   <label><span>{directTerritorialEdit ? `Estado del Plan · ${id}` : `Selección de borrador · ${id}`}</span><select disabled={!canEditProposal} aria-label={`Selección de borrador ${id}`} value={decision?.status ?? "pending"} onChange={e => onChange({
-    municipalityId, moduleId: module.id, version: module.version, updatedAt: new Date().toISOString(),
-    decisions: {...draft?.decisions, [id]: {status: e.target.value as NonNullable<typeof decision>["status"], sourceText: source, text: decision?.text ?? source}}
-   })}><option value="pending">Pendiente</option><option value="included">Incluir</option><option value="excluded">Excluir</option><option value="modified">Modificar</option></select></label>
-   {decision?.status === "modified" && canEditProposal && <label>{directTerritorialEdit ? `Redacción vigente · ${id}` : `Nueva redacción · ${id}`}<textarea aria-label={`Nueva redacción · ${id}`} value={decision.text ?? source} rows={3} onChange={e => onChange({...draft!, decisions: {...draft!.decisions, [id]: {...decision, text: e.target.value}}, updatedAt: new Date().toISOString()})}/>{!decision.text?.trim() && <p role="alert">Completa la redacción.</p>}<span className="panel-note">{directTerritorialEdit ? "La nueva redacción pasa a ser el texto vigente de este territorio y se guarda directamente en su expediente." : "La redacción queda registrada en el expediente."}</span></label>}
+   <label><span>{statusLabel}</span><select disabled={!canEditProposal} aria-label={statusAriaLabel} value={decision?.status ?? "pending"} onChange={e => updateDraftDecision(id, source, e.target.value as PlanPreparationDecision["status"], undefined, ancestors)}><option value="pending">{directTerritorialEdit ? "Sin incorporar" : "Pendiente"}</option><option value="included">Incluir</option><option value="excluded">Excluir</option><option value="modified">Modificar</option></select></label>
+   {decision?.status === "modified" && canEditProposal && <label>{textLabel}<textarea aria-label={textLabel} value={textareaText} rows={3} onChange={e => updateDraftDecision(id, source, "modified", e.target.value, ancestors)}/><span className="pcm-save-row"><button type="button" onClick={() => updateDraftDecision(id, source, "modified", textareaText, ancestors)} aria-label={`Guardar redacción vigente · ${id}`}>Guardar redacción</button><span className="pcm-save-confirmation" role="status">Guardado en el expediente local</span></span>{!textareaText.trim() && <p role="alert">Completa la redacción.</p>}<span className="panel-note">{directTerritorialEdit ? "La nueva redacción pasa a ser el texto vigente de este territorio y se guarda directamente en su expediente." : "La redacción queda registrada en el expediente."}</span></label>}
    {decision?.status === "modified" && !canEditProposal && <p className="panel-note"><strong>Redacción territorial:</strong> {proposedTextFor(decision, source)}</p>}
    {excluded && <p className="panel-note">Fuera del Plan porque un elemento superior está excluido. Se conservan la elección individual, la ficha y las actuaciones.</p>}
    {stale && <p role="status">La referencia de partida ha cambiado. Se conserva la redacción territorial anterior para que pueda revisarse.</p>}

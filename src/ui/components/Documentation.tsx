@@ -1,17 +1,10 @@
 import { createContext, useContext, useRef, useState, type ReactNode } from 'react';
 import type { MunicipalityWorkspace } from '../../domain/workspace/MunicipalityWorkspace';
-import type { MunicipalDocument } from '../../domain/repository';
-import { DocumentAccess } from './DocumentAccess';
+import { DocumentAccess } from './DocumentAccess.tsx';
+import { resolveDocumentReference, type DocumentReferenceTarget } from './documentReferenceResolver';
 
-interface Reference { documentId?: string; fileName?: string }
+type Reference = DocumentReferenceTarget;
 const DocumentationContext = createContext<((reference: Reference) => void) | null>(null);
-
-// An explicit ID never falls back to a similarly named document.
-export function resolveDocumentReference(documents: MunicipalDocument[], reference: Reference) {
-  if (reference.documentId) return documents.filter(d => d.id === reference.documentId);
-  if (reference.fileName) return documents.filter(d => d.sourceFileName === reference.fileName);
-  return [];
-}
 
 export function DocumentReference({ children, documentId, fileName }: Reference & { children: ReactNode }) {
   const open = useContext(DocumentationContext);

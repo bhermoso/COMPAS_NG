@@ -3,7 +3,7 @@ import {createServer} from 'vite';
 import {chromium} from 'playwright';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-const server=await createServer({server:{host:'127.0.0.1',port:0}});await server.listen();let browser;
+const server=await createServer({server:{host:'127.0.0.1',port:0,strictPort:false}});await server.listen();let browser;
 try{
  browser=await chromium.launch({executablePath:process.env.COMPAS_TEST_CHROMIUM,headless:true,args:['--no-sandbox']});
  const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.httpServer.address().port+'/COMPAS_NG/');
@@ -19,11 +19,13 @@ try{
    React.createElement(DocumentRepositoryPanel,{repository:seed.repository})));
  });
  const root=page.locator('#report-check');await root.locator('.fde-source-toggle').click();
- const link=root.locator('.hr-viewer__source-access').getByRole('link',{name:/Abrir documento/});
+ const link=root.locator('.hr-viewer__source-access').getByRole('link',{name:/Descargar PDF original/});
  await link.waitFor();
  const response=await page.request.get(new URL(await link.getAttribute('href'),page.url()).href);assert.equal(response.status(),200);
  const digest=b=>createHash('sha256').update(b).digest('hex');
  assert.equal(digest(await response.body()),digest(readFileSync('docs/source-material/health-reports/informe-salud-zaidin-abril-2023.pdf')));
+ const [download]=await Promise.all([page.waitForEvent('download'),link.click()]);
+ assert.match(download.suggestedFilename(),/\.pdf$/i);
  for(const title of ['Informe Zaidin Centro Este','Informe Zaidin Sur']){
   const row=root.locator('.document-row').filter({has:page.getByRole('heading',{name:title,exact:true})}).last();
   await row.getByText('Consultar texto conservado',{exact:true}).click();

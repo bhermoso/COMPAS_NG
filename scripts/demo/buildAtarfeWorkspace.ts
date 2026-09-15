@@ -85,7 +85,7 @@ export const IBSE_DOCUMENT_ID = "doc-ibse-atarfe"; // documento del repositorio 
 export const ATARFE_INPUT_SHA256 = {
   healthReportDocx:
     "597fcacf0342eeb8970ef61b3a9b1d58cfe9eeb1c6703af7639e843a6c5b8e2c",
-  ibseCsv: "b2c6126c937b88de55c6aaae6c611f6c4bec75cd90e968916732c577039fa703",
+  ibseCsv: "982098071c19ef43df8ed8123f0999115a1361f32b096e5fc53e077a5f6c9256",
 } as const;
 
 const HEALTH_REPORT_DOCX = fixturePath("health-reports/Informe_Salud_Atarfe.docx");

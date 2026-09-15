@@ -36,7 +36,7 @@ const decisionLabels: Record<CatalogDecisionStatus, string> = {
   rejected: "Rechazar",
 };
 
-export function resolvedLegacyActionPlanText(decision: CatalogElementDecision | undefined, originalText: string): string {
+function resolvedLegacyActionPlanText(decision: CatalogElementDecision | undefined, originalText: string): string {
   return decision?.status === "adapted" && decision.adaptedText?.trim() ? decision.adaptedText : originalText;
 }
 
@@ -283,7 +283,8 @@ export function LegacyActionPlanCatalogPanel(props: LegacyActionPlanCatalogPanel
     const ids = [module.id, general.code, specific.code, specific.indicator.code];
     const rejected = ids.some((id) => decisions.find((item) => item.elementId === id)?.status === "rejected");
     const accepted = ids.every((id) => ["accepted", "adapted"].includes(decisions.find((item) => item.elementId === id)?.status ?? "pending"));
-    const reviewNotice = rejected ? "Algún elemento de esta línea u objetivo está rechazado. La ficha se conserva como borrador y no representa un compromiso del Plan."
+    const reviewNotice = preparation ? "Ficha de trabajo vinculada al texto vigente del territorio. Los cambios de objetivos e indicadores se guardan directamente en el expediente."
+      : rejected ? "Algún elemento de esta línea u objetivo está rechazado. La ficha se conserva como borrador y no representa un compromiso del Plan."
       : accepted ? "Los elementos cuentan con revisión guardada del Grupo Motor. La definición de medición y las actuaciones de esta ficha requieren sus propios acuerdos."
       : "Propuesta pendiente de revisión vigente del Grupo Motor. Puedes preparar la recogida de datos sin incorporar el objetivo al Plan.";
     const context: WorksheetContext = {
@@ -298,15 +299,16 @@ export function LegacyActionPlanCatalogPanel(props: LegacyActionPlanCatalogPanel
       onChange={props.onWorksheetChange} />;
   };
   const renderWorksheet = worksheetRenderer(false);
+  const directTerritorialEdit = Boolean(props.onDraftChange);
   return (
     <div className="pcm-root">
       <section className="workspace-panel pcm-catalog-header">
         <p className="eyebrow">Catálogo RELAS de Plan de Acción</p>
         <h2>Líneas estratégicas disponibles</h2>
         <p className="panel-note">
-          Prepara tu selección de líneas, objetivos e indicadores en el borrador. La aprobación formal es posterior:
-          la revisión se habilita solo cuando el Grupo Motor relaciona una línea con una prioridad seleccionada.
-          Cada indicador dispone de una ficha cumplimentable con actuaciones y entregas de datos, preparable como borrador.
+          {directTerritorialEdit
+            ? "Selecciona, excluye o modifica líneas, objetivos e indicadores. Al marcar Modificar, la nueva redacción queda guardada como texto vigente de este expediente territorial; la aprobación del Grupo Motor es una fase institucional distinta."
+            : "Prepara tu selección de líneas, objetivos e indicadores en el borrador. La aprobación formal es posterior: la revisión se habilita solo cuando el Grupo Motor relaciona una línea con una prioridad seleccionada. Cada indicador dispone de una ficha cumplimentable con actuaciones y entregas de datos, preparable como borrador."}
         </p>
       </section>
       {props.onDraftChange && ACTION_PLAN_CATALOG.map(original => {
@@ -314,6 +316,7 @@ export function LegacyActionPlanCatalogPanel(props: LegacyActionPlanCatalogPanel
         return <PlanPreparationPanel key={`${props.municipalityId}-${module.id}`} municipalityId={props.municipalityId} module={module}
           draft={props.drafts?.find(d => d.moduleId === module.id && d.municipalityId === props.municipalityId)} onChange={props.onDraftChange!} renderWorksheet={worksheetRenderer(true)}/>;
       })}
+      {!directTerritorialEdit && <>
       <details><summary>Revisión formal y catálogo original · versión 3.1</summary>
       <p>Las decisiones anteriores se conservan. La propuesta de cuatro bloques requiere su propia revisión; no hereda la aprobación del catálogo original.</p>
       {ACTION_PLAN_CATALOG.map((module) => {
@@ -332,6 +335,7 @@ export function LegacyActionPlanCatalogPanel(props: LegacyActionPlanCatalogPanel
         ) : <AvailableModule key={module.id} module={module} renderWorksheet={renderWorksheet} />;
       })}
       </details>
+      </>}
     </div>
   );
 }

@@ -18,7 +18,6 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { generateOIT } from "../src/application/oit";
 import { buildLocalHealthProfile } from "../src/application/health-profile";
 import { runEvidenceStoreIntegrityGuard } from "../src/application/evidence";
 import { createEstadoTerritorialEvolutivo } from "../src/application/territorial-interpretation";

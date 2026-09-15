@@ -47,6 +47,34 @@ export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
   },
 ];
 
+export const ACTIVE_MUNICIPALITY_STORAGE_KEY = "compas-ng:active-municipality";
+
+export function readActiveMunicipalityId(
+  municipalities: readonly Pick<CreateMunicipalityContextInput, "id">[],
+  fallbackId: string
+): string {
+  try {
+    const stored = localStorage
+      .getItem(ACTIVE_MUNICIPALITY_STORAGE_KEY)
+      ?.trim();
+    if (stored && municipalities.some((municipality) => municipality.id === stored)) {
+      return stored;
+    }
+  } catch {
+    // localStorage can be disabled; the caller's fallback remains authoritative.
+  }
+  return fallbackId;
+}
+
+export function saveActiveMunicipalityId(municipalityId: string): boolean {
+  try {
+    localStorage.setItem(ACTIVE_MUNICIPALITY_STORAGE_KEY, municipalityId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Acción de migración incremental resuelta para un expediente:
  *   - none               → nada que hacer (marca presente, u otro municipio).

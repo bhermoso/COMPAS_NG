@@ -38,7 +38,7 @@ El objetivo es evitar que todo lo no implementado aparezca mezclado bajo la pala
 | ID | Hueco | Categoría | Evidencia | Estado | Bloquea | Prioridad |
 |---|---|---|---|---|---|---|
 | H-01 | ~~Biblioteca Metodológica incompleta para DUKE, PREDIMED, SF-12, Sueño y CAGE~~ **CERRADO** | ~~Deuda técnica~~ | `CONTRACT-COMPLEMENTARY-STUDIES.md §9a`; todos los 13 instrumentos tienen `MethodologicalModule` registrado en `domain/methodology/registry.ts` | ✓ Cerrado — 2026-07-13 | ~~Constructor REDCap~~ — cerrado | ~~Alta~~ **Cerrada** |
-| H-02 | Motor de Traducción Estratégica canónico (MTE) | Implementación pendiente | `CONTRACT-STRATEGIC-TRANSLATION.md`; `BLUEPRINT-PRODUCTION.md`; `EPVSATranslator` provisional | Diseñado contractualmente | Sustitución de EPVSATranslator / Plan Local de Salud robusto | Alta |
+| H-02 | ~~Motor de Traducción Estratégica canónico (MTE)~~ **MTE v1 cerrado; mejora futura: repositorio estratégico gestionable** | ~~Implementación pendiente~~ **Cerrado / mejora futura** | `CONTRACT-MTE.md`; `src/application/mte/MTEEngine.ts`; certificación PRODUCT-5 | ✓ Cerrado — 2026-07-13. Consume catálogo estratégico estático; la gestión editable queda en H-03 | No bloquea PAI v1; el Plan Local de Salud robusto depende de H-03/H-06 | ~~Alta~~ **Cerrada** |
 | H-03 | Strategic Repository gestionable | Implementación pendiente | `CONTRACT-STRATEGIC-REPOSITORY.md`; menciones en MTE y Blueprint | Diseñado contractualmente | MTE | Alta |
 | H-04 | Flujo institucional de aprobación del PSL (`validated` → `approved`) | Implementación pendiente (parcial) | `approvePSL.ts`; `PSLApprovalRecord`; `handleApprovePSL` en `App.tsx`; `PSLApproveAction` en `LocalHealthProfileView.tsx` | Integración UI completada (Sprint 2); consumo por `LocalHealthPlanCompiler` pendiente | LocalHealthPlanCompiler / PLS | Alta |
 | H-05 | Validación formal de ActionPlanDraft, AgendaDraft y MonitoringDraft | Implementación pendiente (parcial) | `FormalValidationRecord`; `createFormalValidation.ts`; `FormalValidationForm`; `handleFormalValidation` en `App.tsx` | UI integrada en ActionPlanPanel y AgendaPanel (Sprint 2); consumo por `LocalHealthPlanCompiler` pendiente | LocalHealthPlanCompiler / PLS | Alta |
@@ -69,24 +69,17 @@ El objetivo es evitar que todo lo no implementado aparezca mezclado bajo la pala
 
 ### Estado actual del código
 
-`src/domain/repository/MunicipalDocumentRepository.ts` define:
+El flujo activo mantiene el Informe de Salud como fuente primaria no atomizable:
 
-```typescript
-function defaultCanGenerateEvidence(kind: DocumentKind): boolean {
-  return kind !== "health-report";
-}
-```
-
-Este flag bloquea la pipeline genérica (`DocumentToEvidencePipeline`) para el Informe de Salud.
-
-Sin embargo, `src/application/health-report/HealthReportToEvidencePipeline.ts` es una pipeline dedicada que convierte cada sección del `HealthReportDocument` en un `EvidenceAtom` con `origin: "health-report"`. Es llamada explícitamente en `src/App.tsx:715` durante `handleLoadHealthReport`:
-
-```typescript
-const hrAtoms = healthReportToEvidenceAtoms(healthReport);
-// → atoms añadidos al EvidenceStore con origin: "health-report"
-```
-
-Los átomos resultantes alimentan el MIT, que tiene `KIND_CONSTRAINTS["health-report"]` definido en el IntegrityGuard. El PSL consume estos átomos a través del EvidenceStore.
+- `src/domain/repository/MunicipalDocumentRepository.ts` mantiene
+  `canGenerateEvidence = false` para `kind: "health-report"`.
+- La carga institucional de DOCX/PDF en `src/App.tsx` conserva el documento,
+  puede extraer texto para el `HealthReportDocument`, pero no añade
+  `EvidenceAtom` con `origin: "health-report"`.
+- El flujo limpia átomos legacy de `health-report` cuando se carga un nuevo
+  Informe.
+- `HealthReportToEvidencePipeline` permanece aislada como utilidad histórica o
+  de tests, fuera del camino institucional de carga.
 
 ### Regla metodológica consolidada
 
@@ -103,28 +96,12 @@ No debe:
 
 El Perfil de Salud Local no es una copia del Informe de Salud. El Perfil parte del Informe como base epidemiológica oficial y lo amplía con interpretación territorial desde sociología de la salud, epidemiología social, determinantes sociales, salutogénesis, activos comunitarios, participación ciudadana y conocimiento profesional del equipo técnico.
 
-### Contradicción
+### Decisión consolidada
 
-`canGenerateEvidence = false` bloquea únicamente la pipeline genérica. No bloquea `HealthReportToEvidencePipeline`, que opera por una ruta paralela explícita. El Informe de Salud sí genera `EvidenceAtom` hoy, en contradicción con la regla metodológica consolidada.
-
-El `CONTRACT-EVIDENCE.md §5.1` describe esta pipeline como "explícita y controlada, no automática", lo que es técnicamente correcto pero no resuelve la contradicción metodológica de fondo: el contenido del informe oficial se atomiza y entra en el mismo pipeline analítico que cualquier otra fuente documental.
-
-### Impacto potencial si se resuelve
-
-Resolver D-HR-01 implicaría:
-1. Eliminar o desconectar `HealthReportToEvidencePipeline` del flujo de `App.tsx`.
-2. Decidir qué consume el MIT si no hay átomos de `origin: "health-report"` en el store.
-3. Revisar si los compiladores PSL-C y PSL-NHS leen directamente el `HealthReportDocument` en lugar del EvidenceStore para la dimensión epidemiológica.
-4. Actualizar `CONTRACT-EVIDENCE.md §5.1`, `CONTRACT-MIT-PSL.md §3` y posiblemente `CONTRACT-REPOSITORY.md`.
-5. Adaptar los tests que verifican átomos con `origin: "health-report"`.
-
-Este impacto afecta al Nivel 1, al Nivel 2 y a los compiladores del Nivel 3. No es un cambio puntual.
-
-### Decisión pendiente
-
-¿Debe el Informe de Salud contribuir al EvidenceStore como átomos (modelo actual) o debe permanecer como objeto `HealthReportDocument` de solo lectura, accesible directamente por los compiladores institucionales sin pasar por el MIT?
-
-Esta decisión requiere deliberación metodológica explícita con el equipo técnico. No puede resolverse sin un sprint dedicado con contrato previo.
+La decisión ya no está pendiente: el Informe de Salud permanece como documento
+canónico íntegro y no entra en el EvidenceStore ordinario. Las capas del Perfil
+que necesiten lectura epidemiológica deben consumir el `HealthReportDocument` o
+sus modelos derivados controlados, no atomizar el informe como fuente genérica.
 
 ### Condiciones de cierre (2026-07-07)
 

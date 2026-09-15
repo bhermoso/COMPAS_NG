@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDocumentReference } from '../src/ui/components/Documentation';
+import { resolveDocumentReference } from '../src/ui/components/documentReferenceResolver';
 import seed from '../public/seeds/compas-ng-workspace-granada-zaidin.json';
 import type { MunicipalDocument } from '../src/domain/repository';
 const docs = seed.repository.documents as MunicipalDocument[];

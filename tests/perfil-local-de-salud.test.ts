@@ -42,7 +42,6 @@ import {
   computePerfilEstadoGlobal,
   computeEstadoDelConocimiento,
 } from '../src/application/health-profile/profileOperations'
-import type { PerfilLocalDeSalud } from '../src/domain/health-profile'
 import type { MunicipalityWorkspace } from '../src/domain/workspace'
 import { createCompleteMunicipalityWorkspace } from '../src/application/workspace'
 

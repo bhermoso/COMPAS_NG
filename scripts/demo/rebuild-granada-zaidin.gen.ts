@@ -68,6 +68,13 @@ function toAsciiSafeJson(jsonText: string): string {
   return out;
 }
 
+function isAsciiOnly(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) > 0x7f) return false;
+  }
+  return true;
+}
+
 describe("Generador — expediente restaurable de Granada-Zaidín", () => {
   it("construye, verifica y exporta el expediente", async () => {
     const { workspace, counts } = await buildGranadaZaidinWorkspace();
@@ -86,7 +93,7 @@ describe("Generador — expediente restaurable de Granada-Zaidín", () => {
     // Artefactos 100 % ASCII: los acentos van como escapes JSON \uXXXX.
     // JSON.parse reconstruye las cadenas exactas ("Granada-Zaidín", "COMPÁS NG").
     const asciiValue = toAsciiSafeJson(value);
-    expect(/^[\x00-\x7F]*$/.test(asciiValue)).toBe(true);
+    expect(isAsciiOnly(asciiValue)).toBe(true);
     expect(JSON.stringify(JSON.parse(asciiValue))).toBe(JSON.stringify(JSON.parse(value)));
 
     mkdirSync(outDir, { recursive: true });

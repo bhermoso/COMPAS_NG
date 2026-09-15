@@ -21,3 +21,23 @@ export function documentAccessUrl(sourceUrl?: string): string | undefined {
   } catch { /* Local references without a bundled file cannot be opened. */ }
   return undefined;
 }
+
+export function isPdfDocumentAccess(sourceUrl?: string): boolean {
+  const value = sourceUrl?.trim();
+  if (!value) return false;
+  return /\.pdf(?:$|[?#])/i.test(value) || /\.pdf(?:$|[?#])/i.test(documentAccessUrl(value) ?? "");
+}
+
+export function documentDownloadFileName(sourceUrl: string | undefined, fallbackTitle: string): string {
+  const sourceName = sourceUrl?.split(/[?#]/)[0].split("/").pop();
+  const decoded = (() => {
+    try {
+      return sourceName ? decodeURIComponent(sourceName) : "";
+    } catch {
+      return sourceName ?? "";
+    }
+  })();
+  if (decoded.trim()) return decoded;
+  const safe = fallbackTitle.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._ -]+/g, " ").trim();
+  return `${safe || "documento"}.pdf`;
+}

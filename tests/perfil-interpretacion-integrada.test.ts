@@ -15,7 +15,6 @@ import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadWorkspaceFromLocalStorage } from "../src/infrastructure/persistence/local-storage";
-import { createMunicipalityRuntime } from "../src/application/runtime";
 import {
   buildDiagnosticAnswers,
   buildIntegratedInterpretation,

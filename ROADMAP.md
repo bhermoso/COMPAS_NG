@@ -1,5 +1,11 @@
 # COMPÁS NG — Hoja de ruta
 
+> Nota de actualización — 13 de septiembre de 2026:
+> este roadmap conserva contexto histórico de Sprint 0/1. Para el estado vivo
+> de producto, decisiones de limpieza y alcance actual del Plan de Acción, leer
+> `docs/ESTADO-ACTUAL-COMPAS-NG.md`. Las menciones antiguas a rutas legacy o a
+> componentes pendientes deben interpretarse a la luz de ese documento.
+
 > Última revisión: 2026-07-13.
 > Cada hito se activa solo cuando el anterior está estabilizado y verificado en interfaz.
 

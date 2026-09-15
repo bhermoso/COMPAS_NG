@@ -1,7 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import './disabled-access.css'
 import App from './App.tsx'
 import { BackupPanel } from './ui/components/BackupPanel'
 import CoordinatorPreview from './ui/components/CoordinatorPreview.tsx'

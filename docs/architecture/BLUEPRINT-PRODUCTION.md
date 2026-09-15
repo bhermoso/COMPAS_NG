@@ -1,5 +1,11 @@
 # COMPÁS NG — Blueprint Arquitectónico de Producción
 
+> Nota de actualización — 13 de septiembre de 2026:
+> este blueprint conserva decisiones y tensiones históricas. El MTE v1 ya está
+> implementado y documentado; el acceso autenticado territorial queda en reserva;
+> y la edición directa del Plan de Acción no depende de revisión formal
+> intermedia. Para la foto viva, ver `docs/ESTADO-ACTUAL-COMPAS-NG.md`.
+
 > Plano maestro de la arquitectura. No es un roadmap ni una lista de tareas.
 > Es la respuesta a una única pregunta:
 >
