@@ -1,3 +1,4 @@
+import { PlanDocumentActions } from "./PlanDocumentActions";
 import { useMemo, useRef, useState } from "react";
 import type { ActionPlanCatalogModule } from "../../domain/action-plan-catalog/ActionPlanCatalog";
 import {
@@ -7,7 +8,9 @@ import {
 } from "../../domain/action-plan-catalog/DefinitiveActionPlanProjection";
 import type { PlanPreparationDraft } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 
-export function DefinitiveActionPlanPreview({municipalityId, modules, drafts}: {
+export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, validatedActionPlans, onValidatePlan}: {
+  validatedActionPlans?: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument[];
+  onValidatePlan?: (document: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument) => boolean;
   municipalityId: string;
   modules: ActionPlanCatalogModule[];
   drafts?: PlanPreparationDraft[];
@@ -41,6 +44,7 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts}: {
   }
 
   return <section className="workspace-panel pcm-definitive-plan" aria-label={`Plan de Acción resultante · ${municipalityName}`}>
+    <PlanDocumentActions key={municipalityId} municipalityId={municipalityId} active={active} versions={validatedActionPlans} onValidate={onValidatePlan}/>
     <div className="pcm-module__header">
       <div>
         <p className="eyebrow">Vista consolidada del borrador territorial</p>
@@ -54,8 +58,8 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts}: {
       {pending > 0 && <div className="phase-blocked-notice"><strong>Versión todavía no cerrable</strong><p>Quedan {pending} elementos pendientes dentro de las líneas que ya estás trabajando. Puedes ver el resultado actual, pero conviene resolverlos antes de declarar el Plan definitivo.</p></div>}
       <div className="backup-panel__actions pcm-generation-actions">
         <button type="button" disabled={!hasSelectableContent} onClick={generatePlan}>Generar Plan de Acción</button>
-        {generated && <button type="button" onClick={() => window.print()}>Imprimir</button>}
-        {generated && <button type="button" onClick={() => window.print()}>Guardar como PDF</button>}
+
+
       </div>
       {!hasSelectableContent ? (
         <p className="panel-note">Selecciona o modifica al menos un objetivo específico o indicador para generar el Plan de Acción.</p>

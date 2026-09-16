@@ -3405,6 +3405,14 @@ export default function App() {
               selection={workspace.deliberativePrioritySelection}
               eligibleModules={runtime.eligibleActionPlanModules}
               reviews={workspace.actionPlanModuleReviews ?? []}
+              validatedActionPlans={workspace.validatedActionPlans ?? []}
+              onValidatePlan={(document) => {
+                if (document.municipalityId !== workspace.municipality.identity.id) return false;
+                const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
+                if (!saveWorkspaceToLocalStorage(next)) return false;
+                setWorkspace(next);
+                return true;
+              }}
               drafts={workspace.planPreparationDrafts ?? []}
               onDraftChange={handlePlanPreparationChange}
               worksheets={workspace.indicatorWorksheets ?? []}
@@ -3442,6 +3450,14 @@ export default function App() {
                 municipalityId={workspace.municipality.identity.id}
                 eligibleModules={[]}
                 reviews={workspace.actionPlanModuleReviews ?? []}
+              validatedActionPlans={workspace.validatedActionPlans ?? []}
+              onValidatePlan={(document) => {
+                if (document.municipalityId !== workspace.municipality.identity.id) return false;
+                const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
+                if (!saveWorkspaceToLocalStorage(next)) return false;
+                setWorkspace(next);
+                return true;
+              }}
               drafts={workspace.planPreparationDrafts ?? []}
               onDraftChange={handlePlanPreparationChange}
               worksheets={workspace.indicatorWorksheets ?? []}
