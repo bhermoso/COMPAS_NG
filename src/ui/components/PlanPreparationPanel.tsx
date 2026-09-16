@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { ActionPlanCatalogModule, CatalogGeneralObjectiveTemplate, CatalogSpecificObjectiveTemplate } from "../../domain/action-plan-catalog/ActionPlanCatalog";
 import {
   cleanActionPlanProposalText,
+  cleanObsoleteActionPlanProgramLabels,
   consolidatedTextFor,
   excludedByAncestor,
   plainProposalText,
@@ -139,8 +140,10 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
   const statusLabel = directTerritorialEdit ? `Estado del Plan · ${id}` : `Selección de borrador · ${id}`;
   const statusAriaLabel = directTerritorialEdit ? `Estado del Plan ${id}` : `Selección de borrador ${id}`;
   const textLabel = directTerritorialEdit ? `Redacción vigente · ${id}` : `Nueva redacción · ${id}`;
-  // Preserve whitespace while typing; normalization belongs to the generated view.
-  const textareaText = decision?.text ?? cleanActionPlanProposalText(source);
+  // Preserve whitespace while typing; only retire obsolete imported program labels.
+  const textareaText = decision?.text !== undefined
+   ? cleanObsoleteActionPlanProgramLabels(decision.text)
+   : cleanActionPlanProposalText(source);
   return <div className="pcm-decision">
    <label><span>{statusLabel}</span><select disabled={!canEditProposal} aria-label={statusAriaLabel} value={decision?.status ?? "pending"} onChange={e => updateDraftDecision(id, source, e.target.value as PlanPreparationDecision["status"], undefined, ancestors)}><option value="pending">{directTerritorialEdit ? "Sin incorporar" : "Pendiente"}</option><option value="included">Incluir</option><option value="excluded">Excluir</option><option value="modified">Modificar</option></select></label>
    {decision?.status === "modified" && canEditProposal && <label>{textLabel}<textarea aria-label={textLabel} value={textareaText} rows={3} onChange={e => updateDraftDecision(id, source, "modified", e.target.value, ancestors)}/><span className="pcm-save-row"><button type="button" onClick={() => updateDraftDecision(id, source, "modified", textareaText, ancestors)} aria-label={`Guardar redacción vigente · ${id}`}>Guardar redacción</button><span className="pcm-save-confirmation" role="status">Guardado en el expediente local</span></span>{!textareaText.trim() && <p role="alert">Completa la redacción.</p>}<span className="panel-note">{directTerritorialEdit ? "La nueva redacción pasa a ser el texto vigente de este territorio y se guarda directamente en su expediente." : "La redacción queda registrada en el expediente."}</span></label>}
