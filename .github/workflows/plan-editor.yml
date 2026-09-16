@@ -18,4 +18,5 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run build
       - run: npx vitest run tests/plan-editor-whitespace.test.tsx tests/definitive-action-plan-preview.test.tsx
