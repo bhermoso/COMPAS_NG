@@ -13,10 +13,17 @@ export function buildPlanDocument(municipalityId: string, active: DefinitiveActi
  for (const { module, moduleDecision, rows } of active) {
   if (!rows.length) continue;
   paragraphs.push({text:module.title,heading:true},{text:"Objetivo estratégico: "+resolvedPlanDecisionText(moduleDecision,module.strategicObjective)});
-  for (const row of rows) {
-   paragraphs.push({text:row.general.code+" · "+resolvedPlanDecisionText(row.generalDecision,row.general.title),heading:true},
-    {text:row.specific.code+" · "+resolvedPlanDecisionText(row.objectiveDecision,row.specific.title)});
-   paragraphs.push({text:row.indicatorIncluded ? row.specific.indicator.code+" · "+resolvedPlanDecisionText(row.indicatorDecision,row.specific.indicator.title) : "Indicador no incorporado."});
+  const groups = new Map<string, typeof rows>();
+  for (const row of rows) groups.set(row.general.code, [...(groups.get(row.general.code) ?? []), row]);
+  for (const general of module.generalObjectives) {
+   const group = groups.get(general.code);
+   if (!group) continue;
+   const first = group[0];
+   paragraphs.push({text:first.general.code+" · "+resolvedPlanDecisionText(first.generalDecision,first.general.title),heading:true});
+   for (const row of group) {
+    paragraphs.push({text:row.specific.code+" · "+resolvedPlanDecisionText(row.objectiveDecision,row.specific.title)});
+    paragraphs.push({text:row.indicatorIncluded ? row.specific.indicator.code+" · "+resolvedPlanDecisionText(row.indicatorDecision,row.specific.indicator.title) : "Indicador no incorporado."});
+   }
   }
  }
  return {schemaVersion:1,municipalityId,generatedAt,status:"draft",paragraphs};

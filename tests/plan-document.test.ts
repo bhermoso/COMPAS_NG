@@ -12,6 +12,18 @@ function fixture(){
  return draft;
 }
 describe("Versiones documentales del Plan",()=>{
+ it("agrupa todos los objetivos bajo un único encabezado por bloque",()=>{
+  const draft=fixture();
+  const doc=buildPlanDocument(draft.municipalityId,buildDefinitiveActionPlanProjection(draft.municipalityId,[module],[draft]),"2026-09-17");
+  expect(doc.paragraphs.filter(p=>p.heading).slice(1).map(p=>p.text.split(" · ")[0])).toEqual(module.generalObjectives.map(g=>g.code));
+  for(const general of module.generalObjectives){
+   expect(doc.paragraphs.filter(p=>p.heading&&p.text.startsWith(general.code+" ·"))).toHaveLength(1);
+   const heading=doc.paragraphs.findIndex(p=>p.heading&&p.text.startsWith(general.code+" ·"));
+   const next=doc.paragraphs.findIndex((p,i)=>i>heading&&!!p.heading);
+   const group=doc.paragraphs.slice(heading,next<0?undefined:next);
+   for(const objective of general.specificObjectives) expect(group.some(p=>p.text.startsWith(objective.code+" ·"))).toBe(true);
+  }
+ });
  it("congela las redacciones, no incorpora cambios posteriores y aísla ámbitos",()=>{
   const draft=fixture();const id=module.generalObjectives[0].specificObjectives[0].code;
   draft.decisions[id]={...draft.decisions[id],status:"modified",text:"Redacción validada vigente"};

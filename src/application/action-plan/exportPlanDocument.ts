@@ -26,7 +26,9 @@ export function buildPlanPdf(plan: PlanDocument) {
   const size=p.heading?13:11; const lineHeight=p.heading?6.5:5.5;
   pdf.setFont("helvetica",p.heading?"bold":"normal");pdf.setFontSize(size);
   const lines=pdf.splitTextToSize(p.text.replace(/≥/g,">=").replace(/≤/g,"<=").replace(/≈/g,"~"),166) as string[];
-  if (p.heading&&y+lineHeight*2>274){pdf.addPage();y=22;}
+  // Keep the entire heading and the beginning of its content on one page.
+  const requiredHeight = lineHeight*lines.length + (p.heading ? 14 : 0);
+  if (requiredHeight<=252&&y+requiredHeight>274){pdf.addPage();y=22;}
   for (const line of lines) {
    if(y+lineHeight>274){pdf.addPage();y=22;}
    pdf.text(line,22,y);y+=lineHeight;

@@ -25,7 +25,7 @@ describe("Plan editor preserves typed whitespace", () => {
    const label = `Redacción vigente · ${id}`;
    find(render(), label)!.onChange!({target:{value:""}});
    let typed = "";
-   for (const char of "Mejorar  la salud\ny la participación ") {
+   for (const char of "Mejorar  la salud\ny la participación (MANY AGES) ") {
     typed += char;
     const control = find(render(), label)!;
     control.onChange!({target:{value:control.value! + char}});
