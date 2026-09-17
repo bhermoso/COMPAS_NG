@@ -590,7 +590,7 @@ export default function App() {
       ),
       updatedAt: now,
     }));
-  }, [runtime.psl]);
+  }, [runtime.psl, setWorkspace]);
 
   const handleInvalidatePSL = useCallback(() => {
     if (
@@ -611,7 +611,7 @@ export default function App() {
       const { validatedPSL: _psl, validatedAnswersSnapshot: _snap, ...rest } = prev;
       return { ...rest, updatedAt: new Date().toISOString() };
     });
-  }, [workspace.validatedPSL]);
+  }, [setWorkspace, workspace.validatedPSL]);
 
   const handleEditPSLConclusion = useCallback((content: string) => {
     setWorkspace((prev) => {
@@ -625,7 +625,7 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
-  }, []);
+  }, [setWorkspace]);
 
   const handleEditPSLCierreInterpretativo = useCallback((content: string) => {
     setWorkspace((prev) => {
@@ -639,7 +639,7 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
-  }, []);
+  }, [setWorkspace]);
 
   const handleDocumentarDeliberacion = useCallback((nota: string) => {
     setWorkspace((prev) => {
@@ -659,7 +659,7 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
-  }, []);
+  }, [setWorkspace]);
 
   const handleCompilePSL = useCallback(() => {
     setWorkspace((prev) => {
@@ -688,7 +688,7 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
-  }, []);
+  }, [setWorkspace]);
 
   const handleApprovePSL = useCallback((
     approvedBy: string,
@@ -707,11 +707,11 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
-  }, []);
+  }, [setWorkspace]);
 
   const handleUpdatePerfilLocalDeSalud = useCallback((perfil: PerfilLocalDeSalud) => {
     setWorkspace(prev => ({ ...prev, perfilLocalDeSalud: perfil }));
-  }, []);
+  }, [setWorkspace]);
 
   const handleSaveDeliberativePrioritySelection = useCallback((input: {
     selectedScenarioIds: string[];
@@ -736,7 +736,7 @@ export default function App() {
       updatedAt: new Date().toISOString(),
     }));
     return [];
-  }, [runtime.lectura, workspace.thematicPrioritisation]);
+  }, [runtime.lectura, setWorkspace, workspace.thematicPrioritisation]);
 
   const handlePlanPreparationChange = useCallback((draft: PlanPreparationDraft) => {
     setWorkspace(prev => draft.municipalityId !== prev.municipality.identity.id ? prev : ({...prev,
@@ -745,7 +745,7 @@ export default function App() {
       ), draft],
       updatedAt: new Date().toISOString(),
     }));
-  }, []);
+  }, [setWorkspace]);
 
   const handleIndicatorWorksheetChange = useCallback((sheet: IndicatorWorksheet) => {
     setWorkspace((prev) => {
@@ -755,7 +755,7 @@ export default function App() {
         updatedAt: new Date().toISOString(),
       };
     });
-  }, []);
+  }, [setWorkspace]);
 
   const handleSaveActionPlanModuleReview = useCallback((review: MunicipalActionPlanModuleReview): readonly string[] => {
     if (runtime.lectura == null || workspace.deliberativePrioritySelection == null) {
@@ -783,7 +783,7 @@ export default function App() {
       updatedAt: new Date().toISOString(),
     }));
     return [];
-  }, [runtime.eligibleActionPlanModules, runtime.lectura, workspace.deliberativePrioritySelection, workspace.municipality.identity.id]);
+  }, [runtime.eligibleActionPlanModules, runtime.lectura, setWorkspace, workspace.deliberativePrioritySelection, workspace.municipality.identity.id]);
 
   // Pipeline en modo fallback cuando la única oportunidad OIT es "Ampliar la base"
   // (ocurre cuando hay activos pero no hay determinantes ni otros tipos de evidencia).
@@ -975,7 +975,7 @@ export default function App() {
         ? `Informe procesado: ${processed.pdfExtraction!.pageCount} páginas y ${processed.body.charCount.toLocaleString('es-ES')} caracteres. La lectura del borrador dispone del texto; los perfiles validados requieren revisión.`
         : "PDF conservado, sin texto extraíble. Necesita transcripción u OCR antes de alimentar la lectura del Perfil.");
     } catch(error) {setLastHealthReportMessage((error as Error).message);} finally {setIsLoadingHealthReport(false);}
-  }, [workspace.healthReport, workspace.municipality.identity.id, workspace.repository.documents]);
+  }, [setWorkspace, workspace.healthReport, workspace.municipality.identity.id, workspace.repository.documents]);
 
   // The bundled Zaidín PDF was previously registered without text. Process it once
   // when encountered; never replace later reports or validated snapshots.
@@ -3405,6 +3405,14 @@ export default function App() {
               selection={workspace.deliberativePrioritySelection}
               eligibleModules={runtime.eligibleActionPlanModules}
               reviews={workspace.actionPlanModuleReviews ?? []}
+              validatedActionPlans={workspace.validatedActionPlans ?? []}
+              onValidatePlan={(document) => {
+                if (document.municipalityId !== workspace.municipality.identity.id) return false;
+                const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
+                if (!saveWorkspaceToLocalStorage(next)) return false;
+                setWorkspace(next);
+                return true;
+              }}
               drafts={workspace.planPreparationDrafts ?? []}
               onDraftChange={handlePlanPreparationChange}
               worksheets={workspace.indicatorWorksheets ?? []}
@@ -3442,6 +3450,14 @@ export default function App() {
                 municipalityId={workspace.municipality.identity.id}
                 eligibleModules={[]}
                 reviews={workspace.actionPlanModuleReviews ?? []}
+              validatedActionPlans={workspace.validatedActionPlans ?? []}
+              onValidatePlan={(document) => {
+                if (document.municipalityId !== workspace.municipality.identity.id) return false;
+                const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
+                if (!saveWorkspaceToLocalStorage(next)) return false;
+                setWorkspace(next);
+                return true;
+              }}
               drafts={workspace.planPreparationDrafts ?? []}
               onDraftChange={handlePlanPreparationChange}
               worksheets={workspace.indicatorWorksheets ?? []}

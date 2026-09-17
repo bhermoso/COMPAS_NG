@@ -139,7 +139,7 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
   const statusLabel = directTerritorialEdit ? `Estado del Plan · ${id}` : `Selección de borrador · ${id}`;
   const statusAriaLabel = directTerritorialEdit ? `Estado del Plan ${id}` : `Selección de borrador ${id}`;
   const textLabel = directTerritorialEdit ? `Redacción vigente · ${id}` : `Nueva redacción · ${id}`;
-  // Preserve whitespace while typing; normalization belongs to the generated view.
+  // Preserve authored text exactly; normalization belongs to the generated view.
   const textareaText = decision?.text ?? cleanActionPlanProposalText(source);
   return <div className="pcm-decision">
    <label><span>{statusLabel}</span><select disabled={!canEditProposal} aria-label={statusAriaLabel} value={decision?.status ?? "pending"} onChange={e => updateDraftDecision(id, source, e.target.value as PlanPreparationDecision["status"], undefined, ancestors)}><option value="pending">{directTerritorialEdit ? "Sin incorporar" : "Pendiente"}</option><option value="included">Incluir</option><option value="excluded">Excluir</option><option value="modified">Modificar</option></select></label>
