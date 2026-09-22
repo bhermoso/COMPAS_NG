@@ -1,0 +1,21 @@
+name: Plan document validation
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/plan-document.test.ts'
+      - '.github/workflows/plan-document.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx vitest run tests/plan-document.test.ts tests/plan-editor-whitespace.test.tsx tests/definitive-action-plan-preview.test.tsx

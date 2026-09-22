@@ -1,3 +1,4 @@
+import type { PlanDocument } from "../action-plan-catalog/PlanDocument";
 import type { PlanPreparationDraft } from "../action-plan-catalog/PlanPreparationDraft";
 import type { IndicatorWorksheet } from "../action-plan-catalog/IndicatorWorksheet";
 import type { MunicipalityContext } from "../municipality";
@@ -56,6 +57,7 @@ export interface TerritorialStateRecord {
 }
 
 export interface MunicipalityWorkspace {
+  validatedActionPlans?: PlanDocument[];
   municipality: MunicipalityContext;
   repository: MunicipalDocumentRepository;
   evidenceStore: EvidenceStore;

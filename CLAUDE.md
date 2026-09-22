@@ -15,7 +15,8 @@ Producto prioritario: el Perfil de Salud Local — documento científico, editor
 - El NHS es representación derivada del conocimiento del Perfil, con estatuto de producto propio por audiencia. No puede ser segunda fuente de verdad.
 
 ## Disciplina de ejecución
-- NO hacer push jamás. Commit solo cuando se pida explícitamente.
+- Las instrucciones actuales del usuario prevalecen sobre estas reglas. Dentro del trabajo autorizado, se permiten commits, push y actualizaciones de la PR necesarios para completarlo, sin pedir confirmación adicional por cada paso.
+- Antes de publicar cambios, comprobar la rama y el estado remoto, conservar el trabajo existente y ejecutar las comprobaciones pertinentes. No usar force push, fusionar ni desplegar fuera del alcance autorizado.
 - Cambios quirúrgicos: solo lo pedido. Si algo exige tocar lo no autorizado, parar y preguntar.
 - Suite: npm.cmd run test (2217+ tests). Si falla con EPERM en node_modules/.vite-temp, hay un Vite vivo en el puerto 5173: matarlo y reintentar.
 - npm run lint tiene 13 errores preexistentes: no tocarlos.

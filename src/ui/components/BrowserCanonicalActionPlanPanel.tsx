@@ -6,7 +6,7 @@ import {LegacyActionPlanCatalogPanel,type LegacyActionPlanCatalogPanelProps} fro
 export function ActionPlanCatalogPanel(props:LegacyActionPlanCatalogPanelProps){
  const modules=ACTION_PLAN_CATALOG.map(original => props.municipalityId === 'granada-zaidin' && original.id === ZAIDIN_AGING_PROPOSAL.id ? ZAIDIN_AGING_PROPOSAL : original);
  return <>
-  <DefinitiveActionPlanPreview municipalityId={props.municipalityId} modules={modules} drafts={props.drafts}/>
+  <DefinitiveActionPlanPreview municipalityId={props.municipalityId} modules={modules} drafts={props.drafts} validatedActionPlans={props.validatedActionPlans} onValidatePlan={props.onValidatePlan}/>
   <LegacyActionPlanCatalogPanel {...props}/>
  </>;
 }

@@ -1,11 +1,18 @@
 import { HEALTHY_AGING_MODULE, type ActionPlanCatalogModule } from "./ActionPlanCatalog";
 export const ZAIDIN_PROPOSAL_VERSION = "zaidin-4-bloques-2026-09-09-r3";
 
-export function cleanActionPlanProposalText(text: string): string {
+export function cleanObsoleteActionPlanProgramLabels(text: string): string {
+ const obsoleteProgramLabel = /\s*\([^)]*(?:MANY AGES|MAY AGES|ONE LIFE|ZAID[IÍ]N SENIOR FEST)[^)]*\)\.?/giu;
+ if (!obsoleteProgramLabel.test(text)) return text;
  return text
   .replace(/\s*\([^)]*(?:MANY AGES|MAY AGES|ONE LIFE|ZAID[IÍ]N SENIOR FEST)[^)]*\)\.?/giu, ".")
   .replace(/\s+\./g, ".")
   .replace(/\.{2,}/g, ".")
+  .trim();
+}
+
+export function cleanActionPlanProposalText(text: string): string {
+ return cleanObsoleteActionPlanProgramLabels(text)
   .replace(/\s{2,}/g, " ")
   .trim();
 }

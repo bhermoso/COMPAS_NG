@@ -17,6 +17,8 @@ import type { DeliberativePrioritySelection } from "../../domain/deliberative-pr
 import type { LecturaEstrategicaLocal } from "../../domain/strategic-scenario";
 
 export interface LegacyActionPlanCatalogPanelProps {
+  validatedActionPlans?: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument[];
+  onValidatePlan?: (document: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument) => boolean;
   municipalityId: string;
   drafts?: PlanPreparationDraft[];
   onDraftChange?: (draft: PlanPreparationDraft) => void;
