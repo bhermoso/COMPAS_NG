@@ -135,6 +135,7 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
  }
 
  function control(id: string, source: string, ancestors: string[], alwaysShowEditor = false) {
+  const cleanSource = cleanActionPlanProposalText(source);
   const decision = draft?.decisions[id];
   const excluded = excludedByAncestor(draft, ancestors);
   const stale = decision && cleanActionPlanProposalText(decision.sourceText) !== cleanActionPlanProposalText(source);
