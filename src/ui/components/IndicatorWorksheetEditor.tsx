@@ -5,6 +5,7 @@ import {
   returnFields, worksheetContextChanged,
   type IndicatorWorksheet, type WorksheetContext, type WorksheetValues,
 } from "../../domain/action-plan-catalog/IndicatorWorksheet";
+import { actionProposalsForIndicator } from "../../domain/action-plan-catalog/ActionWorksheetProposal";
 
 interface Props {
   context: WorksheetContext;
@@ -32,6 +33,7 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
   const [error, setError] = useState("");
   const draft = sheet ?? createIndicatorWorksheet(context);
   const changed = worksheetContextChanged(draft, context);
+  const actionProposals = actionProposalsForIndicator(context.indicatorCode);
   function update(next: IndicatorWorksheet) {
     onChange({ ...next, updatedAt: new Date().toISOString() });
   }
@@ -67,6 +69,21 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
       <h4>Actuaciones que contribuirán al objetivo</h4>
       <p>Registra cada actuación y qué información entregará su responsable a quien consolida el indicador.
         No se han añadido actuaciones ni responsables automáticamente.</p>
+      {actionProposals.length > 0 && <section aria-label="Propuestas de actuaciones para revisar">
+        <h5>Propuestas de actuaciones para revisar</h5>
+        <p className="panel-note">Son borradores técnicos. Solo se incorporan a la ficha al pulsar el botón y siguen pendientes de revisión y acuerdo.</p>
+        {actionProposals.map((proposal) => {
+          const added = draft.actions.some((action) => action.id === proposal.id);
+          return <article className="indicator-worksheet__action" key={proposal.id}>
+            <strong>{proposal.values.name}</strong>
+            <p>{proposal.values.contribution}</p>
+            <p className="pcm-source">{proposal.values.population}</p>
+            <button type="button" disabled={added} onClick={() => update({ ...draft,
+              actions: [...draft.actions, { id: proposal.id, values: { ...proposal.values }, returns: [] }],
+            })}>{added ? "Propuesta añadida" : "Añadir esta propuesta como borrador"}</button>
+          </article>;
+        })}
+      </section>}
       {draft.actions.length === 0 && <p className="panel-note">Todavía no hay actuaciones vinculadas.</p>}
       {draft.actions.map((action, index) => <details className="indicator-worksheet__action" key={action.id} open>
         <summary>Actuación {index + 1} · {action.values.name || "Sin nombre"}</summary>
