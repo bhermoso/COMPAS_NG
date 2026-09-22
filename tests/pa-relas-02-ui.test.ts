@@ -43,7 +43,7 @@ describe("PA-RELAS-02 — representación editorial", () => {
     expect(html).toContain("Puedes examinar su arquitectura");
     expect(html).not.toContain("Aceptar todo");
     expect(html.match(/Ver ficha técnica propuesta/g)).toHaveLength(30);
-    expect(html.match(/Cumplimentar ficha/g)).toHaveLength(30);
+    expect(html.match(/Gestionar actuaciones/g)).toHaveLength(30);
     expect(html).toContain("Método de cálculo");
     expect(html).toContain("Criterio de calidad");
   });

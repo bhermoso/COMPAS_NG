@@ -44,34 +44,34 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
       const { downloadIndicatorWorksheet } = await import("../../application/action-plan/exportIndicatorWorksheet");
       await downloadIndicatorWorksheet(draft, reviewNotice, changed, actionId);
     } catch {
-      setError("No se pudo descargar la ficha. Tus campos permanecen en el expediente; vuelve a intentarlo.");
+      setError("No se pudo descargar el documento. Tus campos permanecen en el expediente; vuelve a intentarlo.");
     } finally { setExporting(false); }
   }
   return <details className="indicator-worksheet" open={open}
     onToggle={(event) => setOpen(event.currentTarget.open)}>
-    <summary>Cumplimentar ficha · {context.indicatorCode}{sheet ? " · En preparación" : ""}</summary>
+    <summary>Gestionar actuaciones · {context.indicatorCode}{sheet ? " · En preparación" : ""}</summary>
     {open && <div className="indicator-worksheet__body">
       <p className="eyebrow">Herramienta de recogida y seguimiento · Borrador de trabajo</p>
-      <h4>Ficha del objetivo e indicador</h4>
+      <h4>Marco de medición del indicador</h4>
       <p>{reviewNotice}</p>
-      <p className="panel-note">Preparar esta ficha no aprueba el objetivo ni modifica el Perfil de Salud Local.
-        Los campos se incorporan al expediente de este municipio en este navegador. Descarga las fichas para entregarlas a las personas responsables;
+      <p className="panel-note">Preparar el seguimiento no aprueba el objetivo ni modifica el Perfil de Salud Local.
+        El marco común y las fichas de actuación se incorporan al expediente de este municipio en este navegador. Descarga cada ficha para entregarla a la persona responsable;
         transcribe aquí las entregas que recibas.</p>
       {changed && <p role="alert" className="phase-blocked-notice">La redacción o versión de referencia ha cambiado.
-        Esta ficha conserva su referencia anterior: revisa su correspondencia antes de utilizar los datos.</p>}
-      <p><strong>Referencia de la ficha:</strong> {draft.context.objective}<br />{draft.context.indicator}</p>
+        Este seguimiento conserva su referencia anterior: revisa su correspondencia antes de utilizar los datos.</p>}
+      <p><strong>Indicador al que aportarán datos las actuaciones:</strong> {draft.context.objective}<br />{draft.context.indicator}</p>
       <p className="pcm-source">{draft.context.source} · Versión {draft.context.moduleVersion} · Unidad: {draft.context.unit}</p>
       <PlanningInstrumentCatalog indicatorCode={context.indicatorCode} onSelect={(instrument,use) => {
         const note = `[OPCIÓN PENDIENTE DE REVISIÓN] ${instrument.name} · ${use}. Población: ${instrument.population}. ${instrument.limitation}${instrument.reference ? ` Fuente: ${instrument.reference}` : ''}`;
         if (!(draft.values.instrument ?? '').includes(note)) update({...draft, values:{...draft.values,instrument:[draft.values.instrument,note].filter(Boolean).join('\n\n')}});
       }} />
       <Fields fields={indicatorFields} values={draft.values} onChange={(values) => update({ ...draft, values })} />
-      <h4>Actuaciones que contribuirán al objetivo</h4>
-      <p>Registra cada actuación y qué información entregará su responsable a quien consolida el indicador.
+      <h4>Fichas de las actuaciones que alimentan el indicador</h4>
+      <p>Crea una ficha por actuación y especifica qué información entregará su responsable a quien consolida el indicador.
         No se han añadido actuaciones ni responsables automáticamente.</p>
       {actionProposals.length > 0 && <section aria-label="Propuestas de actuaciones para revisar">
         <h5>Propuestas de actuaciones para revisar</h5>
-        <p className="panel-note">Son borradores técnicos. Solo se incorporan a la ficha al pulsar el botón y siguen pendientes de revisión y acuerdo.</p>
+        <p className="panel-note">Son borradores técnicos. Solo se convierten en ficha de actuación al pulsar el botón y siguen pendientes de revisión y acuerdo.</p>
         {actionProposals.map((proposal) => {
           const added = draft.actions.some((action) => action.id === proposal.id);
           return <article className="indicator-worksheet__action" key={proposal.id}>
@@ -80,13 +80,13 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
             <p className="pcm-source">{proposal.values.population}</p>
             <button type="button" disabled={added} onClick={() => update({ ...draft,
               actions: [...draft.actions, { id: proposal.id, values: { ...proposal.values }, returns: [] }],
-            })}>{added ? "Propuesta añadida" : "Añadir esta propuesta como borrador"}</button>
+            })}>{added ? "Ficha de propuesta creada" : "Crear ficha desde esta propuesta"}</button>
           </article>;
         })}
       </section>}
       {draft.actions.length === 0 && <p className="panel-note">Todavía no hay actuaciones vinculadas.</p>}
       {draft.actions.map((action, index) => <details className="indicator-worksheet__action" key={action.id} open>
-        <summary>Actuación {index + 1} · {action.values.name || "Sin nombre"}</summary>
+        <summary>Ficha de actuación {index + 1} · {action.values.name || "Sin nombre"}</summary>
         <p className="pcm-source">Código de enlace: {action.id}</p>
         <Fields fields={actionFields} values={action.values} onChange={(values) => update({ ...draft,
           actions: draft.actions.map((item) => item.id === action.id ? { ...item, values } : item),
@@ -111,14 +111,14 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
           ? { ...item, returns: [...item.returns, { id: crypto.randomUUID(), values: {} }] } : item),
         })}>Añadir entrega de datos</button>
         <button type="button" onClick={() => {
-          if (window.confirm("¿Eliminar esta actuación y sus entregas de esta ficha?")) update({ ...draft,
+          if (window.confirm("¿Eliminar esta ficha de actuación y todas sus entregas?")) update({ ...draft,
             actions: draft.actions.filter((item) => item.id !== action.id),
           });
-        }}>Eliminar actuación</button>
+        }}>Eliminar ficha de actuación</button>
       </details>)}
       <button type="button" onClick={() => update({ ...draft,
         actions: [...draft.actions, { id: crypto.randomUUID(), values: {}, returns: [] }],
-      })}>Añadir actuación vinculada</button>
+      })}>Crear ficha de actuación</button>
       <h4>Consolidación del indicador por periodo</h4>
       <p>No se suman automáticamente las entregas ni se promedian sus porcentajes. La persona responsable
         comprueba definiciones, periodos y duplicados. Sin dato no equivale a cero; con denominador cero,
@@ -151,7 +151,7 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
       <p className="panel-note">Recoge datos agregados y referencias de justificantes. La identificación personal se conserva en la fuente custodiada.</p>
       <div className="indicator-worksheet__footer">
         <button type="button" disabled={exporting} onClick={() => void download()}>
-          {exporting ? "Preparando Word…" : "Descargar ficha y actuaciones (Word)"}
+          {exporting ? "Preparando Word…" : "Descargar dossier del indicador (Word)"}
         </button>
         {sheet?.updatedAt && <span>Última edición: {new Date(sheet.updatedAt).toLocaleString("es-ES")}</span>}
       </div>
