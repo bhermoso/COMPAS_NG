@@ -27,6 +27,18 @@ function findElement(node: ReactNode, predicate: (element: ReactElement<Record<s
 }
 
 describe("Preparación independiente del Plan", () => {
+ it("muestra una caja editable con propuesta para cada objetivo general", () => {
+ const panel = PlanPreparationPanel({module: ZAIDIN_AGING_PROPOSAL, municipalityId: draft.municipalityId, onChange: () => {}, renderWorksheet: () => null});
+ for (const general of ZAIDIN_AGING_PROPOSAL.generalObjectives) {
+  const label = `Redacción del objetivo general · ${general.code}`;
+  const textarea = findElement(panel, element => element.type === "textarea" && element.props["aria-label"] === label);
+  expect(textarea).toBeDefined();
+  expect(textarea!.props.value).toBe(general.title);
+ }
+ const html = renderToStaticMarkup(panel);
+ expect(html.match(/Propuesta inicial del objetivo general/g)).toHaveLength(4);
+ expect(html).not.toContain("Guardado en el expediente local");
+ });
  it("reagrupa los 18 objetivos sin cambiar indicadores ni catálogo original", () => {
  const original = HEALTHY_AGING_MODULE.generalObjectives.flatMap(g => g.specificObjectives);
  const next = ZAIDIN_AGING_PROPOSAL.generalObjectives.flatMap(g => g.specificObjectives);
