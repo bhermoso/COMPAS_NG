@@ -36,8 +36,16 @@ describe("Preparación independiente del Plan", () => {
   expect(textarea!.props.value).toBe(general.title);
  }
  const html = renderToStaticMarkup(panel);
+ expect(html.match(/Propuesta inicial de objetivo general:/g)).toHaveLength(4);
  expect(html.match(/Propuesta inicial del objetivo general/g)).toHaveLength(4);
  expect(html).not.toContain("Guardado en el expediente local");
+ const changes: PlanPreparationDraft[] = [];
+ const emptyAgeism = {...draft, decisions:{[ZAIDIN_AGING_PROPOSAL.generalObjectives[0].code]:{status:"modified" as const,sourceText:ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title,text:""}}};
+ const restored = PlanPreparationPanel({module:ZAIDIN_AGING_PROPOSAL,municipalityId:draft.municipalityId,draft:emptyAgeism,onChange:next=>changes.push(next),renderWorksheet:()=>null});
+ const recover = findElement(restored, element=>element.type==="button"&&element.props["aria-label"]==="Usar propuesta inicial · ENV-B-edadismo");
+ expect(recover).toBeDefined();
+ (recover!.props.onClick as () => void)();
+ expect(changes[0].decisions["ENV-B-edadismo"].text).toBe(ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title);
  });
  it("reagrupa los 18 objetivos sin cambiar indicadores ni catálogo original", () => {
  const original = HEALTHY_AGING_MODULE.generalObjectives.flatMap(g => g.specificObjectives);
