@@ -36,7 +36,11 @@ se advierte de la diferencia sin reescribir los datos recogidos. El rechazo o
 la ausencia de revisión vigente también se muestra al editar y exportar.
 
 No se precargan responsables, actuaciones, valores observados, línea base ni
-metas. Los resultados son aportaciones humanas. No se agregan automáticamente
+metas. Como piloto, las fichas `ENV-I5.1` y `ENV-I5.2` muestran una propuesta
+de actuación para Edadismo. Cada propuesta se presenta como borrador técnico y
+solo entra en la ficha mediante una acción explícita de la persona usuaria. No
+incluye responsable, presupuesto, línea base ni meta; los acuerdos, calendario,
+custodia y entrega quedan señalados como pendientes. Los resultados son aportaciones humanas. No se agregan automáticamente
 programas que puedan contener personas duplicadas ni se promedian porcentajes.
 El estado «revisado» corresponde a la revisión del dato por su responsable,
 no a una validación institucional del Plan.

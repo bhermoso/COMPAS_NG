@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Packer } from "docx";
 import mammoth from "mammoth";
 import { createIndicatorWorksheet, worksheetContextChanged, worksheetKey } from "../src/domain/action-plan-catalog/IndicatorWorksheet";
+import { actionProposalsForIndicator } from "../src/domain/action-plan-catalog/ActionWorksheetProposal";
 import { buildIndicatorWorksheetDocument } from "../src/application/action-plan/exportIndicatorWorksheet";
 import { createCompleteMunicipalityWorkspace } from "../src/application/workspace";
 import { parseWorkspaceJSON } from "../src/infrastructure/persistence/local-storage";
@@ -18,6 +19,18 @@ describe("Fichas cumplimentables — integridad y entrega", () => {
     expect(worksheetContextChanged(sheet, { ...context, indicator: "Redacción adaptada" })).toBe(true);
     expect(sheet.context.indicator).toBe("Autonomía funcional");
     expect(worksheetKey({ ...context, municipalityId: "other" })).not.toBe(worksheetKey(context));
+  });
+
+  it("ofrece borradores de actuaciones de Edadismo sin añadirlos ni asignar responsables", () => {
+    const first = actionProposalsForIndicator("ENV-I5.1");
+    const second = actionProposalsForIndicator("ENV-I5.2");
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(1);
+    expect(actionProposalsForIndicator("ENV-I1.1")).toEqual([]);
+    expect(first[0].values.agreement).toContain("pendiente de revisión y acuerdo");
+    expect(first[0].values.owner).toBeUndefined();
+    expect(second[0].values.owner).toBeUndefined();
+    expect(createIndicatorWorksheet({ ...context, indicatorCode: "ENV-I5.1" }).actions).toEqual([]);
   });
 
   it("persiste fichas, actuaciones y varios periodos sin poblar diagnóstico ni decisiones", () => {
