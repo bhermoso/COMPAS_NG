@@ -22,7 +22,9 @@ describe("Plan editor preserves typed whitespace", () => {
    let draft: PlanPreparationDraft | undefined;
    const render = () => PlanPreparationPanel({ module, municipalityId: "granada-zaidin", draft, onChange: next => { draft = next; }, renderWorksheet: () => null });
    find(render(), `Estado del Plan ${id}`)!.onChange!({target:{value:"modified"}});
-   const label = `Redacción vigente · ${id}`;
+   const label = id.startsWith("ENV-B-")
+    ? `Redacción del objetivo general · ${id}`
+    : `Redacción vigente · ${id}`;
    find(render(), label)!.onChange!({target:{value:""}});
    let typed = "";
    for (const char of "Mejorar  la salud\ny la participación (nota local) ") {
