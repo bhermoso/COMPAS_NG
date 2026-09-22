@@ -45,7 +45,7 @@ try {
   const owner = "RESPONSABLE DE PRUEBA — no es un dato real";
   assert.equal(await sheet.getByLabel("Persona y entidad responsables de consolidar el indicador").inputValue(), "");
   await sheet.getByLabel("Persona y entidad responsables de consolidar el indicador").fill(owner);
-  await sheet.getByRole("button", { name: "Añadir actuación vinculada", exact: true }).click();
+  await sheet.getByRole("button", { name: "Crear ficha de actuación", exact: true }).click();
   const action = sheet.locator(".indicator-worksheet__action").first();
   await action.getByLabel("Nombre de la actuación o programa", { exact: true }).fill("ACTUACIÓN SOLO DE PRUEBA");
   await action.getByRole("button", { name: "Añadir entrega de datos", exact: true }).click();
@@ -62,7 +62,7 @@ try {
   assert.deepEqual(saved.actionPlanModuleReviews, before.actionPlanModuleReviews);
 
   const downloaded = page.waitForEvent("download");
-  await sheet.getByRole("button", { name: "Descargar ficha y actuaciones (Word)", exact: true }).click();
+  await sheet.getByRole("button", { name: "Descargar dossier del indicador (Word)", exact: true }).click();
   const download = await downloaded;
   assert.match(download.suggestedFilename(), /granada-zaidin-ENV-I1\.1\.docx$/);
   assert.equal(await download.failure(), null);
@@ -80,13 +80,13 @@ try {
   assert.equal(await sheet.getByLabel("Numerador o recuento observado (si se dispone)").first().inputValue(), "0");
   assert.equal(await sheet.getByLabel("Numerador o recuento observado (si se dispone)").nth(1).inputValue(), "");
   page.once("dialog", (dialog) => dialog.dismiss());
-  await sheet.getByRole("button", { name: "Eliminar actuación", exact: true }).click();
+  await sheet.getByRole("button", { name: "Eliminar ficha de actuación", exact: true }).click();
   assert.equal(await sheet.locator(".indicator-worksheet__action").count(), 1);
   if (output) await sheet.screenshot({ path: `${output}/ficha-pantalla-prueba.png` });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await sheet.evaluate((element) => element.scrollWidth <= element.clientWidth + 1), true);
   assert.deepEqual(errors, []);
-  console.log("PASS: 30 fichas; edición, actuaciones, entregas, Word, recarga, aislamiento municipal, cancelación de borrado y pantalla estrecha.");
+  console.log("PASS: 30 espacios de seguimiento; fichas de actuación, entregas, Word, recarga, aislamiento municipal, cancelación de borrado y pantalla estrecha.");
 } finally {
   await browser?.close();
   await server.close();
