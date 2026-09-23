@@ -169,6 +169,14 @@ describe("proyección — paridad de contenido con la vista canónica", () => {
     expect(byId.has("informe-ranking")).toBe(
       norm!.editorialView.informeSignalRanking !== null
     );
+    if (norm!.editorialView.diagnosticSynthesis !== null) {
+      const section = byId.get("diagnostic-synthesis");
+      expect(section).toBeDefined();
+      expect(section!.paragraphs).toContain(
+        norm!.editorialView.diagnosticSynthesis.thesis
+      );
+      expect(section!.paragraphs.join("\n")).toContain("Pregunta de contraste:");
+    }
     // Trazabilidad: el hash del artefacto aparece en su sección.
     expect(byId.get("traceability")!.paragraphs.join(" ")).toContain(caso.v2.sourceHash);
   });

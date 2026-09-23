@@ -174,6 +174,23 @@ export function projectCanonicalToDocumentModel(
     });
   }
 
+  if (reading.diagnosticSynthesis !== null) {
+    const synthesis = reading.diagnosticSynthesis;
+    sections.push({
+      sectionId: "diagnostic-synthesis",
+      title: synthesis.title,
+      level: 1,
+      paragraphs: [
+        synthesis.thesis,
+        synthesis.interpretiveWeight,
+        synthesis.caution,
+        ...synthesis.contrastQuestions.map(
+          (question) => `Pregunta de contraste: ${question}`
+        ),
+      ],
+    });
+  }
+
   if (reading.tracerTable.length > 0) {
     sections.push({
       sectionId: "tracer-table",

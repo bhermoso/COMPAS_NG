@@ -157,6 +157,7 @@ export type {
   ProfileIntegratedEditorialSourceBlock,
   ProfileIntegratedEditorialReadingBlock,
   ProfileIntegratedEditorialClosingColumn,
+  ProfileIntegratedDiagnosticSynthesis,
   ProfileIntegratedEditorialTechnicalAnnex,
   BuildProfileIntegratedEditorialViewOptions,
 } from "./profileIntegratedEditorialView";

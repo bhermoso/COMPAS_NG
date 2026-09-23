@@ -248,6 +248,33 @@ export function ProfileIntegratedEditorialPreview({
         </section>
       ) : null}
 
+      {/* ── Síntesis interpretativa ────────────────────────────────────────
+          Capa conclusiva derivada de los hilos N3: declara tesis, peso,
+          cautela y preguntas de contraste. No formula medidas ni sustituye la
+          deliberación posterior. */}
+      {view.diagnosticSynthesis !== null ? (
+        <section
+          className="pie-doc-section"
+          aria-labelledby="pie-diagnostic-synthesis-title"
+        >
+          <h3 id="pie-diagnostic-synthesis-title" className="pie-section__title">
+            {view.diagnosticSynthesis.title}
+          </h3>
+          <p className="pie-hilo__reading">{view.diagnosticSynthesis.thesis}</p>
+          <p className="pie-hilo__reading">
+            {view.diagnosticSynthesis.interpretiveWeight}
+          </p>
+          <p className="pie-hilo__context">{view.diagnosticSynthesis.caution}</p>
+          {view.diagnosticSynthesis.contrastQuestions.length > 0 ? (
+            <ul className="pie-cierre__items">
+              {view.diagnosticSynthesis.contrastQuestions.map((question) => (
+                <li key={question}>{question}</li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
       {/* ── Indicadores trazadores ──────────────────────────────────────── */}
       {view.tracerTable.length > 0 && (
         <section className="pie-doc-section" aria-labelledby="pie-tracer-title">

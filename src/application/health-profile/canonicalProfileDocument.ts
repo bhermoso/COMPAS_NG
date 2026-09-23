@@ -31,6 +31,7 @@ import type {
   ProfileIntegratedEditorialSourceBlock,
   ProfileIntegratedEditorialReadingBlock,
   ProfileIntegratedEditorialClosingColumn,
+  ProfileIntegratedDiagnosticSynthesis,
 } from "./profileIntegratedEditorialView";
 import { buildProfileIntegratedEditorialView } from "./profileIntegratedEditorialView";
 import type { IntegratedInterpretation } from "./integratedInterpretation";
@@ -226,6 +227,7 @@ export interface CanonicalEditorialView {
   informeSignalRanking: CanonicalInformeRanking | null;
   territorialReadings: ProfileIntegratedEditorialReadingBlock[];
   interpretation: IntegratedInterpretation;
+  diagnosticSynthesis: ProfileIntegratedDiagnosticSynthesis | null;
   tracerTable: TrazadorRow[];
   /** Señales principales para deliberación (visualización de la lectura). */
   principalSignals: CanonicalPrincipalSignal[];
@@ -271,6 +273,7 @@ export interface SealedCanonicalProfileDocumentV2 {
     sourceBlocks: ProfileIntegratedEditorialSourceBlock[];
     territorialReadings: ProfileIntegratedEditorialReadingBlock[];
     interpretation: IntegratedInterpretation;
+    diagnosticSynthesis?: ProfileIntegratedDiagnosticSynthesis | null;
     tracerTable: TrazadorRow[];
     groupMotorAgenda: GrupoMotorCard[];
     closing: ProfileIntegratedEditorialClosingColumn[];
@@ -299,6 +302,7 @@ export interface LegacyEditorialView {
   kind: "legacy-editorial-view";
   reason:
     | "missing-reading-status"
+    | "missing-diagnostic-synthesis"
     | "missing-human-closing"
     | "missing-institutional-boundary"
     | "missing-technical-space";
@@ -322,6 +326,7 @@ export type CanonicalReadingSectionId =
   | "informe-ranking"
   | "pending-declaration"
   | "territorial-readings"
+  | "diagnostic-synthesis"
   | "tracer-table"
   | "principal-signals"
   | "group-motor-agenda"
@@ -343,6 +348,7 @@ export const CANONICAL_READING_ORDER = [
   "informe-ranking",
   "pending-declaration",
   "territorial-readings",
+  "diagnostic-synthesis",
   "tracer-table",
   "principal-signals",
   "group-motor-agenda",
@@ -589,6 +595,8 @@ export function buildCanonicalEditorialView(
     informeSignalRanking,
     territorialReadings,
     interpretation: ov.interpretation,
+    diagnosticSynthesis:
+      readingStatus === "integrated" ? ov.diagnosticSynthesis : null,
     tracerTable: ov.tracerTable,
     principalSignals,
     groupMotorAgenda: ov.groupMotorAgenda,
@@ -771,6 +779,9 @@ export function normalizeSealedCanonicalProfileDocument(
   if (ev.humanClosing === undefined) {
     return { kind: "legacy-editorial-view", reason: "missing-human-closing" };
   }
+  if (ev.diagnosticSynthesis === undefined) {
+    return { kind: "legacy-editorial-view", reason: "missing-diagnostic-synthesis" };
+  }
   if (ev.institutionalBoundary === undefined) {
     return { kind: "legacy-editorial-view", reason: "missing-institutional-boundary" };
   }
@@ -787,6 +798,7 @@ export function normalizeSealedCanonicalProfileDocument(
       informeSignalRanking: ev.informeSignalRanking ?? null,
       territorialReadings: ev.territorialReadings,
       interpretation: ev.interpretation,
+      diagnosticSynthesis: ev.diagnosticSynthesis,
       tracerTable: ev.tracerTable,
       principalSignals: ev.principalSignals ?? [],
       groupMotorAgenda: ev.groupMotorAgenda,

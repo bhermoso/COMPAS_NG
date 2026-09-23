@@ -79,6 +79,21 @@ export interface ProfileIntegratedEditorialClosingColumn {
   items: string[];
 }
 
+export interface ProfileIntegratedDiagnosticSynthesis {
+  id: "diagnostic-synthesis";
+  title: string;
+  thesis: string;
+  interpretiveWeight: string;
+  caution: string;
+  contrastQuestions: string[];
+  traceability: {
+    unitIds: string[];
+    localSignalIds: string[];
+    contextualSignalIds: string[];
+    statusCounts: Record<IntegratedInterpretationStatus, number>;
+  };
+}
+
 export interface ProfileIntegratedEditorialTechnicalAnnex {
   title: string;
   summary: string;
@@ -93,6 +108,8 @@ export interface ProfileIntegratedEditorialView {
   territorialReadings: ProfileIntegratedEditorialReadingBlock[];
   /** Interpretación integrada (Nivel 3) que gobierna la lectura principal. */
   interpretation: IntegratedInterpretation;
+  /** Síntesis interpretativa derivada de los hilos N3, sin recomendar medidas. */
+  diagnosticSynthesis: ProfileIntegratedDiagnosticSynthesis;
   tracerTable: TrazadorRow[];
   groupMotorAgenda: GrupoMotorCard[];
   closing: ProfileIntegratedEditorialClosingColumn[];
@@ -902,6 +919,65 @@ function buildClosingColumns(input: {
   ];
 }
 
+function buildDiagnosticSynthesis(
+  interpretation: IntegratedInterpretation
+): ProfileIntegratedDiagnosticSynthesis {
+  const statusCounts: Record<IntegratedInterpretationStatus, number> = {
+    "integrated-interpretation": 0,
+    "plausible-hypothesis": 0,
+    "open-question": 0,
+  };
+  for (const unit of interpretation.units) {
+    statusCounts[unit.epistemicStatus] += 1;
+  }
+
+  const localSignalIds = unique(
+    interpretation.units.flatMap((unit) =>
+      unit.localSignals.map((signal) => signal.id)
+    )
+  );
+  const contextualSignalIds = unique(
+    interpretation.units.flatMap((unit) =>
+      unit.contextualSignals.map((signal) => signal.id)
+    )
+  );
+  const topTitles = interpretation.units
+    .slice(0, 3)
+    .map((unit) => lowerFirst(unit.title));
+  const integrated = statusCounts["integrated-interpretation"];
+  const hypotheses = statusCounts["plausible-hypothesis"];
+  const open = statusCounts["open-question"];
+
+  const thesis =
+    interpretation.units.length > 0
+      ? `La lectura disponible no se limita a contar menciones: organiza ${interpretation.units.length} hilo(s) diagnósticos cruzando agenda sanitaria, señales locales, contexto, incertidumbre de equidad y capacidades. El núcleo territorial se concentra en ${enumerarEjes(topTitles)}.`
+      : "La base disponible todavía no permite construir hilos diagnósticos integrados; el Perfil conserva la agenda sanitaria de partida y declara la lectura territorial como pendiente.";
+  const interpretiveWeight =
+    `El peso interpretativo queda graduado: ${integrated} hilo(s) como interpretación integrada, ` +
+    `${hypotheses} como hipótesis plausible(s) y ${open} como pregunta(s) abierta(s). ` +
+    `La síntesis usa ${localSignalIds.length} señal(es) local(es) y ` +
+    `${contextualSignalIds.length} señal(es) contextual(es), siempre con la escala declarada por cada fuente.`;
+  const caution =
+    `${interpretation.centralUncertainty} Las menciones del Informe orientan la agenda; no equivalen por sí solas a prevalencias locales ni a distribución interna.`;
+
+  return {
+    id: "diagnostic-synthesis",
+    title: "Síntesis interpretativa del Perfil",
+    thesis,
+    interpretiveWeight,
+    caution,
+    contrastQuestions: unique(
+      interpretation.units.map((unit) => unit.question)
+    ).slice(0, 4),
+    traceability: {
+      unitIds: interpretation.units.map((unit) => unit.id),
+      localSignalIds,
+      contextualSignalIds,
+      statusCounts,
+    },
+  };
+}
+
 // ── Nivel 3 → bloque de lectura (la interpretación integrada gobierna N4) ──────
 
 function variantForUnit(unit: IntegratedInterpretationUnit): EvidenceVariant {
@@ -1076,6 +1152,7 @@ export function buildProfileIntegratedEditorialView(
     sourceBlocks,
     territorialReadings,
     interpretation,
+    diagnosticSynthesis: buildDiagnosticSynthesis(interpretation),
     tracerTable: visuals.tablaTrazadores,
     groupMotorAgenda: visuals.grupoMotorCards,
     closing,
