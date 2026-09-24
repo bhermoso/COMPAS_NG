@@ -1,4 +1,5 @@
 import { HEALTHY_AGING_MODULE, type ActionPlanCatalogModule } from "./ActionPlanCatalog";
+import type { PLSEvaluationFramework, UnaddressedNeed } from "../health-plan";
 export const ZAIDIN_PROPOSAL_VERSION = "zaidin-4-bloques-2026-09-09-r3";
 
 export function cleanObsoleteActionPlanProgramLabels(text: string): string {
@@ -83,6 +84,53 @@ export interface PlanPreparationDraft {
  version: string;
  updatedAt: string;
  decisions: Record<string, PlanPreparationDecision>;
+ /** Necesidades diagnosticadas que quedan fuera de este ciclo y su justificación. Gate G-PLS-7. */
+ unaddressedNeeds?: UnaddressedNeed[];
+ /** Marco mínimo que hará evaluable el futuro PLS. Gate G-PLS-10. */
+ evaluationFramework?: PLSEvaluationFramework;
+}
+
+export const ALL_DIAGNOSTIC_NEEDS_ADDRESSED: UnaddressedNeed = {
+ id: "all-diagnostic-needs-addressed",
+ title: "Sin necesidades diagnosticadas fuera del Plan de Acción",
+ justification: "Todas las necesidades identificadas para este ciclo han quedado incorporadas al Plan de Acción.",
+};
+
+export function normaliseUnaddressedNeedsForPlan(needs: UnaddressedNeed[] | undefined): UnaddressedNeed[] | undefined {
+ if (needs === undefined) return undefined;
+ const clean = needs
+  .map((need) => ({
+   ...need,
+   id: need.id.trim(),
+   title: cleanActionPlanProposalText(need.title),
+   sourceAreaId: need.sourceAreaId?.trim(),
+   justification: cleanActionPlanProposalText(need.justification),
+  }))
+  .filter((need) => need.id && need.title && need.justification);
+ return clean.length ? clean : [{ ...ALL_DIAGNOSTIC_NEEDS_ADDRESSED }];
+}
+
+export function normaliseEvaluationFramework(framework: PLSEvaluationFramework | undefined): PLSEvaluationFramework | undefined {
+ if (!framework) return undefined;
+ const evaluationQuestions = framework.evaluationQuestions
+  .map(cleanActionPlanProposalText)
+  .filter(Boolean);
+ const evaluationMoments = framework.evaluationMoments
+  .map(cleanActionPlanProposalText)
+  .filter(Boolean);
+ const evaluationResponsible = cleanActionPlanProposalText(framework.evaluationResponsible);
+ const baselineNote = cleanActionPlanProposalText(framework.baselineNote);
+ if (!evaluationQuestions.length && !evaluationMoments.length && !evaluationResponsible && !baselineNote) return undefined;
+ return { evaluationQuestions, evaluationMoments, evaluationResponsible, baselineNote };
+}
+
+export function hasCompleteEvaluationFramework(framework: PLSEvaluationFramework | undefined): boolean {
+ const clean = normaliseEvaluationFramework(framework);
+ return !!clean &&
+  clean.evaluationQuestions.length > 0 &&
+  clean.evaluationMoments.length > 0 &&
+  clean.evaluationResponsible.length > 0 &&
+  clean.baselineNote.length > 0;
 }
 
 export type PlanPreparationReviewStatus = "accepted" | "rejected" | "reformulated";

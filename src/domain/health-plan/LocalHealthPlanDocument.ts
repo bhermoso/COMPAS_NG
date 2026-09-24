@@ -160,6 +160,13 @@ export interface PLSSectionAgenda {
   }>;
 }
 
+export interface PLSEvaluationFramework {
+  evaluationQuestions: string[];   // Preguntas de evaluación (obligatorio)
+  evaluationMoments: string[];     // Cuándo se mide: "final del período", "año 2"
+  evaluationResponsible: string;
+  baselineNote: string;            // Nota sobre la documentación del tiempo cero
+}
+
 export interface PLSSectionSeguimiento {
   // Cap. IX del PLS: Marco de seguimiento inicial + Marco de evaluación.
   trackingItems: Array<{
@@ -170,12 +177,7 @@ export interface PLSSectionSeguimiento {
     alertThreshold?: string;
     measurementResponsible: string;
   }>;
-  evaluationFramework: {
-    evaluationQuestions: string[];   // Preguntas de evaluación (obligatorio)
-    evaluationMoments: string[];     // Cuándo se mide: "final del período", "año 2"
-    evaluationResponsible: string;
-    baselineNote: string;            // Nota sobre la documentación del tiempo cero
-  };
+  evaluationFramework: PLSEvaluationFramework;
 }
 
 export interface PLSSectionGobernanza {

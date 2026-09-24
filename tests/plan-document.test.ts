@@ -2,7 +2,12 @@ import { describe,it,expect } from "vitest";
 import { Packer } from "docx";
 import { ZAIDIN_AGING_PROPOSAL as module, type PlanPreparationDraft } from "../src/domain/action-plan-catalog/PlanPreparationDraft";
 import { buildDefinitiveActionPlanProjection } from "../src/domain/action-plan-catalog/DefinitiveActionPlanProjection";
-import { validatePlanDocument,latestValidatedPlan,buildPlanDocument } from "../src/domain/action-plan-catalog/PlanDocument";
+import {
+  validatePlanDocument,
+  latestValidatedPlan,
+  buildPlanDocument,
+  validatePlanDocumentForLocalHealthPlan,
+} from "../src/domain/action-plan-catalog/PlanDocument";
 import { buildPlanWord,buildPlanPdf,planDocumentParagraphs } from "../src/application/action-plan/exportPlanDocument";
 function fixture(){
  const draft:PlanPreparationDraft={municipalityId:"granada-zaidin",moduleId:module.id,version:module.version,updatedAt:"2026-09-16",decisions:{}};
@@ -57,7 +62,37 @@ describe("Versiones documentales del Plan",()=>{
   expect(word.subarray(0,2).toString()).toBe("PK");
   const pdf=buildPlanPdf(doc);
   expect(pdf.output()).toContain("%PDF");
-  expect(pdf.getNumberOfPages()).toBeGreaterThan(1);
-  expect(planDocumentParagraphs(doc).map(p=>p.text)).toContain("Versión validada técnicamente");
+ expect(pdf.getNumberOfPages()).toBeGreaterThan(1);
+ expect(planDocumentParagraphs(doc).map(p=>p.text)).toContain("Versión validada técnicamente");
+ });
+ it("declara gates pendientes para alimentar el futuro PLS si faltan necesidades no priorizadas o evaluación",()=>{
+  const draft=fixture();
+  const doc=validatePlanDocument(draft.municipalityId,buildDefinitiveActionPlanProjection(draft.municipalityId,[module],[draft]),"Equipo","2026-09-16");
+  expect(validatePlanDocumentForLocalHealthPlan(doc).map(v=>v.gate)).toEqual(["G-PLS-7","G-PLS-10"]);
+ });
+ it("conserva necesidades no priorizadas y marco de evaluación en la versión validada",()=>{
+  const draft=fixture();
+  draft.unaddressedNeeds=[];
+  draft.evaluationFramework={
+   evaluationQuestions:["¿Se han reducido las barreras priorizadas por las personas mayores?"],
+   evaluationMoments:["Revisión anual","Final del período"],
+   evaluationResponsible:"Equipo técnico municipal de salud",
+   baselineNote:"Los indicadores incluidos conservan el tiempo cero definido en sus fichas.",
+  };
+  const doc=validatePlanDocument(
+   draft.municipalityId,
+   buildDefinitiveActionPlanProjection(draft.municipalityId,[module],[draft]),
+   "Equipo",
+   "2026-09-16"
+  );
+  expect(doc.unaddressedNeeds?.[0].id).toBe("all-diagnostic-needs-addressed");
+  expect(doc.evaluationFramework?.evaluationQuestions).toEqual([
+   "¿Se han reducido las barreras priorizadas por las personas mayores?",
+  ]);
+  expect(validatePlanDocumentForLocalHealthPlan(doc)).toEqual([]);
+  const texts=planDocumentParagraphs(doc).map(p=>p.text);
+  expect(texts).toContain("Necesidades diagnosticadas no priorizadas");
+  expect(texts).toContain("Marco de evaluación");
+  expect(texts.join("\n")).toContain("Equipo técnico municipal de salud");
  });
 });

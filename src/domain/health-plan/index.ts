@@ -11,6 +11,7 @@ export type {
   PLSSectionArticulacionInstitucional,
   PLSSectionPlanAccion,
   PLSSectionAgenda,
+  PLSEvaluationFramework,
   PLSSectionSeguimiento,
   PLSSectionGobernanza,
   PLSSectionAnexosMetodologicos,

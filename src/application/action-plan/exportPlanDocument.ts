@@ -2,7 +2,7 @@ import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
 import type { PlanDocument } from "../../domain/action-plan-catalog/PlanDocument";
 export function planDocumentParagraphs(plan: PlanDocument) {
- return [
+ const paragraphs = [
   {text:"Plan de Acción",heading:true},
   {text:"Ámbito: "+(plan.municipalityId==="granada-zaidin"?"Granada-Zaidín":plan.municipalityId)},
   {text:plan.status==="validated"?"Versión validada técnicamente":"BORRADOR — sin validar"},
@@ -11,6 +11,24 @@ export function planDocumentParagraphs(plan: PlanDocument) {
   {text:"La validación técnica no constituye aprobación institucional del Plan."},
   ...plan.paragraphs
  ];
+ if (plan.unaddressedNeeds?.length) {
+  paragraphs.push(
+   { text: "Necesidades diagnosticadas no priorizadas", heading: true },
+   ...plan.unaddressedNeeds.map((need) => ({
+    text: `${need.title}: ${need.justification}`,
+   }))
+  );
+ }
+ if (plan.evaluationFramework) {
+  paragraphs.push(
+   { text: "Marco de evaluación", heading: true },
+   { text: "Preguntas de evaluación: " + (plan.evaluationFramework.evaluationQuestions.join("; ") || "pendientes") },
+   { text: "Momentos de medición: " + (plan.evaluationFramework.evaluationMoments.join("; ") || "pendientes") },
+   { text: "Responsable de evaluación: " + (plan.evaluationFramework.evaluationResponsible || "pendiente") },
+   { text: "Línea base: " + (plan.evaluationFramework.baselineNote || "pendiente") }
+  );
+ }
+ return paragraphs;
 }
 export function buildPlanWord(plan: PlanDocument) {
  return new Document({creator:"COMPÁS NG",title:"Plan de Acción",styles:{default:{document:{run:{font:"Arial",size:22},paragraph:{spacing:{after:140}}}}},

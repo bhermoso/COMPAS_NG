@@ -84,6 +84,13 @@ alimenta la selección deliberativa, el PAI ni las revisiones formales. Permite
 incluir, excluir, modificar o dejar pendientes elementos. Excluir un ascendiente
 retira sus descendientes del borrador sin borrar sus decisiones, fichas o actuaciones.
 
+Desde 2026-09-24, `PlanPreparationDraft` puede transportar también:
+
+- `unaddressedNeeds?: UnaddressedNeed[]`, para documentar necesidades diagnosticadas no priorizadas o declarar que todas han quedado incorporadas al Plan de Acción (G-PLS-7);
+- `evaluationFramework?: PLSEvaluationFramework`, para preservar preguntas, momentos, responsable y nota de línea base del futuro marco de evaluación del PLS (G-PLS-10).
+
+Estos campos preparan el consumo posterior por `LocalHealthPlanCompiler`, pero su presencia no convierte la preparación editable en aprobación institucional ni en Plan Local de Salud compilado.
+
 Para El Zaidín se presenta la propuesta editorial 92418 en cuatro bloques, con los
 18 códigos específicos y sus indicadores originales. El catálogo 3.1 y sus
 revisiones se conservan como referencia formal anterior. No se traslada aprobación

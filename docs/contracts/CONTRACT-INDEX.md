@@ -222,7 +222,7 @@ Contrato del `LocalHealthPlanCompiler`. Define cómo se produce el `LocalHealthP
 **Tipos:** `src/domain/health-plan/LocalHealthPlanDocument.ts`, `src/domain/compilation/CompilationManifest.ts`.
 **Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica), CONTRACT-INSTITUTIONAL-LIFECYCLE.
 **Prerequisitos satisfechos (Sprint 2):** actor model `approved` implementado (CONTRACT-INSTITUTIONAL-LIFECYCLE); validación formal del Nivel 3 implementada (`FormalValidationRecord`, `createFormalValidation.ts`).
-**Prerequisitos pendientes:** `UnaddressedNeed[]` en `ActionPlanDraft` (G-PLS-7); `PLSEvaluationFramework` (G-PLS-10). Ver §16 de este contrato.
+**Prerequisitos pendientes:** implementación completa del `LocalHealthPlanCompiler` y captura UI formal para `UnaddressedNeed[]` y `PLSEvaluationFramework`. El soporte de dominio y transporte documental para G-PLS-7 y G-PLS-10 existe desde 2026-09-24 (`PlanPreparationDraft` → `PlanDocument`). Ver §16 de este contrato.
 
 ---
 
