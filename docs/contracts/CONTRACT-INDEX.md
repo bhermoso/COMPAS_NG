@@ -89,6 +89,17 @@ Define las cuatro dimensiones de calidad de la evidencia: documental, muestral, 
 
 ---
 
+### CONTRACT-SOURCE-CAPABILITY-MATRIX
+**Estado:** VIGENTE — creado 2026-09-24
+
+Matriz contractual de capacidades de fuente. Define qué tipos de información puede soportar, cargar e incorporar COMPÁS NG; qué ruta de entrada tienen; si son fuentes fijas o variables; si generan `EvidenceAtom`; qué papel desempeñan en la salida interpretativa COMPÁS y qué pueden aportar a la salida comparativa breve tipo OHID/Fingertips. Incluye la ruta para fuentes nuevas como ERACIS, estrategias autonómicas, planes estratégicos temáticos, estudios complementarios, activos, priorizaciones ciudadanas, documentación territorial, material cualitativo y evidencia longitudinal.
+
+**Productores:** Repositorio Documental, parsers de estudios, cargadores de documentos, importadores GES/REDCap.
+**Consumidores:** Perfil de Salud Local, salida comparativa breve, compiladores documentales, equipo técnico.
+**Relacionado con:** CONTRACT-REPOSITORY, CONTRACT-EVIDENCE, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY, CONTRACT-NHS-HEALTH-PROFILE.
+
+---
+
 ## Nivel 1 tardío — Lectura clínico-asistencial UGC
 
 > **Nota de estado (2026-07-13):** Las capas N1b y N3 (interpretación integrada) están implementadas

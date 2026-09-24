@@ -382,6 +382,8 @@ La identidad del Perfil no depende de qué instrumentos están disponibles, cuá
 
 Un Perfil con Informe de Salud y una única fuente adicional válida según la regla N+1 puede ser metodológicamente correcto. Un Perfil con seis instrumentos pero sin trazabilidad o sin autoría humana explícita no lo es.
 
+La versatilidad del Perfil se gobierna mediante `CONTRACT-SOURCE-CAPABILITY-MATRIX`: una fuente nueva —ERACIS, estrategia autonómica, plan estratégico temático, estudio complementario, priorización ciudadana, documentación territorial, material cualitativo o evidencia longitudinal— debe entrar por la ruta más específica disponible y declarar su escala, estatuto, capacidad de atomización y efecto sobre las salidas del Perfil.
+
 Cuando se incorporen nuevas familias de evidencia, nuevos instrumentos o nuevas fuentes institucionales, este contrato debe revisarse para evaluar si sus artículos siguen siendo adecuados. Los artículos no cambian con la implementación: cambian cuando la experiencia metodológica demuestra que deben revisarse.
 
 ### Art. 19. Criterios de aceptación del Perfil
@@ -559,6 +561,7 @@ La salida interpretativa COMPÁS y la salida comparativa breve tipo OHID/Fingert
 | `CONTRACT-MIT-PSL` | Este contrato establece los principios que el MIT debe respetar al producir la interpretación territorial. Los Arts. 5, 6 y 14 condicionan el diseño del motor. |
 | `CONTRACT-PSL-COMPAS` | Define el producto institucional resultante de aplicar este contrato. Debe ser coherente en todos sus artículos con este contrato. |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` | Los gates del compilador (G-LHC-1 a G-LHC-7) son la implementación técnica de los Arts. 16, 17 e I-LHPM-3. |
+| `CONTRACT-SOURCE-CAPABILITY-MATRIX` | Define el estatuto operativo de cada fuente admisible: ruta de entrada, escala, atomización, madurez y efecto sobre la salida interpretativa y la salida comparativa breve. |
 | `CONTRACT-NHS-HEALTH-PROFILE` §0 | La representación comparativa breve tipo OHID/Fingertips es una **salida derivada** del conocimiento territorial del Perfil canónico. Por los Fundamentos del Perfil único (2026-07-17) **deja de tener estatuto de producto institucional propio** y no puede ser segunda fuente de verdad; solo sobrevive dentro del Perfil, previa validación. Los Arts. 12, 13, 17 bis y 17 ter condicionan sus criterios de generación. |
 | `CONTRACT-INTERPRETATION` | Define qué significa interpretar dentro de COMPÁS NG. Este contrato es complementario: define qué tipos de afirmación son admisibles y cuáles no (Art. 8). |
 | `CONTRACT-STRATEGIC-REPOSITORY` | Las líneas estratégicas de los marcos institucionales son referencia para el capítulo de marco estratégico del Perfil (Arts. 15.1 y 15.4). La articulación con esos marcos es posterior al Perfil. |
