@@ -98,6 +98,7 @@ export const ALL_DIAGNOSTIC_NEEDS_ADDRESSED: UnaddressedNeed = {
 
 export function normaliseUnaddressedNeedsForPlan(needs: UnaddressedNeed[] | undefined): UnaddressedNeed[] | undefined {
  if (needs === undefined) return undefined;
+ if (needs.length === 0) return [{ ...ALL_DIAGNOSTIC_NEEDS_ADDRESSED }];
  const clean = needs
   .map((need) => ({
    ...need,
@@ -107,7 +108,7 @@ export function normaliseUnaddressedNeedsForPlan(needs: UnaddressedNeed[] | unde
    justification: cleanActionPlanProposalText(need.justification),
   }))
   .filter((need) => need.id && need.title && need.justification);
- return clean.length ? clean : [{ ...ALL_DIAGNOSTIC_NEEDS_ADDRESSED }];
+ return clean;
 }
 
 export function normaliseEvaluationFramework(framework: PLSEvaluationFramework | undefined): PLSEvaluationFramework | undefined {

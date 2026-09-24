@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ActionPlanCatalogModule, CatalogGeneralObjectiveTemplate, CatalogSpecificObjectiveTemplate } from "../../domain/action-plan-catalog/ActionPlanCatalog";
+import type { PLSEvaluationFramework, UnaddressedNeed } from "../../domain/health-plan";
 import {
   cleanActionPlanProposalText,
   cleanObsoleteActionPlanProgramLabels,
@@ -49,6 +50,52 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
   }
  }
 
+ function emitDraftPatch(patch: Partial<Pick<PlanPreparationDraft, "unaddressedNeeds" | "evaluationFramework">>) {
+  onChange({
+   municipalityId,
+   moduleId: module.id,
+   version: module.version,
+   updatedAt: new Date().toISOString(),
+   decisions: {...draft?.decisions},
+   unaddressedNeeds: draft?.unaddressedNeeds,
+   evaluationFramework: draft?.evaluationFramework,
+   ...patch,
+  });
+ }
+
+ function parseUnaddressedNeeds(value: string): UnaddressedNeed[] | undefined {
+  const lines = value.split(/\r?\n/g).map(line => line.trim()).filter(Boolean);
+  if (!lines.length) return undefined;
+  return lines.map((line, index) => {
+   const [title, ...rest] = line.split(/\s+[—-]\s+|:\s+/);
+   return {
+    id: `unaddressed-${index + 1}`,
+    title: cleanActionPlanProposalText(title),
+    justification: cleanActionPlanProposalText(rest.join(" — ")),
+   };
+  });
+ }
+
+ function formatUnaddressedNeeds(needs: UnaddressedNeed[] | undefined): string {
+  return (needs ?? []).map(need => `${need.title} — ${need.justification}`).join("\n");
+ }
+
+ function updateEvaluationFramework(patch: Partial<PLSEvaluationFramework>) {
+  const previous = draft?.evaluationFramework;
+  const next: PLSEvaluationFramework = {
+   evaluationQuestions: previous?.evaluationQuestions ?? [],
+   evaluationMoments: previous?.evaluationMoments ?? [],
+   evaluationResponsible: previous?.evaluationResponsible ?? "",
+   baselineNote: previous?.baselineNote ?? "",
+   ...patch,
+  };
+  const empty = next.evaluationQuestions.length === 0 &&
+   next.evaluationMoments.length === 0 &&
+   !next.evaluationResponsible.trim() &&
+   !next.baselineNote.trim();
+  emitDraftPatch({evaluationFramework: empty ? undefined : next});
+ }
+
  function updateDraftDecision(id: string, source: string, status: PlanPreparationDecision["status"], textOverride?: string, ancestors: string[] = []) {
   const decisions = {...draft?.decisions};
   const cleanSource = cleanActionPlanProposalText(source);
@@ -78,6 +125,8 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
    version: module.version,
    updatedAt: new Date().toISOString(),
    decisions: {...decisions, [id]: next},
+   unaddressedNeeds: draft?.unaddressedNeeds,
+   evaluationFramework: draft?.evaluationFramework,
   });
  }
 
@@ -203,6 +252,18 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
     })}
    </details>;
   })}
+  <section className="pcm-pls-readiness" aria-label="Cierre para el Plan Local de Salud">
+   <h3>Cierre para el Plan Local de Salud</h3>
+   <label><input type="checkbox" checked={draft?.unaddressedNeeds?.length === 0} disabled={!canEditProposal} onChange={e => emitDraftPatch({unaddressedNeeds: e.target.checked ? [] : undefined})}/> Todas las necesidades diagnosticadas quedan incorporadas al Plan de Acción</label>
+   <label>Necesidades diagnosticadas no priorizadas<textarea aria-label="Necesidades diagnosticadas no priorizadas" rows={4} disabled={!canEditProposal || draft?.unaddressedNeeds?.length === 0} value={formatUnaddressedNeeds(draft?.unaddressedNeeds)} placeholder="Necesidad identificada — Justificación de no priorización" onChange={e => emitDraftPatch({unaddressedNeeds: parseUnaddressedNeeds(e.target.value)})}/></label>
+   <fieldset className="pcm-admin-review">
+    <legend>Marco de evaluación</legend>
+    <label>Preguntas de evaluación<textarea aria-label="Preguntas de evaluación" rows={3} disabled={!canEditProposal} value={(draft?.evaluationFramework?.evaluationQuestions ?? []).join("\n")} onChange={e => updateEvaluationFramework({evaluationQuestions: e.target.value.split(/\r?\n/g).map(cleanActionPlanProposalText).filter(Boolean)})}/></label>
+    <label>Momentos de medición<textarea aria-label="Momentos de medición" rows={2} disabled={!canEditProposal} value={(draft?.evaluationFramework?.evaluationMoments ?? []).join("\n")} onChange={e => updateEvaluationFramework({evaluationMoments: e.target.value.split(/\r?\n/g).map(cleanActionPlanProposalText).filter(Boolean)})}/></label>
+    <label>Responsable de evaluación<input aria-label="Responsable de evaluación" disabled={!canEditProposal} value={draft?.evaluationFramework?.evaluationResponsible ?? ""} onChange={e => updateEvaluationFramework({evaluationResponsible: e.target.value})}/></label>
+    <label>Nota sobre línea base<textarea aria-label="Nota sobre línea base" rows={2} disabled={!canEditProposal} value={draft?.evaluationFramework?.baselineNote ?? ""} onChange={e => updateEvaluationFramework({baselineNote: e.target.value})}/></label>
+   </fieldset>
+  </section>
   <p role="status">{persistenceMessage ?? (directTerritorialEdit ? (draft ? "Cambios consolidados en el expediente de este territorio." : "Sin cambios territoriales guardados. Las modificaciones se guardan directamente en este expediente.") : (draft ? "Borrador guardado en este navegador. Para cambiar de equipo, conserva y traslada el expediente." : "Sin elecciones guardadas. Los cambios se guardan en este navegador."))}</p>
  </article>;
 }
