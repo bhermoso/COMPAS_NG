@@ -794,8 +794,10 @@ function tramoIncertidumbre(items: string[]): string | undefined {
   // El prefijo "Lo que no puede saberse todavía:" duplicaba "no puede saberse"
   // cuando la nota de desigualdad ya lo contiene, y actuaba como etiqueta
   // de plantilla. La prosa fluye directamente desde la declaración.
-  const sentence = items[0];
-  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+  const sentence = items[0].trim();
+  if (sentence.length === 0) return undefined;
+  const capitalized = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+  return /[.!?]$/.test(capitalized) ? capitalized : `${capitalized}.`;
 }
 
 function componerRazonamiento(input: {

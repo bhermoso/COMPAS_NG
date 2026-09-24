@@ -8,7 +8,10 @@ import {
   buildProfileIntegratedEditorialView,
   checkProfileWritingContract,
 } from "../src/application/health-profile";
-import type { ProfileIntegratedEditorialView } from "../src/application/health-profile";
+import type {
+  DiagnosticAnswers,
+  ProfileIntegratedEditorialView,
+} from "../src/application/health-profile";
 import { loadWorkspaceFromLocalStorage } from "../src/infrastructure/persistence/local-storage";
 import { ProfileIntegratedEditorialPreview } from "../src/ui/components/ProfileIntegratedEditorialPreview";
 
@@ -37,6 +40,7 @@ const FORBIDDEN_EDITORIAL_RE =
   /se recomienda|recomendamos|debe implantarse|programa de|objetivo estrat[ée]gico|actuaciones previstas|plan de acci[óo]n|resulta relevante|se pone de manifiesto|desde una perspectiva integral/i;
 
 let view: ProfileIntegratedEditorialView;
+let answers: DiagnosticAnswers;
 
 beforeAll(() => {
   store.set(
@@ -45,7 +49,7 @@ beforeAll(() => {
   );
   const ws = loadWorkspaceFromLocalStorage("granada-zaidin");
   if (ws === null) throw new Error("El export vigente no rehidrata");
-  const answers = buildDiagnosticAnswers({
+  answers = buildDiagnosticAnswers({
     workspace: ws,
     determinantTitles: [],
     assets: ws.evidenceStore.atoms
@@ -86,5 +90,58 @@ describe("síntesis interpretativa del Perfil", () => {
     expect(html.indexOf("Síntesis interpretativa del Perfil")).toBeLessThan(
       html.indexOf("Indicadores trazadores: valores y referencias")
     );
+  });
+
+  it("declara activos Localiza Salud y no atribuye estudios cuando no existen", () => {
+    const assetsBlock = view.sourceBlocks.find((block) => block.id === "activos");
+    expect(assetsBlock?.whatItAdds).toContain(
+      "Localiza Salud como fuente principal de activos"
+    );
+    expect(JSON.stringify(view.territorialReadings)).not.toContain(
+      "hipótesis El territorio"
+    );
+
+    const withoutStudies = buildProfileIntegratedEditorialView(
+      {
+        ...answers,
+        estudios: {
+          ...answers.estudios,
+          totalStudies: 0,
+          totalIndicators: 0,
+          diagnosticBlocks: [],
+          unclassifiedIndicators: [],
+          crossCuttingCautions: [],
+          contrastQuestions: [],
+        },
+        referencias: {
+          ...answers.referencias,
+          references: [],
+          coverage: {
+            total: 0,
+            conValorTerritorial: 0,
+            conReferenciaProvincial: 0,
+            conReferenciaAndalucia: 0,
+            pendientesDeReferencia: 0,
+          },
+        },
+      },
+      {
+        territory: "Granada-Zaidín",
+        status: "Documento de trabajo",
+        informeTitulo: "Informe de salud de El Zaidín",
+        generatedDate: "1 de enero de 2027",
+      }
+    );
+    const studiesBlock = withoutStudies.sourceBlocks.find(
+      (block) => block.id === "estudios"
+    );
+    expect(studiesBlock?.whatItAdds).toContain(
+      "sin estudios complementarios incorporados"
+    );
+    expect(
+      withoutStudies.territorialReadings.every(
+        (block) => block.source !== "Informe de salud + estudios complementarios"
+      )
+    ).toBe(true);
   });
 });

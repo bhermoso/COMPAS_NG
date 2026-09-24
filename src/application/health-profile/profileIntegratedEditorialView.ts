@@ -860,8 +860,17 @@ function buildClosingColumns(input: {
   const humanQuestion = firstHumanOpenQuestion(answers);
   const assetsText =
     answers.salutogenica.totalAssets > 0
-      ? `${answers.salutogenica.totalAssets} recursos comunitarios quedan como capacidades potenciales, pendientes de acceso, uso y reconocimiento.`
-      : "El expediente no incorpora todavía un mapa de activos suficiente para leer capacidades.";
+      ? `${answers.salutogenica.totalAssets} recursos de Localiza Salud quedan como fuente principal de activos y capacidades potenciales, pendientes de acceso, uso y reconocimiento.`
+      : "El expediente no incorpora todavía activos Localiza Salud suficientes para leer capacidades.";
+  const tracerReferenceCount = answers.referencias.references.filter(
+    (r) => r.tracerPriority !== undefined
+  ).length;
+  const complementaryStudiesText =
+    tracerReferenceCount > 0
+      ? `Los estudios complementarios aportan ${tracerReferenceCount} ${tracerReferenceCount === 1 ? "indicador trazador" : "indicadores trazadores"} para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`
+      : answers.estudios.totalStudies > 0
+        ? "Hay estudios complementarios incorporados, pero no aportan indicadores trazadores comparables destacados para esta lectura."
+        : "No hay estudios complementarios incorporados en este expediente; el Perfil declara esa ausencia y no la convierte en evidencia.";
 
   return [
     {
@@ -874,10 +883,7 @@ function buildClosingColumns(input: {
         sanitarySignal !== undefined
           ? `El Informe de salud fija el hilo sanitario mediante presencia textual de ${sanitarySignal.senal}; no aporta por sí solo distribución interna.`
           : "El hilo sanitario necesita Informe de salud incorporado para sostener la apertura.",
-        ((n) =>
-          `Los estudios complementarios aportan ${n} ${n === 1 ? "indicador trazador" : "indicadores trazadores"} para leer vida cotidiana, apoyo, hábitos y entorno con cautela de escala.`)(
-          answers.referencias.references.filter((r) => r.tracerPriority !== undefined).length
-        ),
+        complementaryStudiesText,
       ].filter((item): item is string => item !== undefined)).slice(0, 3),
     },
     {
@@ -996,9 +1002,12 @@ function interpretationUnitToReadingBlock(
   const signal =
     principal?.label ??
     (unit.sanitaryAgenda.topics[0] ?? "agenda del Informe de salud");
-  const source = principal !== undefined
-    ? `evidencia local + Informe de salud`
-    : "Informe de salud + estudios complementarios";
+  const source =
+    principal !== undefined
+      ? `evidencia local + Informe de salud`
+      : unit.contextualSignals.length > 0
+        ? "Informe de salud + contexto territorial"
+        : "Informe de salud";
   // Fallback neutral (Lote D, ajuste 3): «contexto provincial» solo se afirma
   // cuando una fuente real acredita origen provincial; no puede derivarse de la
   // ausencia de señal local.
@@ -1088,6 +1097,18 @@ export function buildProfileIntegratedEditorialView(
             ),
           ];
         });
+  const studiesSourceText =
+    answers.estudios.totalStudies > 0
+      ? ((estudios, trazadores) =>
+          `${estudios} ${estudios === 1 ? "estudio" : "estudios"} y ${trazadores} ${trazadores === 1 ? "indicador trazador destacado" : "indicadores trazadores destacados"} (con valores comparables solo cuando existe referencia equivalente)`)(
+          answers.estudios.totalStudies,
+          visuals.tablaTrazadores.length
+        )
+      : "sin estudios complementarios incorporados; esta ausencia queda declarada como alcance del diagnóstico";
+  const assetsSourceText =
+    answers.salutogenica.totalAssets > 0
+      ? `${answers.salutogenica.totalAssets} recurso(s) de Localiza Salud como fuente principal de activos, inventariado(s) como capacidades potenciales`
+      : "sin activos Localiza Salud incorporados todavía";
 
   const sourceBlocks: ProfileIntegratedEditorialSourceBlock[] = [
     {
@@ -1102,12 +1123,7 @@ export function buildProfileIntegratedEditorialView(
     {
       id: "estudios",
       title: "Estudios complementarios",
-      whatItAdds:
-        ((estudios, trazadores) =>
-          `${estudios} ${estudios === 1 ? "estudio" : "estudios"} y ${trazadores} ${trazadores === 1 ? "indicador trazador destacado" : "indicadores trazadores destacados"} (con valores comparables solo cuando existe referencia equivalente)`)(
-          answers.estudios.totalStudies,
-          visuals.tablaTrazadores.length
-        ),
+      whatItAdds: studiesSourceText,
       whatItDoesNotAllow:
         "no sustituyen la lectura municipal ni convierten una muestra o proxy en verdad territorial completa",
       variant: "estudio",
@@ -1115,8 +1131,7 @@ export function buildProfileIntegratedEditorialView(
     {
       id: "activos",
       title: "Activos y capacidades",
-      whatItAdds:
-        `${answers.salutogenica.totalAssets} recurso(s) comunitario(s) inventariado(s) como capacidades potenciales`,
+      whatItAdds: assetsSourceText,
       whatItDoesNotAllow:
         "no acreditan cobertura, uso efectivo ni acceso real sin contraste comunitario",
       variant: "activo",
