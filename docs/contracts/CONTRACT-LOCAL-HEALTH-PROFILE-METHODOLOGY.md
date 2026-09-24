@@ -205,6 +205,8 @@ Los activos no son un apartado opcional ni un complemento pedagógico del diagn�
 
 La descripción de activos obedece a las mismas exigencias de trazabilidad que cualquier otra evidencia: fuente identificada, tipo de activo, accesibilidad y relación con las necesidades de salud identificadas.
 
+Cuando exista o pueda obtenerse Localiza Salud, esta será la fuente principal/preferente para el mapa de activos del Perfil. Otras fuentes -ERACIS, documentación territorial, material cualitativo, diagnósticos de programas, memorias participativas o informes institucionales- pueden aportar indicios sobre capacidades del territorio, pero no sustituyen Localiza Salud: deben declararse como complementarias, contextuales o pendientes de reconciliación.
+
 Un Perfil que solo diagnostica déficits viola su función metodológica.
 
 ### Art. 10. Participación como evidencia
@@ -575,6 +577,7 @@ La salida interpretativa COMPÁS y la salida comparativa breve tipo OHID/Fingert
 |---|---|---|---|
 | 2026-07-03 | 1.0 | Creación inicial | COMPÁS NG Sprint 2 |
 | 2026-07-14 | 1.1 | Saneamiento de gobernanza: regla N+1, priorización ciudadana como evidencia, cadena del conocimiento, modelo canónico único y autoría humana acotada | COMPÁS NG gobernanza |
+| 2026-09-24 | 1.2 | Localiza Salud queda fijada como fuente principal/preferente para activos del Perfil, con otras fuentes como apoyo contextual o pendiente de reconciliación | COMPÁS NG |
 
 ---
 

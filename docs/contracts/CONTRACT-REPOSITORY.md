@@ -4,7 +4,7 @@
 > Define el comportamiento garantizado, los invariantes y los límites del
 > Repositorio Documental Municipal en COMPÁS NG.
 > No debe modificarse sin revisión explícita y deliberada.
-> Última revisión: 2026-06-24
+> Última revisión: 2026-09-24
 
 ---
 
@@ -94,7 +94,7 @@ garantías ofrece. Los tipos actuales son:
 | `complementary-study` | Estudio Complementario | Acumulable | Sí | Sí |
 | `eas-variable` | Variable EAS | Acumulable | Sí | **No** — sin parser real |
 | `cmi-indicator` | Indicador CMI | Acumulable | Sí | **No** — sin parser real |
-| `localiza-salud` | Localiza Salud | Acumulable | Sí | Sí — vía visible única para activos‡ |
+| `localiza-salud` | Localiza Salud | Acumulable | Sí | Sí — vía visible única y fuente principal/preferente para activos‡ |
 | `territorial-documentation` | Documentación territorial | Acumulable | Sí | Sí |
 | `qualitative-material` | Material cualitativo | Acumulable | Sí | Sí |
 | `longitudinal-evidence` | Evidencia longitudinal | Acumulable | Sí | Sí |
@@ -112,11 +112,14 @@ El Informe de Salud admite dos formatos:
 - **PDF** (`.pdf`): se preserva como fuente primaria sin extracción de texto ni secciones diagnósticas.
 
 † **`community-asset`** existe como tipo interno para compatibilidad con datos anteriores y flujo de Localiza Salud.
-No está expuesto como categoría visible en el selector documental del producto.
+No está expuesto como categoría visible en el selector documental del producto y no debe desplazar Localiza Salud
+como fuente principal de activos.
 
-‡ **`localiza-salud`** es la vía visible única para registrar activos comunitarios en el selector.
-Internamente genera átomos con `origin: "localiza-salud"` y `kind: "asset"`. Los documentos de tipo
-`community-asset` generados antes del cierre del selector siguen procesándose correctamente.
+‡ **`localiza-salud`** es la vía visible única y la fuente principal/preferente para registrar activos
+comunitarios en el selector, siempre que exista o pueda obtenerse. Internamente genera átomos con
+`origin: "localiza-salud"` y `kind: "asset"`. Los documentos de tipo `community-asset` generados antes
+del cierre del selector siguen procesándose correctamente. Activos mencionados en otras fuentes quedan
+como indicios complementarios o pendientes de reconciliación con Localiza Salud.
 
 ### IBSE y Priorización Temática dentro de `redcap-export`
 
@@ -411,3 +414,4 @@ propios contratos:
 |---|---|
 | 2026-06-24 | Primera redacción. Incorpora la distinción canonicidad-por-kind vs canonicidad-por-tag introducida en commit `1e582f5`. |
 | 2026-07-07 | **Revisión D-HR-01 + selector documental.** Tabla de `DocumentKind` ampliada con `strategic-framework` y columna de visibilidad en selector. `health-report` actualizado: DOCX/PDF aceptados; no genera EvidenceAtom (D-HR-01 resuelta). `community-asset` aclarado como tipo interno/legado. `localiza-salud` declarado como vía visible única para activos. `eas-variable`, `cmi-indicator` y `other` marcados como no expuestos en selector. |
+| 2026-09-24 | Localiza Salud queda fijada como fuente principal/preferente de activos cuando exista o pueda obtenerse; otras menciones de activos quedan como indicios complementarios o pendientes de reconciliación. |

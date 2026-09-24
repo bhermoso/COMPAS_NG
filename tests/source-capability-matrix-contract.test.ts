@@ -78,6 +78,15 @@ describe("CONTRACT-SOURCE-CAPABILITY-MATRIX", () => {
     expect(matrix).toContain("ruta más específica disponible");
   });
 
+  it("fija Localiza Salud como fuente principal de activos", () => {
+    expect(matrix).toContain("SCM-I8");
+    expect(matrix).toContain("Localiza Salud como fuente principal de activos");
+    expect(matrix).toContain("Fuente principal/preferente de activos");
+    expect(matrix).toContain("se tratan como indicio contextual o capacidad potencial");
+    expect(matrix).toContain("complementarios, contextuales o pendientes de reconciliación");
+    expect(matrix).toContain("No sustituyen Localiza Salud ni reabren `community-asset` como vía visible");
+  });
+
   it("mantiene la salida comparativa subordinada a estructura, referencia y cautela", () => {
     expect(matrix).toContain("indicador identificable");
     expect(matrix).toContain("valor local");
@@ -94,5 +103,8 @@ describe("CONTRACT-SOURCE-CAPABILITY-MATRIX", () => {
     expect(methodology).toContain("CONTRACT-SOURCE-CAPABILITY-MATRIX");
     expect(methodology).toContain("estatuto operativo de cada fuente admisible");
     expect(methodology).toContain("efecto sobre la salida interpretativa y la salida comparativa breve");
+    expect(methodology).toContain("Localiza Salud");
+    expect(methodology).toContain("fuente principal/preferente para el mapa de activos del Perfil");
+    expect(methodology).toContain("pendientes de reconciliación");
   });
 });

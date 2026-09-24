@@ -115,9 +115,10 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: activos > 0 ? "cubierta" : "pendiente",
       detalle:
         activos > 0
-          ? `${activos} activo(s) de Localiza Salud con lectura salutogénica; ` +
-            `pendientes de validación territorial fina.`
-          : "Sin activos incorporados todavía.",
+          ? `${activos} activo(s) de Localiza Salud como fuente principal de activos; ` +
+            `lectura salutogénica y validación territorial fina pendientes.`
+          : `Sin activos Localiza Salud incorporados todavía; otras menciones de ` +
+            `activos quedan como indicios hasta reconciliarse con la fuente principal.`,
     },
     {
       dimension: "Experiencia vivida / cualitativo",
@@ -180,9 +181,11 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       </p>
       <h2 className="ekc-panel__title">Enriquecimiento de fuentes del Perfil</h2>
       <p className="panel-note">
-        Incorpora nuevas fuentes desde el cargador de esta sección. Los PDF y DOCX
-        con texto se procesan; una imagen escaneada necesita transcripción u OCR.
-        Incorporar o procesar una fuente no valida las conclusiones del Perfil.
+        Este bloque no carga documentos. Resume cómo las fuentes incorporadas al
+        Repositorio documental enriquecen la lectura del Perfil y qué dimensiones
+        siguen pendientes. Las nuevas fuentes se incorporan desde el
+        selector/cargador documental habitual; procesarlas no valida las
+        conclusiones del Perfil.
       </p>
 
       <div className="workspace-panel">
