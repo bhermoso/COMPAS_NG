@@ -282,7 +282,7 @@ Este contrato aplica el Art. 5 (separación evidencia/interpretación/propuesta)
 - `CONTRACT-PSL-COMPAS`: los términos de este contrato en §4.1 y §8.2 son coherentes con el Producto 3 tal como está definido.
 - `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER`: el PSL-C como "documento institucional" coincide con la denominación de §8.2.
 - `CONTRACT-MIT-PSL`: la lectura del PSL es **única y adaptativa**; su cobertura conceptual (Conclusiones, Cierre interpretativo, Síntesis y Priorización, etc.) se muestra según la riqueza del expediente, **sin recuento obligatorio de capítulos** (§6.1.1 bis).
-- `CONTRACT-NHS-HEALTH-PROFILE` §0: el PSL-NHS deja de ser producto autónomo; su retirada de código/ruta/artefacto es migración pendiente. No hay denominación canónica de un «Producto 4» separado.
+- `CONTRACT-NHS-HEALTH-PROFILE` §0: el PSL-NHS deja de ser producto autónomo; su retirada de código/ruta/artefacto es migración técnica ejecutada. No hay denominación canónica de un «Producto 4» separado.
 
 ---
 
@@ -327,7 +327,7 @@ Este contrato no define:
 | `FOUNDATIONS §2` | Municipio como unidad de trabajo |
 | `OPERATING-CONSTITUTION` Bloque F | Terminología única sin duplicidades |
 | `CONTRACT-PSL-COMPAS` | Producto 3 y sus términos canónicos |
-| `CONTRACT-NHS-HEALTH-PROFILE` §0 | PSL-NHS derogado como producto autónomo; migración de código pendiente |
+| `CONTRACT-NHS-HEALTH-PROFILE` §0 | PSL-NHS derogado como producto autónomo; migración de código ejecutada |
 | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT` | Denominación canónica del Producto 7 |
 | `docs/methodology/METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING §I.3` | Las seis etapas canónicas del ciclo institucional |
 

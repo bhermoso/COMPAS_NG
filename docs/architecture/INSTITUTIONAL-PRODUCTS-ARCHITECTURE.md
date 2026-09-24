@@ -27,6 +27,10 @@
   comparación municipio↔referencia por dominio), **sin compilador ni artefacto propio
   garantizado**, y solo si supera evaluación científica/metodológica. No es una
   segunda fuente de verdad.
+- La arquitectura vigente permite dos **salidas** del mismo Perfil canónico: la salida
+  interpretativa COMPÁS y una salida comparativa breve tipo OHID/Fingertips. Esta
+  segunda salida no recupera el PSL-NHS como producto, sino que reexpresa indicadores,
+  referencias, periodos, escalas y cautelas del Perfil validado.
 - **Quedan superadas las recomendaciones de este documento de mantener paneles o
   compiladores separados** para PSL-C y PSL-NHS: el Perfil es único; el PSL-C es su
   compilación institucional, no otro Perfil.
@@ -310,6 +314,14 @@ sea compilable. Un PSL con capítulos en estado `scaffold` no puede producir PSL
 > capacidades solo podrían sobrevivir como representación derivada dentro del Perfil.
 
 ### 4.1 Qué son los NHS Local Health Profiles
+
+> **Nota de actualización empírica (2026-09-24):** esta sección se conserva como
+> registro histórico de benchmark. La consulta vigente del referente OHID/DHSC
+> Fingertips identifica el perfil público `Local Authority Health Profiles`
+> (`profile_id=26`) y el grupo `All indicators` (`group_id=1938132701`) con 72
+> indicadores para autoridades locales en la configuración actual. Por tanto, las
+> menciones históricas a 43 indicadores no deben tratarse como descripción actual
+> del referente, sino como fotografía del diseño analizado en 2026-06-28.
 
 Los NHS Local Health Profiles (actualmente mantenidos por OHID — Office for Health
 Improvements and Disparities, antigua Public Health England) son perfiles anuales

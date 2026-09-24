@@ -32,6 +32,40 @@ Fundamentos del Perfil único (`CONTRACT-INDEX` §«Fundamentos del Perfil únic
   documento canónico, dentro del único espacio «Perfil de Salud Local»; el código
   NHS autónomo ha sido retirado.
 
+### 0.1 Relectura vigente del referente OHID/Fingertips (2026-09-24)
+
+La referencia externa ya no debe citarse de memoria ni como "Producto 4" a
+resucitar. La consulta vigente del modelo OHID/DHSC Fingertips muestra que los
+Local Authority Health Profiles funcionan como una colección pública e interactiva
+de indicadores para autoridades locales, orientada a ayudar a gobierno local y
+servicios sanitarios a planificar y reducir desigualdades. Su perfil público
+actual es `Local Authority Health Profiles` (`profile_id=26` en la API), con temas
+como esperanza de vida y causas de muerte, lesiones y mala salud, factores de
+riesgo conductuales, salud infantil, desigualdades, determinantes amplios,
+protección de la salud, todos los indicadores e información de apoyo.
+
+La consulta del grupo `All indicators` (`group_id=1938132701`) devuelve 72
+indicadores para autoridades locales en la configuración actual. Por tanto, las
+menciones históricas de este contrato a "43 indicadores" se conservan solo como
+registro del diseño inicial; no son una descripción vigente del referente
+OHID/Fingertips.
+
+El principio transferible a COMPÁS NG no es un artefacto autónomo llamado
+PSL-NHS, sino una **salida comparativa breve tipo OHID/Fingertips** del Perfil
+canónico:
+
+- alta densidad editorial;
+- indicadores con periodo, valor, referencia territorial y cautela;
+- separación estricta entre dato y análisis;
+- portabilidad para lectura política y ciudadana;
+- ausencia de recomendaciones y compromisos;
+- no fabricación de posiciones comparativas cuando el Perfil canónico no las
+  autoriza.
+
+En consecuencia, cualquier evolución futura de esta capacidad debe formularse
+como mejora del modelo canónico y de sus renderers, no como restauración de
+`NHSHealthProfileCompiler`, `NHSHealthProfileArtifact` ni `workspace.nhsArtifact`.
+
 ---
 
 > Nota de saneamiento de gobernanza (2026-07-14): el PSL-NHS se registra como representación derivada del conocimiento territorial del Perfil canónico, con estatuto de producto institucional propio por su audiencia política y ciudadana y por su formato breve. No genera conocimiento propio: lo reexpresa. No puede constituir una segunda fuente de verdad sobre el catálogo de Estudios Complementarios. *(Actualizada por §0: el estatuto de «producto institucional propio» queda derogado; ver arriba.)*

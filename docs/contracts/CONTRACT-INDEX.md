@@ -165,6 +165,8 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 
 Por los Fundamentos del Perfil único, el PSL-NHS **deja de ser un «Producto 4» institucional independiente**: no es producto autónomo ni segunda fuente de verdad. Pasa a ser una **representación derivada dentro del Perfil de Salud Local, sin veredictos comparativos**: la capacidad de posición (`computePosition`) queda **descartada** (evaluación resuelta), no pendiente. El contrato conserva su cuerpo histórico como registro de diseño, subordinado a su §0. La retirada del código/ruta/artefacto NHS queda **ejecutada** (GOV-P4-01 · PR-E); la divergencia de catálogo (6 vs 13) se disuelve con el compilador retirado.
 
+La línea vigente distingue dos salidas del mismo Perfil canónico: la salida interpretativa COMPÁS y una salida comparativa breve tipo OHID/Fingertips. La segunda se inspira en los Local Authority Health Profiles actuales de OHID/DHSC Fingertips como matriz pública de indicadores, referencias, periodos y cautelas; no restaura `NHSHealthProfileCompiler`, no crea `NHSHealthProfileArtifact` y no puede introducir conclusiones, prioridades ni datos ajenos al Perfil validado.
+
 **Productores:** `projectNHSDerived` (`src/application/health-profile/nhsDerivedProjection.ts`) como proyector puro del documento canónico, y `NHSHealthProfileView` como renderer integrado dentro del espacio «Perfil de Salud Local». No existe compilador ni artefacto NHS autónomo.
 **Consumidores:** Corporación municipal, ciudadanía, comunicación institucional.
 **Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID, CONTRACT-NAVIGATION, VISUAL-CONTRACT.

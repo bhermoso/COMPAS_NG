@@ -78,6 +78,15 @@ describe("Fundamentos del Perfil único — CONTRACT-NHS-HEALTH-PROFILE", () => 
     expect(nhs).toContain("Migración ejecutada");
     expect(nhs).toContain("el código NHS autónomo ha sido retirado");
   });
+
+  it("registra la relectura vigente del referente OHID/Fingertips", () => {
+    expect(nhs).toContain("Relectura vigente del referente OHID/Fingertips");
+    expect(nhs).toContain("profile_id=26");
+    expect(nhs).toContain("group_id=1938132701");
+    expect(nhs).toContain("72 indicadores");
+    expect(nhs).toContain("salida comparativa breve tipo OHID/Fingertips");
+    expect(nhs).toContain("no como restauración de `NHSHealthProfileCompiler`");
+  });
 });
 
 describe("Fundamentos del Perfil único — arquitectura adaptativa y salida canónica", () => {
@@ -107,6 +116,8 @@ describe("Fundamentos del Perfil único — arquitectura adaptativa y salida can
     expect(vis).toContain("Sin lectura larga alternativa");
     expect(vis).toContain("Espacio técnico después del documento");
     expect(vis).toContain("no se exige identidad de píxeles");
+    expect(vis).toContain("Salida interpretativa y salida comparativa breve");
+    expect(vis).toContain("misma fuente de verdad, distinta densidad de lectura");
   });
 });
 
@@ -124,6 +135,7 @@ describe("Reconciliación — CONTRACT-NAVIGATION: un único Perfil", () => {
     );
     expect(nav).toContain("El PSL-C es la **compilación institucional del mismo Perfil**");
     expect(nav).toContain("migración técnica ejecutada");
+    expect(nav).not.toContain("migración pendiente");
   });
 
   it("retira la fila «Producto 4 | Perfil de Salud tipo NHS» de la tabla de denominaciones", () => {
@@ -195,5 +207,9 @@ describe("Reconciliación — otras fuentes vigentes corregidas", () => {
   it("CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY (rector) deroga el estatuto propio del NHS", () => {
     const rector = flatten(readRaw("contracts/CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY.md"));
     expect(rector).toContain("deja de tener estatuto de producto institucional propio");
+    expect(rector).toContain("Dos salidas del mismo Perfil canónico");
+    expect(rector).toContain("Salida interpretativa COMPÁS");
+    expect(rector).toContain("Salida comparativa breve tipo OHID/Fingertips");
+    expect(rector).toContain("Dos salidas, una fuente de verdad");
   });
 });

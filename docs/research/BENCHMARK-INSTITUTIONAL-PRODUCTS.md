@@ -34,6 +34,14 @@ para después adaptarlo con criterio al contexto propio.
 
 ## I. NHS Local Health Profiles (England)
 
+> Nota de actualización (2026-09-24): este benchmark sigue siendo útil como
+> lectura metodológica, pero no debe citar el referente británico sin consulta
+> vigente. La consulta actual de OHID/DHSC Fingertips identifica `Local Authority
+> Health Profiles` como `profile_id=26`; el grupo `All indicators`
+> (`group_id=1938132701`) expone 72 indicadores para autoridades locales. Las
+> menciones históricas a 43 indicadores describen el análisis de partida, no el
+> estado actual del servicio.
+
 ### I.1 Descripción
 
 Los NHS Local Health Profiles son producidos anualmente por OHID (Office for Health

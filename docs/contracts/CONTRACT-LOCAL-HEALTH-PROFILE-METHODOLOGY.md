@@ -19,7 +19,7 @@
 Este contrato aplica a:
 - El `LocalHealthProfile` como objeto analítico del sistema.
 - El `LocalHealthProfileArtifact` (PSL-C) como documento institucional compilado.
-- El Perfil comparativo (PSL-NHS) en lo que atañe a su función como producto de la misma base diagnóstica.
+- La representación comparativa breve tipo OHID/Fingertips, en lo que atañe a su función como salida derivada de la misma base diagnóstica.
 - Todo proceso de producción, validación y entrega del Perfil de Salud Local en COMPÁS NG.
 
 Este contrato no aplica a:
@@ -350,6 +350,22 @@ Existe una sola composición canónica del Perfil de Salud Local. Pantalla, viso
 
 Las diferencias de formato solo pueden afectar a soporte, paginación, densidad o adaptación visual. No pueden crear contenidos, estructuras diagnósticas, conclusiones o catálogos de fuentes distintos.
 
+### Art. 17 ter. Dos salidas del mismo Perfil canónico
+
+COMPÁS NG puede ofrecer dos salidas institucionales del mismo Perfil canónico, siempre que ambas deriven del mismo modelo semántico y de la misma validación:
+
+1. **Salida interpretativa COMPÁS.** Es la lectura territorial completa: integra fuentes, declara incertidumbres, formula síntesis diagnóstica, expone tensiones, identifica capacidades y deja preguntas para el Grupo Motor. Es la salida propia del Perfil de Salud Local.
+2. **Salida comparativa breve tipo OHID/Fingertips.** Es una ficha de alta densidad para audiencia política y ciudadana: presenta indicadores, valores, periodo, escala, referencias territoriales disponibles y cautelas. Su inspiración metodológica son los Local Authority Health Profiles de OHID/DHSC Fingertips, no una copia formal ni un segundo diagnóstico.
+
+La salida comparativa breve no puede:
+- crear afirmaciones que no existan en el Perfil canónico;
+- consumir fuentes distintas de las ya incorporadas al Perfil;
+- ocultar que un valor procede de proxy contextual o de escala no municipal;
+- emitir recomendaciones, prioridades o compromisos;
+- formular posiciones automáticas "mejor/peor/similar" si el Perfil canónico no ha validado previamente dirección, comparador e inferencia suficiente.
+
+Cuando no exista referencia territorial válida para un indicador, la salida comparativa lo muestra como "referencia no disponible" o equivalente. La ausencia de referencia es una cautela visible, no un hueco que el sistema pueda rellenar por analogía.
+
 ---
 
 ## Capítulo VII — Flexibilidad y criterios de aceptación
@@ -526,6 +542,16 @@ El Perfil llega hasta conclusiones. Las recomendaciones pertenecen al Plan de Ac
 
 ---
 
+**I-LHPM-10 — Dos salidas, una fuente de verdad**
+
+La salida interpretativa COMPÁS y la salida comparativa breve tipo OHID/Fingertips son representaciones del mismo Perfil canónico. Ninguna puede constituir un segundo Perfil, un segundo catálogo de indicadores o una segunda fuente de verdad.
+
+*Consecuencia si se viola:* COMPÁS NG vuelve a producir perfiles paralelos, con riesgo de contradicción entre lo que el diagnóstico interpreta y lo que la ficha comparativa sugiere.
+
+*Fuente:* Arts. 17 bis y 17 ter; CONTRACT-NHS-HEALTH-PROFILE §0.
+
+---
+
 ## Relaciones con otros contratos
 
 | Contrato | Tipo de relación |
@@ -533,7 +559,7 @@ El Perfil llega hasta conclusiones. Las recomendaciones pertenecen al Plan de Ac
 | `CONTRACT-MIT-PSL` | Este contrato establece los principios que el MIT debe respetar al producir la interpretación territorial. Los Arts. 5, 6 y 14 condicionan el diseño del motor. |
 | `CONTRACT-PSL-COMPAS` | Define el producto institucional resultante de aplicar este contrato. Debe ser coherente en todos sus artículos con este contrato. |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` | Los gates del compilador (G-LHC-1 a G-LHC-7) son la implementación técnica de los Arts. 16, 17 e I-LHPM-3. |
-| `CONTRACT-NHS-HEALTH-PROFILE` §0 | El Perfil comparativo es una **representación derivada** del conocimiento territorial del Perfil canónico. Por los Fundamentos del Perfil único (2026-07-17) **deja de tener estatuto de producto institucional propio** y no puede ser segunda fuente de verdad; solo sobrevive dentro del Perfil, previa validación. Los Arts. 12, 13 y 17 bis condicionan sus criterios de generación. |
+| `CONTRACT-NHS-HEALTH-PROFILE` §0 | La representación comparativa breve tipo OHID/Fingertips es una **salida derivada** del conocimiento territorial del Perfil canónico. Por los Fundamentos del Perfil único (2026-07-17) **deja de tener estatuto de producto institucional propio** y no puede ser segunda fuente de verdad; solo sobrevive dentro del Perfil, previa validación. Los Arts. 12, 13, 17 bis y 17 ter condicionan sus criterios de generación. |
 | `CONTRACT-INTERPRETATION` | Define qué significa interpretar dentro de COMPÁS NG. Este contrato es complementario: define qué tipos de afirmación son admisibles y cuáles no (Art. 8). |
 | `CONTRACT-STRATEGIC-REPOSITORY` | Las líneas estratégicas de los marcos institucionales son referencia para el capítulo de marco estratégico del Perfil (Arts. 15.1 y 15.4). La articulación con esos marcos es posterior al Perfil. |
 | `METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING` | Documento fundacional del que derivan los principios PM-1 a PM-24. Los invariantes de este contrato son aplicación normativa directa de esos principios. |

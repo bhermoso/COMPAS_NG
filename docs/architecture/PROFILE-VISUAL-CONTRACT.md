@@ -61,6 +61,24 @@ posterior**, claramente separado de la lectura institucional. Es un anexo de
 aparecer** según la riqueza y solidez del expediente; una mera presencia textual no
 obliga a generar un bloque completo.
 
+### 4 bis. Salida interpretativa y salida comparativa breve
+
+La salida canónica única admite dos renderers institucionales derivados del mismo
+modelo semántico:
+
+- **Salida interpretativa COMPÁS:** lectura territorial, síntesis diagnóstica,
+  tensiones, capacidades, incertidumbres y preguntas de contraste.
+- **Salida comparativa breve tipo OHID/Fingertips:** ficha de alta densidad con
+  indicadores, valores, periodo, referencia territorial, escala y cautela.
+
+La segunda salida se inspira en los Local Authority Health Profiles de
+OHID/DHSC Fingertips como forma de comunicación comparativa, no como producto
+autónomo. No puede crear narrativa diagnóstica propia, ocultar proxies ni emitir
+posiciones automáticas "mejor/peor/similar" cuando el modelo canónico no disponga
+de dirección validada, comparador adecuado e inferencia suficiente.
+
+La regla visual es: **misma fuente de verdad, distinta densidad de lectura**.
+
 ## 5. Declaración obligatoria
 
 Toda tabla/gráfico lleva pie con: **Fuente** (instrumento/documento y fichero)
