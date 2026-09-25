@@ -23,7 +23,7 @@ describe("Versiones documentales del Plan",()=>{
   expect(doc.paragraphs.filter(p=>p.heading).slice(1).map(p=>p.text.split(" · ")[1])).toEqual(module.generalObjectives.map(g=>g.code));
   for(const general of module.generalObjectives){
    expect(doc.paragraphs.filter(p=>p.heading&&p.text.startsWith("Objetivo general · "+general.code+" ·"))).toHaveLength(1);
-   const heading=doc.paragraphs.findIndex(p=>p.heading&&p.text.startsWith(general.code+" ·"));
+   const heading=doc.paragraphs.findIndex(p=>p.heading&&p.text.startsWith("Objetivo general · "+general.code+" ·"));
    const next=doc.paragraphs.findIndex((p,i)=>i>heading&&!!p.heading);
    const group=doc.paragraphs.slice(heading,next<0?undefined:next);
    for(const objective of general.specificObjectives) expect(group.some(p=>p.text.includes(objective.displayCode ?? objective.code))).toBe(true);
