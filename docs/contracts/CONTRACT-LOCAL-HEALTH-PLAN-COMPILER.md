@@ -8,6 +8,9 @@
 > `CONTRACT-MTE` es el contrato vigente del Motor de Traducción Estratégica.
 > Toda mención a `EPVSATranslator` se entiende como fallback histórico o
 > provisional que debe marcarse expresamente si se usa en un PLS compilado.
+>
+> Revisión — 2026-09-25: `LocalHealthPlanOutline` se reconoce como proyección
+> previa, fuera del compilador terminal y sin gates de entrada.
 
 ---
 
@@ -39,6 +42,23 @@ Nivel 1 → Nivel 2 → PSL [validated] → PSL-C (LocalHealthProfileArtifact)
 ```
 
 El compilador es una función pura: no modifica ningún objeto del pipeline, no escribe en el workspace durante la ejecución, no lanza excepciones. Devuelve `CompilationResult` tipado.
+
+### 2.1 Proyección previa: `LocalHealthPlanOutline`
+
+Antes de alcanzar los gates de compilación, COMPÁS puede proyectar un esbozo
+evolutivo del futuro Plan Local de Salud. Esta proyección:
+
+- consume únicamente la información ya disponible en el expediente;
+- puede mostrar Perfil, prioridades y arquitectura estratégica aunque todavía
+  no existan actuaciones;
+- declara de forma explícita las secciones pendientes;
+- se recalcula cuando cambia el expediente;
+- no invoca `LocalHealthPlanCompiler`;
+- no produce `LocalHealthPlanDocument`, versión PLS/vN ni manifest de compilación;
+- no equivale a validar el Plan de Acción ni a aprobar el PLS.
+
+Por tanto, las actuaciones no son gate para **consultar el esbozo**. Sí forman
+parte del gate G-PLS-5 para **compilar el documento institucional definitivo**.
 
 ---
 

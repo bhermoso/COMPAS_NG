@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { LOCAL_HEALTH_PLAN_OUTLINE_STATUS } from "../../domain/health-plan";
 import { ACTION_PLAN_CATALOG } from "../../domain/action-plan-catalog";
 import {
   buildDefinitiveActionPlanProjection,
@@ -62,7 +63,7 @@ export function LocalHealthPlanOutline({
           <h2 id="pls-outline-title">Plan Local de Salud del Distrito {municipalityName.replace(/^Granada-/, "")}</h2>
           <p className="panel-note">{municipalityName} · {province}</p>
         </div>
-        <span className="status-pill">Borrador evolutivo</span>
+        <span className="status-pill" data-outline-status={LOCAL_HEALTH_PLAN_OUTLINE_STATUS}>Borrador evolutivo</span>
       </header>
 
       <div className="phase-blocked-notice">
