@@ -964,13 +964,13 @@ function buildDiagnosticSynthesis(
 
   const thesis =
     interpretation.units.length > 0
-      ? `La lectura disponible no se limita a contar menciones: organiza ${interpretation.units.length} hilo(s) diagnósticos cruzando agenda sanitaria, señales locales, contexto, incertidumbre de equidad y capacidades. El núcleo territorial se concentra en ${enumerarEjes(topTitles)}.`
+      ? `La lectura disponible no se limita a contar menciones: organiza ${formatCount(interpretation.units.length, "hilo diagnóstico", "hilos diagnósticos")} cruzando agenda sanitaria, señales locales, contexto, incertidumbre de equidad y capacidades. El núcleo territorial se concentra en ${enumerarEjes(topTitles)}.`
       : "La base disponible todavía no permite construir hilos diagnósticos integrados; el Perfil conserva la agenda sanitaria de partida y declara la lectura territorial como pendiente.";
   const interpretiveWeight =
-    `El peso interpretativo queda graduado: ${integrated} hilo(s) como interpretación integrada, ` +
-    `${hypotheses} como hipótesis plausible(s) y ${open} como pregunta(s) abierta(s). ` +
-    `La síntesis usa ${localSignalIds.length} señal(es) local(es) y ` +
-    `${contextualSignalIds.length} señal(es) contextual(es), siempre con la escala declarada por cada fuente.`;
+    `El peso interpretativo queda graduado: ${formatCount(integrated, "hilo", "hilos")} como interpretación integrada, ` +
+    `${formatCount(hypotheses, "hipótesis plausible", "hipótesis plausibles")} y ${formatCount(open, "pregunta abierta", "preguntas abiertas")}. ` +
+    `La síntesis usa ${formatCount(localSignalIds.length, "señal local", "señales locales")} y ` +
+    `${formatCount(contextualSignalIds.length, "señal contextual", "señales contextuales")}, siempre con la escala declarada por cada fuente.`;
   const caution =
     `${interpretation.centralUncertainty} Las menciones del Informe orientan la agenda; no equivalen por sí solas a prevalencias locales ni a distribución interna.`;
 
@@ -1182,9 +1182,9 @@ export function buildProfileIntegratedEditorialView(
     technicalAnnex: {
       title: "Lectura territorial ampliada y anexo técnico",
       summary:
-        `${visuals.tablaTrazadores.length} trazador(es), ` +
-        `${matrix.filas.length} fila(s) de matriz y ` +
-        `${matrix.notasBloque.length} nota(s) metodológica(s) comunes.`,
+        `${formatCount(visuals.tablaTrazadores.length, "trazador", "trazadores")}, ` +
+        `${formatCount(matrix.filas.length, "fila de matriz", "filas de matriz")} y ` +
+        `${formatCount(matrix.notasBloque.length, "nota metodológica común", "notas metodológicas comunes")}.`,
       tracerRows: visuals.tablaTrazadores,
       matrix: {
         ...matrix,

@@ -152,6 +152,10 @@ function formatDate(iso: string): string {
   });
 }
 
+function contar(n: number, singular: string, plural: string): string {
+  return `${n} ${n === 1 ? singular : plural}`;
+}
+
 // ── Chapter editor sub-component ─────────────────────────────────────────────
 // Renders either the authored content or the scaffold preview, plus an
 // inline textarea that writes back through the supplied onSave callback.
@@ -877,7 +881,11 @@ export function LocalHealthProfileView({
             <span className="psl-doc-header__date">Generado el {generatedDate}</span>
             {fuentesDiagnostico > 0 && (
               <span className="psl-doc-header__atoms">
-                {fuentesDiagnostico} fuente(s) de diagnóstico incorporada(s)
+                {contar(
+                  fuentesDiagnostico,
+                  "fuente de diagnóstico incorporada",
+                  "fuentes de diagnóstico incorporadas"
+                )}
               </span>
             )}
           </div>
@@ -901,7 +909,7 @@ export function LocalHealthProfileView({
             {psl.validatedBy && ` · ${psl.validatedBy}`}
             {(compiledProfiles?.length ?? 0) === 0
               ? " — Documento técnico validado, pendiente de compilación institucional: el documento institucional (PSL-C) se crea al compilar, tras asumir la autoría y documentar el consenso."
-              : ` — Compilado como documento institucional: ${compiledProfiles!.length} artefacto(s) PSL-C congelado(s) al final de esta pantalla.`}
+              : ` — Compilado como documento institucional: ${contar(compiledProfiles!.length, "artefacto PSL-C congelado", "artefactos PSL-C congelados")} al final de esta pantalla.`}
           </span>
           <button
             className="psl-doc-validated-notice__invalidate"

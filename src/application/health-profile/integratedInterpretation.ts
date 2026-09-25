@@ -639,6 +639,14 @@ function esValorNumericoLimpio(f: HealthReportStructuredFinding): boolean {
   return /^\s*\d/.test(f.value);
 }
 
+function formatCount(
+  count: number,
+  singular: string,
+  plural: string
+): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 function magnitudeNote(
   findings: HealthReportStructuredFinding[]
 ): string | undefined {
@@ -657,7 +665,7 @@ function magnitudeNote(
     });
     const extra =
       documentados.length > numericos.slice(0, 2).length
-        ? ` (y ${documentados.length - muestra.length} indicador[es] más en el Informe)`
+        ? ` (y ${formatCount(documentados.length - muestra.length, "indicador más", "indicadores más")} en el Informe)`
         : "";
     return `${muestra.join("; ")}${extra}`;
   }
@@ -1026,9 +1034,13 @@ export function buildIntegratedInterpretation(
   );
 
   const coverage = buildCoverage(base, lex);
+  const complementaryScope =
+    answers.estudios.totalStudies > 0
+      ? "y con los estudios incorporados"
+      : "sin estudios complementarios incorporados en este expediente";
   const nonExhaustiveNotice =
     "Estos hilos se construyen con la parte del Informe actualmente " +
-    "estructurada y con los estudios incorporados. No son una reproducción " +
+    `estructurada, ${complementaryScope}. No son una reproducción ` +
     "exhaustiva de todo el contenido epidemiológico del documento original: " +
     "la base estructurada es parcial y hay tablas y dominios aún no extraídos.";
 

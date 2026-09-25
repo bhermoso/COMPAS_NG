@@ -69,6 +69,9 @@ describe("síntesis interpretativa del Perfil", () => {
     const synthesis = view.diagnosticSynthesis;
     expect(synthesis.title).toBe("Síntesis interpretativa del Perfil");
     expect(synthesis.thesis).toContain("no se limita a contar menciones");
+    expect(JSON.stringify(synthesis)).not.toMatch(
+      /hilo\(s\)|señal\(es\)|pregunta\(s\)|plausible\(s\)/
+    );
     expect(synthesis.traceability.unitIds).toEqual(
       view.interpretation.units.map((unit) => unit.id)
     );
@@ -107,6 +110,9 @@ describe("síntesis interpretativa del Perfil", () => {
     expect(JSON.stringify(view.territorialReadings)).not.toContain(
       "hipótesis El territorio"
     );
+    expect(JSON.stringify(view.territorialReadings)).not.toContain(
+      "indicador[es]"
+    );
 
     const withoutStudies = buildProfileIntegratedEditorialView(
       {
@@ -143,6 +149,9 @@ describe("síntesis interpretativa del Perfil", () => {
       (block) => block.id === "estudios"
     );
     expect(studiesBlock?.whatItAdds).toContain(
+      "sin estudios complementarios incorporados"
+    );
+    expect(withoutStudies.interpretation.nonExhaustiveNotice).toContain(
       "sin estudios complementarios incorporados"
     );
     expect(

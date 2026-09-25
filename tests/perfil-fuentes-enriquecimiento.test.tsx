@@ -89,9 +89,14 @@ describe("enriquecimiento de fuentes — vista de impacto, no cargador", () => {
     expect(html).toContain("13 estudios complementarios");
     expect(html).toContain("23 indicadores");
     expect(html).toContain("56 activos de Localiza Salud");
+    expect(html).toContain("documentos territoriales de contexto");
+    expect(html).toContain("marcos estratégicos de referencia");
     expect(html).toContain("fuente principal de activos");
     expect(html).toContain("Sin evidencia directa"); // determinantes: pendiente
     expect(html).toContain("no están desagregados"); // desigualdades: pendiente
+    expect(html).not.toMatch(
+      /estudio\(s\)|indicador\(es\)|activo\(s\)|documento\(s\)|marco\(s\)|pregunta\(s\)/
+    );
   });
 
   it("BADEA/IECA aparece como contexto incorporado real, con escala y cautela", () => {

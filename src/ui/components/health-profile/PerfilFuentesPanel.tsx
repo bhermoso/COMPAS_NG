@@ -149,7 +149,7 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: preguntasAbiertas > 0 ? "parcial" : "pendiente",
       detalle:
         preguntasAbiertas > 0
-          ? `${preguntasAbiertas} pregunta(s) abierta(s) del equipo técnico, ` +
+          ? `${contar(preguntasAbiertas, "pregunta abierta", "preguntas abiertas")} del equipo técnico, ` +
             `además de las preguntas de contraste generadas por el diagnóstico.`
           : `El diagnóstico genera preguntas de contraste; el equipo puede ` +
             `añadir las suyas en el enriquecimiento interpretativo.`,
@@ -159,8 +159,8 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: territoriales > 0 || marcos > 0 || badea ? "cubierta" : "pendiente",
       detalle:
         (territoriales > 0 || marcos > 0
-          ? `${territoriales} documento(s) territoriales de contexto y ` +
-            `${marcos} marco(s) estratégico(s) de referencia (los marcos son ` +
+          ? `${contar(territoriales, "documento territorial de contexto", "documentos territoriales de contexto")} y ` +
+            `${contar(marcos, "marco estratégico", "marcos estratégicos")} de referencia (los marcos son ` +
             `insumos para el Plan de Acción, no evidencia diagnóstica).`
           : "Sin documentación territorial de contexto todavía.") +
         (badea
