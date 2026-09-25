@@ -91,6 +91,17 @@ Define las cuatro dimensiones de calidad de la evidencia: documental, muestral, 
 
 ---
 
+### CONTRACT-SOURCE-CAPABILITY-MATRIX
+**Estado:** VIGENTE — creado 2026-09-24
+
+Matriz contractual de capacidades de fuente. Define qué tipos de información puede soportar, cargar e incorporar COMPÁS NG; qué ruta de entrada tienen; si son fuentes fijas o variables; si generan `EvidenceAtom`; qué papel desempeñan en la salida interpretativa COMPÁS y qué pueden aportar a la salida comparativa breve tipo OHID/Fingertips. Incluye la ruta para fuentes nuevas como ERACIS, estrategias autonómicas, planes estratégicos temáticos, estudios complementarios, activos, priorizaciones ciudadanas, documentación territorial, material cualitativo y evidencia longitudinal.
+
+**Productores:** Repositorio Documental, parsers de estudios, cargadores de documentos, importadores GES/REDCap.
+**Consumidores:** Perfil de Salud Local, salida comparativa breve, compiladores documentales, equipo técnico.
+**Relacionado con:** CONTRACT-REPOSITORY, CONTRACT-EVIDENCE, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY, CONTRACT-NHS-HEALTH-PROFILE.
+
+---
+
 ## Nivel 1 tardío — Lectura clínico-asistencial UGC
 
 > **Nota de estado (2026-07-13):** Las capas N1b y N3 (interpretación integrada) están implementadas
@@ -167,6 +178,8 @@ Contrato canónico del Producto 3. Define el PSL-C como producto analítico terr
 
 Por los Fundamentos del Perfil único, el PSL-NHS **deja de ser un «Producto 4» institucional independiente**: no es producto autónomo ni segunda fuente de verdad. Pasa a ser una **representación derivada dentro del Perfil de Salud Local, sin veredictos comparativos**: la capacidad de posición (`computePosition`) queda **descartada** (evaluación resuelta), no pendiente. El contrato conserva su cuerpo histórico como registro de diseño, subordinado a su §0. La retirada del código/ruta/artefacto NHS queda **ejecutada** (GOV-P4-01 · PR-E); la divergencia de catálogo (6 vs 13) se disuelve con el compilador retirado.
 
+La línea vigente distingue dos salidas del mismo Perfil canónico: la salida interpretativa COMPÁS y una salida comparativa breve tipo OHID/Fingertips. La segunda se inspira en los Local Authority Health Profiles actuales de OHID/DHSC Fingertips como matriz pública de indicadores, referencias, periodos y cautelas; no restaura `NHSHealthProfileCompiler`, no crea `NHSHealthProfileArtifact` y no puede introducir conclusiones, prioridades ni datos ajenos al Perfil validado.
+
 **Productores:** `projectNHSDerived` (`src/application/health-profile/nhsDerivedProjection.ts`) como proyector puro del documento canónico, y `NHSHealthProfileView` como renderer integrado dentro del espacio «Perfil de Salud Local». No existe compilador ni artefacto NHS autónomo.
 **Consumidores:** Corporación municipal, ciudadanía, comunicación institucional.
 **Relacionado con:** CONTRACT-PSL-COMPAS, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-COMPLEMENTARY-STUDIES, CONTRACT-DYNAMIC-TRIPYRAMID, CONTRACT-NAVIGATION, VISUAL-CONTRACT.
@@ -211,7 +224,7 @@ Contrato del `LocalHealthPlanCompiler`. Define cómo se produce el `LocalHealthP
 **Tipos:** `src/domain/health-plan/LocalHealthPlanDocument.ts`, `src/domain/compilation/CompilationManifest.ts`.
 **Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-ACTION-PLAN-CATALOG, CONTRACT-MTE, CONTRACT-COMPILER (reserva histórica), CONTRACT-INSTITUTIONAL-LIFECYCLE.
 **Prerequisitos satisfechos (Sprint 2):** actor model `approved` implementado (CONTRACT-INSTITUTIONAL-LIFECYCLE); validación formal del Nivel 3 implementada (`FormalValidationRecord`, `createFormalValidation.ts`).
-**Prerequisitos pendientes:** `UnaddressedNeed[]` en `ActionPlanDraft` (G-PLS-7); `PLSEvaluationFramework` (G-PLS-10). Ver §16 de este contrato.
+**Prerequisitos pendientes:** implementación completa del `LocalHealthPlanCompiler`. El soporte de dominio, captura UI y transporte documental para G-PLS-7 y G-PLS-10 existe desde 2026-09-24 (`PlanPreparationPanel` → `PlanPreparationDraft` → `PlanDocument`). Ver §16 de este contrato.
 
 ---
 

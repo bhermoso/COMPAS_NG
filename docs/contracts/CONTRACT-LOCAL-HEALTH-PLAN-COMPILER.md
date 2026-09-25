@@ -353,8 +353,8 @@ Los siguientes elementos deben estar resueltos antes de escribir el código del 
 | Handler `handleApprovePSL` en UI | ✅ Completado (Sprint 2) | CONTRACT-INSTITUTIONAL-LIFECYCLE §7 |
 | Mecanismo de validación formal del `ActionPlanDraft` (G-PLS-5) | ✅ Completado (Sprint 2) | CONTRACT-INSTITUTIONAL-LIFECYCLE §4 |
 | Mecanismo de validación formal del `AgendaDraft` (G-PLS-6) | ✅ Completado (Sprint 2) | CONTRACT-INSTITUTIONAL-LIFECYCLE §4 |
-| `UnaddressedNeed[]` en `ActionPlanDraft` (G-PLS-7) | ❌ Pendiente | Ampliación del tipo `ActionPlanDraft` |
-| `PLSEvaluationFramework` (marco de evaluación, G-PLS-10) | ❌ Pendiente | Definir tipo y UI |
+| `UnaddressedNeed[]` en `ActionPlanDraft` (G-PLS-7) | ✅ Soporte de dominio, captura UI y transporte documental completados (2026-09-24); consumo por `LocalHealthPlanCompiler` pendiente | `PlanPreparationDraft.unaddressedNeeds`, `PlanPreparationPanel`, `PlanDocument.unaddressedNeeds` |
+| `PLSEvaluationFramework` (marco de evaluación, G-PLS-10) | ✅ Tipo canónico, captura UI y transporte documental completados (2026-09-24); consumo por `LocalHealthPlanCompiler` pendiente | `PLSEvaluationFramework`, `PlanPreparationDraft.evaluationFramework`, `PlanPreparationPanel`, `PlanDocument.evaluationFramework` |
 
 ---
 
