@@ -20,13 +20,13 @@ describe("Versiones documentales del Plan",()=>{
  it("agrupa todos los objetivos bajo un único encabezado por bloque",()=>{
   const draft=fixture();
   const doc=buildPlanDocument(draft.municipalityId,buildDefinitiveActionPlanProjection(draft.municipalityId,[module],[draft]),"2026-09-17");
-  expect(doc.paragraphs.filter(p=>p.heading).slice(1).map(p=>p.text.split(" · ")[0])).toEqual(module.generalObjectives.map(g=>g.code));
+  expect(doc.paragraphs.filter(p=>p.heading).slice(1).map(p=>p.text.split(" · ")[1])).toEqual(module.generalObjectives.map(g=>g.code));
   for(const general of module.generalObjectives){
-   expect(doc.paragraphs.filter(p=>p.heading&&p.text.startsWith(general.code+" ·"))).toHaveLength(1);
+   expect(doc.paragraphs.filter(p=>p.heading&&p.text.startsWith("Objetivo general · "+general.code+" ·"))).toHaveLength(1);
    const heading=doc.paragraphs.findIndex(p=>p.heading&&p.text.startsWith(general.code+" ·"));
    const next=doc.paragraphs.findIndex((p,i)=>i>heading&&!!p.heading);
    const group=doc.paragraphs.slice(heading,next<0?undefined:next);
-   for(const objective of general.specificObjectives) expect(group.some(p=>p.text.startsWith(objective.code+" ·"))).toBe(true);
+   for(const objective of general.specificObjectives) expect(group.some(p=>p.text.includes(objective.displayCode ?? objective.code))).toBe(true);
   }
  });
  it("congela las redacciones, no incorpora cambios posteriores y aísla ámbitos",()=>{
@@ -51,7 +51,7 @@ describe("Versiones documentales del Plan",()=>{
   const draft=fixture();const objective=module.generalObjectives[0].specificObjectives[0];
   draft.decisions[objective.code].status="excluded";
   const doc=validatePlanDocument(draft.municipalityId,buildDefinitiveActionPlanProjection(draft.municipalityId,[module],[draft]),"Equipo","2026-09-16");
-  expect(doc.paragraphs.some(p=>p.text.startsWith(objective.code+" ·"))).toBe(false);
+  expect(doc.paragraphs.some(p=>p.text.includes(objective.displayCode ?? objective.code))).toBe(false);
   expect(doc.paragraphs.some(p=>p.text.startsWith(objective.indicator.code+" ·"))).toBe(false);
   const later={...doc,generatedAt:"2026-09-17"};
   expect(latestValidatedPlan([later,doc],draft.municipalityId)).toBe(later);

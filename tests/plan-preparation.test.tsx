@@ -2,7 +2,7 @@ import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { HEALTHY_AGING_MODULE } from "../src/domain/action-plan-catalog/ActionPlanCatalog";
-import { ZAIDIN_AGING_PROPOSAL, excludedByAncestor, type PlanPreparationDraft } from "../src/domain/action-plan-catalog/PlanPreparationDraft";
+import { ZAIDIN_AGING_PROPOSAL, createZaidinFinalActionPlanDraft, excludedByAncestor, type PlanPreparationDraft } from "../src/domain/action-plan-catalog/PlanPreparationDraft";
 import { PlanPreparationPanel } from "../src/ui/components/PlanPreparationPanel";
 import { createCompleteMunicipalityWorkspace } from "../src/application/workspace";
 import { parseWorkspaceJSON } from "../src/infrastructure/persistence/local-storage";
@@ -27,34 +27,28 @@ function findElement(node: ReactNode, predicate: (element: ReactElement<Record<s
 }
 
 describe("Preparación independiente del Plan", () => {
- it("muestra una caja editable con propuesta para cada objetivo general", () => {
- const panel = PlanPreparationPanel({module: ZAIDIN_AGING_PROPOSAL, municipalityId: draft.municipalityId, onChange: () => {}, renderWorksheet: () => null});
- for (const general of ZAIDIN_AGING_PROPOSAL.generalObjectives) {
-  const label = `Redacción del objetivo general · ${general.code}`;
-  const textarea = findElement(panel, element => element.type === "textarea" && element.props["aria-label"] === label);
-  expect(textarea).toBeDefined();
-  expect(textarea!.props.value).toBe(general.title);
- }
+ it("muestra la redacción final y conserva la posibilidad de modificarla", () => {
+ const finalDraft = createZaidinFinalActionPlanDraft(undefined, "2026-09-25");
+ const panel = PlanPreparationPanel({module: ZAIDIN_AGING_PROPOSAL, municipalityId: finalDraft.municipalityId, draft: finalDraft, onChange: () => {}, renderWorksheet: () => null});
  const html = renderToStaticMarkup(panel);
- expect(html.match(/Propuesta inicial de objetivo general:/g)).toHaveLength(4);
- expect(html.match(/Propuesta inicial del objetivo general/g)).toHaveLength(4);
- expect(html).not.toContain("Guardado en el expediente local");
- const changes: PlanPreparationDraft[] = [];
- const emptyAgeism = {...draft, decisions:{[ZAIDIN_AGING_PROPOSAL.generalObjectives[0].code]:{status:"modified" as const,sourceText:ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title,text:""}}};
- const restored = PlanPreparationPanel({module:ZAIDIN_AGING_PROPOSAL,municipalityId:draft.municipalityId,draft:emptyAgeism,onChange:next=>changes.push(next),renderWorksheet:()=>null});
- const recover = findElement(restored, element=>element.type==="button"&&element.props["aria-label"]==="Usar propuesta inicial · ENV-B-edadismo");
- expect(recover).toBeDefined();
- (recover!.props.onClick as () => void)();
- expect(changes[0].decisions["ENV-B-edadismo"].text).toBe(ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title);
+ expect(html).toContain("Redacción final del Plan de Acción del Distrito Zaidín");
+ expect(html).toContain("Objetivo general:");
+ expect(html).toContain("Objetivo específico · OE1.1 (ENV-OE5.1)");
+ expect(html).not.toContain("Propuesta inicial de objetivo general");
+ expect(html).not.toContain("Usar propuesta inicial");
+ expect(finalDraft.decisions[ZAIDIN_AGING_PROPOSAL.id].status).toBe("included");
+ for (const general of ZAIDIN_AGING_PROPOSAL.generalObjectives) {
+  expect(finalDraft.decisions[general.code].status).toBe("included");
+ }
  });
  it("reagrupa los 18 objetivos sin cambiar indicadores ni catálogo original", () => {
  const original = HEALTHY_AGING_MODULE.generalObjectives.flatMap(g => g.specificObjectives);
  const next = ZAIDIN_AGING_PROPOSAL.generalObjectives.flatMap(g => g.specificObjectives);
- expect(ZAIDIN_AGING_PROPOSAL.generalObjectives.map(g => g.specificObjectives.length)).toEqual([2,7,2,7]);
+ expect(ZAIDIN_AGING_PROPOSAL.generalObjectives.map(g => g.specificObjectives.length)).toEqual([2,7,4,5]);
  expect(next.map(o => o.code).sort()).toEqual(original.map(o => o.code).sort());
  for (const o of next) expect(o.indicator).toEqual(original.find(x => x.code === o.code)!.indicator);
  expect(HEALTHY_AGING_MODULE.generalObjectives).toHaveLength(9);
- expect(ZAIDIN_AGING_PROPOSAL.generalObjectives[3].specificObjectives.map(o => o.code)).toContain("ENV-OE9.1");
+ expect(ZAIDIN_AGING_PROPOSAL.generalObjectives[2].specificObjectives.map(o => o.code)).toContain("ENV-OE9.1");
  });
  it("conserva el borrador anterior y avisa de la revisión editorial", () => {
  const previous = {...draft, version: "zaidin-4-bloques-2026-09-09", decisions: {"ENV-OE1.1": {status: "modified" as const, sourceText: "Autonomía funcional anterior", text: "Redacción propia que debe conservarse"}}};
@@ -63,8 +57,9 @@ describe("Preparación independiente del Plan", () => {
  expect(html).toContain("Redacción propia que debe conservarse");
  expect(html).toContain("La referencia de partida ha cambiado");
  expect(JSON.stringify(previous)).toBe(before);
- const participation = ZAIDIN_AGING_PROPOSAL.generalObjectives.find(g => g.code === "ENV-B-participacion")!;
- expect(participation.specificObjectives.map(o => o.code)).toEqual(expect.arrayContaining(["ENV-OE8.1", "ENV-OE8.2", "ENV-OE9.1", "ENV-OE9.2"]));
+ const participation = ZAIDIN_AGING_PROPOSAL.generalObjectives.find(g => g.code === "ENV-OG4")!;
+ expect(participation.specificObjectives.map(o => o.code)).toEqual(expect.arrayContaining(["ENV-OE8.1", "ENV-OE8.2"]));
+ expect(participation.specificObjectives.map(o => o.code)).not.toContain("ENV-OE9.1");
  expect(html).toContain("Objetivo estratégico vigente");
  expect(html).toContain("<strong>envejecimiento saludable</strong>");
  });
@@ -154,7 +149,7 @@ describe("Preparación independiente del Plan", () => {
  const oldContext = {...context, moduleVersion: "3.1", generalObjective: "ENV-OG5", objective: "Redacción anterior", line: "Envejecimiento saludable", indicator: "Indicador", unit: "%", source: "Original"};
  const sheet = createIndicatorWorksheet(oldContext);
  sheet.values.owner = "Responsable de prueba";
- const newContext = {...oldContext, moduleVersion: ZAIDIN_AGING_PROPOSAL.version, generalObjective: "ENV-B-edadismo", objective: "Redacción revisada"};
+ const newContext = {...oldContext, moduleVersion: ZAIDIN_AGING_PROPOSAL.version, generalObjective: "ENV-OG1", objective: "Redacción revisada"};
  expect(worksheetKey(sheet.context)).toBe(worksheetKey(newContext));
  expect(worksheetContextChanged(sheet, newContext)).toBe(true);
  expect(sheet.context).toEqual(oldContext);

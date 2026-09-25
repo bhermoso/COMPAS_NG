@@ -28,7 +28,7 @@ describe("Plan de Acción resultante", () => {
           status: "included",
           sourceText: ZAIDIN_AGING_PROPOSAL.strategicObjective,
         },
-        "ENV-B-edadismo": {
+        "ENV-OG1": {
           status: "modified",
           sourceText: ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title,
           text: "Reducir el edadismo y reforzar el reconocimiento social de las personas mayores.",
@@ -113,7 +113,7 @@ describe("Plan de Acción resultante", () => {
           status: "included",
           sourceText: ZAIDIN_AGING_PROPOSAL.strategicObjective,
         },
-        "ENV-B-edadismo": {
+        "ENV-OG1": {
           status: "included",
           sourceText: ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title,
         },
@@ -162,7 +162,7 @@ describe("Plan de Acción resultante", () => {
           status: "included",
           sourceText: ZAIDIN_AGING_PROPOSAL.strategicObjective,
         },
-        "ENV-B-edadismo": {
+        "ENV-OG1": {
           status: "included",
           sourceText: ZAIDIN_AGING_PROPOSAL.generalObjectives[0].title,
         },

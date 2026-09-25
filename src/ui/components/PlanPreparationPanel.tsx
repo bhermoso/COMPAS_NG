@@ -37,6 +37,7 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
  renderWorksheet: (module: ActionPlanCatalogModule, general: CatalogGeneralObjectiveTemplate, specific: CatalogSpecificObjectiveTemplate) => ReactNode;
 }) {
  const revised = module.version === ZAIDIN_PROPOSAL_VERSION;
+ const finalApprovedText = module.version === ZAIDIN_FINAL_ACTION_PLAN_VERSION;
  const directTerritorialEdit = canEditProposal && !canReview;
  const emphasized = (text: string) => cleanActionPlanProposalText([proposalStrategicText, ...Object.values(proposalObjectiveTexts), ...proposalBlocks.map(b => b.text)].find(candidate => plainProposalText(candidate) === cleanActionPlanProposalText(text)) ?? text);
  const territorialText = (id: string, text: string) => draft?.decisions[id]?.status === "modified" ? cleanActionPlanProposalText(draft.decisions[id].text ?? text) : emphasized(text);
@@ -227,8 +228,8 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
    const visibleGeneral = canReview ? consolidatedText(general.code, sourceGeneral) : territorialText(general.code, (revised ? block?.text : undefined) ?? sourceGeneral);
    return <details className="pcm-general" key={general.code} open>
     <summary>{block?.name ?? `${general.code} · ${visibleGeneral}`}</summary>
-    <p><ProposalText text={visibleGeneral}/></p>
-    {control(general.code, sourceGeneral, [module.id], true)}
+    <p><strong>Objetivo general:</strong> <ProposalText text={visibleGeneral}/></p>
+    {control(general.code, sourceGeneral, [module.id], !finalApprovedText)}
     {general.specificObjectives.map(specific => {
      const indicator = specific.indicator;
      const sourceSpecific = specific.title;
@@ -239,7 +240,7 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
      const draftGeneral = {...general, title: plainProposalText(visibleGeneral)};
      const draftSpecific = {...specific, title: plainProposalText(visibleSpecific), indicator: {...indicator, title: plainProposalText(visibleIndicator)}};
      return <section className="pcm-specific" key={specific.code}>
-      <h3>{specific.code}</h3><p><ProposalText text={visibleSpecific}/></p>
+      <h3>Objetivo específico · {specific.displayCode ?? specific.code}</h3><p><ProposalText text={visibleSpecific}/></p>
       {control(specific.code, sourceSpecific, [module.id, general.code])}
       <details className="pcm-sheet"><summary>Indicador y ficha · {indicator.code}</summary>
        <p>{visibleIndicator}</p>
