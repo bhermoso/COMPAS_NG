@@ -53,9 +53,9 @@ export function buildPlanDocument(
    const group = groups.get(general.code);
    if (!group) continue;
    const first = group[0];
-   paragraphs.push({text:first.general.code+" · "+resolvedPlanDecisionText(first.generalDecision,first.general.title),heading:true});
+   paragraphs.push({text:"Objetivo general · "+first.general.code+" · "+resolvedPlanDecisionText(first.generalDecision,first.general.title),heading:true});
    for (const row of group) {
-    paragraphs.push({text:row.specific.code+" · "+resolvedPlanDecisionText(row.objectiveDecision,row.specific.title)});
+    paragraphs.push({text:"Objetivo específico · "+(row.specific.displayCode ?? row.specific.code)+" · "+resolvedPlanDecisionText(row.objectiveDecision,row.specific.title)});
     paragraphs.push({text:row.indicatorIncluded ? row.specific.indicator.code+" · "+resolvedPlanDecisionText(row.indicatorDecision,row.specific.indicator.title) : "Indicador no incorporado."});
    }
   }

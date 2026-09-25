@@ -22,6 +22,8 @@ export interface CatalogIndicatorTemplate {
 
 export interface CatalogSpecificObjectiveTemplate {
   code: string;
+  /** Código editorial mostrado en el Plan territorial; el código canónico se conserva en `code`. */
+  displayCode?: string;
   title: string;
   indicator: CatalogIndicatorTemplate;
 }

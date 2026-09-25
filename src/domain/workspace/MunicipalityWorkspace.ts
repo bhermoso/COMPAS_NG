@@ -57,6 +57,7 @@ export interface TerritorialStateRecord {
 }
 
 export interface MunicipalityWorkspace {
+  planPreparationDraftHistory?: { replacedAt: string; replacementVersion: string; draft: PlanPreparationDraft }[];
   validatedActionPlans?: PlanDocument[];
   municipality: MunicipalityContext;
   repository: MunicipalDocumentRepository;

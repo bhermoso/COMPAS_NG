@@ -18,4 +18,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npx vitest run tests/plan-document.test.ts tests/plan-editor-whitespace.test.tsx tests/definitive-action-plan-preview.test.tsx
+      - run: npx vitest run tests/zaidin-final-replacement.test.ts tests/plan-document.test.ts tests/plan-editor-whitespace.test.tsx tests/definitive-action-plan-preview.test.tsx

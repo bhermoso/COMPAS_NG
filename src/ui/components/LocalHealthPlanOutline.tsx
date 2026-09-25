@@ -7,6 +7,7 @@ import {
 } from "../../domain/action-plan-catalog/DefinitiveActionPlanProjection";
 import {
   ZAIDIN_AGING_PROPOSAL,
+  createZaidinFinalActionPlanDraft,
   type PlanPreparationDraft,
 } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 
@@ -45,9 +46,16 @@ export function LocalHealthPlanOutline({
     ),
     [municipalityId]
   );
+  const effectiveDrafts = useMemo(() => {
+    if (municipalityId !== "granada-zaidin") return drafts;
+    const current = drafts.find((draft) => draft.moduleId === ZAIDIN_AGING_PROPOSAL.id && draft.version === ZAIDIN_AGING_PROPOSAL.version);
+    if (current) return drafts;
+    const previous = drafts.find((draft) => draft.moduleId === ZAIDIN_AGING_PROPOSAL.id);
+    return [...drafts.filter((draft) => draft.moduleId !== ZAIDIN_AGING_PROPOSAL.id), createZaidinFinalActionPlanDraft(previous)];
+  }, [municipalityId, drafts]);
   const active = useMemo(
-    () => buildDefinitiveActionPlanProjection(municipalityId, modules, drafts),
-    [municipalityId, modules, drafts]
+    () => buildDefinitiveActionPlanProjection(municipalityId, modules, effectiveDrafts),
+    [municipalityId, modules, effectiveDrafts]
   );
   const selectedObjectives = active.reduce((total, item) => total + item.rows.length, 0);
   const selectedIndicators = active.reduce(
@@ -119,11 +127,11 @@ export function LocalHealthPlanOutline({
               const generalDecision = group[0].generalDecision;
               return (
                 <div key={general.code} className="pcm-specific">
-                  <p><strong>{general.code}</strong> · {resolvedPlanDecisionText(generalDecision, general.title)}</p>
+                  <p><strong>Objetivo general · {general.code}</strong> · {resolvedPlanDecisionText(generalDecision, general.title)}</p>
                   <ul>
                     {group.map((row) => (
                       <li key={row.specific.code}>
-                        <strong>{row.specific.code}</strong> · {resolvedPlanDecisionText(row.objectiveDecision, row.specific.title)}
+                        <strong>Objetivo específico · {row.specific.displayCode ?? row.specific.code}</strong> · {resolvedPlanDecisionText(row.objectiveDecision, row.specific.title)}
                         {row.indicatorIncluded && (
                           <> — <strong>{row.specific.indicator.code}</strong> · {resolvedPlanDecisionText(row.indicatorDecision, row.specific.indicator.title)}</>
                         )}

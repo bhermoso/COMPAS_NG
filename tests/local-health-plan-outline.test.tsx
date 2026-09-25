@@ -36,7 +36,7 @@ describe("Esbozo del Plan Local de Salud", () => {
     expect(html).toContain("Plan Local de Salud del Distrito Zaidín");
     expect(html).toContain("Disponible antes de registrar actuaciones");
     expect(html).toContain(module.title);
-    expect(html).toContain(specific.code);
+    expect(html).toContain(specific.displayCode ?? specific.code);
     expect(html).toContain("Actuaciones pendientes de registro");
     expect(html).toContain("Borrador evolutivo");
   });

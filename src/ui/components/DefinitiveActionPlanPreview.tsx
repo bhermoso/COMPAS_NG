@@ -80,8 +80,8 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, va
                 const generalText = resolvedPlanDecisionText(row.generalDecision, row.general.title);
                 const indicatorText = resolvedPlanDecisionText(row.indicatorDecision, row.specific.indicator.title);
                 return <li key={`${row.specific.code}-${row.specific.indicator.code}`} className="pcm-specific">
-                  <p><strong>{row.specific.code}</strong> · {objectiveText} {row.objectiveDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p>
-                  <p className="panel-note">Bloque: {row.general.code} · {generalText}</p>
+                  <p><strong>Objetivo específico · {row.specific.displayCode ?? row.specific.code}</strong> · {objectiveText} {row.objectiveDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p>
+                  <p className="panel-note"><strong>Objetivo general · {row.general.code}</strong> · {generalText}</p>
                   {row.indicatorIncluded ? <p className="pcm-preview-indicator"><strong>{row.specific.indicator.code}</strong> · {indicatorText} {row.indicatorDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p> : <p className="panel-note">Indicador todavía no seleccionado para este objetivo.</p>}
                 </li>;
               })}
