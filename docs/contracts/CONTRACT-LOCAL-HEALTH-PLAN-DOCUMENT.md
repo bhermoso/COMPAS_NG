@@ -9,6 +9,10 @@
 > y `CONTRACT-MTE` ya existen. Este contrato conserva la definición
 > estructural del PLS; las referencias antiguas a contratos pendientes se leen
 > como deuda histórica salvo donde se actualizan expresamente.
+>
+> Revisión — 2026-09-25: se formaliza `LocalHealthPlanOutline` como proyección
+> evolutiva previa al documento institucional, consultable antes de registrar
+> actuaciones.
 
 ---
 
@@ -37,9 +41,46 @@ Esta distinción es el fundamento del contrato. Ninguno de estos objetos puede s
 | `ActionPlanDraft` | Borrador técnico del Nivel 3 | Nivel 3 | Mutable hasta validación formal | Sistema + Equipo técnico |
 | `AgendaDraft` | Borrador técnico del Nivel 3 | Nivel 3 | Mutable hasta validación formal | Sistema + Equipo técnico |
 | `MonitoringDraft` | Borrador técnico del Nivel 3 | Nivel 3 | Mutable hasta validación formal | Sistema + Equipo técnico |
+| `LocalHealthPlanOutline` | Esbozo evolutivo y no institucional del PLS | Proyección | Mutable; se recalcula con el expediente | Sistema + Equipo técnico |
 | **Plan Local de Salud** (`LocalHealthPlanDocument`) | Documento institucional definitivo | Compilador | Inmutable tras compilación y aprobación | `LocalHealthPlanCompiler` + Corporación municipal |
 
 El PLS no es el PSL. El PLS no es el PSL-C aislado. El PLS no es el Plan de Acción. El PLS no es la Agenda. El PLS no es la salida automática del sistema.
+
+### 2.1 Esbozo evolutivo del Plan Local de Salud
+
+`LocalHealthPlanOutline` es una proyección de trabajo que permite leer la forma
+que va adquiriendo el futuro PLS antes de disponer de todas las actuaciones.
+No es un `LocalHealthPlanDocument`, no constituye un compromiso institucional,
+no se valida como Plan de Acción y no recibe versión PLS/vN.
+
+El esbozo puede generarse desde que existe un Perfil de Salud Local y se
+actualiza conforme el expediente incorpora priorización, líneas, objetivos,
+indicadores, actuaciones, agenda y evaluación. La ausencia de actuaciones no
+bloquea su consulta.
+
+Debe mostrar, como mínimo:
+
+- identidad territorial y período de planificación propuesto;
+- estado del Perfil y disponibilidad del PSL-C;
+- Informe de Salud de referencia, dejando claro que es una fuente;
+- prioridades disponibles, si existen;
+- arquitectura estratégica seleccionada: líneas, objetivos generales,
+  objetivos específicos e indicadores;
+- secciones pendientes, entre ellas actuaciones, agenda, seguimiento,
+  evaluación y aprobación.
+
+Las actuaciones, fichas, responsables, plazos y recursos son opcionales en el
+esbozo. Pasan a ser obligatorios al cerrar el Plan de Acción y al solicitar la
+compilación del `LocalHealthPlanDocument`.
+
+**Invariantes del esbozo:**
+
+- `status === "evolving-outline"`;
+- `isCongealed === false`;
+- `isInstitutionalDocument === false`;
+- no admite aprobación institucional;
+- no satisface ninguno de los gates G-PLS por su mera existencia;
+- debe diferenciar visualmente contenido disponible y contenido pendiente.
 
 ---
 

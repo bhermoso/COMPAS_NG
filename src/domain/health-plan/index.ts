@@ -17,3 +17,10 @@ export type {
   PLSSectionAnexosMetodologicos,
   LocalHealthPlanDocument,
 } from "./LocalHealthPlanDocument";
+
+export {
+  LOCAL_HEALTH_PLAN_OUTLINE_STATUS,
+  type LocalHealthPlanOutline,
+  type LocalHealthPlanOutlinePendingSection,
+  type LocalHealthPlanOutlineStrategicItem,
+} from "./LocalHealthPlanOutline";
