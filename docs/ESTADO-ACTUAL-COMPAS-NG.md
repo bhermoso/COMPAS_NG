@@ -5,6 +5,13 @@
 > para que COMPÁS NG llegue a generar y compilar todas las piezas de un Plan
 > Local de Salud con evaluación.
 
+> Actualización de limpieza contractual — 23 de septiembre de 2026:
+> no se crea un contrato nuevo para Perfil/PLS. Se reconcilian los contratos
+> existentes: `CONTRACT-MTE` es la ruta vigente del MTE; `CONTRACT-ACTION-PLAN`
+> queda como legacy; y los bloqueos vivos del PLS son conectar
+> `UnaddressedNeed[]` al flujo real del Plan de Acción y definir el
+> `PLSEvaluationFramework`.
+
 ## 1. Juicio de conjunto
 
 COMPÁS NG ya tiene una base valiosa y bastante más rica que una maqueta: conserva

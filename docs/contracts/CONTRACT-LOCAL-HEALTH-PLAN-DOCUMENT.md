@@ -3,6 +3,12 @@
 > COMPÁS NG — Contrato del Plan Local de Salud como Documento Institucional
 > Sprint 2.2 — 2026-06-28
 > Estado: VIGENTE
+>
+> Reconciliación de estado — 2026-09-23:
+> `CONTRACT-LOCAL-HEALTH-PLAN-COMPILER`, `CONTRACT-INSTITUTIONAL-LIFECYCLE`
+> y `CONTRACT-MTE` ya existen. Este contrato conserva la definición
+> estructural del PLS; las referencias antiguas a contratos pendientes se leen
+> como deuda histórica salvo donde se actualizan expresamente.
 
 ---
 
@@ -51,7 +57,7 @@ El PLS es un único documento que integra todas las etapas del proceso de planif
 | III | **Contexto territorial** | Sí | Compilado desde metadatos del workspace: municipio, provincia, población, estructura. |
 | IV | **Diagnóstico territorial — referencia al PSL-C** | Sí | El PLS no reproduce el diagnóstico; incluye o referencia el PSL-C compilado como capítulo propio. El PSL-C es la parte diagnóstica del PLS. |
 | V | **Priorización** | Sí | Candidaturas técnicas (sistema), priorización ciudadana (proceso participativo), deliberación y consenso del Grupo Motor (humano), prioridades seleccionadas. Incluye obligatoriamente las necesidades identificadas pero no priorizadas, con justificación. |
-| VI | **Articulación institucional** | Sí (cuando el MTE esté implementado) / Provisional (actualmente EPVSATranslator) | Correspondencias entre prioridades y marcos estratégicos (EPVSA, ESCA, RELAS, PEM, PSMA). Distinción entre actuaciones SSPA-garantizadas y actuaciones municipales nuevas. |
+| VI | **Articulación institucional** | Sí; canónica cuando consume `LecturaEstrategicaLocal` del MTE / provisional si usa un fallback EPVSA anterior | Correspondencias entre prioridades y marcos estratégicos (EPVSA, ESCA, RELAS, PEM, PSMA). Distinción entre actuaciones SSPA-garantizadas y actuaciones municipales nuevas. |
 | VII | **Plan de Acción** | Sí | Objetivos (general y específico), actuaciones, indicadores con tiempo cero y meta, responsables nominados, plazos reales, recursos asignados. Validado por el Grupo Motor. |
 | VIII | **Agenda de implementación** | Sí | Distribución temporal validada por ciclos municipales reales, no la trimestrización orientativa del sistema. Responsables y condiciones de ejecución por ítem. |
 | IX | **Marco de seguimiento** | Sí | Ítems de seguimiento con estados iniciales, responsable de medición, periodicidad y umbral de alerta. Marco de evaluación: preguntas de evaluación, momentos de medición, responsable. |
@@ -71,11 +77,11 @@ El PLS no reproduce el contenido del PSL-C: lo integra o referencia. Hay dos opc
 - **Opción A (recomendada):** El PSL-C compilado se incluye como Capítulo IV del PLS mediante referencia a `sourcePSLId` y `sourcePSLVersion`. El `LocalHealthPlanCompiler` verifica que el PSL-C existente es coherente con el PSL aprobado (mismo `sourcePSLId`). No duplica el diagnóstico: lo enlaza.
 - **Opción B:** El PSL-C se incluye físicamente como documento adjunto al PLS. Solo viable en formato DOCX o PDF; complica la trazabilidad digital.
 
-El contrato reserva la decisión entre A y B para el `CONTRACT-LOCAL-HEALTH-PLAN-COMPILER` (pendiente de crear). La elección debe ser consistente con los requisitos formales del marco RELAS y de la Consejería de Salud.
+`CONTRACT-LOCAL-HEALTH-PLAN-COMPILER` resuelve esta decisión a favor de la **Opción A**: integración del PSL-C por referencia. La Opción B queda como posibilidad técnica para exportadores DOCX/PDF si un requisito externo exige adjuntar físicamente el diagnóstico.
 
 ---
 
-## 4. Entradas del futuro `LocalHealthPlanCompiler`
+## 4. Entradas del `LocalHealthPlanCompiler`
 
 ### 4.1 Entradas obligatorias
 
@@ -84,8 +90,8 @@ El contrato reserva la decisión entre A y B para el `CONTRACT-LOCAL-HEALTH-PLAN
 | PSL en estado `"approved"` | `LocalHealthProfile` | `psl.status === "approved"` |
 | PSL-C compilado coherente | `LocalHealthProfileArtifact` | `pslc.sourcePSLId === psl.id` |
 | Deliberación documentada | `psl.priorizacion.consensoDocumentado === true` | `priorizacionStatus === "complete"` |
-| ActionPlanDraft validado formalmente | `ActionPlanDraft` | `actionPlan.validationStatus === "formally-validated"` (gate G-PLS-5, sin implementación activa) |
-| AgendaDraft validada formalmente | `AgendaDraft` | `agenda.validationStatus === "formally-validated"` (gate G-PLS-6, sin implementación activa) |
+| ActionPlanDraft validado formalmente | `ActionPlanDraft` + `FormalValidationRecord` vigente | Gate G-PLS-5; el registro externo se define en `CONTRACT-INSTITUTIONAL-LIFECYCLE` |
+| AgendaDraft validada formalmente | `AgendaDraft` + `FormalValidationRecord` vigente | Gate G-PLS-6; el registro externo se define en `CONTRACT-INSTITUTIONAL-LIFECYCLE` |
 | MonitoringDraft con marco de evaluación | `MonitoringDraft` | `monitoring.evaluationFramework` definido |
 | Aprobación institucional registrada | Metadatos | `approvedAt`, `approvedBy`, `approvingBody` |
 | Período de planificación | Metadatos | `planningPeriod: { start: string; end: string }` |
@@ -95,7 +101,7 @@ El contrato reserva la decisión entre A y B para el `CONTRACT-LOCAL-HEALTH-PLAN
 
 | Entrada | Tipo | Cuándo es obligatoria |
 |---|---|---|
-| `StrategicTranslationResult` | Futuro (MTE canónico) | Obligatoria cuando el MTE canónico esté implementado; provisionalmente se usa `EPVSATranslationResult` |
+| `LecturaEstrategicaLocal` | MTE canónico | Obligatoria cuando el PLS integre articulación institucional canónica; cualquier fallback EPVSA debe marcarse como provisional |
 | Memoria del proceso | Documentos en el repositorio | Obligatoria si el marco RELAS lo exige; en caso contrario, opcional |
 | Datos de referencia territorial | Fuentes externas | Obligatorios si el PSL-NHS se incluye en los anexos |
 
@@ -115,18 +121,18 @@ Los siguientes gates deben cumplirse **todos** antes de que el `LocalHealthPlanC
 
 | Gate | Código | Condición | Estado de implementación |
 |---|---|---|---|
-| PSL aprobado | G-PLS-1 | `psl.status === "approved"` | Tipo definido; transición sin handler activo en UI |
+| PSL aprobado | G-PLS-1 | `psl.status === "approved"` | Implementado por `CONTRACT-INSTITUTIONAL-LIFECYCLE` (`approvePSL`, `handleApprovePSL`, `PSLApprovalRecord`) |
 | PSL-C coherente con PSL | G-PLS-2 | Existe `LocalHealthProfileArtifact` con `sourcePSLId === psl.id` | Implementado en Sprint 2.1 |
 | Deliberación documentada | G-PLS-3 | `psl.priorizacion.consensoDocumentado === true && psl.priorizacionStatus === "complete"` | Implementado |
 | Capítulos V y VI del PSL en estado `authored` | G-PLS-4 | `psl.conclusiones.status === "authored" && psl.recomendaciones.status === "authored"` | Implementado |
-| Plan de Acción formalmente validado | G-PLS-5 | Mecanismo de validación formal del ActionPlanDraft (responsables, plazos e indicadores con tiempo cero) | Sin implementación activa |
-| Agenda formalmente validada | G-PLS-6 | Mecanismo de validación formal del AgendaDraft con responsables y calendarios reales | Sin implementación activa |
+| Plan de Acción formalmente validado | G-PLS-5 | `FormalValidationRecord` vigente para `target: "action-plan"` | Mecanismo implementado; consumo por el futuro compilador pendiente |
+| Agenda formalmente validada | G-PLS-6 | `FormalValidationRecord` vigente para `target: "agenda"` | Mecanismo implementado; consumo por el futuro compilador pendiente |
 | Necesidades no priorizadas documentadas | G-PLS-7 | `unaddressedNeeds[]` presentes y con `justification` (aunque sea "ninguna necesidad identificada quedó fuera") | Sin implementación activa |
 | Aprobación institucional registrada | G-PLS-8 | `approvedAt`, `approvedBy`, `approvingBody` presentes | Sin implementación activa |
 | PSL no obsoleto | G-PLS-9 | `pslIsStale === false` (equivalente al G-C7 del CONTRACT-COMPILER) | Implementado en el runtime |
 | Marco de evaluación definido | G-PLS-10 | Preguntas de evaluación, momentos de medición y responsable de evaluación presentes en `MonitoringDraft` | Sin implementación activa |
 
-**El gate G-PLS-1 es el más crítico.** Requiere la implementación de la transición `validated → approved` en la UI y la definición formal del actor model del estado `approved` (Hueco H-6, pendiente de resolución en una ampliación de CONTRACT-MIT-PSL).
+**El gate G-PLS-1 sigue siendo crítico, pero ya no está pendiente de contrato.** La transición `validated → approved` y su actor model están gobernados por `CONTRACT-INSTITUTIONAL-LIFECYCLE`. Lo pendiente para el PLS es consumir ese estado junto con los demás gates en un `LocalHealthPlanCompiler` operativo.
 
 ---
 
@@ -250,26 +256,28 @@ La evaluación final, cuando se produzca, genera `EvidenceAtom[]` de tipo `longi
 
 ---
 
-## 11. Contratos que quedan pendientes antes de implementar el `LocalHealthPlanCompiler`
+## 11. Prerequisitos vivos antes de implementar el `LocalHealthPlanCompiler`
 
-Los siguientes contratos deben crearse o ampliarse antes de que la implementación del `LocalHealthPlanCompiler` pueda comenzar:
+Los siguientes elementos delimitan qué sigue bloqueando la implementación completa del `LocalHealthPlanCompiler` y qué deuda histórica ya está cerrada:
 
-| Contrato | Estado | Qué desbloquea |
+| Elemento | Estado | Qué desbloquea |
 |---|---|---|
-| **Ampliación de CONTRACT-MIT-PSL** para el actor model del estado `approved` | Pendiente de crear (Hueco H-6) | Handler `handleApprovePSL`, gate G-PLS-1 |
-| **Ampliación de CONTRACT-ACTION-PLAN** para validación formal del ActionPlanDraft | Pendiente (mecanismos G-PLS-5 y G-PLS-6) | Gates G-PLS-5 y G-PLS-6 |
-| **CONTRACT-LOCAL-HEALTH-PLAN-COMPILER** | Pendiente | Especificación técnica del compilador: tipos de entrada/salida, gates formales, versioning, formato de exportación |
+| Actor model del estado `approved` | ✅ Resuelto en `CONTRACT-INSTITUTIONAL-LIFECYCLE` | Gate G-PLS-1 |
+| Validación formal de ActionPlanDraft y AgendaDraft | ✅ Resuelto como `FormalValidationRecord` en `CONTRACT-INSTITUTIONAL-LIFECYCLE` | Gates G-PLS-5 y G-PLS-6 |
+| **CONTRACT-LOCAL-HEALTH-PLAN-COMPILER** | ✅ Vigente | Especificación técnica del compilador: tipos de entrada/salida, gates formales, versionado, persistencia y separación Renderer/Exporter |
+| **UnaddressedNeed[] conectado al flujo de Plan de Acción** | ❌ Pendiente | Gate G-PLS-7 |
+| **PLSEvaluationFramework / marco de evaluación operativo** | ❌ Pendiente | Gate G-PLS-10 |
 | **CONTRACT-STRATEGIC-REPOSITORY** | CONCEPTUAL (Sprint 2) | StrategicRepository implementado como fuente del MTE, necesario para el Cap. VI (Articulación institucional) del PLS |
-| **CONTRACT-STRATEGIC-TRANSLATION** (ampliación) | CONCEPTUAL (Sprint 2) | MTE canónico que reemplaza al EPVSATranslator provisional |
+| **CONTRACT-MTE** | ✅ Vigente; integración en el PLS pendiente | Articulación institucional canónica que reemplaza cualquier fallback EPVSA |
 
 ---
 
-## 12. Tipos TypeScript mínimos necesarios
+## 12. Tipos TypeScript de referencia
 
-Este contrato introduce dos tipos necesarios para documentar las estructuras previstas. No requieren implementación activa todavía.
+Los tipos mínimos previstos por este contrato ya existen en `src/domain/health-plan/LocalHealthPlanDocument.ts`. El bloque siguiente se conserva como referencia contractual simplificada; la fuente viva de la forma completa es el tipo de dominio.
 
 ```typescript
-// src/domain/health-plan/LocalHealthPlanDocument.ts (pendiente de crear)
+// src/domain/health-plan/LocalHealthPlanDocument.ts
 
 interface LocalHealthPlanDocument {
   // Identidad
@@ -311,7 +319,7 @@ interface UnaddressedNeed {
 }
 ```
 
-Estos tipos no deben implementarse hasta que `CONTRACT-LOCAL-HEALTH-PLAN-COMPILER` esté aprobado.
+Estos tipos ya están implementados. La deuda restante no es crear el tipo, sino conectar inputs reales del Plan de Acción, necesidades no priorizadas, marco de evaluación y renderer/exporter del PLS.
 
 ---
 
@@ -343,13 +351,13 @@ Las siguientes cuestiones no quedan resueltas por este contrato y deben abordars
 
 | Cuestión | Contrato que la resolverá |
 |---|---|
-| Actor model del estado `approved` del PSL: ¿quién aprueba, con qué autoridad, qué datos se registran? | Ampliación de CONTRACT-MIT-PSL |
-| Mecanismos formales de validación del ActionPlanDraft (G-PLS-5) y AgendaDraft (G-PLS-6) | Ampliación de CONTRACT-ACTION-PLAN |
-| Tipos TypeScript completos de `LocalHealthPlanDocument` y sus secciones | CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
-| Formato de exportación del PLS (DOCX, PDF, HTML): cuál es el formato institucional coherente con los requisitos RELAS de la Consejería | CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
-| Opción A vs Opción B para integrar el PSL-C en el PLS | CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
+| Consumo de `FormalValidationRecord` por el compilador del PLS | Implementación del `LocalHealthPlanCompiler` |
+| Conexión de `UnaddressedNeed[]` con el flujo real del Plan de Acción | Ampliación de dominio/UI del Plan de Acción |
+| Marco de evaluación del PLS (`PLSEvaluationFramework`) | Definir tipo, UI y relación con indicadores/línea base |
+| Formato de exportación del PLS (DOCX, PDF, HTML): cuál es el formato institucional coherente con los requisitos RELAS de la Consejería | Renderer/Exporter del PLS |
+| Opción B para adjuntar físicamente el PSL-C, si un requisito externo la exige | Renderer/Exporter del PLS |
 | Cuota de localStorage para el PLS compilado: exportar fuera del workspace o persistir | CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
-| Algoritmo de alineación del MTE para marcos no-EPVSA (ESCA, RELAS, PEM, PSMA) | Ampliación de CONTRACT-STRATEGIC-TRANSLATION |
+| Integración de `LecturaEstrategicaLocal` en el Cap. VI del PLS | Implementación del `LocalHealthPlanCompiler` desde `CONTRACT-MTE` |
 | Contenido y estructura del StrategicRepository para el Cap. VI del PLS | CONTRACT-STRATEGIC-REPOSITORY + CONTRACT-STRATEGIC-RESOURCE |
 | Ciclo de evidencia longitudinal: cómo alimenta el EvidenceStore del ciclo siguiente | CONTRACT-EVIDENCE (ampliación, Hueco H-8) |
 | Requisitos formales de la Junta de Andalucía para el PLS en el contexto RELAS | Decisión institucional externa, previa a CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
@@ -360,10 +368,11 @@ Las siguientes cuestiones no quedan resueltas por este contrato y deben abordars
 
 | Contrato | Relación |
 |---|---|
-| `CONTRACT-MIT-PSL` | El PSL aprobado (gate G-PLS-1) es la entrada principal del compilador del PLS. El tipo de estado `"approved"` está definido; la transición no está implementada. |
+| `CONTRACT-MIT-PSL` | El PSL aprobado (gate G-PLS-1) es la entrada principal del compilador del PLS. |
 | `CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER` | El PSL-C (sprint 2.1) es el capítulo diagnóstico del PLS (gate G-PLS-2). El PLS no puede compilarse sin un PSL-C coherente con el PSL aprobado. |
-| `CONTRACT-ACTION-PLAN` | El ActionPlanDraft, AgendaDraft y MonitoringDraft del Nivel 3 son las entradas de los capítulos VII, VIII y IX del PLS, una vez formalmente validados. |
+| `CONTRACT-INSTITUTIONAL-LIFECYCLE` | Define aprobación del PSL y validaciones formales del Nivel 3 (`FormalValidationRecord`) que habilitan gates G-PLS-1, G-PLS-5 y G-PLS-6. |
+| `CONTRACT-DELIBERATIVE-PRIORITISATION` y `CONTRACT-ACTION-PLAN-CATALOG` | Definen la ruta vigente para selección/edición del Plan de Acción. El contrato legacy `CONTRACT-ACTION-PLAN` queda como reserva histórica y compatibilidad. |
 | `CONTRACT-COMPILER` | Este contrato amplía y reemplaza funcionalmente al CONTRACT-COMPILER como especificación estructural del PLS. El CONTRACT-COMPILER queda como reserva arquitectónica histórica; los gates que define (G-C1 a G-C7) son precursores de los gates G-PLS-1 a G-PLS-10 de este contrato. |
 | `CONTRACT-PERSISTENCE` | El PLS compilado no debe persistirse en localStorage (cuota). La exportación es descarga directa. La lista `compiledPlans` en el workspace almacena solo metadatos e identificadores. |
 | `CONTRACT-EVIDENCE` | La trazabilidad del PLS llega hasta el EvidenceStore. Los `evidenceAtomIds` del PSL-C son la referencia de trazabilidad del capítulo diagnóstico del PLS. |
-| `CONTRACT-STRATEGIC-TRANSLATION` (CONCEPTUAL) | El Cap. VI (Articulación institucional) del PLS depende del MTE canónico. Provisionalmente se usa el EPVSATranslator, cuyo output se debe marcar explícitamente como "provisional" en el PLS compilado. |
+| `CONTRACT-MTE` | El Cap. VI (Articulación institucional) del PLS debe integrar la `LecturaEstrategicaLocal`. Cualquier fallback EPVSA anterior debe marcarse explícitamente como provisional. |
