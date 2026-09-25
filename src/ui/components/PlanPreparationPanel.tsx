@@ -12,6 +12,7 @@ import {
   proposalStrategicText,
   proposedTextFor,
   ZAIDIN_PROPOSAL_VERSION,
+  ZAIDIN_FINAL_ACTION_PLAN_VERSION,
   type PlanPreparationDecision,
   type PlanPreparationDraft,
   type PlanPreparationReview,
