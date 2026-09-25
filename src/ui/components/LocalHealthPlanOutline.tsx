@@ -1,0 +1,161 @@
+import { useMemo } from "react";
+import { ACTION_PLAN_CATALOG } from "../../domain/action-plan-catalog";
+import {
+  buildDefinitiveActionPlanProjection,
+  resolvedPlanDecisionText,
+} from "../../domain/action-plan-catalog/DefinitiveActionPlanProjection";
+import {
+  ZAIDIN_AGING_PROPOSAL,
+  type PlanPreparationDraft,
+} from "../../domain/action-plan-catalog/PlanPreparationDraft";
+
+interface LocalHealthPlanOutlineProps {
+  municipalityId: string;
+  municipalityName: string;
+  province: string;
+  healthReportTitle?: string;
+  pslStatus: string;
+  pslCompiled: boolean;
+  selectedPriorities?: string[];
+  drafts?: PlanPreparationDraft[];
+}
+
+const PSL_STATUS_LABEL: Record<string, string> = {
+  draft: "Perfil en elaboración",
+  validated: "Perfil validado técnicamente",
+  approved: "Perfil aprobado institucionalmente",
+};
+
+export function LocalHealthPlanOutline({
+  municipalityId,
+  municipalityName,
+  province,
+  healthReportTitle,
+  pslStatus,
+  pslCompiled,
+  selectedPriorities = [],
+  drafts = [],
+}: LocalHealthPlanOutlineProps) {
+  const modules = useMemo(
+    () => ACTION_PLAN_CATALOG.map((module) =>
+      municipalityId === "granada-zaidin" && module.id === ZAIDIN_AGING_PROPOSAL.id
+        ? ZAIDIN_AGING_PROPOSAL
+        : module
+    ),
+    [municipalityId]
+  );
+  const active = useMemo(
+    () => buildDefinitiveActionPlanProjection(municipalityId, modules, drafts),
+    [municipalityId, modules, drafts]
+  );
+  const selectedObjectives = active.reduce((total, item) => total + item.rows.length, 0);
+  const selectedIndicators = active.reduce(
+    (total, item) => total + item.rows.filter((row) => row.indicatorIncluded).length,
+    0
+  );
+
+  return (
+    <article className="workspace-panel psl-outline" aria-labelledby="pls-outline-title">
+      <header className="pcm-module__header">
+        <div>
+          <p className="eyebrow">Esbozo de trabajo · Plan Local de Salud 2027–2030</p>
+          <h2 id="pls-outline-title">Plan Local de Salud del Distrito {municipalityName.replace(/^Granada-/, "")}</h2>
+          <p className="panel-note">{municipalityName} · {province}</p>
+        </div>
+        <span className="status-pill">Borrador evolutivo</span>
+      </header>
+
+      <div className="phase-blocked-notice">
+        <strong>Disponible antes de registrar actuaciones</strong>
+        <p>
+          Este esbozo reúne el diagnóstico y la arquitectura estratégica ya seleccionada.
+          Las actuaciones, sus fichas, responsables, plazos y recursos se incorporarán después.
+          Su ausencia no impide consultar este borrador, pero sí cerrar y aprobar el Plan definitivo.
+        </p>
+      </div>
+
+      <section className="pie-doc-section">
+        <h3>1. Identidad y alcance</h3>
+        <p>
+          Documento de trabajo para ordenar el ciclo de planificación local en salud del
+          Distrito {municipalityName.replace(/^Granada-/, "")} durante 2027–2030.
+        </p>
+      </section>
+
+      <section className="pie-doc-section">
+        <h3>2. Diagnóstico territorial</h3>
+        <p><strong>Estado:</strong> {PSL_STATUS_LABEL[pslStatus] ?? pslStatus}.</p>
+        <p><strong>Perfil compilado:</strong> {pslCompiled ? "Disponible como PSL-C." : "Pendiente de compilación como PSL-C."}</p>
+        <p><strong>Informe de Salud de referencia:</strong> {healthReportTitle ?? "No registrado."}</p>
+        <p className="panel-note">
+          El Perfil de Salud Local constituye la base diagnóstica de este esbozo; el Informe
+          de Salud es una de sus fuentes.
+        </p>
+      </section>
+
+      <section className="pie-doc-section">
+        <h3>3. Prioridades para la planificación</h3>
+        {selectedPriorities.length > 0 ? (
+          <ul>{selectedPriorities.map((priority) => <li key={priority}>{priority}</li>)}</ul>
+        ) : (
+          <p className="panel-note">La selección participativa de prioridades está pendiente de incorporarse.</p>
+        )}
+      </section>
+
+      <section className="pie-doc-section">
+        <h3>4. Arquitectura estratégica del Plan de Acción</h3>
+        <p>
+          {selectedObjectives} objetivos específicos y {selectedIndicators} indicadores
+          forman parte de la selección territorial actual.
+        </p>
+        {active.length > 0 ? active.map(({ module, moduleDecision, rows }) => rows.length > 0 && (
+          <div key={module.id} className="pcm-module">
+            <h4>{module.title}</h4>
+            <p><strong>Objetivo estratégico:</strong> {resolvedPlanDecisionText(moduleDecision, module.strategicObjective)}</p>
+            {module.generalObjectives.map((general) => {
+              const group = rows.filter((row) => row.general.code === general.code);
+              if (!group.length) return null;
+              const generalDecision = group[0].generalDecision;
+              return (
+                <div key={general.code} className="pcm-specific">
+                  <p><strong>{general.code}</strong> · {resolvedPlanDecisionText(generalDecision, general.title)}</p>
+                  <ul>
+                    {group.map((row) => (
+                      <li key={row.specific.code}>
+                        <strong>{row.specific.code}</strong> · {resolvedPlanDecisionText(row.objectiveDecision, row.specific.title)}
+                        {row.indicatorIncluded && (
+                          <> — <strong>{row.specific.indicator.code}</strong> · {resolvedPlanDecisionText(row.indicatorDecision, row.specific.indicator.title)}</>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        )) : (
+          <p className="panel-note">Todavía no se han incorporado líneas, objetivos e indicadores al esbozo.</p>
+        )}
+      </section>
+
+      <section className="pie-doc-section">
+        <h3>5. Actuaciones y agenda de implementación</h3>
+        <p><strong>Actuaciones pendientes de registro.</strong></p>
+        <p className="panel-note">
+          En la fase siguiente se recogerán las actuaciones reales y se vincularán con los
+          indicadores, objetivos y líneas correspondientes. A partir de ellas se completarán
+          responsables, calendario, recursos y agenda anual.
+        </p>
+      </section>
+
+      <section className="pie-doc-section">
+        <h3>6. Seguimiento, evaluación y aprobación</h3>
+        <p className="panel-note">
+          El marco de seguimiento, la evaluación y la aprobación institucional se completarán
+          cuando el Plan de Acción y su agenda estén cerrados. Hasta entonces este documento
+          seguirá siendo un esbozo de trabajo y no un compromiso institucional definitivo.
+        </p>
+      </section>
+    </article>
+  );
+}

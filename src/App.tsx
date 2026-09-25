@@ -150,6 +150,7 @@ import {
   GESPanel,
   PerfilLocalDeSaludPanel,
   PerfilFuentesPanel,
+  LocalHealthPlanOutline,
 } from "./ui/components";
 import "./App.css";
 
@@ -3469,35 +3470,20 @@ export default function App() {
           )
         )}
 
-        {/* ── ⑧ Plan Local de Salud — espacio canónico (compilador pendiente) */}
+        {/* ── ⑧ Plan Local de Salud — esbozo previo a las actuaciones ── */}
         {view === "plan-local" && (
-          <section className="workspace-panel">
-            <p className="eyebrow">Planificación municipal · {municipality.name}</p>
-            <h2>Plan Local de Salud</h2>
-            <p className="panel-note">
-              El Plan Local de Salud es el documento institucional definitivo del proceso de
-              planificación. Integra el Perfil de Salud Local, la priorización, el Plan de Acción
-              validado, la agenda de actuaciones, el sistema de seguimiento y la evaluación en un
-              compromiso formal de la corporación municipal.
-            </p>
-            {workspace.pslApproval !== undefined ? (
-              <p className="panel-note">
-                El Perfil de Salud Local está aprobado institucionalmente. La compilación del Plan
-                Local de Salud estará disponible en la siguiente versión del sistema.
-              </p>
-            ) : pslValidated ? (
-              <p className="panel-note">
-                El Perfil de Salud Local está validado técnicamente. Para compilar el Plan Local de
-                Salud es necesario que el Perfil sea aprobado institucionalmente y que el Plan de
-                Acción haya sido validado formalmente.
-              </p>
-            ) : (
-              <p className="panel-note">
-                Para compilar el Plan Local de Salud es necesario completar primero el Perfil de
-                Salud Local y validarlo técnicamente.
-              </p>
-            )}
-          </section>
+          <LocalHealthPlanOutline
+            municipalityId={workspace.municipality.identity.id}
+            municipalityName={municipality.name}
+            province={municipality.province}
+            healthReportTitle={workspace.healthReport?.title}
+            pslStatus={runtime.psl.status}
+            pslCompiled={(workspace.compiledProfiles?.length ?? 0) > 0}
+            selectedPriorities={THEMATIC_TOPICS
+              .filter((topic) => workspace.thematicPrioritisation?.selectedTopicIds.includes(topic.id))
+              .map((topic) => topic.label)}
+            drafts={workspace.planPreparationDrafts ?? []}
+          />
         )}
 
         {/* ── ⑨ Evaluación — espacio canónico (pendiente de implementación) */}
