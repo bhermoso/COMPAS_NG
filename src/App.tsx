@@ -3222,9 +3222,10 @@ export default function App() {
         {view === "psl" && (
           <>
             <section className="workspace-panel">
-              <h2>Fuente principal y revisión del Perfil</h2>
-              <p><strong>Informe de referencia:</strong> {workspace.healthReport?.title ?? 'Sin informe registrado'}</p>
-              {workspace.repository.documents.filter(d => d.id === workspace.healthReport?.linkedDocumentId).map(d => <DocumentAccess key={d.id} document={d} />)}
+              <h2>Informe de Salud que sirve de fuente al Perfil</h2>
+              <p><strong>Documento fuente:</strong> {workspace.healthReport?.title ?? 'Sin informe registrado'}</p>
+              <p>El archivo disponible en este bloque es el Informe de Salud original. El Perfil de Salud Local es el documento interpretativo que se revisa, valida y compila en los apartados siguientes.</p>
+              {workspace.repository.documents.filter(d => d.id === workspace.healthReport?.linkedDocumentId).map(d => <DocumentAccess key={d.id} document={d} documentLabel="Informe de Salud original" />)}
               {runtime.pslIsStale && <p role="alert"><strong>Perfil pendiente de revisión.</strong> Han cambiado las fuentes o la evidencia desde su validación. El perfil anterior y sus documentos compilados se conservan como antecedentes; sus conclusiones requieren contraste antes de volver a validarse.</p>}
               {workspace.healthReport?.body.format === 'plain' && <p><strong>El PDF está disponible para consulta.</strong> Su incorporación no equivale a haber revisado ni actualizado las conclusiones del Perfil. Comprueba las fechas, la escala territorial y las páginas que sustentan cada conclusión.</p>}
               <p>Los informes de Vigilancia Integral de la Salud de las UGC son fuentes complementarias y deben interpretarse según su ámbito asistencial.</p>

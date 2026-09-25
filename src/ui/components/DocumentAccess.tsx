@@ -3,7 +3,8 @@ import type { MunicipalDocument } from '../../domain/repository';
 import { loadOriginalFile,saveOriginalFile } from '../../infrastructure/document-files/originalFiles';
 import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccess';
 
-export function DocumentAccess({document:doc}:{document:MunicipalDocument}){
+export function DocumentAccess({document:doc,documentLabel}:{document:MunicipalDocument;documentLabel?:string}){
+ const contextualLabel=documentLabel?.trim();
  const [file,setFile]=useState<File>();const [message,setMessage]=useState('');
  const [loading,setLoading]=useState(true);
  // La consulta IndexedDB depende del documento; el reset evita mostrar un original anterior.
@@ -19,9 +20,9 @@ export function DocumentAccess({document:doc}:{document:MunicipalDocument}){
  }
  return <div className="document-access">
   {url && isPdfDocumentAccess(doc.source.url) && <div className="document-access__links">
-   <a className="doc-repo__open" href={url} download={doc.sourceFileName ?? documentDownloadFileName(doc.source.url, doc.title)} aria-label={`Descargar PDF original: ${doc.title}`}>Descargar PDF original</a>
-   <a className="doc-repo__open doc-repo__open--secondary" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir PDF en nueva pestaña: ${doc.title}`}>Abrir en nueva pestaña</a>
-   <p className="document-access__notice">Si el visor integrado muestra una pestaña vacía, usa la descarga del PDF original.</p>
+   <a className="doc-repo__open" href={url} download={doc.sourceFileName ?? documentDownloadFileName(doc.source.url, doc.title)} aria-label={`${contextualLabel ? `Descargar ${contextualLabel}` : "Descargar PDF original"}: ${doc.title}`}>{contextualLabel ? `Descargar ${contextualLabel}` : "Descargar PDF original"}</a>
+   <a className="doc-repo__open doc-repo__open--secondary" href={url} target="_blank" rel="noopener noreferrer" aria-label={`${contextualLabel ? `Abrir ${contextualLabel} en nueva pestaña` : "Abrir PDF en nueva pestaña"}: ${doc.title}`}>{contextualLabel ? `Abrir ${contextualLabel} en nueva pestaña` : "Abrir en nueva pestaña"}</a>
+   <p className="document-access__notice">Si el visor integrado muestra una pestaña vacía, usa la descarga {contextualLabel ? `del ${contextualLabel}` : "del PDF original"}.</p>
   </div>}
   {url && !isPdfDocumentAccess(doc.source.url) && <a className="doc-repo__open" href={url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir documento: ${doc.title} (nueva pestaña)`}>Abrir documento ↗</a>}
   {file && <p><button type="button" onClick={download}>Descargar original · {file.name}</button> <small>Conservado en este navegador.</small></p>}
