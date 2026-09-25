@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { MunicipalityWorkspace } from '../../domain/workspace';
 import { createBackup, inspectBackup, restoreBackup, type CheckedBackup } from '../../infrastructure/recovery/browserRecovery';
-import { bundledDocuments } from './documentAccess';
+import { bundledDocuments } from './documentAccessUtils';
 import './BackupPanel.css';
 
 export function BackupPanel({workspace, ready = true, recovery = false}: {workspace?: MunicipalityWorkspace; ready?: boolean; recovery?: boolean}) {

@@ -1,7 +1,7 @@
 import { useEffect,useState } from 'react';
 import type { MunicipalDocument } from '../../domain/repository';
 import { loadOriginalFile,saveOriginalFile } from '../../infrastructure/document-files/originalFiles';
-import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccess';
+import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccessUtils';
 
 export function DocumentAccess({document:doc,documentLabel}:{document:MunicipalDocument;documentLabel?:string}){
  const contextualLabel=documentLabel?.trim();

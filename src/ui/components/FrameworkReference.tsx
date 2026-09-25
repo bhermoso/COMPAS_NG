@@ -1,4 +1,4 @@
-import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccess';
+import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from './documentAccessUtils';
 const frameworks = {
  epvsa: ['EPVSA', 'docs/source-material/strategic-frameworks/08_Lineas_EPVSA_02abril24.pdf'],
  esca: ['ESCA', 'docs/source-material/strategic-frameworks/Estrategia de Salud Comunitaria de Andalucia 2026-2030-ESCA.pdf'],

@@ -83,7 +83,7 @@ describe("Preparación independiente del Plan", () => {
  expect((html.match(/<select /g) ?? []).length).toBe(41);
  expect(html).toContain("La referencia de partida ha cambiado");
  expect(html).toContain("Fuera del Plan");
- expect(html).toContain("<strong>soledad percibida</strong>");
+ expect(html).toContain("<strong>envejecimiento saludable</strong>");
  expect(html).toContain("Indicador adaptado");
  });
  it("guarda inmediatamente la redacción modificada sin crear revisión administrativa", () => {

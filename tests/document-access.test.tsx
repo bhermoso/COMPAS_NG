@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import seed from '../public/seeds/compas-ng-workspace-granada-zaidin.json';
-import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from '../src/ui/components/documentAccess';
+import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from '../src/ui/components/documentAccessUtils';
 import { DocumentRepositoryPanel } from '../src/ui/components/DocumentRepositoryPanel';
 import { DocumentAccess } from '../src/ui/components/DocumentAccess';
 import type { MunicipalDocumentRepository } from '../src/domain/repository';
