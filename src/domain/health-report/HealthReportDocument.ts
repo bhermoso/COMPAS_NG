@@ -1,0 +1,61 @@
+import type { MunicipalityId } from "../municipality";
+import type { DocumentId } from "../repository";
+
+export type HealthReportSectionKey =
+  | "title-page"
+  | "introduccion"
+  | "objetivo"
+  | "metodologia"
+  | "resultados"
+  | "demografia"
+  | "mortalidad"
+  | "morbilidad"
+  | "cancer"
+  | "edo-its"
+  | "vacunacion-cribados"
+  | "discusion"
+  | "conclusiones"
+  | "autores"
+  | "other";
+
+export interface HealthReportAuthor {
+  name: string;
+  role?: string;
+  organisation?: string;
+  signatureOrder: number;
+}
+
+export type HealthReportBodyFormat = "html" | "plain";
+
+export interface HealthReportBody {
+  originalText: string;
+  originalHtml?: string;
+  format: HealthReportBodyFormat;
+  charCount: number;
+  tableCount?: number;
+  isAuthoritative: true;
+}
+
+export interface HealthReportSection {
+  key: HealthReportSectionKey;
+  title: string;
+  bodyText: string;
+  bodyHtml?: string;
+  sortOrder: number;
+  isAuthoritative: true;
+}
+
+export interface HealthReportDocument {
+  pdfExtraction?: { version: 1; processedAt: string; pageCount: number; emptyPages: number[]; sha256: string };
+  id: string;
+  municipalityId: MunicipalityId;
+  linkedDocumentId: DocumentId;
+  sourceFileName: string;
+  title: string;
+  reportingPeriod?: string;
+  authors: HealthReportAuthor[];
+  body: HealthReportBody;
+  sections: HealthReportSection[];
+  createdAt: string;
+  updatedAt: string;
+}

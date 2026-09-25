@@ -1,0 +1,64 @@
+# Dependencies / build
+node_modules/
+dist/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Local backups / evidence folders
+*_backup_*
+*backup*
+COMPAS_NG_BACKUPS_*/
+COMPAS_NG_EVIDENCIAS_*/
+_archive/
+
+# Local data and validation files
+*.doc
+*.docx
+*.pdf
+*.xlsx
+*.csv
+*.png
+*.odt
+*.ods
+
+# Fixtures de referencia versionados — reproducibles desde microdatos EAS
+!fixtures/duke-eas-granada.csv
+!fixtures/predimed-eas-granada.csv
+!fixtures/sf12-eas-granada.csv
+!fixtures/sueno-eas-granada.csv
+!fixtures/cage-eas-granada.csv
+!fixtures/ibse-atarfe.csv
+!fixtures/ibse-granada-provincia.csv
+!fixtures/auditc-municipal.csv
+!fixtures/ipaq-eas-granada.csv
+!fixtures/ghq12-municipal.csv
+!fixtures/phq9-municipal.csv
+!fixtures/psqi-municipal.csv
+!fixtures/fagerstrom-municipal.csv
+!fixtures/sbq-municipal.csv
+
+# Local municipal data folders
+Alfacar/
+Atarfe/
+Churriana/
+Padul/
+R ZAGRA/
+
+# Local audit scripts
+audit.mjs
+
+# Local EAS / microdata files
+*.sav
+
+# Local backup files
+*.bak_
+*.bak_*
+
+# Local spreadsheet extracts
+*.xls
+
+# Local IECA source package/material
+/docs/source-material/ieca/

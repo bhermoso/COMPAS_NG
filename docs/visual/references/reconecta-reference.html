@@ -1,0 +1,1237 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<html>
+<head>
+<meta name="googlebot" content="noindex, noarchive, nofollow, nosnippet">
+<meta name="robots" content="noindex, noarchive, nofollow">
+<meta name="slurp" content="noindex, noarchive, nofollow, noodp, noydir">
+<meta name="msnbot" content="noindex, noarchive, nofollow, noodp">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desconecta para conectar</title>
+<link rel="shortcut icon" href="/DSGM/redcap_v17.1.4/Resources/images/favicon.ico">
+<link rel="apple-touch-icon-precomposed" href="/DSGM/redcap_v17.1.4/Resources/images/apple-touch-icon.png">
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/webpack/css/bundle.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/webpack/css/bootstrap.min.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/webpack/css/datatables/jquery.dataTables.min.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/webpack/css/fontawesome/css/all.min.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/css/messenger.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/css/style.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/css/survey.css?1781809545"/>
+<link rel="stylesheet" type="text/css" media="screen,print" href="/DSGM/redcap_v17.1.4/Resources/css/survey_text_large.css?1781809545"/>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/bundle.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/datatables/jquery.dataTables.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/datatables/dataTables.fixedColumns.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/popper.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/bootstrap.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/pdfobject/pdfobject.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/bundle.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/base.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/rcDialog.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Accessibility.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/webpack/js/moment.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/Chart.bundle.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/patternomaly.min.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/Chart.PluginLabels.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Survey.js?1781809545"></script>
+<script type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/FontSize.js?1781809545"></script>
+</head>
+<body><script type="text/javascript">
+	if(window.ExternalModules === undefined){
+		window.ExternalModules = {}
+	}
+
+	window.ExternalModules.moduleDependentRequest = function(url, action){
+		$.get(url, function(response){
+			try{
+				response = JSON.parse(response)
+				action(response)
+			}
+			catch(e){
+				if(response.startsWith('<!DOCTYPE')){
+					console.error('An unexpected response was returned from ' + url)
+					/**
+					 * Assume the login page is being returned per:
+					 * https://redcap.vumc.org/community/post.php?id=138578
+					 */
+					return
+				}
+
+				// Escape the response to prevent injection
+				response = $('<div/>').text(response).html()
+				
+				simpleDialog(
+					"<p>The module mentioned in the error below is preventing REDCap from working properly.  It is recommended to disable this module until it can be updated to avoid this error:</p><pre style='max-height: 50vh; white-space: pre-wrap;'>" + response + "</pre>",
+					"Error",
+					'module-error-dialog',
+					1000
+				)
+			}
+		})
+	}
+</script>
+
+<style type="text/css">
+body * { font-family: 'Open Sans',Helvetica,Arial,sans-serif !important; }
+</style>
+
+<style type="text/css">
+body { background-image: none; background-color: #cfe2f3; }
+#footer, #footer a { color: #000000 !important; }
+button, .btn-fileupload {color: #0C74A9 !important; }
+.btn-fileupload {background-color: #e6e6e6 !important; border-color: #999 !important; }
+.btn-fileupload:hover {background-color: #ededed !important; border-color: #ccc !important; }
+#econsent_confirm_instr2, #questiontable td, .floatMtxHdr td { color: #0b5394; }
+.matrix_first_col_hdr { color: #0b5394 !important; }
+div.enhancedchoice label { color: #0b5394 !important; border-color: #0b5394 !important; }
+div.enhancedchoice label.selectedradio, div.enhancedchoice label.selectedchkbox, div.enhancedchoice label.hover:hover { background-color: #0b5394; }
+div.slider .ui-state-default { background-color: #0b5394; }
+#return_instructions, #econsent_confirm_instr2, #questiontable>tbody>tr>td, #questiontable td.labelmatrix>table>tbody>tr>td, .floatMtxHdr, .floatMtxHdr td { background-image: none; background-color: #ffffff; }
+div.enhancedchoice label { background-color: #ffffff; }
+div.enhancedchoice label.selectedradio, div.enhancedchoice label.selectedchkbox, div.enhancedchoice label.hover:hover { !important; border-color: #ffffff !important; }
+div.enhancedchoice label.selectedradio, div.enhancedchoice label.selectedradio a, div.enhancedchoice label.selectedchkbox, div.enhancedchoice label.selectedchkbox a, div.enhancedchoice label.hover:hover, div.enhancedchoice label.hover:hover a { color: #ffffff !important; }
+div.slider.ui-widget-content { background-color: #ffffff; }
+#econsent_confirm_checkbox_div, .header { color: #FFFFFF !important; }
+#econsent_confirm_checkbox_div, .header { background-image: none; border: none; background-color: #0b5394 !important; }
+#surveyinstructions-reveal a, #surveypagenum, #surveytitle, #surveyinstructions, #surveyinstructions p, #surveyinstructions div, #surveyacknowledgment, #surveyacknowledgment p, #surveyacknowledgment div { color: #0b5394; } 
+#return_corner a, #return_corner span, #return_corner i, #survey_queue_corner a, #dpop .popup-contents, #dpop .popup-contents span, #dpop .popup-contents i { color: #0b5394 !important; } 
+#changeFont { color: #0b5394 !important; }
+#changeFont button { padding:1px; margin:1px; color: #0b5394 !important; }
+.mlm-switcher button.btn-outline-secondary { color: #0b5394 !important; border-color: #0b5394 !important; } 
+.mlm-switcher button.btn-primary { background-color: #0b5394 !important; } 
+#pagecontent, #container, #surveytitle, #surveyinstructions, #surveyinstructions p, #surveyinstructions div, #surveyacknowledgment, #surveyacknowledgment p, #surveyacknowledgment div { background-image: none; background-color: #FFFFFF; } 
+.mlm-switcher button.btn-primary { color: #FFFFFF !important; border-color: #FFFFFF !important; } 
+
+</style>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.system_config_873='Page speed was boosted using Rapid Retrieval';
+lang.system_config_874='The current REDCap webpage was able to load faster because it utilized REDCap\'s Rapid Retrieval feature. Rapid Retrieval is an automated internal feature that allows REDCap to store      certain pages in a temporary holding cache. When utilizing Rapid Retrieval, if no data or metadata has changed in the project recently, REDCap will output the stored cache of the page from when it was previously loaded.      This means that REDCap does not have to do all the work of normally loading the page but instead can load the page much faster by using the cache. The time that the current page was last cached was';
+lang.global_324='What is REDCap+?';
+lang.global_01='ERROR';
+lang.docs_1136='ERROR: The file cannot be uploaded because its file type is not permitted.';
+lang.alerts_24='Alerta';
+lang.calendar_popup_01='Cerrar';
+lang.calendar_widget_choosedatehint='Dé clic para seleccionar una fecha';
+lang.calendar_widget_choosetime='Seleccionar la hora';
+lang.calendar_widget_done='Listo';
+lang.calendar_widget_hour='Hora';
+lang.calendar_widget_min='Minuto';
+lang.calendar_widget_sec='Second';
+lang.calendar_widget_month_jan='Ene';
+lang.calendar_widget_month_feb='Feb';
+lang.calendar_widget_month_mar='Mar';
+lang.calendar_widget_month_apr='Abr';
+lang.calendar_widget_month_may='May';
+lang.calendar_widget_month_jun='Jun';
+lang.calendar_widget_month_jul='Jul';
+lang.calendar_widget_month_aug='Ago';
+lang.calendar_widget_month_sep='Sep';
+lang.calendar_widget_month_oct='Oct';
+lang.calendar_widget_month_nov='Nov';
+lang.calendar_widget_month_dec='Dic';
+lang.calendar_widget_month_day_long_sun='Domingo';
+lang.calendar_widget_month_day_long_mon='Lunes';
+lang.calendar_widget_month_day_long_tues='Martes';
+lang.calendar_widget_month_day_long_wed='Miércoles';
+lang.calendar_widget_month_day_long_thurs='Jueves';
+lang.calendar_widget_month_day_long_fri='Viernes';
+lang.calendar_widget_month_day_long_sat='Sábado';
+lang.calendar_widget_month_day_short_sun='Do';
+lang.calendar_widget_month_day_short_mon='Lu';
+lang.calendar_widget_month_day_short_tues='Ma';
+lang.calendar_widget_month_day_short_wed='Mi';
+lang.calendar_widget_month_day_short_thurs='Ju';
+lang.calendar_widget_month_day_short_fri='Vi';
+lang.calendar_widget_month_day_short_sat='Sa';
+lang.calendar_widget_next='Siguiente';
+lang.calendar_widget_prev='Anterior';
+lang.dash_72='Habilitar la accesibilidad para personas daltónicas';
+lang.dash_73='Deshabilitar la accesibilidad para personas daltónicas';
+lang.dashboard_32='Hoy';
+lang.design_401='OK';
+lang.design_718='Válido';
+lang.design_839='Funciones especiales';
+lang.edit_project_186='Aprenda como usar';
+lang.form_renderer_29='Ahora';
+lang.global_13='Tiempo';
+lang.global_53='Cancelar';
+lang.global_146='Variables inteligentes';
+lang.global_147='Advertencia de Auto logout de REDCap';
+lang.global_148='Log In';
+lang.global_149='Continuar en esta página';
+lang.global_150='Su sesión en REDCap terminará automáticamente en <b>2 MINUTOS</b> debido a inactividad. Dé clic en el botón abajo para prevenir la desconexión automática.';
+lang.global_151='Su sesión en REDCap terminará automáticamente en <b>30 SEGUNDOS</b> debido a inactividad. Dé clic en el botón abajo para prevenir la desconexión automática.';
+lang.global_152='<b>Debido a inactividad, su sesión REDCap ha expirado.</b> Dé clic en el botón abajo para iniciar otra sesión.';
+lang.global_167='Modo vista regular';
+lang.global_168='Modo pantalla completa';
+lang.global_169='Actualizar y cerrar el editor';
+lang.global_170='Editor de lógica';
+lang.global_171='Error en la sintaxis';
+lang.global_172='(La determinación de la validez podría no ser 100% certera en todos los contextos)';
+lang.global_173='Ingrese la nueva lógica aquí. Use \'and\' para combinar dos variables.';
+lang.design_482='Libro de códigos';
+lang.design_962='o abra el';
+lang.global_132='Banderas (etiquetas) de acción';
+lang.global_208='Use el cuadro de texto a continuación para componer su lógica, cálculo, etiquetas de acción, etc. Si necesita más espacio, haga clic en el botón Modo de pantalla completa para ampliar el cuadro de texto. Cuando haya terminado, haga clic en el botón \'Actualizar\' para minimizar la ventana del Editor.';
+lang.global_266='TIP: Your logic and calculations may contain <b>comments</b>, which are not evaluated but only serve as annotations to help document or explain what the calc/logic is doing.  Comments must be on their own lines and start with // (double forward slash) or # (hash sign),  optionally preceded by whitespace characters (spaces, tabs). You may not append a comment to a line that is part of the logic or calc expression.';
+lang.global_267='View example';
+lang.global_272='Upload a file';
+lang.global_273='Drop a file or click here<br>to upload an attachment';
+lang.global_274='NOTE: Any files uploaded here using the rich text editor will be given a <b>publicly accessible download link</b> that will be placed into the text,  in which anyone in possession of that link (including people not logged into REDCap) will be able to download the file at any time.  Files containing <b>confidential or sensitive information (e.g., PHI or PII) should *not* be uploaded here</b>.  Additionally, all files uploaded here can be later accessed and/or deleted in the File Repository\'s "Miscellaneous File Attachments" folder,  whose contents does not count against the total amount of file storage used in the project. ';
+lang.global_275='Auto-fill form';
+lang.global_309='Use the text box below to compose your CSS to add additional styling to the page. If you need more space, click the Fullscreen Mode button to enlarge the text box. When you are finished, click the \'Update\' button to minimize the Editor window.';
+lang.global_310='CSS Editor';
+lang.global_311='<strong>TIP:</strong> You may include standard CSS comments in your code to help explain or document styles. Comments are ignored during processing and have no effect on how styles are applied. Use the syntax <code>/* your comment here */</code> for comments.<br><strong>Do not include <code>&lt;style&gt;</code> tags</strong> – these will be added automatically when your CSS is rendered.';
+lang.global_312='<b><u>Use with caution.</u> Please note that targeting internal REDCap elements (e.g., specific classes or IDs) may break without notice, as updates to REDCap can change or remove these elements at any time. Stability of these selectors across versions is not guaranteed, and any changes to them will not be announced in advance.</b>';
+lang.messaging_118='(dé clic para ir al instrumento)';
+lang.messaging_119='(instrumento actual)';
+lang.messaging_177='AVISO: parece que tiene varias ventanas/cejas del navegador abiertas, lo que puede hacer que algunos aspectos de esta página no funcionen hasta que la página se refresque. Se aconseja que termine lo que esté haciendo y a continuación refresque la página.';
+lang.docs_83='Drag and drop files here to upload';
+lang.docs_81='Upload Error!';
+lang.sendit_03='El archivo no pudo ser cargado porque es muy grande';
+lang.sendit_04='El archivo debe ser más pequeño que';
+lang.sendit_05=' para cargar';
+lang.period='.';
+lang.control_center_4803='Herramienta de consulta de base de datos';
+lang.docs_81='Upload Error!';
+lang.docs_82='File did not upload:';
+lang.data_entry_63='Tamaño máximo del archivo:';
+lang.design_08='Trabajando...';
+lang.survey_1609='The test email was successfully sent to';
+lang.survey_1288='¡El correo se envió!';
+lang.survey_1610='Print for Respondent';
+lang.bottom_122='The file has the wrong encoding and thus cannot be read by REDCap correctly. Please <b>re-save the file with UTF-8 encoding</b>, and then try uploading it again.';
+</script>
+<div id="rc-ace-editor-example" style="display:none;" class="simpleDialog">
+	<div class="mb-2"><span data-rc-lang="global_271">The code block below illustrates how one might use # and // as comments in your logic and calculations.</span></div>
+	<pre># Text can be put here to explain what the logic/calculation does and why.
+if ([field1] = '1' and [field2] > 7,
+
+	// This comment can explain what the next line does.
+	[score] * [factor],
+
+	// Return '0' if the condition is False.
+	0
+)</pre>
+</div>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.design_1051='WARNING: The field';
+lang.design_1052='is utilized in more than one event and/or is utilized on a repeating instrument or repeating event. Any update to this field on any event or repeating instance  will change the value of this field in ALL events and repeating instances.';
+</script>
+	<script type="text/javascript">
+	// Admin privileges
+	var super_user = 0;
+	var pag_super_user = 0;
+	var super_user_not_impersonator = 0;
+	var admin_rights = '0';
+	var account_manager = '0';
+	var access_system_config = '0';
+	var access_system_upgrade = '0';
+	var access_external_module_install = '0';
+	var access_admin_dashboards = '0';
+	var redcap_plus_features_active = '0';
+		// Project values
+	var missing_data_codes = [""];
+	var missing_data_codes_check = false;
+	var app_name = 'encuesta_universitaria_de_autoevaluacin_de_hbitos_2703';
+	var pid = 399;
+	var status = 0;
+	var draft_mode = 0;
+	var data_locked = 0;
+	var file_repository_enabled = 1;
+	var table_pk  = 'record_id'; var table_pk_label  = 'Record ID';
+	var longitudinal = 0;
+	var auto_inc_set = 1;
+	var project_dashboard_allow_public = 1;
+	var file_upload_vault_enabled = 0;
+	var file_upload_versioning_enabled = 1;
+	var sendgrid_enabled = 0;
+	var data_resolution_enabled = 1;
+	var lock_record = 2;
+	var shared_lib_browse_url = 'https://redcap.vumc.org/consortium/library/login.php?callback=https%3A%2F%2Fredcap-fibao.granadasalud.es%2FDSGM%2Fredcap_v17.1.4%2FSharedLibrary%2Freceiver.php%3Fpid%3D399&institution=DSGM+SAS+Granada&user=d0ea185f420778a4cae6fbd7a3de9b89';
+	var redcap_colorblind = 0;
+	$(function(){ $('.redcap-chart-colorblind-toggle').removeClass('invisible').find('u').html(window.lang.dash_72).click(function(){ toggleChartColorBlind(); } ); });
+    var database_query_tool_enabled = 0;
+    var dde_user = '';
+		// System values
+	var redcap_version = '17.1.4';
+	var server_name = 'redcap-fibao.granadasalud.es';
+	var app_path_webroot = '/DSGM/redcap_v17.1.4/';
+    var app_path_webroot_parent = '/DSGM/';
+	var app_path_webroot_full = 'https://redcap-fibao.granadasalud.es/DSGM/';
+	var app_path_survey_full = 'https://redcap-fibao.granadasalud.es/DSGM/surveys/';
+	var app_path_images = '/DSGM/redcap_v17.1.4/Resources/images/';
+	var page = 'surveys/index.php';
+    var secondary_pk = '';
+	var sendit_enabled = 1;
+	var surveys_enabled = 1;
+	var mycap_enabled = 0;
+	var reports_allow_public = '1';
+	var rich_text_image_embed_enabled = 1;
+	var rich_text_attachment_embed_enabled = 1;
+	var now = '2026-06-25 10:19:50'; var now_mdy = '06-25-2026 10:19:51'; var now_dmy = '25-06-2026 10:19:51';
+	var today = '2026-06-25'; var today_mdy = '06-25-2026'; var today_dmy = '25-06-2026';
+	var email_domain_allowlist = new Array();
+	var user_date_format_jquery = 'dd.mm.yy';
+	var user_date_format_validation = 'dmy';
+	var user_date_format_delimiter = '.';
+	var csv_delimiter = ';';
+	var ALLOWED_TAGS = '<rt><rp><ruby><wbr><blockquote><address><progress><meter><abbr><input><button><col><colgroup><strike><s><style><code><video><audio><source><caption><canvas><ol><ul><li><label><pre><p><a><br><center><font><b><i><u><h6><h5><h4><h3><h2><h1><hr><table><tbody><tr><th><td><thead><tfoot><img><span><div><em><strong><acronym><sub><sup><map><area>';
+	var AUTOMATE_ALL = '0';
+    var restricted_upload_file_types = ["ade","adp","apk","appx","appxbundle","bat","cab","chm","cmd","com","cpl","diagcab","diagcfg","diagpack","dll","dmg","ex","exe","hta","img","ins","iso","isp","jar","jnlp","js","jse","lib","lnk","mde","msc","msi","msix","msixbundle","msp","mst","nsh","php","pif","ps1","scr","sct","shb","sys","vb","vbe","vbs","vhd","vxd","wsc","wsf","wsh","xll"];
+	var cookie_samesite = 'Lax';
+	var cookie_secure = true;
+		var datatables_disable = [];
+	var fakeObjectTag = 'objectynladktoynb4qmthcldynwxxnhzxd1hguxpxb2oxb3vrymc9';
+    var maxUploadSizeAttachment = 1073741824; // bytes
+    var canConvertPdfToImages = 1;
+    var openAIImproveTextServiceEnabled = 0;
+	function setDatePickerDefaults() {
+		$.datepicker.setDefaults({
+			timeText: window.lang.global_13,
+			hourText: window.lang.calendar_widget_hour,
+			minuteText: window.lang.calendar_widget_min,
+			closeText: window.lang.calendar_widget_done,
+			prevText: window.lang.calendar_widget_prev,
+			nextText: window.lang.calendar_widget_next,
+			currentText: window.lang.dashboard_32,
+			monthNamesShort:[
+				window.lang.calendar_widget_month_jan,
+				window.lang.calendar_widget_month_feb,
+				window.lang.calendar_widget_month_mar,
+				window.lang.calendar_widget_month_apr,
+				window.lang.calendar_widget_month_may,
+				window.lang.calendar_widget_month_jun,
+				window.lang.calendar_widget_month_jul,
+				window.lang.calendar_widget_month_aug,
+				window.lang.calendar_widget_month_sep,
+				window.lang.calendar_widget_month_oct,
+				window.lang.calendar_widget_month_nov,
+				window.lang.calendar_widget_month_dec,
+			],
+			dayNames:[
+				window.lang.calendar_widget_month_day_long_sun,
+				window.lang.calendar_widget_month_day_long_mon,
+				window.lang.calendar_widget_month_day_long_tues,
+				window.lang.calendar_widget_month_day_long_wed,
+				window.lang.calendar_widget_month_day_long_thurs,
+				window.lang.calendar_widget_month_day_long_fri,
+				window.lang.calendar_widget_month_day_long_sat,
+			],
+			dayNamesMin:[
+				window.lang.calendar_widget_month_day_short_sun,
+				window.lang.calendar_widget_month_day_short_mon,
+				window.lang.calendar_widget_month_day_short_tues,
+				window.lang.calendar_widget_month_day_short_wed,
+				window.lang.calendar_widget_month_day_short_thurs,
+				window.lang.calendar_widget_month_day_short_fri,
+				window.lang.calendar_widget_month_day_short_sat,
+			],
+			isRTL: REDCap.MultiLanguage && typeof REDCap.MultiLanguage.isRTL == 'function' ? REDCap.MultiLanguage.isRTL() : false
+		});
+	}
+	$(function(){
+		setDatePickerDefaults();
+	});
+	</script>
+	<div id="working"><i class="fa-solid fa-spinner fa-spin-pulse me-3"></i><span data-rc-lang="design_08">Trabajando...</span></div>
+<div id="fade"></div>
+	<!-- Add hidden text for slider accessiblity on surveys -->
+	<div id="slider-0means" class="hidden"><span data-rc-lang="survey_1142">0% significa</span></div>
+	<div id="slider-50means" class="hidden"><span data-rc-lang="survey_1143">50% significa</span></div>
+	<div id="slider-100means" class="hidden"><span data-rc-lang="survey_1144">100% significa</span></div>
+
+	<!-- Text used for field validation errors -->
+	<div id="valtext_divs">
+		<div id="valtext_number"><span data-rc-lang="config_functions_52">El valor proporcionado no es un número. Por favor, inténtelo de nuevo.</span></div>
+		<div id="valtext_integer"><span data-rc-lang="config_functions_53">El valor proporcionado no es un número entero. Por favor, inténtelo de nuevo.</span></div>
+		<div id="valtext_vmrn"><span data-rc-lang="config_functions_54">El valor introducido no es un número de registro medico válido de Vanderbilt. Inténtelo de nuevo.</span></div>
+		<div id="valtext_rangehard"><span data-rc-lang="config_functions_56">El valor que proporcione debe estar dentro del intervalo sugerido.</span></div>
+		<div id="valtext_rangesoft1"><span data-rc-lang="config_functions_57">El valor que proporciona está fuera del intervalo sugerido.</span></div>
+		<div id="valtext_rangesoft2"><span data-rc-lang="config_functions_58">Este valor es admisible, pero es posible que desee comprobar.</span></div>
+		<div id="valtext_time"><span data-rc-lang="config_functions_59">El valor introducido debe ser un valor de tiempo en el siguiente formato HH:MM dentro del intervalo 00:00-23:59 (por ej. 04:32 o 23:19).</span></div>
+		<div id="valtext_zipcode"><span data-rc-lang="config_functions_60">Este campo debe contener los 5 o 9 dígitos del código postal de EE.UU. (como 94043). Vuelva a introducirlo ahora</span></div>
+		<div id="valtext_phone"><span data-rc-lang="config_functions_130">This field must be a 10 digit North American phone number (like 415 555 1212). Please re-enter it now.</span></div>
+		<div id="valtext_email"><span data-rc-lang="config_functions_62">Este campo debe ser una dirección válida de correo electrónico (como alvaro@usuario.com). Por favor, vuelva a introducirlo ahora.</span></div>
+		<div id="valtext_regex"><span data-rc-lang="config_functions_77">El valor proporcionado no se pudo validar debido a que no sigue el formato esperado. Por favor, inténtelo de nuevo.</span></div>
+		<div id="valtext_requiredformat"><span data-rc-lang="config_functions_94">Formato requerido:</span></div>
+	</div>
+	<!-- Regex used for field validation -->
+	<script>
+		if (typeof window.REDCap == 'undefined') {
+			window.REDCap = {};
+		}
+		window.REDCap.validations = {};
+				window.REDCap.validations['postalcode_french'] = {"datatype":"postal_code","regex":"\/^((0?[1-9])|([1-8][0-9])|(9[0-8]))[0-9]{3}$\/"};
+				window.REDCap.validations['date_dmy'] = {"datatype":"date","regex":"\/^((29([-\\\/])02\\3(\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00)))|((((0[1-9]|1\\d|2[0-8])([-\\\/])(0[1-9]|1[012]))|((29|30)([-\\\/])(0[13-9]|1[012]))|(31([-\\\/])(0[13578]|1[02])))(\\11|\\15|\\18)\\d{4}))$\/"};
+				window.REDCap.validations['date_mdy'] = {"datatype":"date","regex":"\/^((02([-\\\/])29\\3(\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00)))|((((0[1-9]|1[012])([-\\\/])(0[1-9]|1\\d|2[0-8]))|((0[13-9]|1[012])([-\\\/])(29|30))|((0[13578]|1[02])([-\\\/])31))(\\11|\\15|\\19)\\d{4}))$\/"};
+				window.REDCap.validations['date_ymd'] = {"datatype":"date","regex":"\/^(((\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00))([-\\\/])02(\\6)29)|(\\d{4}([-\\\/])((0[1-9]|1[012])(\\9)(0[1-9]|1\\d|2[0-8])|((0[13-9]|1[012])(\\9)(29|30))|((0[13578]|1[02])(\\9)31))))$\/"};
+				window.REDCap.validations['datetime_dmy'] = {"datatype":"datetime","regex":"\/^((29([-\\\/])02\\3(\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00)))|((((0[1-9]|1\\d|2[0-8])([-\\\/])(0[1-9]|1[012]))|((29|30)([-\\\/])(0[13-9]|1[012]))|(31([-\\\/])(0[13578]|1[02])))(\\11|\\15|\\18)\\d{4})) (\\d|[0-1]\\d|[2][0-3]):[0-5]\\d$\/"};
+				window.REDCap.validations['datetime_mdy'] = {"datatype":"datetime","regex":"\/^((02([-\\\/])29\\3(\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00)))|((((0[1-9]|1[012])([-\\\/])(0[1-9]|1\\d|2[0-8]))|((0[13-9]|1[012])([-\\\/])(29|30))|((0[13578]|1[02])([-\\\/])31))(\\11|\\15|\\19)\\d{4})) (\\d|[0-1]\\d|[2][0-3]):[0-5]\\d$\/"};
+				window.REDCap.validations['datetime_ymd'] = {"datatype":"datetime","regex":"\/^(((\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00))([-\\\/])02(\\6)29)|(\\d{4}([-\\\/])((0[1-9]|1[012])(\\9)(0[1-9]|1\\d|2[0-8])|((0[13-9]|1[012])(\\9)(29|30))|((0[13578]|1[02])(\\9)31)))) (\\d|[0-1]\\d|[2][0-3]):[0-5]\\d$\/"};
+				window.REDCap.validations['datetime_seconds_dmy'] = {"datatype":"datetime_seconds","regex":"\/^((29([-\\\/])02\\3(\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00)))|((((0[1-9]|1\\d|2[0-8])([-\\\/])(0[1-9]|1[012]))|((29|30)([-\\\/])(0[13-9]|1[012]))|(31([-\\\/])(0[13578]|1[02])))(\\11|\\15|\\18)\\d{4})) (\\d|[0-1]\\d|[2][0-3])(:[0-5]\\d){2}$\/"};
+				window.REDCap.validations['datetime_seconds_mdy'] = {"datatype":"datetime_seconds","regex":"\/^((02([-\\\/])29\\3(\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00)))|((((0[1-9]|1[012])([-\\\/])(0[1-9]|1\\d|2[0-8]))|((0[13-9]|1[012])([-\\\/])(29|30))|((0[13578]|1[02])([-\\\/])31))(\\11|\\15|\\19)\\d{4})) (\\d|[0-1]\\d|[2][0-3])(:[0-5]\\d){2}$\/"};
+				window.REDCap.validations['datetime_seconds_ymd'] = {"datatype":"datetime_seconds","regex":"\/^(((\\d{2}([13579][26]|[2468][048]|04|08)|(1600|2[048]00))([-\\\/])02(\\6)29)|(\\d{4}([-\\\/])((0[1-9]|1[012])(\\9)(0[1-9]|1\\d|2[0-8])|((0[13-9]|1[012])(\\9)(29|30))|((0[13578]|1[02])(\\9)31)))) (\\d|[0-1]\\d|[2][0-3])(:[0-5]\\d){2}$\/"};
+				window.REDCap.validations['email'] = {"datatype":"email","regex":"\/^(?!\\.)((?!.*\\.{2})[a-zA-Z0-9\\u0080-\\u02AF\\u0300-\\u07FF\\u0900-\\u18AF\\u1900-\\u1A1F\\u1B00-\\u1B7F\\u1D00-\\u1FFF\\u20D0-\\u214F\\u2C00-\\u2DDF\\u2F00-\\u2FDF\\u2FF0-\\u2FFF\\u3040-\\u319F\\u31C0-\\uA4CF\\uA700-\\uA71F\\uA800-\\uA82F\\uA840-\\uA87F\\uAC00-\\uD7AF\\uF900-\\uFAFF!#$%&'*+\\-\/=?^_`{|}~\\d]+)(\\.[a-zA-Z0-9\\u0080-\\u02AF\\u0300-\\u07FF\\u0900-\\u18AF\\u1900-\\u1A1F\\u1B00-\\u1B7F\\u1D00-\\u1FFF\\u20D0-\\u214F\\u2C00-\\u2DDF\\u2F00-\\u2FDF\\u2FF0-\\u2FFF\\u3040-\\u319F\\u31C0-\\uA4CF\\uA700-\\uA71F\\uA800-\\uA82F\\uA840-\\uA87F\\uAC00-\\uD7AF\\uF900-\\uFAFF!#$%&'*+\\-\/=?^_`{|}~\\d]+)*@(?!\\.)([a-zA-Z0-9\\u0080-\\u02AF\\u0300-\\u07FF\\u0900-\\u18AF\\u1900-\\u1A1F\\u1B00-\\u1B7F\\u1D00-\\u1FFF\\u20D0-\\u214F\\u2C00-\\u2DDF\\u2F00-\\u2FDF\\u2FF0-\\u2FFF\\u3040-\\u319F\\u31C0-\\uA4CF\\uA700-\\uA71F\\uA800-\\uA82F\\uA840-\\uA87F\\uAC00-\\uD7AF\\uF900-\\uFAFF\\-\\.\\d]+)((\\.([a-zA-Z\\u0080-\\u02AF\\u0300-\\u07FF\\u0900-\\u18AF\\u1900-\\u1A1F\\u1B00-\\u1B7F\\u1D00-\\u1FFF\\u20D0-\\u214F\\u2C00-\\u2DDF\\u2F00-\\u2FDF\\u2FF0-\\u2FFF\\u3040-\\u319F\\u31C0-\\uA4CF\\uA700-\\uA71F\\uA800-\\uA82F\\uA840-\\uA87F\\uAC00-\\uD7AF\\uF900-\\uFAFF]){2,63})+)$\/i"};
+				window.REDCap.validations['integer'] = {"datatype":"integer","regex":"\/^[-+]?\\b\\d+\\b$\/"};
+				window.REDCap.validations['alpha_only'] = {"datatype":"text","regex":"\/^[a-z]+$\/i"};
+				window.REDCap.validations['mrn_10d'] = {"datatype":"mrn","regex":"\/^\\d{10}$\/"};
+				window.REDCap.validations['mrn_generic'] = {"datatype":"mrn","regex":"\/^[a-z0-9-_]+$\/i"};
+				window.REDCap.validations['number'] = {"datatype":"number","regex":"\/^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$\/"};
+				window.REDCap.validations['number_1dp_comma_decimal'] = {"datatype":"number_comma_decimal","regex":"\/^-?\\d+,\\d$\/"};
+				window.REDCap.validations['number_1dp'] = {"datatype":"number","regex":"\/^-?\\d+\\.\\d$\/"};
+				window.REDCap.validations['number_2dp_comma_decimal'] = {"datatype":"number_comma_decimal","regex":"\/^-?\\d+,\\d{2}$\/"};
+				window.REDCap.validations['number_2dp'] = {"datatype":"number","regex":"\/^-?\\d+\\.\\d{2}$\/"};
+				window.REDCap.validations['number_3dp_comma_decimal'] = {"datatype":"number_comma_decimal","regex":"\/^-?\\d+,\\d{3}$\/"};
+				window.REDCap.validations['number_3dp'] = {"datatype":"number","regex":"\/^-?\\d+\\.\\d{3}$\/"};
+				window.REDCap.validations['number_4dp_comma_decimal'] = {"datatype":"number_comma_decimal","regex":"\/^-?\\d+,\\d{4}$\/"};
+				window.REDCap.validations['number_4dp'] = {"datatype":"number","regex":"\/^-?\\d+\\.\\d{4}$\/"};
+				window.REDCap.validations['number_comma_decimal'] = {"datatype":"number_comma_decimal","regex":"\/^[-+]?[0-9]*,?[0-9]+([eE][-+]?[0-9]+)?$\/"};
+				window.REDCap.validations['phone_australia'] = {"datatype":"phone","regex":"\/^(\\(0[2-8]\\)|0[2-8])\\s*\\d{4}\\s*\\d{4}$\/"};
+				window.REDCap.validations['phone_france'] = {"datatype":"phone","regex":"\/^(?:(?:\\+|00)(?:33|262|508|590|594|596|687)[\\s.-]{0,3}(?:\\(0\\)[\\s.-]{0,3})?|0)[1-9](?:(?:[\\s.-]?\\d{2}){4}|\\d{2}(?:[\\s.-]?\\d{3}){2})$\/"};
+				window.REDCap.validations['phone'] = {"datatype":"phone","regex":"\/^(?:\\(?([2-9]0[1-9]|[2-9]1[02-9]|[2-9][2-9][0-9]|800|811)\\)?)\\s*(?:[.-]\\s*)?([0-9]{3})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$\/"};
+				window.REDCap.validations['phone_uk'] = {"datatype":"phone","regex":"\/^((((\\+44|0044)\\s?\\d{4}|\\(?0\\d{4}\\)?)\\s?\\d{3}\\s?\\d{3})|(((\\+44|0044)\\s?\\d{3}|\\(?0\\d{3}\\)?)\\s?\\d{3}\\s?\\d{4})|(((\\+44|0044)\\s?\\d{2}|\\(?0\\d{2}\\)?)\\s?\\d{4}\\s?\\d{4}))(\\s?\\#(\\d{4}|\\d{3}))?$\/"};
+				window.REDCap.validations['postalcode_australia'] = {"datatype":"postal_code","regex":"\/^\\d{4}$\/"};
+				window.REDCap.validations['postalcode_canada'] = {"datatype":"postal_code","regex":"\/^[ABCEGHJKLMNPRSTVXY]{1}\\d{1}[A-Z]{1}\\s*\\d{1}[A-Z]{1}\\d{1}$\/i"};
+				window.REDCap.validations['postalcode_germany'] = {"datatype":"postal_code","regex":"\/^(0[1-9]|[1-9]\\d)\\d{3}$\/"};
+				window.REDCap.validations['postalcode_uk'] = {"datatype":"postal_code","regex":"\/^(([A-Z]{1,2}\\d{1,2})|([A-Z]{1,2}\\d[A-Z])) \\d[ABD-HJLNP-Z]{2}$\/"};
+				window.REDCap.validations['ssn'] = {"datatype":"ssn","regex":"\/^\\d{3}-\\d\\d-\\d{4}$\/"};
+				window.REDCap.validations['time_hh_mm_ss'] = {"datatype":"time","regex":"\/^(\\d|[01]\\d|(2[0-3]))(:[0-5]\\d){2}$\/"};
+				window.REDCap.validations['time'] = {"datatype":"time","regex":"\/^([0-9]|[0-1][0-9]|[2][0-3]):([0-5][0-9])$\/"};
+				window.REDCap.validations['time_mm_ss'] = {"datatype":"time","regex":"\/^[0-5]\\d:[0-5]\\d$\/"};
+				window.REDCap.validations['vmrn'] = {"datatype":"mrn","regex":"\/^[0-9]{4,9}$\/"};
+				window.REDCap.validations['zipcode'] = {"datatype":"postal_code","regex":"\/^\\d{5}(-\\d{4})?$\/"};
+			</script>
+	<div id="valregex_divs">
+			<div id="valregex-postalcode_french" datatype="postal_code" label="Code Postal 5 caracteres (France)"></div>
+			<div id="valregex-date_dmy" datatype="date" label="Date (D-M-Y)"></div>
+			<div id="valregex-date_mdy" datatype="date" label="Date (M-D-Y)"></div>
+			<div id="valregex-date_ymd" datatype="date" label="Date (Y-M-D)"></div>
+			<div id="valregex-datetime_dmy" datatype="datetime" label="Datetime (D-M-Y H:M)"></div>
+			<div id="valregex-datetime_mdy" datatype="datetime" label="Datetime (M-D-Y H:M)"></div>
+			<div id="valregex-datetime_ymd" datatype="datetime" label="Datetime (Y-M-D H:M)"></div>
+			<div id="valregex-datetime_seconds_dmy" datatype="datetime_seconds" label="Datetime w/ seconds (D-M-Y H:M:S)"></div>
+			<div id="valregex-datetime_seconds_mdy" datatype="datetime_seconds" label="Datetime w/ seconds (M-D-Y H:M:S)"></div>
+			<div id="valregex-datetime_seconds_ymd" datatype="datetime_seconds" label="Datetime w/ seconds (Y-M-D H:M:S)"></div>
+			<div id="valregex-email" datatype="email" label="Email"></div>
+			<div id="valregex-integer" datatype="integer" label="Integer"></div>
+			<div id="valregex-alpha_only" datatype="text" label="Letters only"></div>
+			<div id="valregex-mrn_10d" datatype="mrn" label="MRN (10 digits)"></div>
+			<div id="valregex-mrn_generic" datatype="mrn" label="MRN (generic)"></div>
+			<div id="valregex-number" datatype="number" label="Number"></div>
+			<div id="valregex-number_1dp_comma_decimal" datatype="number_comma_decimal" label="Number (1 decimal place - comma as decimal)"></div>
+			<div id="valregex-number_1dp" datatype="number" label="Number (1 decimal place)"></div>
+			<div id="valregex-number_2dp_comma_decimal" datatype="number_comma_decimal" label="Number (2 decimal places - comma as decimal)"></div>
+			<div id="valregex-number_2dp" datatype="number" label="Number (2 decimal places)"></div>
+			<div id="valregex-number_3dp_comma_decimal" datatype="number_comma_decimal" label="Number (3 decimal places - comma as decimal)"></div>
+			<div id="valregex-number_3dp" datatype="number" label="Number (3 decimal places)"></div>
+			<div id="valregex-number_4dp_comma_decimal" datatype="number_comma_decimal" label="Number (4 decimal places - comma as decimal)"></div>
+			<div id="valregex-number_4dp" datatype="number" label="Number (4 decimal places)"></div>
+			<div id="valregex-number_comma_decimal" datatype="number_comma_decimal" label="Number (comma as decimal)"></div>
+			<div id="valregex-phone_australia" datatype="phone" label="Phone (Australia)"></div>
+			<div id="valregex-phone_france" datatype="phone" label="Phone (France) (xx xx xx xx xx)(+33 x xx xx xx xx)"></div>
+			<div id="valregex-phone" datatype="phone" label="Phone (North America)"></div>
+			<div id="valregex-phone_uk" datatype="phone" label="Phone (UK)"></div>
+			<div id="valregex-postalcode_australia" datatype="postal_code" label="Postal Code (Australia)"></div>
+			<div id="valregex-postalcode_canada" datatype="postal_code" label="Postal Code (Canada)"></div>
+			<div id="valregex-postalcode_germany" datatype="postal_code" label="Postal Code (Germany)"></div>
+			<div id="valregex-postalcode_uk" datatype="postal_code" label="Postal Code (UK)"></div>
+			<div id="valregex-ssn" datatype="ssn" label="Social Security Number (U.S.)"></div>
+			<div id="valregex-time_hh_mm_ss" datatype="time" label="Time (HH:MM:SS)"></div>
+			<div id="valregex-time" datatype="time" label="Time (HH:MM)"></div>
+			<div id="valregex-time_mm_ss" datatype="time" label="Time (MM:SS)"></div>
+			<div id="valregex-vmrn" datatype="mrn" label="Vanderbilt MRN"></div>
+			<div id="valregex-zipcode" datatype="postal_code" label="Zipcode (U.S.)"></div>
+		</div>
+	<div id="random_text_hidden_div" style="display:none;">Qt4JgSSQRR2J5rhu5fZwf9HKt5cn43UrPB2oDXy6HeZbvBLkgNwJyN8BzYtBt7Kp</div>
+<div id="pagecontainer" class="container-fluid" role="main"><div id="container"><div id="pagecontent">    <script>
+        window.addEventListener('load', function () {
+            var status = document.getElementById('survey-page-status');
+            if (!status) return;
+            setTimeout(function () {
+                status.textContent = "You are currently on page 1 of 7 of the survey titled Desconecta para conectar.";
+            }, 300);
+            setTimeout(function () {
+                status.textContent = '';
+            }, 5000);
+        });
+    </script>
+        <style>
+            #questiontable td.questionnum, #questiontable td.questionnummatrix {
+                display: none !important;
+            }
+            /* When we clean up the left space, we can extend enhanced choice options
+            to be full width for a better appearance, but we have to fix the gap 
+            for horizontal alignments */
+            div.enhancedchoice label { width: 94%; margin: 0 3% 0.5em 3%; }
+        </style>
+        <script>
+var survey_btn_hide_submit = 0;
+</script>
+<script  type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/geoPosition.js?1781809545"></script>
+<script  type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/geoPositionSimulator.js?1781809545"></script>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.dataqueries_160='¡Ocurrió un error durante la carga de archivos!';
+lang.data_entry_199='¿GUARDAR LOS CAMBIOS?';
+lang.data_entry_265='¿Está seguro de que desea cerrar la encuesta? Cualquier respuesta que haya agregado en esta página se perderá si cierra la encuesta ahora. SI NO DESEA ABANDONAR SUS CAMBIOS, dé clic en el botón \'Continuar en la página\' a continuación y luego dé clic en el botón en la parte inferior de la página para guardar los cambios.';
+lang.data_entry_433='El valor de este campo contiene espacios extra al principio o al final. ¿Desea removerlos?';
+lang.data_entry_459='Cargar nueva versión';
+lang.design_100='Sí';
+lang.form_renderer_24='Eliminar el archivo';
+lang.form_renderer_25='Compartir';
+lang.form_renderer_43='Quitar la firma';
+lang.form_renderer_60='¡El archivo se cargó correctamente!';
+lang.global_53='Cancelar';
+lang.survey_01='¿Finalizar la encuesta?';
+lang.survey_561='Saltar la pregunta';
+lang.survey_562='ADVERTENCIA: valor no seleccionado';
+lang.survey_563='Volver atrás e ingresar valor';
+lang.survey_1311='Finalizar la encuesta';
+lang.survey_1312='Volver y editar la respuesta';
+lang.survey_1628='Expanded';
+lang.survey_1629='Collapsed';
+</script>
+<script type="text/javascript">
+// Set variables
+var record_exists = 0;
+var require_change_reason = 0;
+var event_id = 467;
+$(function() {
+	// Check for any reserved parameters in query string
+	checkReservedSurveyParams(new Array('s','hash','page','event_id','pid','pnid','preview','id','sq'));
+		// Enable green row highlight for data entry form table
+	enableDataEntryRowHighlight();
+});
+</script>
+    <!-- Title and/or Logo -->
+    <div id="surveytitlelogo" class="survey-titlebar" role="banner">
+        <div class="survey-titlebar__left">
+            <div style='padding:10px 0 0;'><img id='survey_logo' onload='try{reloadSpeakIconsForLogo()}catch(e){}' src='/DSGM/surveys/index.php?pid=399&doc_id_hash=9fb06a2d551993ea547827b7f552a538aa9f7dd2f29f47757293a1557e8dcb748c59492b4898212bfbb3044c04dc6e5332262333d0cd9c012912369ec2c027cf&__passthru=DataEntry%2Fimage_view.php&s=3EERXJDCRPKDFFXR&id=3630' alt=' imagen' data-mlm-attrs='alt=survey-logo_alt_text' style='max-width:600px;width:600px;max-width:600px;height:92px;max-height:92px;'></div><h1 id='surveytitle' data-mlm='survey-title'>Desconecta para conectar</h1>        </div>
+        <!-- Live region for page change announcement -->
+        <div
+            id="survey-page-status"
+            class="visually-hidden"
+            aria-live="polite"
+        ></div>
+        <!-- Language, Voice, Font Controls; Return & Survey Queue Links -->
+        <div class="survey-titlebar__right" id="changeFont">
+            <div class="bubbleInfo">
+			<div id="return_corner" class="trigger">
+				<i class="fas fa-redo-alt"></i>&nbsp;<a aria-label="Dé clic aquí para regresar y continuar con la encuesta donde la dejó." href="https://redcap-fibao.granadasalud.es/DSGM/surveys/?s=3EERXJDCRPKDFFXR&__return=1"><b><span data-rc-lang="survey_22">Volver?</span></b></a>
+			</div>
+			<table id="dpop" class="popup">
+				<tr>
+					<td class="left"></td>
+					<td>
+						<table class="popup-contents">
+							<tr>
+								<td class="return-corner-popup">
+									<span class="return-corner-popup-title">
+										<i class="fas fa-redo-alt"></i>
+										<b><span data-rc-lang="survey_22">Volver?</span></b> <span data-rc-lang="survey_23">Continuar desde donde se quedó.</span>
+									</span>
+									<br><br>
+									<span data-rc-lang="survey_24">Si ya ha completado parte de la encuesta, puede continuar desde donde la dejó. Todo lo que necesita es el código de validación que le fue entregado anteriormente. Dé clic en el enlace de abajo para comenzar a ingresar su código de validación y continuar la encuesta.</span>
+									<div class="return-corner-popup-button">
+										<button class="jqbuttonmed" onclick="window.location.href='https://redcap-fibao.granadasalud.es/DSGM/surveys/?s=3EERXJDCRPKDFFXR&__return=1';"><span data-rc-lang="survey_25">Continuar con la encuesta ahora</span></button>
+									</div>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td class="right"></td>
+				</tr>
+			</table></div>                                        <span class="nowrap font-resize-header" aria-hidden="true">
+                <span style="font-size:150%">A</span>
+                <span style="font-size:125%">A</span>
+                <span style="font-size:100%">A</span>&nbsp;
+            </span>
+                        <div class="nowrap">
+                <button id="mlm-change-lang" class="btn btn-link btn-sm" data-rc-lang-attrs="aria-label=multilang_02 data-bs-original-title=multilang_02" title="Cambiar el idioma" aria-label="Cambiar el idioma" aria-expanded="false" data-toggle="tooltip" style="display:none;"><i class="fas fa-globe"></i> <span class="btn-link-lang-name"></span></button>
+<button id="enable_text-to-speech" class="btn btn-link btn-sm" data-rc-lang-attrs="data-bs-original-title=survey_997 aria-label=survey_997" title="Activar la voz" aria-label="Activar la voz" data-toggle="tooltip" style="display:none;" onclick="addSpeakIconsToSurveyViaBtnClick(1);"><i class="fas fa-volume-up"></i></button>
+<button id="disable_text-to-speech" class="btn btn-link btn-sm" data-rc-lang-attrs="data-bs-original-title=survey_998 aria-label=survey_998" title="Desactivar la voz" aria-label="Desactivar la voz" data-toggle="tooltip" style="display:none;" onclick="addSpeakIconsToSurveyViaBtnClick(0);"><i class="fas fa-volume-mute"></i></button>
+<button class="increaseFont btn btn-link btn-sm" data-rc-lang-attrs="data-bs-original-title=survey_1129 aria-label=survey_1129" title="Dé clic para aumentar el tamaño de fuente" aria-label="Dé clic para aumentar el tamaño de fuente" data-toggle="tooltip"><i class="far fa-plus-square"></i></button>
+<button class="decreaseFont btn btn-link btn-sm" data-rc-lang-attrs="data-bs-original-title=survey_1130 aria-label=survey_1130" title="Dé clic para reducir el tamaño de fuente" aria-label="Dé clic para reducir el tamaño de fuente" data-toggle="tooltip"><i class="far fa-minus-square"></i></button>
+            </div>
+        </div>
+    </div>
+<div id="surveyinstructions" data-mlm="survey-instructions" style="display:block">
+	<p>Tus respuestas nos ayudan a mejorar la Salud Pública.</p>
+	<p> </p>
+	<p>Gracias</p>
+</div>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.calendar_popup_01='Cerrar';
+lang.data_entry_262='Tenga en cuenta que aunque el valor ingresado aquí está protegido y no es legible, el valor será visible fuera de esta página para las personas que administran esta encuesta.';
+lang.data_entry_263='Tenga en cuenta que aunque el valor ingresado aquí está protegido y no se puede leer en esta página, el valor será visible fuera de esta página (por ej., en un informe o exportación de datos) para las personas que administran este instrumento.';
+lang.data_entry_403=' palabras restantes';
+lang.data_entry_404=' caracteres restantes';
+lang.data_entry_412='La selección de casillas es incompatible';
+lang.data_entry_417='Sí, desmarque las demás casillas';
+lang.data_entry_610='Media';
+lang.data_entry_601='Field should be hidden by branching logic but is shown because it has a value';
+lang.data_entry_605='Toggle preview of this file';
+lang.design_799='ERROR: el campo';
+lang.design_800='ya se ha incrustado en esta página. Los campos no se pueden incrustar más de una vez.';
+lang.design_801='está incrustado en otra parte de esta página, pero actualmente tiene el campo';
+lang.design_802='incrustado en su interior aquí. Los campos no se pueden incrustar en otros campos que también están incrustados. Debe eliminar el campo';
+lang.design_803='desde aquí para que la incrustación de campo funcione correctamente.';
+lang.design_821='no se puede incrustar en esta página porque existe en un instrumento diferente o en una página de encuesta diferente. Los campos solo se pueden incrustar en la página en la que se encuentran.';
+lang.design_829='Modificar múltiples campos';
+lang.design_833='parece estar incrustado dentro de sí mismo en esta página. Esto no está permitido.';
+lang.docs_1101='Preview of file is not available';
+lang.econsent_149='Manually trigger or re-trigger PDF Snapshots';
+lang.econsent_156='Trigger PDF Snapshots';
+lang.econsent_157='PDF Snapshot was successfully triggered!';
+lang.econsent_158='Trigger it';
+lang.econsent_159='Are you sure you wish to trigger Snapshot ID';
+lang.econsent_160='I certify that I am re-triggering this e-Consent survey, which will electronically regenerate and store a PDF Snapshot that is the equivalent of a physical document.';
+lang.econsent_161='By clicking the submit button below, I am agreeing to the following text:';
+lang.econsent_167='WARNING: Triggering this PDF snapshot will overwrite any file already stored in the File Upload field where the snapshot will be saved.';
+lang.form_renderer_22='Aviso legal';
+lang.form_renderer_66='Toggle full screen view';
+lang.form_renderer_67='Calculation equation for variable';
+lang.form_renderer_68='View trigger logic';
+lang.global_53='Cancelar';
+lang.global_248='Busque nuevamente con:';
+lang.global_249='No se puede mostrar la lista completa de opciones porque hay demasiadas.';
+lang.global_250='Intente escribir un valor para buscar todas las opciones';
+lang.global_287='Invalid value!';
+lang.period='.';
+lang.questionmark='?';
+lang.report_builder_87='No se han obtenido resultados';
+lang.survey_369='¿ESTÁ SEGURO?';
+lang.survey_561='Saltar la pregunta';
+lang.survey_563='Volver atrás e ingresar valor';
+lang.survey_681='Ha introducido un valor no válido. Por favor, inténtelo de nuevo.';
+lang.random_216='ERROR: It appears that the current record already exists (probably created by another user), therefore you cannot randomize a record by the same name here.     It is recommended that you exit the form, then try to create another record, after which you may then try randomizing it.';
+lang.survey_1625='Select date';
+</script>
+<form action='/DSGM/surveys/index.php?s=3EERXJDCRPKDFFXR' enctype='multipart/form-data' target='_self' method='post' name='form' id='form'><input type='hidden' name='redcap_csrf_token' value=''><div>
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.global_143='Seleccionados';
+lang.global_144='No seleccionados';
+</script>
+            <script type="text/javascript">
+                var missing_data_replacement_js = '______';
+                var piping_receiver_class_field_js = '.piping_receiver.piperec-';
+            </script>
+            <span id="maxchecked_tag_label" class="" style="display:none;z-index:1000;" data-rc-lang="data_entry_421">¡Esa selección no es posible! Se alcanzó el número máximo de selecciones.</span><span id="matrix_rank_remove_label" class="opacity75" style="display:none;" data-rc-lang="data_entry_203">¡valor eliminado!</span><div id='questiontable_loading'>
+                        <img alt='Cargando...' src='/DSGM/redcap_v17.1.4/Resources/images/progress_circle.gif'> <span data-rc-lang="data_entry_64">Cargando...</span>
+                    </div>
+                    <script type='text/javascript'>
+                        setTimeout(function(){
+                            document.getElementById('questiontable_loading').style.visibility='visible';
+                        },750);
+                    </script><table role='presentation' class='form_border container-fluid' style='display:none;' id='questiontable'><tbody class='formtbody'><tr class='@HIDDEN' id='encuesta_activa-tr' sq_id='encuesta_activa' fieldtype='calc' ><td class='labelrc questionnum col-1' valign='top'></td><td class='labelrc col-6'><label class='label-fl fl' id='label-encuesta_activa'><div data-kind="field-label"><div data-mlm-field="encuesta_activa" data-mlm-type="label"></div></div></label></td><td class='data col-5'><span data-kind='field-value'><input type='text' aria-labelledby='label-encuesta_activa' name='encuesta_activa' value='' sv=''   tabindex='-1' readonly='readonly'
+                                class='x-form-text x-form-field rci-calc'></span>&nbsp;&nbsp;<a href='javascript:;' class='viewEq d-print-none' tabindex='-1' onclick="viewEq('encuesta_activa',0,0);"><span data-rc-lang="form_renderer_21">Ver la ecuación</span></a>
+                                
+                            </td></tr><tr  id='presentacion-tr' sq_id='presentacion' fieldtype='descriptive' ><td class='labelrc questionnum col-1' valign='top'></td><td class='labelrc col-11' colspan='2'><div data-kind="field-label"><div data-mlm-field="presentacion" data-mlm-type="label"><div style="font-family:Georgia,'Times New Roman',serif;max-width:620px;margin:0 auto;color:#1a1a1a;"><br role="presentation">
+<br role="presentation">
+<div style="height:4px;display:flex;margin:0 0 16px 0;opacity:.7;"><div style="flex:1;background:#1E7FC2;"></div><div style="flex:1;background:#29ABE2;"></div><div style="flex:1;background:#A8CC3A;"></div><div style="flex:1;background:#F5A623;"></div><div style="flex:1;background:#D32E3D;"></div></div><br role="presentation">
+<br role="presentation">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;"><br role="presentation">
+<div style="display:grid;grid-template-columns:14px 14px;grid-template-rows:14px 14px;gap:2px;flex-shrink:0;"><br role="presentation">
+<div style="background:#1E7FC2;"></div><div style="background:#29ABE2;"></div><br role="presentation">
+<div style="background:#A8CC3A;"></div><div style="background:#F5A623;"></div><br role="presentation">
+</div><br role="presentation">
+<div><br role="presentation">
+<div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:.72em;letter-spacing:1.5px;text-transform:uppercase;color:#4A4A4A;">Distrito Granada-Metropolitano · Plan Local de Salud de Huétor Tájar</div><br role="presentation">
+<div style="font-size:1.5em;font-weight:400;margin-top:2px;color:#1E7FC2;">Reconecta</div><br role="presentation">
+<div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:.85em;color:#4A4A4A;margin-top:2px;">Cuestionario sobre el uso de pantallas en la adolescencia</div><br role="presentation">
+</div><br role="presentation">
+</div><br role="presentation">
+<br role="presentation">
+<div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:.92em;line-height:1.65;color:#262626;"><br role="presentation">
+<br role="presentation">
+<p style="margin:0 0 16px 0;">Este cuestionario se dirige a chicos y chicas de 12 a 17 años residentes en Huétor Tájar. Es anónimo: ninguna persona, ni en tu familia ni en tu centro educativo, podrá ver tus respuestas individuales.</p><br role="presentation">
+<br role="presentation">
+<div style="border-left:3px solid #1E7FC2;padding-left:14px;margin:18px 0;"><br role="presentation">
+<div style="font-size:.78em;letter-spacing:.5px;text-transform:uppercase;color:#1E7FC2;margin-bottom:4px;">Contenido</div><br role="presentation">
+<p style="margin:0;">Se pregunta primero por datos básicos (edad, sexo) y por el tiempo dedicado a distintos tipos de pantalla, entre semana y en fin de semana. A continuación, por cómo te sientes con ese uso. Si juegas a videojuegos, al final se incluye un bloque específico sobre ello. La duración aproximada es de 10 a 15 minutos.</p><br role="presentation">
+</div><br role="presentation">
+<br role="presentation">
+<div style="border-left:3px solid #29ABE2;padding-left:14px;margin:18px 0;"><br role="presentation">
+<div style="font-size:.78em;letter-spacing:.5px;text-transform:uppercase;color:#0f7a9c;margin-bottom:4px;">Al finalizar</div><br role="presentation">
+<p style="margin:0;">Recibirás un informe personalizado sobre tu tiempo de pantalla, tu relación con las pantallas en general, tu uso de videojuegos (si procede) y tu uso nocturno, junto con un resultado de conjunto.</p><br role="presentation">
+</div><br role="presentation">
+<br role="presentation">
+<div style="border-left:3px solid #F5A623;padding-left:14px;margin:18px 0;"><br role="presentation">
+<div style="font-size:.78em;letter-spacing:.5px;text-transform:uppercase;color:#b9740a;margin-bottom:4px;">Qué no es este cuestionario</div><br role="presentation">
+<p style="margin:0;">No constituye una prueba médica ni psicológica, ni ofrece un diagnóstico. No sustituye la valoración de un profesional sanitario o de orientación educativa. Es un instrumento de cribado orientativo, dirigido a la reflexión personal y al conocimiento poblacional, no a la evaluación clínica individual.</p><br role="presentation">
+</div><br role="presentation">
+<br role="presentation">
+<div style="border-left:3px solid #A8CC3A;padding-left:14px;margin:18px 0;"><br role="presentation">
+<div style="font-size:.78em;letter-spacing:.5px;text-transform:uppercase;color:#5d7a1a;margin-bottom:4px;">Finalidad</div><br role="presentation">
+<p style="margin:0;">Los datos, tratados de forma agregada y anónima, contribuyen a que el Plan Local de Salud de Huétor Tájar conozca mejor los hábitos de uso de pantallas entre la población adolescente del municipio, con el fin de orientar sus actuaciones de promoción de la salud.</p><br role="presentation">
+</div><br role="presentation">
+<br role="presentation">
+<p style="margin:20px 0 0 0;font-size:.85em;color:#4A4A4A;">No existen respuestas correctas o incorrectas. Te pedimos que respondas con sinceridad.</p><br role="presentation">
+<br role="presentation">
+</div><br role="presentation">
+<br role="presentation">
+<div style="height:2px;display:flex;margin:22px 0 0 0;opacity:.4;"><div style="flex:1;background:#1E7FC2;"></div><div style="flex:1;background:#29ABE2;"></div><div style="flex:1;background:#A8CC3A;"></div><div style="flex:1;background:#F5A623;"></div><div style="flex:1;background:#D32E3D;"></div></div><br role="presentation">
+<br role="presentation">
+</div></div></div></td></tr><tr class='@HIDDEN' id='ficha_metodologica-tr' sq_id='ficha_metodologica' fieldtype='descriptive' ><td class='labelrc questionnum col-1' valign='top'></td><td class='labelrc col-11' colspan='2'><div data-kind="field-label"><div data-mlm-field="ficha_metodologica" data-mlm-type="label"><div style="background:#f8f9fa;border:1px dashed #999;border-radius:10px;padding:10px;margin:10px 0;font-size:.75em;color:#555;font-family:'Segoe UI',sans-serif;"><br role="presentation">
+<strong>Nota metodológica:</strong> Bloque 2 basado en "Tardes con Plan" (Ministerio de Sanidad) y Estudio HBSC (OMS). Bloque 3a es una TRADUCCIÓN RAZONADA NO OFICIAL de los 9 ítems de la IDS9-SF (Pontes y Griffiths, 2016, <em>Addicta</em>), referida a pantallas/internet en general (ese artículo no declara licencia CC BY). Bloque 3b reproduce literalmente (con atribución, CC BY 4.0) la IGDS9-SF validada en español (Beranuy et al., 2020), específica de videojuegos. No deben presentarse como equivalentes en rigor legal/científico.</div></div></div></td></tr>
+<input type='hidden' name='submit-action' id="submit-action"  value='<span data-rc-lang="data_entry_206">Conservar la ficha</span>'>
+<input type='hidden' name='__start_time__' id="__start_time__"  value='2026-06-25 10:19:50'>
+<input type='hidden' name='__start_time_hash__' id="__start_time__"  value='byZvKhbpxBkGrWX5lWJDCEabeZ7YhciBVyiQhgefJjiUVZqdxv1NFlAPnzzrntLW'>
+<input type='hidden' name='record_id' id="record_id"  value='1'>
+<input type='hidden' name='__page__'   value='1'>
+<input type='hidden' name='__page_hash__'   value='2081846569ccf2e2ac7e061fedf6984eca96c97d2bd01214f7546f6d0883854db0e56546a41da90e15c82b1ded08aa619139c0a7d30a84ce5796e28a2287ac4e'>
+<input type='hidden' name='__response_hash__'   value=''>
+<input type='hidden' name='cuestionario_pantallas_complete'   value=''><tr  class='surveysubmit' ><td class='labelrc col-12' style='padding:5px;' colspan='3'><table cellspacing="0">
+	<tr>
+		<td colspan="2" style="text-align:center;padding:15px 0;">
+			<button name="submit-btn-saverecord" tabindex="0" class="jqbutton wrap" style="color:#800000;" onclick="$(this).button(&quot;disable&quot;);dataEntrySubmit(this);return false;"><span data-mlm="survey-survey_btn_text_next_page">ADELANTE</span></button>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" style="text-align:center;padding: 1px 0 10px;">
+			<button name="submit-btn-savereturnlater" tabindex="0" class="jqbutton" onclick="$(this).button(&quot;disable&quot;);dataEntrySubmit(this);return false;"><span data-rc-lang="data_entry_215"> guardar y volver más tarde</span></button>
+		</td>
+	</tr>
+</table>
+</td></tr>
+<input type='hidden' name='mostrar_tarjetas'   value=''>
+<input type='hidden' name='minutos_semana_total'   value=''>
+<input type='hidden' name='minutos_finde_total'   value=''>
+<input type='hidden' name='ind_crit_preocupacion'   value=''>
+<input type='hidden' name='ind_crit_abstinencia'   value=''>
+<input type='hidden' name='ind_crit_tolerancia'   value=''>
+<input type='hidden' name='ind_crit_perdida_control'   value=''>
+<input type='hidden' name='ind_crit_perdida_interes'   value=''>
+<input type='hidden' name='ind_crit_uso_pese_problemas'   value=''>
+<input type='hidden' name='ind_crit_engano'   value=''>
+<input type='hidden' name='ind_crit_evasion_animo'   value=''>
+<input type='hidden' name='ind_crit_relaciones_perjudicadas'   value=''>
+<input type='hidden' name='ind_igds_1'   value=''>
+<input type='hidden' name='ind_igds_2'   value=''>
+<input type='hidden' name='ind_igds_3'   value=''>
+<input type='hidden' name='ind_igds_4'   value=''>
+<input type='hidden' name='ind_igds_5'   value=''>
+<input type='hidden' name='ind_igds_6'   value=''>
+<input type='hidden' name='ind_igds_7'   value=''>
+<input type='hidden' name='ind_igds_8'   value=''>
+<input type='hidden' name='ind_igds_9'   value=''>
+<input type='hidden' name='puntuacion_igds_total'   value=''>
+<input type='hidden' name='criterios_igds_cumplidos'   value=''>
+<input type='hidden' name='resultado_igds'   value=''>
+<input type='hidden' name='resultado_nocturno_suma'   value=''>
+<input type='hidden' name='score_tiempo'   value=''>
+<input type='hidden' name='score_usoprob'   value=''>
+<input type='hidden' name='score_igds'   value=''>
+<input type='hidden' name='score_nocturno'   value=''>
+<input type='hidden' name='score_global_pantallas'   value=''></tbody></table></div></form>
+<script type="text/javascript">
+$(function() {
+try{ addFileEnhancements(); }catch(e){ }
+});
+</script>
+<script type='text/javascript'>var pageFields = ['encuesta_activa','presentacion','ficha_metodologica'];</script><script  type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/DataEntrySurveyCommon.js?1781809545"></script>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.global_213='Si no está seguro de lo que esto significa, comuníquese con el administrador de su proyecto.';
+lang.global_215='EXISTEN ERRORES EN LA ENCUESTA: ¡NO PUEDE CONTINUAR!';
+lang.global_217='Esta encuesta no funcionará correctamente hasta que estos errores se hayan corregido. Nos disculpamos por cualquier inconveniente.';
+lang.global_218='BORRAR EL VALOR DEL CAMPO';
+lang.global_223='El campo actual para el que acaba de ingresar datos requiere que el campo nombrado';
+lang.global_224='esté oculto a la vista. Sin embargo, ese campo ya tiene un valor, por lo que es posible que deba restablecer su valor a un valor en blanco.';
+lang.global_225='Dé clic en Aceptar para OCULTAR este campo y BORRAR su valor actual. Dé clic en CANCELAR si NO desea ocultar este campo o borrar su valor actual.';
+lang.global_313='<b>Branching Logic</b> errors exist in these fields:';
+lang.global_315='<b>Calculation</b> errors exist in these fields:';
+lang.global_316='Please contact your survey administrator and let them know that the following errors exist on this survey:';
+lang.global_318='The calculation for the following field produced an infinite result:';
+lang.period='.';
+lang.questionmark='?';
+</script>
+<!-- Calculations -->
+<script type="text/javascript">
+var Calculations = {"displayErrors":false,"initialExecution":true,"triggerFields":[],"errorTracker":{"encuesta_activa":0},"jsCode":{"encuesta_activa":"0"},"resultChecks":{"encuesta_activa":true},"errorLastReported":{"encuesta_activa":null}};
+setupCalculations();
+calculate('', true);
+$(function() {
+	if (typeof REDCap?.MultiLanguage?.onLangChanged == 'function') {
+		REDCap.MultiLanguage.onLangChanged(function() {
+			if (Calculations.initialExecution) {
+				Calculations.initialExecution = false;
+				reportBranchingAndCalculationErrors(true);
+			}
+		});
+	} else {
+		reportBranchingAndCalculationErrors(true);
+	}
+});
+</script>
+
+<!-- Branching Logic -->
+<script type="text/javascript">
+var BranchingLogic = {"displayErrors":false,"initialExecution":true,"overrideEraseValuePrompt":false,"runAllAgain":false,"triggerFields":[],"errorTracker":[],"jsCode":[]};
+setupBranchingLogic();
+displayQuestionTable();
+$(function(){ hideSectionHeaders(); });
+doBranching('', false, true);
+if (BranchingLogic.runAllAgain) doBranching('', false, false);
+
+</script>
+<script type='text/javascript'></script><script type='text/javascript'>
+$(function(){
+});
+</script><div id="stopActionPrompt">
+	<h6 class="boldish"><span data-rc-lang="survey_02">Ha seleccionado una opción que dispara la finalización inmediata de esta encuesta.</span></h6>
+	<span data-rc-lang="survey_1313">Para guardar sus respuestas y finalizar la encuesta, dé clic en el botón 'Finalizar la encuesta' abajo. Si por accidente seleccionó la opción equivocada o desea volver a la encuesta, dé clic en el botón 'Volver y editar la respuesta'.</span>
+</div>
+<div id="survey_queue_corner_dialog" style="position: absolute; z-index: 100; width: 802px; display: none;border:1px solid #800000;"></div>
+<div id="overlay" class="ui-widget-overlay" style="position: absolute; background-color:#333;z-index:99;display:none;"></div>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.design_401='OK';
+lang.data_entry_74='Ignorar e ir al siguiente formulario';
+lang.data_entry_76='Ignorar y abandonar el registro';
+</script>
+        <!-- Password+File Upload Vault dialog -->
+        
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.data_entry_62='Seleccione un archivo y después dé clic en el botón \'Cargar documento\'';
+lang.data_entry_64='Cargando...';
+lang.data_entry_65='Carga en curso...';
+lang.data_entry_526='Tamaño máximo de archivo: {0} MB';
+lang.form_renderer_20='Restablecer el valor';
+lang.form_renderer_23='Cargar el documento';
+lang.form_renderer_30='Grabar la firma';
+</script>
+        <!-- Edoc file upload dialog pop-up divs and javascript -->
+        <div id="file_upload" class="simpleDialog" title="Cargar el documento"></div>
+        <script type='text/javascript'>
+            // Set html for file upload pop-up (for resetting purposes)
+            function getFileUploadFormHTML() {
+                return '<div style="color:#800000;margin:20px 0;font-size:14px;">' + window.lang.data_entry_62 + '</div>' + 
+                '<div style="margin:15px 0;">' + 
+                    '<input name="myfile" type="file" size="40">' +
+                    '<input name="myfile_base64" type="hidden">' + 
+                    '<input name="myfile_base64_edited" type="hidden" value="0">' +
+                    '<input name="myfile_replace" type="hidden" value="0">' +
+                '</div>' + 
+                '<button class="btn btn-primaryrc btn-fileupload" style="font-size:14px;" onclick="uploadFilePreProcess();return false;"><i class="fas fa-upload"></i> ' + window.lang.form_renderer_23 + '</button> ' + 
+                '<span style="margin-left:10px;color:#888;">' + interpolateString(window.lang.data_entry_526, [ 1024 ]) + '</span>';
+            }
+            function getFileUploadWinHTML(signature) {
+                signature = signature || 0;
+                // Accessible signature field type: typed + draw options
+                if (signature == 2) {
+                    return '<form autocomplete="new-password" id="form_file_upload" action="/DSGM/surveys/index.php?pid=399&__passthru=DataEntry%2Ffile_upload.php&id=1&event_id=467&instance=1&s=3EERXJDCRPKDFFXR" method="post" enctype="multipart/form-data" target="upload_target" onsubmit="return startUpload();">' +
+                        '<div id="this_upload_field">' +
+                            '<div id="field_name_popup">' + window.lang.data_entry_64 + '</div>' +
+                        '</div>' +
+
+                        // Signature mode selection & font selection
+                        '<div id="signature-mode-selector" style="margin:5px 0 18px 0; display:flex; justify-content:space-between;" role="group" aria-labelledby="signature-mode-label">' +
+                            '<span id="signature-mode-label" class="visually-hidden">Choose how to add your signature</span>' + // Screen-reader-only label
+                            // Mode selection buttons
+                            '<div class="btn-group btn-group-sm" style="display:flex; align-items:center;" role="group" aria-labelledby="signature-mode-label">' +
+                                '<input type="checkbox" class="btn-check" id="signature-mode-type" autocomplete="off" checked ' +
+                                    'onclick="setSignatureInputMode(\'typed\');">' +
+                                '<label class="btn" style="margin-bottom:0px;" for="signature-mode-type" id="signature-mode-type-btn">' +
+                                    'Type signature' +
+                                    '<i class="fa-solid fa-circle-check signature-mode-check"></i>' +
+                                '</label>' +
+                                '<input type="checkbox" class="btn-check" id="signature-mode-draw" autocomplete="off" ' +
+                                    'onclick="setSignatureInputMode(\'draw\');">' +
+                                '<label class="btn" style="margin-bottom:0px;" for="signature-mode-draw" id="signature-mode-draw-btn">' +
+                                    'Draw signature' +
+                                    '<i class="fa-solid fa-circle-check signature-mode-check"></i>' +
+                                '</label>' +
+                            '</div>' +
+                        '</div>' +
+
+                        // Hidden state
+                        '<input type="hidden" id="signature_input_mode" name="signature_input_mode" value="typed">' +
+
+                        // Hidden select (works as sort of data store for our font selection)
+                        '<select id="typed-signature-font" style="display:none;">' +
+                            '<option value=\'"Brush Script MT", cursive\'>Brush Script</option>' +
+                            '<option value=\'"Great Vibes", cursive\'>Great Vibes</option>' +
+                            '<option value=\'"Dancing Script", cursive\'>Dancing Script</option>' +
+                            '<option value=\'"Pacifico", cursive\'>Pacifico</option>' +
+                            '<option value=\'"Satisfy", cursive\'>Satisfy</option>' +
+                            '<option value=\'"Sacramento", cursive\'>Sacramento</option>' +
+                            '<option value=\'Arial, sans-serif\'>Arial</option>' +
+                        '</select>' +
+
+                        '<div id="signature-type-panel">' +
+                            '<div style="margin-bottom:12px;">' +
+                                '<label for="typed-signature-input" style="display:block;font-weight:bold;margin-bottom:5px;">Type your signature</label>' +
+                                '<span id="signature-font-label" class="visually-hidden">Signature style</span>' +
+                                '<div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap; position:relative;">' +
+                                    '<input type="text" id="typed-signature-input" class="x-form-text x-form-field" autocomplete="off" ' +
+                                        'style="flex:1 1 auto;min-width:0;font-size:16px;padding:6px 8px;" ' +
+                                        'maxlength="100" ' +
+                                        'oninput="updateTypedSignaturePreview();">' +
+                                    '<span id="signature-font-btn" role="button" tabindex="0" ' +
+                                        'aria-labelledby="signature-font-label" ' +
+                                        'aria-haspopup="listbox" aria-expanded="false" ' +
+                                        'onclick="toggleSignatureFontMenu();" ' +
+                                        'onkeydown="if(event.key === \'Enter\' || event.key === \' \'){ toggleSignatureFontMenu(); event.preventDefault(); }">' +
+                                        '<i class="fa-solid fa-pen-nib signature-font-icon ms-1"></i>' +
+                                    '</span>' +
+                                    '<div id="signature-font-menu" hidden role="listbox" aria-labelledby="signature-font-label" style="position:absolute; right:20px; top:-120px; margin-top:6px; background:#fff; border:1px solid #ccc; border-radius:4px; padding:6px; z-index:1000;">' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font=\'"Brush Script MT", cursive\' ' +
+                                            'style=\'font-family:"Brush Script MT", cursive !important; font-size:20px;\' ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Brush Script</button>' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font=\'"Great Vibes", cursive\' ' +
+                                            'style=\'font-family:"Great Vibes", cursive !important; font-size:19px;\' ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Great Vibes</button>' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font=\'"Dancing Script", cursive\' ' +
+                                            'style=\'font-family:"Dancing Script", cursive !important; font-size:18px;\' ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Dancing Script</button>' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font=\'"Pacifico", cursive\' ' +
+                                            'style=\'font-family:"Pacifico", cursive !important; font-size:18px;\' ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Pacifico</button>' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font=\'"Satisfy", cursive\' ' +
+                                            'style=\'font-family:"Satisfy", cursive !important; font-size:18px;\' ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Satisfy</button>' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font=\'"Sacramento", cursive\' ' +
+                                            'style=\'font-family:"Sacramento", cursive !important; font-size:21px;\' ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Sacramento</button>' +
+                                        '<button type="button" role="option" class="dropdown-item signature-font-option" ' +
+                                            'data-font="Arial, sans-serif" ' +
+                                            'style="font-family:Arial, sans-serif !important; font-size:15px;" ' +
+                                            'aria-selected="false" onclick="setSignatureFontFromButton(this)">Arial</button>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+
+                            '<div>' +
+                                '<div id="typed-signature-preview" role="img"></div>' +
+                            '</div>' +
+                        '</div>' +
+
+                        // Draw
+                        '<div id="signature-draw-panel" hidden>' +
+                            '<div id="signature-draw-instructions">' +
+                                'Use a mouse, finger, or stylus to draw your signature in the area below.' +
+                            '</div>' +
+                            '<div id="signature-div" aria-describedby="signature-draw-instructions" onchange=\'if($(this).jSignature("getData","base30")[1].length){ $("#f1_upload_form input[name=myfile_base64_edited]").val("1"); }\'></div>' +
+                        '</div>' +
+
+                        // Actions
+                        '<div id="signature-div-actions">' +
+                            '<button type="button" class="btn btn-primaryrc btn-fileupload" style="font-size:14px;" onclick="saveSignatureAccessible();">' + window.lang.form_renderer_30 + '</button>' +
+                            '<button type="button" data-kind="reset-link" class="btn btn-link" style="margin-left:15px;text-decoration:underline;" onclick="resetSignatureInput();">' + window.lang.form_renderer_20 + '</button>' +
+                        '</div>' +
+
+                        '<div id="f1_upload_process" style="display:none;font-weight:bold;font-size:14px;text-align:center;">' +
+                            '<br>' + window.lang.data_entry_65 + '<br><img src="/DSGM/redcap_v17.1.4/Resources/images/loader.gif" alt="' + window.lang.data_entry_65 + '">' +
+                        '</div>' +
+
+                        '<div id="f1_upload_form">' + getFileUploadFormHTML() + '</div>' +
+                        '<input type="hidden" id="field_name" name="field_name" value="">' +
+                        '' +
+                        '<iframe id="upload_target" name="upload_target" src="/DSGM/surveys/index.php?pid=399&__passthru=DataEntry%2Fempty.php&s=3EERXJDCRPKDFFXR" style="width:0;height:0;border:0px solid #fff;"></iframe>' +
+                    '</form>';
+                }
+
+                return '<form autocomplete="new-password" id="form_file_upload" action="/DSGM/surveys/index.php?pid=399&__passthru=DataEntry%2Ffile_upload.php&id=1&event_id=467&instance=1&s=3EERXJDCRPKDFFXR" method="post" enctype="multipart/form-data" target="upload_target" onsubmit="return startUpload();">' +
+                    '<div id="this_upload_field">' +
+                        '<div id="field_name_popup">' + window.lang.data_entry_64 + '</div>' +
+                    '</div>' +
+                    '<div id="signature-div" onchange=\'if($(this).jSignature("getData","base30")[1].length){ $("#f1_upload_form input[name=myfile_base64_edited]").val("1"); }\'></div>' +
+                    '<div id="signature-div-actions">' +
+                        '<button class="btn btn-primaryrc btn-fileupload" style="font-size:14px;" onclick="saveSignature();return false;">' + window.lang.form_renderer_30 + '</button>' +
+                        '<a data-kind="reset-link" href="javascript:;" style="margin-left:15px;text-decoration:underline;" onclick=\'$("#signature-div").jSignature("reset");$("#f1_upload_form input[name=myfile_base64_edited]").val("0");return false;\'>' + window.lang.form_renderer_20 + '</a>' +
+                    '</div>' +
+                    '<div id="f1_upload_process" style="display:none;font-weight:bold;font-size:14px;text-align:center;">' +
+                        '<br>' + window.lang.data_entry_65 + '<br><img src="/DSGM/redcap_v17.1.4/Resources/images/loader.gif" alt="' + window.lang.data_entry_65 + '">' +
+                    '</div>' +
+                    '<div id="f1_upload_form">' + getFileUploadFormHTML() + '</div>' +
+                    '<input type="hidden" id="field_name" name="field_name" value="">' +
+                    '' +
+                    '<iframe id="upload_target" name="upload_target" src="/DSGM/surveys/index.php?pid=399&__passthru=DataEntry%2Fempty.php&s=3EERXJDCRPKDFFXR" style="width:0;height:0;border:0px solid #fff;"></iframe>' +
+                '</form>';
+            }
+
+            function loadSignatureFonts() {
+                if (document.getElementById('signature-fonts-link')) return;
+                const link = document.createElement('link');
+                link.id = 'signature-fonts-link';
+                link.rel = 'stylesheet';
+                link.href = '/DSGM/redcap_v17.1.4/Resources/css/signature-fonts.css';
+                document.head.appendChild(link);
+            }
+
+            function toggleSignatureFontMenu() {
+                const $menu = $('#signature-font-menu');
+                const isOpen = !$menu.prop('hidden');
+                if (!isOpen) {
+                    updateSignatureFontMenuSelected();
+                    setTimeout(function () {
+                        $('#signature-font-menu .signature-font-option[aria-selected="true"]').first().focus();
+                    }, 0);
+                }
+                $menu.prop('hidden', isOpen);
+                $('#signature-font-btn').attr('aria-expanded', !isOpen);
+            }
+
+            function setSignatureFontFromButton(btn) {
+                setSignatureFont($(btn).attr('data-font'));
+            }
+
+            function setSignatureFont(font) {
+                $('#typed-signature-font').val(font);
+                updateTypedSignaturePreview();
+                updateSignatureFontMenuSelected();
+                $('#signature-font-menu').prop('hidden', true);
+                $('#signature-font-btn').attr('aria-expanded', 'false').trigger('focus');
+            }
+
+            function updateSignatureFontMenuSelected() {
+                const selectedFont = $('#typed-signature-font').val();
+                $('.signature-font-option').each(function () {
+                    const isSelected = $(this).attr('data-font') === selectedFont;
+                    $(this).toggleClass('selected', isSelected).attr('aria-selected', isSelected ? 'true' : 'false');
+                });
+            }
+
+            // Close Font menu when clicking outside of it
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#signature-font-btn, #signature-font-menu').length) {
+                    $('#signature-font-menu').prop('hidden', true);
+                    $('#signature-font-btn').attr('aria-expanded', 'false');
+                }
+            });
+
+            function setSignatureInputMode(mode) {
+                const isTyped = mode === 'typed';
+                $('#signature_input_mode').val(mode);
+                $('#signature-type-panel').prop('hidden', !isTyped);
+                $('#signature-draw-panel').prop('hidden', isTyped);
+                // Enforce single selection
+                $('#signature-mode-type').prop('checked', isTyped);
+                $('#signature-mode-draw').prop('checked', !isTyped);
+                // Enable/disable font icon
+                $('#signature-font-btn').attr('aria-disabled', !isTyped).toggleClass('disabled', !isTyped);
+
+                if (isTyped) {
+                    $('#typed-signature-input').trigger('focus');
+                    // updateTypedSignaturePreview();
+                } else {
+                    $('#signature-font-menu').prop('hidden', true);
+                    $('#signature-font-btn').attr('aria-expanded', 'false');
+                    setTimeout(function () {
+                        const $signatureDiv = $('#signature-div');
+                        // In order to avoid broken 0×0 canvas we rebuild signature pad now that the signature draw panel is visible
+                        $signatureDiv.html('');
+                        $signatureDiv.jSignature();
+                        $('#signature-div').attr('tabindex', '-1').trigger('focus');
+                    }, 0);
+                }
+            }
+
+            async function updateTypedSignaturePreview() {
+                if ($('#signature_input_mode').val() !== 'typed') return;
+                const text = $('#typed-signature-input').val().trim();
+                const $preview = $('#typed-signature-preview');
+                const $actions = $('#signature-div-actions');
+                const $firstSection = $('#signature-type-panel > div').first();
+
+                if (!text.length) {
+                    $preview.attr('aria-label', '').css({
+                        'min-height': '0',
+                        'padding': '0',
+                        'border-color': 'transparent'
+                    }).html('');
+                    $firstSection.css('margin-bottom', '12px');
+                    return;
+                }
+                const dataUrl = await buildTypedSignatureDataUrl();
+                $preview
+                    .attr('aria-label', 'Typed signature preview')
+                    .css({
+                        'min-height': '115px',
+                        'border-color': '#ccc'
+                    })
+                    .html('<img src="' + dataUrl + '" alt="" style="display:block;max-width:100%;height:auto;">');
+
+                $firstSection.css('margin-bottom', '5px');
+            }
+
+            function initAccessibleSignatureUI() {
+                loadSignatureFonts();
+                setSignatureInputMode('typed');
+                updateTypedSignaturePreview();
+                // updateSignatureFontMenuSelected();
+                return '';
+            }
+
+            async function buildTypedSignatureDataUrl() {
+                const text = $('#typed-signature-input').val().trim();
+                const fontFamily = $('#typed-signature-font').val();
+
+                if (!text.length) return '';
+                if (document.fonts && document.fonts.load) {
+                    await document.fonts.load('36px ' + fontFamily);
+                }
+
+                const canvas = document.createElement('canvas');
+                const width = 460;
+                const height = 100;
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = width;
+                canvas.height = height;
+
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '48px ' + fontFamily;
+                ctx.fillText(text, width / 2, height / 2);
+
+                return canvas.toDataURL('image/png');
+            }
+
+            function resetSignatureInput() {
+                const mode = $('#signature_input_mode').val();
+
+                if (mode === 'typed') {
+                    $('#typed-signature-input').val('');
+                    $('#f1_upload_form input[name=myfile_base64]').val('');
+                    $('#f1_upload_form input[name=myfile_base64_edited]').val('0');
+                    updateTypedSignaturePreview();
+                    $('#typed-signature-input').trigger('focus');
+                } else {
+                    $('#signature-div').jSignature('reset');
+                    $('#f1_upload_form input[name=myfile_base64]').val('');
+                    $('#f1_upload_form input[name=myfile_base64_edited]').val('0');
+                }
+            }
+
+            async function renderTypedSignatureToBase64() {
+                const text = $('#typed-signature-input').val().trim();
+
+                if (!text.length) {
+                    alert('Please type your signature before saving.');
+                    $('#typed-signature-input').trigger('focus');
+                    return false;
+                }
+
+                const dataUrl = await buildTypedSignatureDataUrl();
+                const base64 = dataUrl.split(',')[1];
+
+                $('#f1_upload_form input[name=myfile_base64]').val(base64);
+                $('#f1_upload_form input[name=myfile_base64_edited]').val('1');
+
+                return true;
+            }
+
+            async function saveSignatureAccessible() {
+                const mode = $('#signature_input_mode').val();
+                if (mode === 'typed') {
+                    if (!await renderTypedSignatureToBase64()) return false;
+                    uploadFilePreProcess();
+                    return false;
+                }
+                // Handwritten signature
+                saveSignature();
+                return false;
+            }
+        </script>
+        
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.form_renderer_23='Cargar el documento';
+lang.form_renderer_31='Agregar la firma';
+lang.data_entry_459='Cargar nueva versión';
+lang.data_entry_468='(remplazar y mantener el archivo actual)';
+lang.design_397='Sí, borrarlo';
+lang.design_654='Confirmar';
+lang.form_renderer_44='¡NO SE PUEDE CARGAR EL ARCHIVO!';
+lang.form_renderer_45='Lo sentimos, pero Apple no admite la carga de archivos en páginas web en su navegador Mobile Safari para dispositivos iOS (iPhones, iPads y iPod Touch) que ejecutan iOS versión 5.1 y anteriores. Debido a que parece que está utilizando un dispositivo iOS en una versión tan antigua, no podrá cargar un archivo aquí. Esto no es un problema en REDCap, sino simplemente una limitación impuesta por Apple. NOTA: iOS versión 6 y superior *sí* admite la carga de imágenes y videos (pero no otros tipos de archivo).';
+lang.form_renderer_46='Primero debe colocar su firma';
+lang.form_renderer_47='Primero debe elegir un archivo para cargar';
+lang.form_renderer_48='¡El nombre de usuario o contraseña que ingresó es incorrecto! Inténtelo de nuevo.';
+lang.form_renderer_49='DEBE proporcionar un motivo para eliminar este archivo. Inténtelo de nuevo.';
+lang.form_renderer_50='Proporcione el motivo para eliminar este archivo (el motivo se registrará):';
+lang.form_renderer_51='¿Está seguro de que desea eliminar este archivo de forma permanente?';
+lang.form_renderer_52='¿Eliminar el archivo?';
+lang.form_renderer_57='El archivo "<b>{0}</b>" ha sido eliminado.';
+lang.form_renderer_58='Se ha eliminado la versión {0} del archivo.';
+lang.form_renderer_59='Archivo eliminado';
+lang.global_01='ERROR';
+lang.global_53='Cancelar';
+</script>
+<script  type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/jSignature.js?1781809545"></script>
+<script  type="text/javascript" src="/DSGM/redcap_v17.1.4/Resources/js/Libraries/jSignature.SignHere.js?1781809545"></script>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.data_entry_575='La pregunta actual requiere que su valor nunca repita el valor de una respuesta de encuesta anterior. El valor que ingresó ("{0}") ya se usó, así que ingrese otro valor. Debe cambiar este valor antes de poder continuar.';
+lang.data_entry_576='El campo actual es el campo secundario único ({0}), por lo que su valor debe ser único para todos los registros y no se puede repetir. Otro registro u otro evento dentro del registro actual ya tiene este mismo valor ("{1}"). Debe cambiar este valor antes de poder continuar.';
+lang.data_entry_105='¡VALOR DUPLICADO!';
+lang.calendar_popup_01='Cerrar';
+lang.period='.';
+</script>
+			<script>
+				(function () {
+					$('#form').append($('<input>').attr({
+						type: 'hidden',
+						name: "external-modules-temporary-record-id",
+						value: "external-modules-temporary-record-id-1782382791-1364619441"					}))
+				})()
+			</script>
+			<script>
+	$(function () {
+  		$('[data-toggle="tooltip"]').tooltip()
+	})
+</script>
+</div></div><div id="footer" class="d-none d-sm-block col-md-12"><a href="https://projectredcap.org" tabindex="-1" target="_blank">Powered by REDCap</a><span class="mx-2">-</span><a href="javascript:;" onclick="showCookieUsagePolicy();"><span data-rc-lang="global_304">Cookie policy</span></a></div></div>
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.global_304='Cookie policy';
+lang.global_305='<h4>REDCap Cookie Usage Policy</h4><br>              <b>1. What Are Cookies?</b><br><br>Cookies are small text files that are placed on your device (computer, tablet, or mobile) when you visit a website. They are widely used to make websites work more efficiently, as well as to provide information to the owners of the site.<br><br>              <b>2. Types of Cookies Used</b><br><br>REDCap uses two primary types of cookies: Necessary Cookies and Functional Cookies. Details about each type and their purposes are provided below.<br><br>              <b>3. Necessary Cookies</b><br><br>Necessary cookies are essential for the proper functioning of this web application (REDCap). These cookies ensure basic functionalities and security features of the website.              Without these cookies, certain features and services may not be available. Example of necessary cookies: Session cookies that keep you logged in while you navigate through different pages.<br><br>              <b>4. Functional Cookies</b><br><br>Functional cookies enable the web application to provide enhanced functionality and personalization. If you do not allow these cookies,              some or all of these services may not function properly. Examples of functional cookies: 1) Cookies that remember your preferences, such as language, and 2) Cookies that provide enhanced features,              such as remembering your desired custom size of text on survey pages.<br><br>              <b>5. Managing Cookies</b><br><br>You have the right to accept or reject cookies. Most web browsers automatically accept cookies, but you can usually modify your browser settings to delete or decline cookies if you prefer.              Please note that if you choose to decline cookies, you will not be able to experience all features of this web application (REDCap).';
+</script>
+
+<script type="text/javascript">
+if(typeof lang=='undefined'){var lang={}};
+lang.rc_dialog_close='Close';
+lang.rc_dialog_cancel='Cancel';
+lang.rc_dialog_ok='Ok';
+lang.rc_dialog_yes='Yes';
+lang.rc_dialog_no='No';
+lang.rc_dialog_add='Add';
+lang.rc_dialog_save='Save';
+lang.rc_dialog_load='Load';
+lang.rc_dialog_delete='Delete';
+lang.rc_dialog_previous='Previous';
+lang.rc_dialog_next='Next';
+lang.rc_dialog_continue='Continue';
+lang.rc_dialog_finish='Finish';
+lang.rc_dialog_noticetitle='NOTICE';
+lang.rc_dialog_errortitle='ERROR';
+lang.rc_dialog_splitdropdownactions='{label} actions';
+lang.rc_dialog_splitdropdowntoggle='Toggle dropdown';
+</script>
+</body></html>

@@ -1,0 +1,49 @@
+{
+  "name": "compas-ng",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:profile-fixture": "vitest run --config vitest.profile-fixture.config.ts",
+    "test:reconstruction": "vitest run --config vitest.reconstruction.config.ts",
+    "test:smoke": "node tests/home-complementary-studies.smoke.mjs",
+    "test:atarfe": "node tests/load-atarfe-complete.mjs",
+    "rebuild:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/rebuild-granada-zaidin.gen.ts",
+    "rebuild:atarfe": "vitest run --config vitest.rebuild.config.ts scripts/demo/rebuild-atarfe.gen.ts",
+    "restore:zaidin": "vitest run --config vitest.rebuild.config.ts scripts/demo/restore-zaidin-console.gen.ts",
+    "inject:ugc-sourcetext": "vitest run --config vitest.rebuild.config.ts scripts/demo/inject-ugc-sourcetext.gen.ts",
+    "test:relas": "firebase emulators:exec --only firestore,auth --project demo-compas-relas \"node --test tests/relas-firebase.rules.test.mjs && vitest run --config vitest.admin.config.ts\""
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "firebase": "12.19.0",
+    "jspdf": "^4.2.1",
+    "mammoth": "^1.12.0",
+    "pdfjs-dist": "^6.0.227",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "5.0.2",
+    "@types/node": "^24.12.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "firebase-tools": "15.30.0",
+    "globals": "^17.6.0",
+    "playwright": "^1.61.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.2",
+    "vite": "^8.0.12",
+    "vitest": "^4.1.9"
+  }
+}
