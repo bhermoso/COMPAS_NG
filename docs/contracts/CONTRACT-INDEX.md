@@ -1,7 +1,7 @@
 # CONTRACT-INDEX — Índice maestro de contratos arquitectónicos
 
 > COMPÁS NG — Referencia de arquitectura contractual
-> Última actualización: 2026-07-13 — fase de gobernanza y consolidación del núcleo sanitario
+> Última actualización: 2026-09-23 — reconciliación de contratos tras PR #70–#74
 
 Este documento es la puerta de entrada a la arquitectura contractual de COMPÁS NG.
 No duplica contenido de los contratos. Cada entrada contiene: propósito, alcance, estado y relaciones.
@@ -16,6 +16,8 @@ Los contratos se ordenan por **nivel arquitectónico**, de infraestructura base 
 - `VIGENTE` — Implementado y en producción. Modificar solo con revisión explícita.
 - `CONCEPTUAL` — Diseñado pero sin implementación activa. Define el qué, no el cómo.
 - `FUTURO` — Investiga o reserva una línea para sprints posteriores.
+- `LEGACY` — Conservado como registro histórico o compatibilidad, pero no como ruta canónica visible.
+- `ARCHIVADO` — Supersedido por otro contrato vigente. No usar como base de implementación nueva.
 
 ---
 
@@ -139,7 +141,7 @@ Contrato del Motor de Interpretación Territorial (MIT) y del Perfil de Salud Lo
 
 **Productores:** `TerritorialInterpretationEngine`, `buildLocalHealthProfile`.
 **Consumidores:** Priorización temática, Motor de Traducción Estratégica, Plan de Acción.
-**Relacionado con:** CONTRACT-EVIDENCE, CONTRACT-ACTION-PLAN, CONTRACT-STRATEGIC-TRANSLATION.
+**Relacionado con:** CONTRACT-EVIDENCE, CONTRACT-MTE, CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-ACTION-PLAN-CATALOG.
 
 ---
 
@@ -195,7 +197,7 @@ Contrato del compilador del Perfil de Salud Local COMPÁS (PSL-C). Define la dis
 **Consumidores:** Equipo técnico (exportación del diagnóstico), `LocalHealthPlanCompiler` (futuro: el PSL-C es el capítulo diagnóstico del PLS).
 **Tipos:** `src/domain/health-profile-artifact/LocalHealthProfileArtifact.ts`.
 **Tests:** `tests/local-health-profile-compiler.test.ts` (43 tests).
-**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT (pendiente).
+**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.
 
 ---
 
@@ -206,9 +208,9 @@ Contrato del compilador del Perfil de Salud Local COMPÁS (PSL-C). Define la dis
 
 Contrato del Plan Local de Salud (PLS) como documento institucional definitivo. Define naturaleza, estructura, entradas, gates, contenido humano obligatorio, congelación y versionado. Complementado por CONTRACT-LOCAL-HEALTH-PLAN-COMPILER, que define cómo se produce el PLS. Define la naturaleza del PLS (compromiso explícito y verificable), la distinción entre PLS, PSL-C, ActionPlanDraft, AgendaDraft y MonitoringDraft, la estructura canónica de 15 secciones (RE + I a XII + AN), los 10 gates de compilación (G-PLS-1 a G-PLS-10), el contenido humano obligatorio (validación política, responsables, plazos, recursos, necesidades no priorizadas), las reglas de congelación y versionado, y los 9 invariantes (I-PLS-1 a I-PLS-9).
 
-**Productores:** `LocalHealthPlanCompiler` (tipos de dominio en Sprint 2.3; implementación pendiente).
+**Productores:** `LocalHealthPlanCompiler` (tipos de dominio en Sprint 2.3; implementación del compilador pendiente).
 **Consumidores:** Equipo técnico, corporación municipal, Distrito Sanitario, Junta de Andalucía.
-**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica), CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.
+**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-ACTION-PLAN-CATALOG, CONTRACT-MTE, CONTRACT-COMPILER (reserva histórica), CONTRACT-LOCAL-HEALTH-PLAN-COMPILER.
 
 ---
 
@@ -220,7 +222,7 @@ Contrato del `LocalHealthPlanCompiler`. Define cómo se produce el `LocalHealthP
 **Productores:** `LocalHealthPlanCompiler` (pendiente de implementar; tipos de dominio en Sprint 2.3).
 **Consumidores:** Equipo técnico, UI (exportación futura DOCX/PDF/HTML).
 **Tipos:** `src/domain/health-plan/LocalHealthPlanDocument.ts`, `src/domain/compilation/CompilationManifest.ts`.
-**Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-ACTION-PLAN, CONTRACT-COMPILER (reserva histórica), CONTRACT-INSTITUTIONAL-LIFECYCLE.
+**Relacionado con:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT, CONTRACT-MIT-PSL, CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER, CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-ACTION-PLAN-CATALOG, CONTRACT-MTE, CONTRACT-COMPILER (reserva histórica), CONTRACT-INSTITUTIONAL-LIFECYCLE.
 **Prerequisitos satisfechos (Sprint 2):** actor model `approved` implementado (CONTRACT-INSTITUTIONAL-LIFECYCLE); validación formal del Nivel 3 implementada (`FormalValidationRecord`, `createFormalValidation.ts`).
 **Prerequisitos pendientes:** implementación completa del `LocalHealthPlanCompiler`. El soporte de dominio, captura UI y transporte documental para G-PLS-7 y G-PLS-10 existe desde 2026-09-24 (`PlanPreparationPanel` → `PlanPreparationDraft` → `PlanDocument`). Ver §16 de este contrato.
 
@@ -241,14 +243,36 @@ Contrato del modelo canónico de ciclos de vida institucional de los objetos de 
 
 ## Nivel 3 — Planificación y acción
 
-### CONTRACT-ACTION-PLAN
+### CONTRACT-DELIBERATIVE-PRIORITISATION
 **Estado:** VIGENTE
 
-Contrato del bloque de Nivel 3: Priorización temática, Motor de Traducción Estratégica (versión inicial), Plan de Acción, Agenda y Seguimiento. Define que ningún motor del Nivel 3 puede producir documentos definitivos sin validación humana explícita.
+Contrato de la cadena canónica vigente para producir borradores técnicos del Plan de Acción: `PSL validado → Lectura Estratégica Local → selección del Grupo Motor → borrador del Plan de Acción`. Distingue la generación automática —bloqueada hasta selección deliberativa explícita— de la edición territorial directa del catálogo, que guarda texto vigente en el expediente local sin revisión administrativa intermedia.
 
-**Productores:** `ThematicPrioritisation`, Plan de Acción.
-**Consumidores:** Compiler (futuro).
-**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-COMPILER, CONTRACT-STRATEGIC-TRANSLATION.
+**Productores:** UI del espacio Plan de Acción; registros de selección deliberativa.
+**Consumidores:** Catálogo del Plan de Acción, generación futura de borradores técnicos, compilación del PLS.
+**Relacionado con:** CONTRACT-MTE, CONTRACT-ACTION-PLAN-CATALOG, CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.
+
+---
+
+### CONTRACT-ACTION-PLAN-CATALOG
+**Estado:** VIGENTE
+
+Contrato del catálogo temático del Plan de Acción. Define módulos reutilizables, elegibilidad por selección deliberativa, revisión humana por elemento, trazabilidad y preparación editable previa. Desde la actualización de 2026-09-09, permite preparar y revisar la propuesta Zaidín en cuatro bloques sin trasladar aprobación formal entre versiones.
+
+**Productores:** Catálogo de módulos de Plan de Acción, preparación territorial (`planPreparationDrafts`).
+**Consumidores:** UI de preparación del Plan, fichas de indicadores y actuaciones, proyección del Plan de Acción resultante.
+**Relacionado con:** CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.
+
+---
+
+### CONTRACT-ACTION-PLAN
+**Estado:** LEGACY — sustituido como ruta visible por CONTRACT-DELIBERATIVE-PRIORITISATION
+
+Contrato histórico del bloque de Nivel 3: Priorización temática, EPVSATranslator, Plan de Acción, Agenda y Seguimiento. Sus invariantes siguen siendo útiles como compatibilidad y reserva doctrinal —ningún motor produce compromisos institucionales sin validación humana—, pero no define la ruta visible vigente del Plan de Acción.
+
+**Productores:** Motores históricos de Nivel 3.
+**Consumidores:** Compatibilidad, material de transición, CONTRACT-COMPILER como reserva histórica.
+**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-COMPILER, CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-ACTION-PLAN-CATALOG.
 
 ---
 
@@ -283,18 +307,29 @@ Define el Repositorio Estratégico Territorial: recursos normativos supramunicip
 
 **Productores futuros:** Carga manual por el equipo técnico.
 **Consumidores futuros:** Motor de Traducción Estratégica.
-**Relacionado con:** CONTRACT-STRATEGIC-TRANSLATION, CONTRACT-REPOSITORY.
+**Relacionado con:** CONTRACT-MTE, CONTRACT-STRATEGIC-TRANSLATION (archivado), CONTRACT-REPOSITORY.
+
+---
+
+### CONTRACT-MTE
+**Estado:** VIGENTE — implementación certificada
+
+Contrato canónico del Motor de Traducción Estratégica. Supersede `CONTRACT-STRATEGIC-TRANSLATION`. Define la `LecturaEstrategicaLocal` como artefacto producido desde un `LocalHealthProfile` validado o aprobado y un `FrameworkProvider`, con `EscenarioEstratégico[]`, vacíos institucionales, cautelas, trazabilidad completa y `requiresHumanValidation: true`.
+
+**Productores:** Motor de Traducción Estratégica (`MTE`), `FrameworkProvider`.
+**Consumidores:** Selección deliberativa, Producto 6/Plan de Acción, futuro compilador del PLS.
+**Relacionado con:** CONTRACT-MIT-PSL, CONTRACT-STRATEGIC-SCENARIO, CONTRACT-DELIBERATIVE-PRIORITISATION, CONTRACT-ACTION-PLAN-CATALOG, CONTRACT-STRATEGIC-TRANSLATION (archivado).
 
 ---
 
 ### CONTRACT-STRATEGIC-TRANSLATION
-**Estado:** CONCEPTUAL
+**Estado:** ARCHIVADO — supersedido por CONTRACT-MTE (2026-06-30)
 
-Define el Motor de Traducción Estratégica (MTE): flujo PSL validado → Priorizaciones → Repositorio Estratégico → Borrador Plan de Acción. Establece 6 restricciones explícitas de no-sustitución y el invariante de trazabilidad completa. `StrategicDerivationTrace` pendiente de especificación en el sprint de implementación.
+Diseño conceptual previo del Motor de Traducción Estratégica. Se conserva como registro histórico de restricciones de no sustitución y trazabilidad, pero no debe usarse como contrato de implementación nueva. La ruta vigente está en `CONTRACT-MTE`.
 
-**Productores futuros:** MTE engine.
-**Consumidores futuros:** Plan de Acción, Compiler.
-**Relacionado con:** CONTRACT-STRATEGIC-REPOSITORY, CONTRACT-MIT-PSL, CONTRACT-ACTION-PLAN.
+**Productores:** Ninguno nuevo.
+**Consumidores:** Consulta histórica.
+**Relacionado con:** CONTRACT-MTE, CONTRACT-STRATEGIC-REPOSITORY, CONTRACT-MIT-PSL.
 
 ---
 
@@ -375,10 +410,11 @@ CONTRACT-MIT-PSL
     ↓
 CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER → LocalHealthProfileArtifact (PSL-C)
     ↓
-CONTRACT-ACTION-PLAN → CONTRACT-COMPILER (reserva histórica)
-    ↓
-CONTRACT-STRATEGIC-TRANSLATION → CONTRACT-STRATEGIC-REPOSITORY
-                                 CONTRACT-DYNAMIC-TRIPYRAMID
+CONTRACT-MTE → CONTRACT-DELIBERATIVE-PRIORITISATION
+    ↓                         ↓
+CONTRACT-STRATEGIC-REPOSITORY CONTRACT-ACTION-PLAN-CATALOG
+                              ↓
+                 CONTRACT-ACTION-PLAN (legacy/reserva)
     ↓
 CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT
     ↓
@@ -470,7 +506,9 @@ Estas entradas registran decisiones o divergencias vivas que afectan a la gobern
 El plano arquitectónico completo que responde a la pregunta
 "¿qué debe existir para producir un Perfil de Salud Local, un Plan Local de Salud y una
 Encuesta Municipal?" está en `docs/architecture/BLUEPRINT-PRODUCTION.md`.
-Los contratos pendientes de crear quedan listados en §VIII.3 de ese documento.
+Ese blueprint conserva decisiones y tensiones históricas; para determinar si una
+deuda sigue viva, prevalecen este índice, los contratos específicos vigentes y
+`docs/ESTADO-ACTUAL-COMPAS-NG.md`.
 
 ---
 

@@ -3,6 +3,11 @@
 > COMPÁS NG — Contrato del Compilador del Plan Local de Salud
 > Sprint 2.3 — 2026-06-28
 > Estado: VIGENTE
+>
+> Reconciliación de estado — 2026-09-23:
+> `CONTRACT-MTE` es el contrato vigente del Motor de Traducción Estratégica.
+> Toda mención a `EPVSATranslator` se entiende como fallback histórico o
+> provisional que debe marcarse expresamente si se usa en un PLS compilado.
 
 ---
 
@@ -101,7 +106,7 @@ interface CompileLocalHealthPlanInput {
 | Entrada | Cuándo es necesaria |
 |---|---|
 | `MonitoringDraft` | Siempre, pero puede estar en estado inicial mínimo |
-| `StrategicTranslationResult` | Cuando el MTE canónico esté implementado; provisionalmente se usa `EPVSATranslationResult` |
+| `LecturaEstrategicaLocal` | Cuando exista articulación institucional canónica producida por `CONTRACT-MTE`; cualquier fallback EPVSA anterior debe marcarse como provisional |
 | Datos de referencia territorial | Si se incluyen en los Anexos Metodológicos |
 
 ### 4.3 Lo que el compilador NO consume
@@ -197,7 +202,9 @@ El manifest del PLS incluye:
     "CONTRACT-LOCAL-HEALTH-PLAN-COMPILER",
     "CONTRACT-MIT-PSL",
     "CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER",
-    "CONTRACT-ACTION-PLAN",
+    "CONTRACT-DELIBERATIVE-PRIORITISATION",
+    "CONTRACT-ACTION-PLAN-CATALOG",
+    "CONTRACT-MTE",
   ],
 }
 ```
@@ -235,7 +242,7 @@ La distinción es metodológicamente crítica:
 
 ## 10. Articulación institucional provisional vs canónica
 
-Mientras el MTE canónico no esté implementado, el compilador utiliza `EPVSATranslationResult`. El cap. VI del PLS (`PLSSectionArticulacionInstitucional`) debe marcarse explícitamente:
+La articulación institucional canónica del PLS deriva de la `LecturaEstrategicaLocal` producida por `CONTRACT-MTE`. Si una implementación transitoria utiliza `EPVSATranslationResult` o cualquier salida anterior al MTE vigente, el cap. VI del PLS (`PLSSectionArticulacionInstitucional`) debe marcarse explícitamente como provisional:
 
 ```typescript
 articulacionInstitucional: {
@@ -245,7 +252,7 @@ articulacionInstitucional: {
 }
 ```
 
-Cuando el MTE canónico esté disponible, el campo `isProvisional` pasa a `false` y `provisionNote` desaparece.
+Cuando el PLS consume `LecturaEstrategicaLocal`, el campo `isProvisional` pasa a `false` y `provisionNote` desaparece. La ausencia de integración del MTE en el compilador no autoriza volver a tratar EPVSA como ruta canónica.
 
 ---
 
@@ -306,7 +313,7 @@ La ejecución es una operación de solo lectura sobre los inputs. No escribe en 
 El estado `"validated"` habilita el PSL-C y el Nivel 3. El estado `"approved"` —condición institucional superior— es el gate del compilador del PLS (G-PLS-1).
 
 **I-PLSC-3 — El compilador no es el MTE**
-El compilador no produce articulaciones estratégicas. Integra el resultado del MTE (o del EPVSATranslator provisionalmente). La propuesta de alineación estratégica precede a la compilación.
+El compilador no produce articulaciones estratégicas. Integra el resultado del MTE (`LecturaEstrategicaLocal`) o, en una transición explícitamente marcada, un fallback EPVSA provisional. La propuesta de alineación estratégica precede a la compilación.
 
 **I-PLSC-4 — El PLS incluye necesidades no priorizadas**
 Si el campo `unaddressedNeeds` está vacío, debe contener un ítem con `justification: "Todas las necesidades identificadas en el diagnóstico han sido incluidas en el Plan de Acción."` La ausencia del campo bloquea la compilación (G-PLS-7).
@@ -327,7 +334,7 @@ El compilador devuelve `CompilationResult` tipado. Nunca lanza. Los errores espe
 
 ## 15. Relaciones
 
-- **Upstream (inputs):** CONTRACT-MIT-PSL (PSL aprobado), CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER (PSL-C), CONTRACT-ACTION-PLAN (borradores del Nivel 3), ampliación de CONTRACT-MIT-PSL (actor model de `approved`).
+- **Upstream (inputs):** CONTRACT-MIT-PSL (PSL aprobado), CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER (PSL-C), CONTRACT-MTE (Lectura Estratégica Local), CONTRACT-DELIBERATIVE-PRIORITISATION y CONTRACT-ACTION-PLAN-CATALOG (Plan de Acción vigente), CONTRACT-INSTITUTIONAL-LIFECYCLE (actor model de `approved` y validaciones formales).
 - **Upstream (contrato estructural):** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT (qué contiene el PLS).
 - **Paralelo:** CONTRACT-LOCAL-HEALTH-PROFILE-COMPILER (patrón de compilación análogo para el PSL-C).
 - **Downstream:** Exportación DOCX/PDF/HTML (futura capa Renderer + Exporter).
@@ -356,6 +363,6 @@ Los siguientes elementos deben estar resueltos antes de escribir el código del 
 Este contrato NO regula:
 - El formato de exportación DOCX/PDF/HTML (responsabilidad futura del Renderer).
 - La aprobación institucional (acto humano externo; el sistema la registra, no la produce).
-- La implementación del MTE canónico (CONTRACT-STRATEGIC-TRANSLATION).
+- La implementación del MTE canónico (`CONTRACT-MTE`), ya gobernada fuera de este contrato.
 - El StrategicRepository (CONTRACT-STRATEGIC-REPOSITORY).
 - La evaluación de impacto post-ejecución (stage `evaluation`, sin implementación activa).
