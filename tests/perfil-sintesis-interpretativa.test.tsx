@@ -97,6 +97,13 @@ describe("síntesis interpretativa del Perfil", () => {
     expect(assetsBlock?.whatItAdds).toContain(
       "Localiza Salud como fuente principal de activos"
     );
+    expect(assetsBlock?.whatItAdds).toContain("56 recursos de Localiza Salud");
+    expect(assetsBlock?.whatItAdds).not.toContain("recurso(s)");
+    expect(view.sourceBlocks.map((block) => block.whatItDoesNotAllow)).toEqual([
+      "No mide por sí solo prevalencia local ni distribución interna de desigualdad",
+      "No sustituyen la lectura municipal ni convierten una muestra o proxy en verdad territorial completa",
+      "No acreditan cobertura, uso efectivo ni acceso real sin contraste comunitario",
+    ]);
     expect(JSON.stringify(view.territorialReadings)).not.toContain(
       "hipótesis El territorio"
     );

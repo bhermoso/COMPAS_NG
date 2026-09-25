@@ -846,6 +846,14 @@ function firstHumanOpenQuestion(answers: DiagnosticAnswers): string | undefined 
     .find((question) => question.trim().length > 0);
 }
 
+function formatCount(
+  count: number,
+  singular: string,
+  plural: string
+): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 function buildClosingColumns(input: {
   answers: DiagnosticAnswers;
   synthesis: ReturnType<typeof buildProfileSynthesis>;
@@ -1107,7 +1115,7 @@ export function buildProfileIntegratedEditorialView(
       : "sin estudios complementarios incorporados; esta ausencia queda declarada como alcance del diagnóstico";
   const assetsSourceText =
     answers.salutogenica.totalAssets > 0
-      ? `${answers.salutogenica.totalAssets} recurso(s) de Localiza Salud como fuente principal de activos, inventariado(s) como capacidades potenciales`
+      ? `${formatCount(answers.salutogenica.totalAssets, "recurso", "recursos")} de Localiza Salud como fuente principal de activos, inventariados como capacidades potenciales`
       : "sin activos Localiza Salud incorporados todavía";
 
   const sourceBlocks: ProfileIntegratedEditorialSourceBlock[] = [
@@ -1117,7 +1125,7 @@ export function buildProfileIntegratedEditorialView(
       whatItAdds:
         "agenda sanitaria de partida, temas tratados y trazabilidad textual del documento fuente",
       whatItDoesNotAllow:
-        "no mide por sí solo prevalencia local ni distribución interna de desigualdad",
+        "No mide por sí solo prevalencia local ni distribución interna de desigualdad",
       variant: "informe",
     },
     {
@@ -1125,7 +1133,7 @@ export function buildProfileIntegratedEditorialView(
       title: "Estudios complementarios",
       whatItAdds: studiesSourceText,
       whatItDoesNotAllow:
-        "no sustituyen la lectura municipal ni convierten una muestra o proxy en verdad territorial completa",
+        "No sustituyen la lectura municipal ni convierten una muestra o proxy en verdad territorial completa",
       variant: "estudio",
     },
     {
@@ -1133,7 +1141,7 @@ export function buildProfileIntegratedEditorialView(
       title: "Activos y capacidades",
       whatItAdds: assetsSourceText,
       whatItDoesNotAllow:
-        "no acreditan cobertura, uso efectivo ni acceso real sin contraste comunitario",
+        "No acreditan cobertura, uso efectivo ni acceso real sin contraste comunitario",
       variant: "activo",
     },
   ];

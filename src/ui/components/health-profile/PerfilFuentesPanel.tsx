@@ -25,6 +25,10 @@ const MARCA: Record<EstadoDimension, string> = {
   pendiente: "○",
 };
 
+function contar(n: number, singular: string, plural: string): string {
+  return `${n} ${n === 1 ? singular : plural}`;
+}
+
 export function PerfilFuentesPanel({ workspace, children, onProcessReport, processing, message }: PerfilFuentesPanelProps) {
   const nombre = workspace.municipality.identity.name;
   const docs = workspace.repository.documents;
@@ -89,7 +93,8 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       detalle:
         tieneInforme || estudios > 0
           ? `${tieneInforme ? "Informe de Salud" : "Sin Informe"} + ${estudios} ` +
-            `estudio(s) complementario(s) con ${indicadores} indicador(es): ` +
+            `${estudios === 1 ? "estudio complementario" : "estudios complementarios"} ` +
+            `con ${contar(indicadores, "indicador", "indicadores")}: ` +
             `fuentes disponibles para revisar la situación de salud y bienestar; su presencia no acredita cobertura completa.`
           : "Sin fuente diagnóstica primaria ni estudios todavía.",
     },
@@ -98,7 +103,7 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: determinantes > 0 ? "cubierta" : "pendiente",
       detalle:
         determinantes > 0
-          ? `${determinantes} determinante(s) con evidencia directa.`
+          ? `${contar(determinantes, "determinante", "determinantes")} con evidencia directa.`
           : `Sin evidencia directa: la lectura se sostiene por hipótesis ` +
             `epidemiológico-sociales. ${BADEA_CANDIDATA}`,
     },
@@ -115,7 +120,7 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: activos > 0 ? "cubierta" : "pendiente",
       detalle:
         activos > 0
-          ? `${activos} activo(s) de Localiza Salud como fuente principal de activos; ` +
+          ? `${contar(activos, "activo", "activos")} de Localiza Salud como fuente principal de activos; ` +
             `lectura salutogénica y validación territorial fina pendientes.`
           : `Sin activos Localiza Salud incorporados todavía; otras menciones de ` +
             `activos quedan como indicios hasta reconciliarse con la fuente principal.`,
@@ -125,7 +130,7 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: cualitativos > 0 ? "parcial" : "pendiente",
       detalle:
         cualitativos > 0
-          ? `${cualitativos} elemento(s) cualitativo(s): base aún limitada para ` +
+          ? `${contar(cualitativos, "elemento cualitativo", "elementos cualitativos")}: base aún limitada para ` +
             `la perspectiva ciudadana.`
           : "Sin material cualitativo/participativo todavía.",
     },
@@ -134,7 +139,7 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       estado: cautelas > 0 ? "cubierta" : "pendiente",
       detalle:
         cautelas > 0
-          ? `${cautelas} cautela(s) metodológica(s) declaradas (escala ` +
+          ? `${contar(cautelas, "cautela metodológica declarada", "cautelas metodológicas declaradas")} (escala ` +
             `proxy/contextual incluida): alimentan las incertidumbres críticas ` +
             `del documento.`
           : "Sin cautelas registradas.",

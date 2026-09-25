@@ -86,9 +86,9 @@ describe("enriquecimiento de fuentes — vista de impacto, no cargador", () => {
       expect(html).toContain(dimension);
     }
     // Cobertura derivada del expediente vigente, no inventada
-    expect(html).toContain("13 estudio(s) complementario(s)");
-    expect(html).toContain("23 indicador(es)");
-    expect(html).toContain("56 activo(s) de Localiza Salud");
+    expect(html).toContain("13 estudios complementarios");
+    expect(html).toContain("23 indicadores");
+    expect(html).toContain("56 activos de Localiza Salud");
     expect(html).toContain("fuente principal de activos");
     expect(html).toContain("Sin evidencia directa"); // determinantes: pendiente
     expect(html).toContain("no están desagregados"); // desigualdades: pendiente
