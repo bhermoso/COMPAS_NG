@@ -7,6 +7,7 @@ import {
   resolvedPlanDecisionText,
 } from "../../domain/action-plan-catalog/DefinitiveActionPlanProjection";
 import type { PlanPreparationDraft } from "../../domain/action-plan-catalog/PlanPreparationDraft";
+import { compareActionPlanNotation, thematicBlockNameFor } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 
 export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, validatedActionPlans, onValidatePlan}: {
   validatedActionPlans?: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument[];
@@ -43,6 +44,11 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, va
     window.setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   }
 
+  function printGeneratedPlan() {
+    if (!generated) generatePlan();
+    window.setTimeout(() => window.print(), 0);
+  }
+
   return <section className="workspace-panel pcm-definitive-plan" aria-label={`Plan de Acción resultante · ${municipalityName}`}>
     <PlanDocumentActions key={municipalityId} municipalityId={municipalityId} active={active} versions={validatedActionPlans} onValidate={onValidatePlan}/>
     <div className="pcm-module__header">
@@ -58,7 +64,7 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, va
       {pending > 0 && <div className="phase-blocked-notice"><strong>Versión todavía no cerrable</strong><p>Quedan {pending} elementos pendientes dentro de las líneas que ya estás trabajando. Puedes ver el resultado actual, pero conviene resolverlos antes de declarar el Plan definitivo.</p></div>}
       <div className="backup-panel__actions pcm-generation-actions">
         <button type="button" disabled={!hasSelectableContent} onClick={generatePlan}>Generar Plan de Acción</button>
-
+        <button type="button" disabled={!hasSelectableContent} onClick={printGeneratedPlan}>Imprimir / guardar como PDF</button>
 
       </div>
       {!hasSelectableContent ? (
@@ -74,18 +80,27 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, va
           {active.map(({module, moduleDecision, rows}) => rows.length > 0 && <article key={module.id} className="pcm-module">
             <h3>{module.title}</h3>
             <p><strong>Objetivo estratégico:</strong> {resolvedPlanDecisionText(moduleDecision, module.strategicObjective)} {moduleDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p>
-            <ol className="pcm-generated-objectives">
-              {rows.map(row => {
-                const objectiveText = resolvedPlanDecisionText(row.objectiveDecision, row.specific.title);
-                const generalText = resolvedPlanDecisionText(row.generalDecision, row.general.title);
-                const indicatorText = resolvedPlanDecisionText(row.indicatorDecision, row.specific.indicator.title);
-                return <li key={`${row.specific.code}-${row.specific.indicator.code}`} className="pcm-specific">
-                  <p><strong>Objetivo específico · {row.specific.displayCode ?? row.specific.code}</strong> · {objectiveText} {row.objectiveDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p>
-                  <p className="panel-note"><strong>Objetivo general · {row.general.code}</strong> · {generalText}</p>
-                  {row.indicatorIncluded ? <p className="pcm-preview-indicator"><strong>{row.specific.indicator.code}</strong> · {indicatorText} {row.indicatorDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p> : <p className="panel-note">Indicador todavía no seleccionado para este objetivo.</p>}
-                </li>;
-              })}
-            </ol>
+            {module.generalObjectives.map(general => {
+              const group = rows
+                .filter(row => row.general.code === general.code)
+                .sort((left, right) => compareActionPlanNotation(left.specific.displayCode ?? left.specific.code, right.specific.displayCode ?? right.specific.code));
+              if (!group.length) return null;
+              const generalText = resolvedPlanDecisionText(group[0].generalDecision, general.title);
+              return <section key={general.code} className="pcm-plan-block">
+                <h4>Bloque temático · {thematicBlockNameFor(general.code) ?? general.code}</h4>
+                <p className="panel-note"><strong>Objetivo del bloque:</strong> {generalText}</p>
+                <ol className="pcm-generated-objectives">
+                  {group.map(row => {
+                    const objectiveText = resolvedPlanDecisionText(row.objectiveDecision, row.specific.title);
+                    const indicatorText = resolvedPlanDecisionText(row.indicatorDecision, row.specific.indicator.title);
+                    return <li key={`${row.specific.code}-${row.specific.indicator.code}`} className="pcm-specific">
+                      <p><strong>Objetivo específico · {row.specific.displayCode ?? row.specific.code}</strong> · {objectiveText} {row.objectiveDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p>
+                      {row.indicatorIncluded ? <p className="pcm-preview-indicator"><strong>Indicador · {row.specific.indicator.code}</strong> · {indicatorText} {row.indicatorDecision?.status === "modified" && <span className="status-pill">Modificado</span>}</p> : <p className="panel-note">Indicador todavía no seleccionado para este objetivo.</p>}
+                    </li>;
+                  })}
+                </ol>
+              </section>;
+            })}
           </article>)}
         </div>
       )}

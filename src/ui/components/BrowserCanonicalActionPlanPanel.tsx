@@ -10,8 +10,8 @@ export function ActionPlanCatalogPanel(props:LegacyActionPlanCatalogPanelProps){
  const drafts=props.municipalityId === 'granada-zaidin' && !current
   ? [...(props.drafts ?? []).filter(draft => draft.moduleId !== ZAIDIN_AGING_PROPOSAL.id), createZaidinFinalActionPlanDraft(previous)]
   : props.drafts;
- return <>
+ return <div className="action-plan-workspace">
   <DefinitiveActionPlanPreview municipalityId={props.municipalityId} modules={modules} drafts={drafts} validatedActionPlans={props.validatedActionPlans} onValidatePlan={props.onValidatePlan}/>
   <LegacyActionPlanCatalogPanel {...props} drafts={drafts}/>
- </>;
+ </div>;
 }

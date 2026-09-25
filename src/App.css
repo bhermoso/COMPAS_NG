@@ -9911,6 +9911,37 @@ h3 {
     margin: 0 0 16pt !important;
   }
 
+  /* Plan de Acción: al imprimir desde la pantalla resultante solo sale el
+     documento generado. La herramienta de inclusión, modificación, fichas y
+     controles de trabajo queda fuera del PDF de navegador. */
+  .action-plan-workspace > .pcm-root,
+  .pcm-definitive-plan .plan-document-actions,
+  .pcm-definitive-plan .pcm-generation-actions,
+  .pcm-definitive-plan .pcm-generation-prompt,
+  .pcm-definitive-plan > .panel-note,
+  .pcm-definitive-plan > p,
+  .pcm-generated-plan > p[role="status"],
+  .pcm-generated-plan .status-pill {
+    display: none !important;
+  }
+
+  .pcm-definitive-plan {
+    border-top: 2pt solid #1e293b !important;
+    background: #fff !important;
+  }
+
+  .pcm-generated-plan {
+    display: block !important;
+    margin: 0 !important;
+  }
+
+  .pcm-generated-plan .pcm-module,
+  .pcm-generated-plan .pcm-plan-block,
+  .pcm-generated-plan .pcm-specific {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   /* Lectura canónica: borde superior identifica el inicio del Perfil. */
   .pie-preview,
   .pie-doc { border-top: 2pt solid #1e293b !important; }

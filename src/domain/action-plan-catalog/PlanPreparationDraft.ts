@@ -49,6 +49,10 @@ export const proposalBlocks = [
   {code:"ENV-OG4",name:"Participación",text:"Incrementar la participación significativa y el protagonismo de las personas mayores en la comunidad, reduciendo las barreras de accesibilidad a los recursos, servicios y actividades comunitarias y la brecha digital, y fortaleciendo la coordinación comunitaria.",objectives:["ENV-OE4.1","ENV-OE4.2","ENV-OE8.1","ENV-OE8.2","ENV-OE7.1"]}
 ];
 
+export function thematicBlockNameFor(code: string): string | undefined {
+ return proposalBlocks.find(block => block.code === code)?.name;
+}
+
 export function compareActionPlanNotation(left: string, right: string): number {
  const leftNumbers = [...left.matchAll(/\d+/g)].map(match => Number(match[0]));
  const rightNumbers = [...right.matchAll(/\d+/g)].map(match => Number(match[0]));

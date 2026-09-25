@@ -18,7 +18,7 @@ export function PlanDocumentActions({municipalityId,active,versions=[],onValidat
    setMessage("Versión validada guardada en este expediente.");
   }catch(e){setMessage((e as Error).message);}
  }
- return <section className="workspace-panel" aria-label="Documento independiente del Plan">
+ return <section className="workspace-panel plan-document-actions" aria-label="Documento independiente del Plan">
  <h3>Documento independiente del Plan de Acción</h3>
  <p>{latest?"Las descargas contienen exclusivamente la última versión validada. Los cambios posteriores del borrador requieren una nueva validación.":"No existe una versión validada. Las descargas se identificarán como borrador."}</p>
  {latest&&<p>Última validación: {latest.generatedAt} · {latest.validatedBy}</p>}
