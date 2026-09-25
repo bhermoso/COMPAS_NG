@@ -42,3 +42,5 @@ export * from "./PAIView";
 export * from "./DeliberativePrioritySelectionPanel";
 export { ActionPlanCatalogPanel } from "./BrowserCanonicalActionPlanPanel";
 export * from "./PerfilLocalDeSaludPanel";
+
+export * from "./LocalHealthPlanOutline";
