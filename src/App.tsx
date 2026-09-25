@@ -1,3 +1,4 @@
+import { replaceZaidinFinalDraft } from "./application/workspace/replaceZaidinFinalDraft";
 import { processPdfHealthReport } from './application/health-report/ProcessPdfHealthReport';
 import { extractPdfText } from './infrastructure/pdf/extractPdfText';
 import { loadOriginalFile } from './infrastructure/document-files/originalFiles';
@@ -406,6 +407,11 @@ export default function App() {
       ? initialWorkspaceLoad.workspace.municipality.identity.id
       : null
   );
+
+  useEffect(() => {
+    if (pendingSeedId || protectedEmptyWorkspaceIdRef.current === workspace.municipality.identity.id) return;
+    setWorkspace(previous => replaceZaidinFinalDraft(previous));
+  }, [workspace, pendingSeedId]);
 
   const [title, setTitle] = useState("");
   const [plainText, setPlainText] = useState("");
