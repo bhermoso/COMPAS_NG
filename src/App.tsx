@@ -2,7 +2,7 @@ import { replaceZaidinFinalDraft } from "./application/workspace/replaceZaidinFi
 import { processPdfHealthReport } from './application/health-report/ProcessPdfHealthReport';
 import { extractPdfText } from './infrastructure/pdf/extractPdfText';
 import { loadOriginalFile } from './infrastructure/document-files/originalFiles';
-import { bundledDocuments } from './ui/components/documentAccess';
+import { bundledDocuments } from './ui/components/documentAccessUtils';
 import { BackupPanel } from './ui/components/BackupPanel';
 import { DocumentationProvider } from "./ui/components/Documentation";
 import { profileSourceChanged } from './application/health-profile/profileSourceChanged';
