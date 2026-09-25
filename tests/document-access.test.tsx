@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import seed from '../public/seeds/compas-ng-workspace-granada-zaidin.json';
 import { documentAccessUrl, documentDownloadFileName, isPdfDocumentAccess } from '../src/ui/components/documentAccess';
 import { DocumentRepositoryPanel } from '../src/ui/components/DocumentRepositoryPanel';
+import { DocumentAccess } from '../src/ui/components/DocumentAccess';
 import type { MunicipalDocumentRepository } from '../src/domain/repository';
 
 describe('Acceso a documentos del repositorio', () => {
@@ -18,6 +19,14 @@ describe('Acceso a documentos del repositorio', () => {
   expect(html.match(/Descargar PDF original/g)?.length).toBeGreaterThanOrEqual(4);
   expect(html).toContain('Abrir en nueva pestaña');
   expect(html).toContain('Todos los documentos del expediente');
+ });
+ it('nombra de forma inequívoca el Informe de Salud descargable desde el Perfil', () => {
+  const report = repository.documents.find(d => d.kind === 'health-report')!;
+  const html = renderToStaticMarkup(<DocumentAccess document={report} documentLabel="Informe de Salud original"/>);
+  expect(html).toContain('Descargar Informe de Salud original');
+  expect(html).toContain('Abrir Informe de Salud original en nueva pestaña');
+  expect(html).toContain('descarga del Informe de Salud original');
+  expect(html).not.toContain('>Descargar PDF original<');
  });
  it('no convierte rutas desconocidas o esquemas ejecutables en enlaces', () => {
   for(const url of ['javascript:alert(1)', 'data:text/html,test', 'file:///tmp/a.pdf', 'docs/desconocido.pdf', '__proto__', undefined]) expect(documentAccessUrl(url)).toBeUndefined();
