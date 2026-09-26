@@ -8,6 +8,7 @@ import {
 import {
   ZAIDIN_AGING_PROPOSAL,
   createZaidinFinalActionPlanDraft,
+  thematicBlockNameFor,
   type PlanPreparationDraft,
 } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 
@@ -127,7 +128,7 @@ export function LocalHealthPlanOutline({
               const generalDecision = group[0].generalDecision;
               return (
                 <div key={general.code} className="pcm-specific">
-                  <p><strong>Objetivo general · {general.code}</strong> · {resolvedPlanDecisionText(generalDecision, general.title)}</p>
+                  <p><strong>Bloque temático · {thematicBlockNameFor(general.code) ?? general.code}</strong> · {resolvedPlanDecisionText(generalDecision, general.title)}</p>
                   <ul>
                     {group.map((row) => (
                       <li key={row.specific.code}>

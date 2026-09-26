@@ -2,9 +2,11 @@ import type { DefinitiveActionPlanModuleProjection } from "./DefinitiveActionPla
 import { pendingPreparationDecisionCount, resolvedPlanDecisionText } from "./DefinitiveActionPlanProjection";
 import type { PLSEvaluationFramework, UnaddressedNeed } from "../health-plan";
 import {
+ compareActionPlanNotation,
  hasCompleteEvaluationFramework,
  normaliseEvaluationFramework,
  normaliseUnaddressedNeedsForPlan,
+ thematicBlockNameFor,
 } from "./PlanPreparationDraft";
 
 export interface PlanDocumentOptions {
@@ -46,17 +48,27 @@ export function buildPlanDocument(
  const paragraphs: PlanDocument["paragraphs"] = [];
  for (const { module, moduleDecision, rows } of active) {
   if (!rows.length) continue;
-  paragraphs.push({text:module.title,heading:true},{text:"Objetivo estratégico: "+resolvedPlanDecisionText(moduleDecision,module.strategicObjective)});
+  paragraphs.push(
+   {text:module.title,heading:true},
+   {text:"Objetivo estratégico: "+resolvedPlanDecisionText(moduleDecision,module.strategicObjective)}
+  );
   const groups = new Map<string, typeof rows>();
   for (const row of rows) groups.set(row.general.code, [...(groups.get(row.general.code) ?? []), row]);
   for (const general of module.generalObjectives) {
    const group = groups.get(general.code);
    if (!group) continue;
    const first = group[0];
-   paragraphs.push({text:"Objetivo general · "+first.general.code+" · "+resolvedPlanDecisionText(first.generalDecision,first.general.title),heading:true});
-   for (const row of group) {
+   const blockName = thematicBlockNameFor(first.general.code) ?? first.general.code;
+   paragraphs.push(
+    {text:"Bloque temático · "+blockName,heading:true},
+    {text:"Objetivo del bloque: "+resolvedPlanDecisionText(first.generalDecision,first.general.title)}
+   );
+   const orderedGroup = [...group].sort((left, right) =>
+    compareActionPlanNotation(left.specific.displayCode ?? left.specific.code, right.specific.displayCode ?? right.specific.code)
+   );
+   for (const row of orderedGroup) {
     paragraphs.push({text:"Objetivo específico · "+(row.specific.displayCode ?? row.specific.code)+" · "+resolvedPlanDecisionText(row.objectiveDecision,row.specific.title)});
-    paragraphs.push({text:row.indicatorIncluded ? row.specific.indicator.code+" · "+resolvedPlanDecisionText(row.indicatorDecision,row.specific.indicator.title) : "Indicador no incorporado."});
+    paragraphs.push({text:row.indicatorIncluded ? "Indicador · "+row.specific.indicator.code+" · "+resolvedPlanDecisionText(row.indicatorDecision,row.specific.indicator.title) : "Indicador no incorporado."});
    }
   }
  }
