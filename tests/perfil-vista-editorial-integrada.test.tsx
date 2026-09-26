@@ -240,6 +240,20 @@ describe("navegación principal visible", () => {
   });
 });
 
+describe("mapa visible de estado del Perfil", () => {
+  it("explicita las piezas del perfil que antes quedaban repartidas", () => {
+    expect(html).toContain("Perfil de Salud Local · mapa de estado");
+    expect(html).toContain("Qué existe ahora y qué queda pendiente");
+    expect(html).toContain("Lectura interpretativa COMPÁS");
+    expect(html).toContain("Salida breve tipo Local Health Profiles");
+    expect(html).toContain("Pendiente de validación y compilación");
+    expect(html).toContain("Matriz de evidencia y alcance");
+    expect(html).toContain("Activos y capacidades");
+    expect(html).toContain("56 activos de Localiza Salud");
+    expect(html).toContain("13 estudios complementarios");
+  });
+});
+
 describe("modelo puro — Vista editorial integrada", () => {
   it("devuelve la estructura editorial completa", () => {
     expect(editorialView.header.territory).toBe("Granada-Zaidín");

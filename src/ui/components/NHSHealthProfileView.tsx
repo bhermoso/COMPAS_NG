@@ -64,14 +64,14 @@ export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
 
   if (!projection.available) {
     return (
-      <section className="workspace-panel">
-        <p className="eyebrow">Perfil de Salud Local · Representación derivada</p>
-        <h2>Vista no disponible</h2>
+      <section className="workspace-panel nhs-root">
+        <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
+        <h2>Pendiente de compilar el Perfil canónico</h2>
         <p className="panel-note">
-          Esta vista es una representación derivada del Perfil de Salud Local canónico.
-          Para mostrarse necesita que el Perfil se haya compilado como documento
-          institucional (documento canónico sellado). Un Perfil validado pero todavía
-          no compilado no tiene aún esta representación derivada.
+          Esta salida se inspira en los Local Authority Health Profiles de
+          OHID/Fingertips, pero no es un producto autónomo ni una segunda fuente
+          de verdad. Se mostrará cuando el Perfil se compile como PSL-C y exista
+          un documento canónico sellado del que derivar sus indicadores.
         </p>
       </section>
     );
@@ -83,13 +83,13 @@ export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
     <div className="nhs-root">
 
       <section className="workspace-panel">
-        <p className="eyebrow">Perfil de Salud Local · Representación derivada (diagnóstico comparativo)</p>
+        <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
         <h2>Indicadores del territorio y sus referencias</h2>
         <p className="panel-note">
-          Representación derivada del Perfil de Salud Local canónico. Se presentan los
-          valores del territorio y sus referencias provincial y andaluza tal como constan
-          en el documento; la interpretación corresponde al lector. Esta vista no emite
-          veredictos comparativos.
+          Representación derivada del Perfil canónico, inspirada en OHID/Fingertips.
+          Presenta valores del territorio y referencias provincial y andaluza tal
+          como constan en el documento; la interpretación corresponde al lector.
+          Esta vista no emite veredictos comparativos.
         </p>
       </section>
 

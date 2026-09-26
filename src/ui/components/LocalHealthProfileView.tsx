@@ -156,6 +156,92 @@ function contar(n: number, singular: string, plural: string): string {
   return `${n} ${n === 1 ? singular : plural}`;
 }
 
+interface ProfileStateMapProps {
+  hasIntegratedReading: boolean;
+  hasCanonicalDerivedProfile: boolean;
+  profileStatus: LocalHealthProfile["status"];
+  diagnosticSourceCount: number;
+  complementaryStudyCount: number;
+  matrixSignalCount: number;
+  localizaAssetCount: number;
+}
+
+function statusLabel(ok: boolean, pending: string): string {
+  return ok ? "Visible" : pending;
+}
+
+function ProfileStateMap({
+  hasIntegratedReading,
+  hasCanonicalDerivedProfile,
+  profileStatus,
+  diagnosticSourceCount,
+  complementaryStudyCount,
+  matrixSignalCount,
+  localizaAssetCount,
+}: ProfileStateMapProps) {
+  const derivedPending =
+    profileStatus === "validated" || profileStatus === "approved"
+      ? "Pendiente de compilar el PSL-C"
+      : "Pendiente de validación y compilación";
+  const rows = [
+    {
+      title: "Lectura interpretativa COMPÁS",
+      status: statusLabel(hasIntegratedReading, "Pendiente"),
+      detail: hasIntegratedReading
+        ? `Lectura territorial integrada visible a partir de ${contar(diagnosticSourceCount, "fuente diagnóstica", "fuentes diagnósticas")}.`
+        : "Todavía no hay lectura territorial suficiente para mostrar el Perfil integrado.",
+    },
+    {
+      title: "Salida breve tipo Local Health Profiles",
+      status: hasCanonicalDerivedProfile ? "Disponible" : derivedPending,
+      detail: hasCanonicalDerivedProfile
+        ? "Representación derivada del Perfil canónico: indicadores, valor territorial, referencias provincial y andaluza, sin veredictos comparativos."
+        : "No es un producto autónomo ni una segunda fuente de verdad: aparece cuando se compila un PSL-C con documento canónico sellado.",
+    },
+    {
+      title: "Matriz de evidencia y alcance",
+      status: statusLabel(matrixSignalCount > 0, "Pendiente"),
+      detail: matrixSignalCount > 0
+        ? `${contar(matrixSignalCount, "señal trazada", "señales trazadas")} con fuente, escala, mecanismo, estatus causal y pregunta para contraste.`
+        : "Sin matriz visible porque no hay respuestas diagnósticas integradas.",
+    },
+    {
+      title: "Activos y capacidades",
+      status: localizaAssetCount > 0 ? "Localiza Salud incorporado" : "Pendiente",
+      detail: localizaAssetCount > 0
+        ? `${contar(localizaAssetCount, "activo de Localiza Salud", "activos de Localiza Salud")} como capacidad potencial; cobertura, uso efectivo y accesibilidad requieren contraste territorial.`
+        : "Sin activos Localiza Salud incorporados como fuente principal.",
+    },
+    {
+      title: "Estudios complementarios",
+      status: complementaryStudyCount > 0 ? "Incorporados" : "Sin estudios",
+      detail: complementaryStudyCount > 0
+        ? `${contar(complementaryStudyCount, "estudio complementario", "estudios complementarios")} aportan indicadores y cautelas; no sustituyen el Informe de Salud ni el contraste local.`
+        : "El Perfil declara esta ausencia como límite de alcance.",
+    },
+  ];
+
+  return (
+    <section className="workspace-panel psl-profile-map" aria-label="Mapa de estado del Perfil">
+      <p className="eyebrow">Perfil de Salud Local · mapa de estado</p>
+      <h2>Qué existe ahora y qué queda pendiente</h2>
+      <p className="panel-note">
+        Este bloque hace explícitas las piezas del Perfil que antes quedaban
+        repartidas entre lectura, anexos, compilación y representación derivada.
+      </p>
+      <div className="psl-profile-map__rows">
+        {rows.map((row) => (
+          <div className="psl-profile-map__row" key={row.title}>
+            <div className="psl-profile-map__name">{row.title}</div>
+            <div className="psl-profile-map__status">{row.status}</div>
+            <div className="psl-profile-map__detail">{row.detail}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ── Chapter editor sub-component ─────────────────────────────────────────────
 // Renders either the authored content or the scaffold preview, plus an
 // inline textarea that writes back through the supplied onSave callback.
@@ -860,6 +946,13 @@ export function LocalHealthProfileView({
         diagnosticAnswers.estudios.totalStudies +
         (diagnosticAnswers.salutogenica.totalAssets > 0 ? 1 : 0)
       : psl.originsSummary.length;
+  const hasCanonicalDerivedProfile =
+    compiledProfiles?.some((artifact) => artifact.canonicalDocument !== undefined) ?? false;
+  const complementaryStudyCount =
+    diagnosticAnswers?.estudios.totalStudies ?? psl.complementaryStudyCount;
+  const localizaAssetCount =
+    diagnosticAnswers?.salutogenica.totalAssets ?? psl.assetCount;
+  const matrixSignalCount = matrizAnexo?.filas.length ?? 0;
 
   return (
     <div className="psl-doc-view">
@@ -971,6 +1064,16 @@ export function LocalHealthProfileView({
           <ProfileIntegratedEditorialPreview view={integratedEditorialView} />
         </>
       )}
+
+      <ProfileStateMap
+        hasIntegratedReading={!isEmpty && integratedEditorialView !== null}
+        hasCanonicalDerivedProfile={hasCanonicalDerivedProfile}
+        profileStatus={psl.status}
+        diagnosticSourceCount={fuentesDiagnostico}
+        complementaryStudyCount={complementaryStudyCount}
+        matrixSignalCount={matrixSignalCount}
+        localizaAssetCount={localizaAssetCount}
+      />
 
       {/* ── Espacio técnico del Perfil ──────────────────────────────────── */}
       <p className="psl-technical-space__label">Espacio técnico del Perfil</p>
