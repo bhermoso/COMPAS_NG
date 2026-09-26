@@ -5134,6 +5134,63 @@ h3 {
 .psl-doc-kpi--priority    { border-top: 3px solid #ffb61b; }
 .psl-doc-kpi--priority .psl-doc-kpi__value { color: #ff6600; }
 
+/* ── Perfil · mapa de estado visible ───────────────────────────────── */
+
+.psl-profile-map {
+  border-top: 4px solid #1e3a5f;
+}
+
+.psl-profile-map h2 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 1.35rem;
+}
+
+.psl-profile-map__rows {
+  display: grid;
+  gap: 0;
+  border: 1px solid #d8e3ef;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.psl-profile-map__row {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(150px, 0.55fr) minmax(260px, 1.65fr);
+  gap: 14px;
+  align-items: start;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5edf6;
+  background: #fff;
+}
+
+.psl-profile-map__row:nth-child(even) {
+  background: #f8fafc;
+}
+
+.psl-profile-map__row:last-child {
+  border-bottom: none;
+}
+
+.psl-profile-map__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.psl-profile-map__status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.psl-profile-map__detail {
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: #526070;
+}
+
 /* ── Primary source banner ───────────────────────────────────────── */
 
 .psl-doc-primary-source {
@@ -5819,6 +5876,7 @@ h3 {
 
 @media (max-width: 768px) {
   .psl-doc-kpi-grid       { grid-template-columns: repeat(2, 1fr); }
+  .psl-profile-map__row   { grid-template-columns: 1fr; gap: 6px; }
   .psl-doc-evidence-grid  { flex-direction: column; }
   .psl-doc-evidence-cell  { flex-direction: row; align-items: center; text-align: left; gap: 14px; }
   .psl-doc-evidence-cell__count { font-size: 1.6rem; margin-bottom: 0; }
