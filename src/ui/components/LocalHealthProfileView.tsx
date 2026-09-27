@@ -1088,7 +1088,7 @@ export function LocalHealthProfileView({
         </section>
       )}
 
-      {psl.status === "validated" && !pslIsStale && (
+      {(psl.status === "validated" || psl.status === "approved") && !pslIsStale && (
         <>
           <PSLCCompilationChecklist
             psl={psl}
