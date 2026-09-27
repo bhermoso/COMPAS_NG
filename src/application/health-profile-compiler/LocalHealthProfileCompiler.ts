@@ -66,10 +66,10 @@ export function validateCompilationPreconditions(
 ): CompilationViolation[] {
   const violations: CompilationViolation[] = [];
 
-  if (psl.status !== "validated") {
+  if (psl.status !== "validated" && psl.status !== "approved") {
     violations.push({
       gate: "G-LHC-1",
-      message: `El PSL debe estar en estado "validated". Estado actual: "${psl.status}".`,
+      message: `El PSL debe estar en estado "validated" o "approved". Estado actual: "${psl.status}".`,
     });
   }
 

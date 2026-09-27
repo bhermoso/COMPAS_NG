@@ -283,6 +283,19 @@ describe("compileLocalHealthProfile — compilación correcta", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("compila también un PSL aprobado institucionalmente", () => {
+    const result = compileLocalHealthProfile({
+      ...INPUT_ATARFE,
+      psl: {
+        ...INPUT_ATARFE.psl,
+        status: "approved",
+        approvedAt: "2026-09-27T09:00:00.000Z",
+        approvedBy: "Grupo Motor del proceso RELAS",
+      },
+    });
+    expect(result.ok).toBe(true);
+  });
+
   it("el artefacto tiene isCongealed: true", () => {
     const result = compileLocalHealthProfile(INPUT_ATARFE);
     expect(result.ok).toBe(true);

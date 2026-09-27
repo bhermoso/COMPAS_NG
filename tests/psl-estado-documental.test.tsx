@@ -190,6 +190,31 @@ describe("ruta operativa — checklist de compilación PSL-C", () => {
     expect(html).not.toContain("La compilación aún no está disponible");
   });
 
+  it("con Perfil aprobado pero sin PSL-C conserva la acción de compilar", () => {
+    const aprobado: LocalHealthProfile = {
+      ...validado,
+      status: "approved",
+      approvedAt: "2026-09-27T09:00:00.000Z",
+      approvedBy: "Grupo Motor del proceso RELAS",
+      conclusiones: { ...validado.conclusiones, status: "authored" },
+      cierreInterpretativo: {
+        ...validado.cierreInterpretativo,
+        status: "authored",
+      },
+      priorizacionStatus: "complete",
+      priorizacion: {
+        ...validado.priorizacion,
+        consensoDocumentado: true,
+        deliberacionNota: "El Grupo Motor deliberó y documentó el consenso.",
+      },
+    };
+    const html = render(aprobado);
+    expect(html).toContain("Aprobado");
+    expect(html).toContain("Crear documento institucional PSL-C");
+    expect(html).toContain("Compilar Perfil de Salud Local");
+    expect(html).not.toContain("La compilación aún no está disponible");
+  });
+
   it("con PSL-C compilado la caja enlaza al documento y a la descarga DOCX", () => {
     const html = render(validado, [artifact]);
     expect(html).toContain("Documento institucional compilado");
