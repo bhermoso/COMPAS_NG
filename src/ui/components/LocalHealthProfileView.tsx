@@ -1075,31 +1075,39 @@ export function LocalHealthProfileView({
         localizaAssetCount={localizaAssetCount}
       />
 
+      {psl.status === "generated" && (
+        <section id="psl-ruta-compilacion" className="workspace-panel pslc-checklist">
+          <p className="eyebrow">Ruta operativa</p>
+          <h2>Validar y crear el documento institucional PSL-C</h2>
+          <p className="panel-note">
+            La salida breve tipo Local Health Profiles se activa cuando existe un
+            Perfil canónico compilado. El primer paso es validar técnicamente este
+            borrador; después aparecerá aquí la acción para compilar el PSL-C.
+          </p>
+          <PSLValidationAction onValidate={onValidate} />
+        </section>
+      )}
+
+      {psl.status === "validated" && !pslIsStale && (
+        <>
+          <PSLCCompilationChecklist
+            psl={psl}
+            compiledCount={compiledProfiles?.length ?? 0}
+            onCompile={onCompile}
+          />
+          <PSLCSalidasInstitucionales compiledProfiles={compiledProfiles} />
+        </>
+      )}
+
       {/* ── Espacio técnico del Perfil ──────────────────────────────────── */}
       <p className="psl-technical-space__label">Espacio técnico del Perfil</p>
       <details className="psl-technical-space" aria-label="Espacio técnico del Perfil">
         <summary className="psl-technical-space__summary">
-          Abrir validación, compilación y trazabilidad interna
+          Abrir trazabilidad interna y lectura técnica extensa
         </summary>
         <p className="psl-technical-space__help">
-          Validación, compilación, enriquecimiento y trazabilidad interna. No forma parte de la lectura canónica del Perfil.
+          Enriquecimiento, anexos y trazabilidad interna. No forma parte de la lectura canónica del Perfil.
         </p>
-
-        {/* ── Acción de validación (solo cuando el PSL está en borrador) ─── */}
-        {psl.status === "generated" && (
-          <PSLValidationAction onValidate={onValidate} />
-        )}
-
-        {psl.status === "validated" && !pslIsStale && (
-          <>
-            <PSLCCompilationChecklist
-              psl={psl}
-              compiledCount={compiledProfiles?.length ?? 0}
-              onCompile={onCompile}
-            />
-            <PSLCSalidasInstitucionales compiledProfiles={compiledProfiles} />
-          </>
-        )}
 
       {/* ── Resumen ejecutivo ─────────────────────────────────────────────── */}
       <section id="psl-resumen" className="psl-doc-section workspace-panel">

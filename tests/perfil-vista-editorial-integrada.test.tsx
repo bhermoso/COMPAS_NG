@@ -1098,9 +1098,11 @@ describe("calidad documental — textura y formularios", () => {
     expect(matches.length).toBeLessThanOrEqual(2);
   });
 
-  it("la lectura canónica no contiene el formulario de validación técnica", () => {
+  it("la ruta operativa para validar y compilar queda visible antes del espacio técnico", () => {
     const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
-    expect(beforeTechnical).not.toContain("Validar técnicamente");
+    expect(beforeTechnical).toContain("Validar y crear el documento institucional PSL-C");
+    expect(beforeTechnical).toContain("Validar técnicamente");
+    expect(beforeTechnical).toContain("La salida breve tipo Local Health Profiles se activa");
   });
 
   it("conserva las señales cuantitativas clave en la lectura canónica", () => {
