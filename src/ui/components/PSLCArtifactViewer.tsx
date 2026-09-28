@@ -1,5 +1,5 @@
 import type { LocalHealthProfileArtifact } from "../../domain/health-profile-artifact";
-import type { PSLCDocumentSection } from "../../application/psl-c-export";
+import type { PSLCDocumentModel, PSLCDocumentSection } from "../../application/psl-c-export";
 import { buildPSLCDocumentModel } from "../../application/psl-c-export";
 
 /**
@@ -124,14 +124,17 @@ function StructuredBody({ section }: { section: PSLCDocumentSection }) {
 }
 
 export function PSLCArtifactViewer({ artifact }: PSLCArtifactViewerProps) {
-  const model = buildPSLCDocumentModel(artifact);
+  return <DocumentModelViewer model={buildPSLCDocumentModel(artifact)} />;
+}
+
+export function DocumentModelViewer({ model, label = "Documento institucional PSL-C" }: { model: PSLCDocumentModel; label?: string }) {
 
   return (
-    <article className="pslc-viewer" aria-label="Documento institucional PSL-C">
+    <article className="pslc-viewer" aria-label={label}>
 
       {/* ── Portada institucional ────────────────────────────────────────── */}
       <header className="pslc-viewer__portada psl-doc-section">
-        <p className="eyebrow">Perfil de Salud Local · documento institucional compilado</p>
+        <p className="eyebrow">{model.subtitle}</p>
         <h2>{model.title}</h2>
         <p className="panel-note">{model.subtitle}</p>
         <div className="pslc-viewer__meta">
