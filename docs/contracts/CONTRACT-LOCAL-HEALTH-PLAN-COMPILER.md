@@ -386,3 +386,21 @@ Este contrato NO regula:
 - La implementación del MTE canónico (`CONTRACT-MTE`), ya gobernada fuera de este contrato.
 - El StrategicRepository (CONTRACT-STRATEGIC-REPOSITORY).
 - La evaluación de impacto post-ejecución (stage `evaluation`, sin implementación activa).
+
+
+## 18. Compilación inicial para revisión (2026-09-28)
+
+La acción «Generar borrador del Plan Local de Salud» produce un documento de
+trabajo independiente del compilador terminal y del esbozo vivo. Incluye el
+modelo completo del PSL-C vigente (lectura y anexo técnico), prioridades del
+Perfil sellado y último Plan de Acción validado del mismo municipio.
+Requiere Perfil validado o aprobado, no obsoleto, y un PSL-C canónico coherente
+con su versión y contenido. No reconstruye documentos desde borradores vivos.
+
+Las actuaciones, agenda, recursos, evaluación incompleta y aprobación se
+declaran pendientes sin bloquear esta compilación inicial. No satisface ni
+elude los gates del documento institucional definitivo. Se identifica como
+BORRADOR y conserva fechas e identidades de las versiones utilizadas.
+El modelo generado se mantiene en memoria para consulta y descarga Word/PDF;
+no se acumulan copias completas en localStorage. Al cambiar las fuentes
+validadas, se exige generar de nuevo antes de descargar.

@@ -1,3 +1,4 @@
+import { InitialLocalHealthPlanPanel } from "./ui/components/InitialLocalHealthPlanPanel";
 import { replaceZaidinFinalDraft } from "./application/workspace/replaceZaidinFinalDraft";
 import { processPdfHealthReport } from './application/health-report/ProcessPdfHealthReport';
 import { extractPdfText } from './infrastructure/pdf/extractPdfText';
@@ -3478,6 +3479,8 @@ export default function App() {
 
         {/* ── ⑧ Plan Local de Salud — esbozo previo a las actuaciones ── */}
         {view === "plan-local" && (
+          <>
+          <InitialLocalHealthPlanPanel workspace={workspace} pslIsStale={runtime.pslIsStale} />
           <LocalHealthPlanOutline
             municipalityId={workspace.municipality.identity.id}
             municipalityName={municipality.name}
@@ -3490,6 +3493,7 @@ export default function App() {
               .map((topic) => topic.label)}
             drafts={workspace.planPreparationDrafts ?? []}
           />
+          </>
         )}
 
         {/* ── ⑨ Evaluación — espacio canónico (pendiente de implementación) */}
