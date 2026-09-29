@@ -5879,6 +5879,8 @@ h3 {
   .psl-profile-map__row   { grid-template-columns: 1fr; gap: 6px; }
   .nhs-executive-hero,
   .nhs-snapshot-grid,
+  .nhs-quality-grid,
+  .nhs-quality-notes,
   .nhs-spotlight-grid,
   .nhs-domain__rows       { grid-template-columns: 1fr; }
   .nhs-executive-hero__metrics,
@@ -7899,8 +7901,13 @@ h3 {
 }
 
 .nhs-snapshot-panel,
-.nhs-spotlight-panel {
+.nhs-spotlight-panel,
+.nhs-quality-panel {
   border-top: 3px solid #94d40b;
+}
+
+.nhs-quality-panel {
+  border-top-color: #0074c8;
 }
 
 .nhs-snapshot-panel__header {
@@ -8072,7 +8079,130 @@ h3 {
 .nhs-value-tile--missing .nhs-value-tile__value {
   color: #94a3b8;
 }
+.nhs-scope-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
+.nhs-scope-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 7px;
+  border: 1px solid #d7e7f5;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #526070;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.nhs-scope-chip--solid {
+  border-color: #b7d5ee;
+  background: #eef7ff;
+  color: #14395b;
+}
+
+.nhs-scope-chip--info {
+  border-color: #b5e5e5;
+  background: #ecfbfb;
+  color: #006f6f;
+}
+
+.nhs-scope-chip--warning {
+  border-color: #f3d28b;
+  background: #fff9e9;
+  color: #8a5700;
+}
+
+.nhs-scope-chip--muted {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.nhs-quality-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.nhs-quality-card {
+  min-height: 138px;
+  padding: 13px;
+  border: 1px solid #d7e7f5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.nhs-quality-card--info {
+  border-top: 4px solid #00a6a6;
+}
+
+.nhs-quality-card--solid {
+  border-top: 4px solid #0074c8;
+}
+
+.nhs-quality-card--warning {
+  border-top: 4px solid #ffb61b;
+}
+
+.nhs-quality-card--muted {
+  border-top: 4px solid #cbd5e1;
+}
+
+.nhs-quality-card__value {
+  display: block;
+  color: #14395b;
+  font-size: 1.75rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.nhs-quality-card__label {
+  display: block;
+  margin-top: 7px;
+  color: #1a2b3c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.nhs-quality-card__text {
+  display: block;
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nhs-quality-notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nhs-quality-notes li {
+  padding: 9px 11px;
+  border-left: 3px solid #0074c8;
+  border-radius: 6px;
+  background: #f8fbff;
+  color: #526070;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.nhs-quality-panel__foot {
+  margin: 12px 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
 .nhs-key {
   display: flex;
   align-items: center;
