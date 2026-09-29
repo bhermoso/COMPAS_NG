@@ -5882,7 +5882,9 @@ h3 {
   .nhs-spotlight-grid,
   .nhs-domain__rows       { grid-template-columns: 1fr; }
   .nhs-executive-hero__metrics,
-  .nhs-indicator-card__values { grid-template-columns: 1fr; }
+  .nhs-indicator-card__values,
+  .nhs-domain-stats       { grid-template-columns: 1fr; }
+  .nhs-key                { align-items: flex-start; }
   .psl-doc-evidence-grid  { flex-direction: column; }
   .psl-doc-evidence-cell  { flex-direction: row; align-items: center; text-align: left; gap: 14px; }
   .psl-doc-evidence-cell__count { font-size: 1.6rem; margin-bottom: 0; }
@@ -8069,6 +8071,145 @@ h3 {
 
 .nhs-value-tile--missing .nhs-value-tile__value {
   color: #94a3b8;
+}
+
+.nhs-key {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #d7e7f5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.nhs-key__title {
+  color: #14395b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.nhs-key__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #526070;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.nhs-key__item::before,
+.nhs-range__legend-item::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #0074c8;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px rgba(0, 116, 200, 0.28);
+}
+
+.nhs-key__item--province::before,
+.nhs-range__legend-item--province::before {
+  background: #00a6a6;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px rgba(0, 166, 166, 0.28);
+}
+
+.nhs-key__item--andalusia::before,
+.nhs-range__legend-item--andalusia::before {
+  background: #ffb61b;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px rgba(255, 182, 27, 0.34);
+}
+
+.nhs-key__note {
+  flex: 1 1 260px;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nhs-domain-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.nhs-domain-stats span {
+  padding: 8px 10px;
+  border: 1px solid #e2ecf6;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #526070;
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.nhs-range {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 2px 0;
+}
+
+.nhs-range__rail {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e7eff7 0%, #cbdff0 50%, #e7eff7 100%);
+}
+
+.nhs-range__point {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #0074c8;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(0, 116, 200, 0.28);
+}
+
+.nhs-range__point--province {
+  background: #00a6a6;
+  box-shadow: 0 0 0 2px rgba(0, 166, 166, 0.28);
+}
+
+.nhs-range__point--andalusia {
+  background: #ffb61b;
+  box-shadow: 0 0 0 2px rgba(255, 182, 27, 0.34);
+}
+
+.nhs-range__legend {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nhs-range__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.nhs-range-note,
+.nhs-indicator-card__relation {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.nhs-range-note {
+  padding-top: 2px;
+  font-style: italic;
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
