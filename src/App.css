@@ -5877,6 +5877,12 @@ h3 {
 @media (max-width: 768px) {
   .psl-doc-kpi-grid       { grid-template-columns: repeat(2, 1fr); }
   .psl-profile-map__row   { grid-template-columns: 1fr; gap: 6px; }
+  .nhs-executive-hero,
+  .nhs-snapshot-grid,
+  .nhs-spotlight-grid,
+  .nhs-domain__rows       { grid-template-columns: 1fr; }
+  .nhs-executive-hero__metrics,
+  .nhs-indicator-card__values { grid-template-columns: 1fr; }
   .psl-doc-evidence-grid  { flex-direction: column; }
   .psl-doc-evidence-cell  { flex-direction: row; align-items: center; text-align: left; gap: 14px; }
   .psl-doc-evidence-cell__count { font-size: 1.6rem; margin-bottom: 0; }
@@ -7839,37 +7845,231 @@ h3 {
 /* GOV-P4-01 · PR-E: retiradas las reglas huérfanas del antiguo Producto 4 tras
    la reoriginación de PR-D. Se conservan solo las que usa el renderer derivado. */
 
-.nhs-root { display: flex; flex-direction: column; gap: 4px; }
+.nhs-root { display: flex; flex-direction: column; gap: 10px; }
 
-.nhs-domain { display: flex; flex-direction: column; gap: 0; }
-.nhs-domain__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.nhs-domain__count { font-size: 0.78rem; color: #64748b; }
-
-.nhs-domain__table-header {
-  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
-  padding: 6px 10px; background: #f1f5f9; border-radius: 6px 6px 0 0;
-  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: #64748b; gap: 8px;
+.nhs-executive-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.85fr);
+  gap: 22px;
+  align-items: stretch;
+  border-top: 5px solid #0074c8;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f8fd 100%);
 }
-.nhs-domain__rows { display: flex; flex-direction: column; border: 1px solid #e2ecf6; border-radius: 0 0 6px 6px; overflow: hidden; }
 
-.nhs-indicator-row {
-  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
-  padding: 10px 10px; gap: 8px; border-bottom: 1px solid #e2ecf6;
-  align-items: center; background: #fff;
+.nhs-executive-hero h2 {
+  margin: 0 0 10px;
+  color: #14395b;
+  font-size: 1.65rem;
 }
-.nhs-indicator-row:last-child { border-bottom: none; }
-.nhs-indicator-row:hover { background: #f8fafc; }
 
-.nhs-indicator-row__label-col { display: flex; flex-direction: column; gap: 2px; }
-.nhs-indicator-row__label { font-size: 0.85rem; font-weight: 600; color: #1a2b3c; margin: 0; }
-.nhs-indicator-row__dir { font-size: 0.72rem; color: #64748b; }
+.nhs-executive-hero__copy { display: flex; flex-direction: column; justify-content: center; }
 
-.nhs-indicator-row__value-col { display: flex; flex-direction: column; align-items: center; }
-.nhs-indicator-row__value { font-size: 1.15rem; font-weight: 800; color: #1a2b3c; }
+.nhs-executive-hero__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
 
-.nhs-indicator-row__ref-col { display: flex; flex-direction: column; align-items: center; }
-.nhs-indicator-row__ref-val { font-size: 1.0rem; font-weight: 700; color: #526070; }
+.nhs-executive-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 112px;
+  padding: 14px;
+  border: 1px solid #c7dff3;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.nhs-executive-metric__value {
+  color: #0074c8;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nhs-executive-metric__label {
+  margin-top: 8px;
+  color: #526070;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.nhs-snapshot-panel,
+.nhs-spotlight-panel {
+  border-top: 3px solid #94d40b;
+}
+
+.nhs-snapshot-panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.nhs-snapshot-panel__header h3,
+.nhs-domain__header h3 {
+  margin: 0;
+  color: #1a2b3c;
+  font-size: 1.08rem;
+}
+
+.nhs-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.nhs-snapshot-card {
+  min-height: 98px;
+  padding: 14px;
+  border: 1px solid #d7e7f5;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.nhs-snapshot-card__value {
+  display: block;
+  color: #14395b;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nhs-snapshot-card__label {
+  display: block;
+  margin-top: 8px;
+  color: #526070;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.nhs-snapshot-card--plain {
+  background: #fffef7;
+  border-color: #f4d27a;
+}
+
+.nhs-spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.nhs-domain-panel {
+  border-top: 4px solid #0074c8;
+}
+
+.nhs-domain-panel--tone-1 { border-top-color: #00a6a6; }
+.nhs-domain-panel--tone-2 { border-top-color: #94d40b; }
+.nhs-domain-panel--tone-3 { border-top-color: #ffb61b; }
+
+.nhs-domain { display: flex; flex-direction: column; gap: 14px; }
+
+.nhs-domain__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.nhs-domain__count {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #1e3a5f;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.nhs-domain__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.nhs-indicator-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dbe8f4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.nhs-indicator-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.nhs-indicator-card__title {
+  margin: 0;
+  color: #1a2b3c;
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.nhs-indicator-card__badge {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #fff7e6;
+  color: #9a5b00;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.nhs-indicator-card__values {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.nhs-value-tile {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e2ecf6;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.nhs-value-tile--featured {
+  border-color: #9bc9ec;
+  background: #eef7ff;
+}
+
+.nhs-value-tile--missing {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.nhs-value-tile__label {
+  display: block;
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.nhs-value-tile__value {
+  display: block;
+  color: #1a2b3c;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.nhs-value-tile--missing .nhs-value-tile__value {
+  color: #94a3b8;
+}
 
 /* ════════════════════════════════════════════════════════════════════════════
    GES — Gestor de Encuestas de Salud
