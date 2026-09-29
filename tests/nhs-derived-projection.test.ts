@@ -234,10 +234,18 @@ describe("PR-D · frontera N+1 y renderer", () => {
 
   it("la salida breve usa composición ejecutiva visual sin emitir veredictos", () => {
     const view = readSrc("ui/components/NHSHealthProfileView.tsx");
+    const styles = readSrc("App.css");
     expect(view).toContain("nhs-executive-hero");
     expect(view).toContain("nhs-snapshot-panel");
     expect(view).toContain("nhs-indicator-card");
+    expect(view).toContain("nhs-key");
+    expect(view).toContain("nhs-range__rail");
+    expect(view).toContain("valor numérico, no valoración sanitaria");
+    expect(view).toContain("La banda no evalúa");
     expect(view).toContain("ficha ejecutiva de indicadores");
     expect(view).toContain("Datos disponibles y huecos declarados");
+    expect(styles).toContain("nhs-range__point--province");
+    expect(styles).toContain("nhs-key__item--andalusia");
+    expect(styles).toContain("nhs-domain-stats");
   });
 });
