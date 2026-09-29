@@ -37,32 +37,68 @@ function groupByConsecutiveBloque(
   return groups;
 }
 
+function isAvailableValue(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return (
+    normalized.length > 0 &&
+    normalized !== "no disponible" &&
+    normalized !== "n/a" &&
+    normalized !== "-" &&
+    normalized !== "—"
+  );
+}
+
+function valueTone(value: string): "available" | "missing" {
+  return isAvailableValue(value) ? "available" : "missing";
+}
+
+function IndicatorValue({
+  label,
+  value,
+  featured = false,
+}: {
+  label: string;
+  value: string;
+  featured?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        "nhs-value-tile",
+        `nhs-value-tile--${valueTone(value)}`,
+        featured ? "nhs-value-tile--featured" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <span className="nhs-value-tile__label">{label}</span>
+      <span className="nhs-value-tile__value">{value}</span>
+    </div>
+  );
+}
+
 function IndicatorRow({ row }: { row: NHSDerivedRow }) {
   return (
-    <div className="nhs-indicator-row">
-      <div className="nhs-indicator-row__label-col">
-        <p className="nhs-indicator-row__label">{row.indicador}</p>
+    <article className="nhs-indicator-card">
+      <div className="nhs-indicator-card__head">
+        <p className="nhs-indicator-card__title">{row.indicador}</p>
         {row.esProxy && (
-          <span className="nhs-indicator-row__dir">referencia proxy contextual</span>
+          <span className="nhs-indicator-card__badge">proxy contextual</span>
         )}
       </div>
-      <div className="nhs-indicator-row__value-col">
-        <span className="nhs-indicator-row__value">{row.valor}</span>
+      <div className="nhs-indicator-card__values" aria-label={`Valores de ${row.indicador}`}>
+        <IndicatorValue label="Territorio" value={row.valor} featured />
+        <IndicatorValue label="Provincia" value={row.refGranada} />
+        <IndicatorValue label="Andalucía" value={row.refAndalucia} />
       </div>
-      <div className="nhs-indicator-row__ref-col">
-        <span className="nhs-indicator-row__ref-val">{row.refGranada}</span>
-      </div>
-      <div className="nhs-indicator-row__ref-col">
-        <span className="nhs-indicator-row__ref-val">{row.refAndalucia}</span>
-      </div>
-    </div>
+    </article>
   );
 }
 
 export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
   const projection = projectNHSDerived(document);
 
-  if (!projection.available) {
+  if (!projection.available || document === null) {
     return (
       <section className="workspace-panel nhs-root">
         <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
@@ -78,19 +114,40 @@ export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
   }
 
   const groups = groupByConsecutiveBloque(projection.rows);
+  const proxyCount = projection.rows.filter((row) => row.esProxy).length;
+  const provincialRefs = projection.rows.filter((row) => isAvailableValue(row.refGranada)).length;
+  const andalusianRefs = projection.rows.filter((row) => isAvailableValue(row.refAndalucia)).length;
+  const spotlightRows = projection.rows.slice(0, 4);
+  const territory = document.editorialView.header.territory;
 
   return (
     <div className="nhs-root">
 
-      <section className="workspace-panel">
-        <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
-        <h2>Indicadores del territorio y sus referencias</h2>
-        <p className="panel-note">
-          Representación derivada del Perfil canónico, inspirada en OHID/Fingertips.
-          Presenta valores del territorio y referencias provincial y andaluza tal
-          como constan en el documento; la interpretación corresponde al lector.
-          Esta vista no emite veredictos comparativos.
-        </p>
+      <section className="workspace-panel nhs-executive-hero">
+        <div className="nhs-executive-hero__copy">
+          <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
+          <h2>{territory}: ficha ejecutiva de indicadores</h2>
+          <p className="panel-note">
+            Representación derivada del Perfil canónico, inspirada en OHID/Fingertips.
+            Presenta valores del territorio y referencias provincial y andaluza tal
+            como constan en el documento. La visualización no convierte diferencias
+            en veredictos comparativos.
+          </p>
+        </div>
+        <div className="nhs-executive-hero__metrics" aria-label="Resumen visual de la ficha">
+          <div className="nhs-executive-metric">
+            <span className="nhs-executive-metric__value">{projection.rows.length}</span>
+            <span className="nhs-executive-metric__label">indicadores</span>
+          </div>
+          <div className="nhs-executive-metric">
+            <span className="nhs-executive-metric__value">{groups.length}</span>
+            <span className="nhs-executive-metric__label">bloques</span>
+          </div>
+          <div className="nhs-executive-metric">
+            <span className="nhs-executive-metric__value">{proxyCount}</span>
+            <span className="nhs-executive-metric__label">proxy</span>
+          </div>
+        </div>
       </section>
 
       {projection.rows.length === 0 ? (
@@ -100,29 +157,65 @@ export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
           </p>
         </section>
       ) : (
-        groups.map((group, gi) => (
-          <section key={`${group.bloque}-${gi}`} className="workspace-panel nhs-domain-panel">
-            <div className="nhs-domain">
-              <div className="nhs-domain__header">
-                <p className="eyebrow">{group.bloque}</p>
-                <p className="nhs-domain__count">
-                  {group.rows.length} indicador{group.rows.length !== 1 ? "es" : ""}
-                </p>
+        <>
+          <section className="workspace-panel nhs-snapshot-panel">
+            <div className="nhs-snapshot-panel__header">
+              <p className="eyebrow">Lectura ejecutiva</p>
+              <h3>Datos disponibles y huecos declarados</h3>
+            </div>
+            <div className="nhs-snapshot-grid">
+              <div className="nhs-snapshot-card">
+                <span className="nhs-snapshot-card__value">{provincialRefs}</span>
+                <span className="nhs-snapshot-card__label">con referencia provincial</span>
               </div>
-              <div className="nhs-domain__table-header">
-                <span>Indicador</span>
-                <span>Valor</span>
-                <span>Ref. provincial</span>
-                <span>Ref. andaluza</span>
+              <div className="nhs-snapshot-card">
+                <span className="nhs-snapshot-card__value">{andalusianRefs}</span>
+                <span className="nhs-snapshot-card__label">con referencia andaluza</span>
               </div>
-              <div className="nhs-domain__rows">
-                {group.rows.map((row, ri) => (
-                  <IndicatorRow key={`${row.indicador}-${ri}`} row={row} />
-                ))}
+              <div className="nhs-snapshot-card nhs-snapshot-card--plain">
+                <span className="nhs-snapshot-card__label">
+                  Los valores no disponibles permanecen visibles: orientan qué datos conviene producir localmente.
+                </span>
               </div>
             </div>
           </section>
-        ))
+
+          <section className="workspace-panel nhs-spotlight-panel">
+            <div className="nhs-snapshot-panel__header">
+              <p className="eyebrow">Indicadores destacados</p>
+              <h3>Primeras señales del trazador canónico</h3>
+            </div>
+            <div className="nhs-spotlight-grid">
+              {spotlightRows.map((row, ri) => (
+                <IndicatorRow key={`${row.indicador}-spotlight-${ri}`} row={row} />
+              ))}
+            </div>
+          </section>
+
+          {groups.map((group, gi) => (
+            <section
+              key={`${group.bloque}-${gi}`}
+              className={`workspace-panel nhs-domain-panel nhs-domain-panel--tone-${gi % 4}`}
+            >
+              <div className="nhs-domain">
+                <div className="nhs-domain__header">
+                  <div>
+                    <p className="eyebrow">{group.bloque}</p>
+                    <h3>{group.bloque}</h3>
+                  </div>
+                  <p className="nhs-domain__count">
+                    {group.rows.length} indicador{group.rows.length !== 1 ? "es" : ""}
+                  </p>
+                </div>
+                <div className="nhs-domain__rows">
+                  {group.rows.map((row, ri) => (
+                    <IndicatorRow key={`${row.indicador}-${ri}`} row={row} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          ))}
+        </>
       )}
 
     </div>

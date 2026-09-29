@@ -231,4 +231,13 @@ describe("PR-D · frontera N+1 y renderer", () => {
     expect(view).toContain("OHID/Fingertips");
     expect(view).toContain("no es un producto autónomo ni una segunda fuente");
   });
+
+  it("la salida breve usa composición ejecutiva visual sin emitir veredictos", () => {
+    const view = readSrc("ui/components/NHSHealthProfileView.tsx");
+    expect(view).toContain("nhs-executive-hero");
+    expect(view).toContain("nhs-snapshot-panel");
+    expect(view).toContain("nhs-indicator-card");
+    expect(view).toContain("ficha ejecutiva de indicadores");
+    expect(view).toContain("Datos disponibles y huecos declarados");
+  });
 });
