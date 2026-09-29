@@ -53,6 +53,14 @@ function valueTone(value: string): "available" | "missing" {
   return isAvailableValue(value) ? "available" : "missing";
 }
 
+function hasAnyReference(row: NHSDerivedRow): boolean {
+  return isAvailableValue(row.refGranada) || isAvailableValue(row.refAndalucia);
+}
+
+function hasBothReferences(row: NHSDerivedRow): boolean {
+  return isAvailableValue(row.refGranada) && isAvailableValue(row.refAndalucia);
+}
+
 function parseNumericValue(value: string): number | null {
   if (!isAvailableValue(value)) return null;
   const match = value.replace(",", ".").match(/-?\d+(?:\.\d+)?/);
@@ -146,6 +154,48 @@ function ComparisonRail({ row }: { row: NHSDerivedRow }) {
   );
 }
 
+function hasComparableBand(row: NHSDerivedRow): boolean {
+  return buildRangePoints(row).length >= 2;
+}
+
+type ScopeChipTone = "solid" | "info" | "warning" | "muted";
+
+function buildScopeChips(row: NHSDerivedRow): Array<{ label: string; tone: ScopeChipTone }> {
+  const chips: Array<{ label: string; tone: ScopeChipTone }> = [
+    row.esProxy
+      ? { label: "proxy contextual", tone: "warning" }
+      : { label: "muestra local", tone: "solid" },
+  ];
+  if (hasBothReferences(row)) {
+    chips.push({ label: "doble referencia", tone: "info" });
+  } else if (hasAnyReference(row)) {
+    chips.push({ label: "referencia parcial", tone: "warning" });
+  } else {
+    chips.push({ label: "sin referencias", tone: "muted" });
+  }
+  chips.push(
+    hasComparableBand(row)
+      ? { label: "banda disponible", tone: "info" }
+      : { label: "sin banda", tone: "muted" }
+  );
+  if (parseNumericValue(row.valor) === null) {
+    chips.push({ label: "valor no numérico", tone: "muted" });
+  }
+  return chips;
+}
+
+function IndicatorScopeChips({ row }: { row: NHSDerivedRow }) {
+  return (
+    <div className="nhs-scope-chips" aria-label={`Alcance de lectura de ${row.indicador}`}>
+      {buildScopeChips(row).map((chip) => (
+        <span key={chip.label} className={`nhs-scope-chip nhs-scope-chip--${chip.tone}`}>
+          {chip.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function IndicatorValue({
   label,
   value,
@@ -185,6 +235,7 @@ function IndicatorRow({ row }: { row: NHSDerivedRow }) {
         <IndicatorValue label="Provincia" value={row.refGranada} />
         <IndicatorValue label="Andalucía" value={row.refAndalucia} />
       </div>
+      <IndicatorScopeChips row={row} />
       <ComparisonRail row={row} />
       <p className="nhs-indicator-card__relation">{relationText(row)}</p>
     </article>
@@ -203,6 +254,103 @@ function DomainStats({ rows }: { rows: NHSDerivedRow[] }) {
       <span>{withBothReferences} con doble referencia</span>
       <span>{proxies} proxy</span>
     </div>
+  );
+}
+
+function buildReadingScopeNotes(rows: NHSDerivedRow[]): string[] {
+  const proxyRows = rows.filter((row) => row.esProxy).length;
+  const withoutComparableBand = rows.filter((row) => !hasComparableBand(row)).length;
+  const withoutProvince = rows.filter((row) => !isAvailableValue(row.refGranada)).length;
+  const withoutAndalusia = rows.filter((row) => !isAvailableValue(row.refAndalucia)).length;
+  const nonNumericLocal = rows.filter((row) => parseNumericValue(row.valor) === null).length;
+  const notes: string[] = [];
+
+  if (withoutComparableBand > 0) {
+    notes.push(
+      `${withoutComparableBand} indicador(es) no admiten banda visual por falta de valores numéricos comparables.`
+    );
+  }
+  if (proxyRows > 0) {
+    notes.push(
+      `${proxyRows} indicador(es) proceden de proxy contextual: orientan, pero no sustituyen una medición local directa.`
+    );
+  }
+  if (withoutProvince > 0 || withoutAndalusia > 0) {
+    notes.push(
+      `Faltan referencias en ${withoutProvince} indicador(es) para provincia y en ${withoutAndalusia} para Andalucía.`
+    );
+  }
+  if (nonNumericLocal > 0) {
+    notes.push(
+      `${nonNumericLocal} valor(es) territoriales no son numéricos y se mantienen como lectura textual.`
+    );
+  }
+  if (notes.length === 0) {
+    notes.push(
+      "Todas las filas visibles tienen valores numéricos comparables y referencia provincial y andaluza declarada."
+    );
+  }
+  return notes;
+}
+
+function ReadingQualityPanel({ rows }: { rows: NHSDerivedRow[] }) {
+  const total = rows.length;
+  const comparable = rows.filter((row) => hasComparableBand(row)).length;
+  const bothRefs = rows.filter((row) => hasBothReferences(row)).length;
+  const localSample = rows.filter((row) => !row.esProxy).length;
+  const proxyRows = total - localSample;
+  const notes = buildReadingScopeNotes(rows);
+  const metrics = [
+    {
+      value: `${comparable}/${total}`,
+      label: "con lectura visual",
+      text: "Al menos dos valores numéricos permiten situar territorio y referencia en una misma banda.",
+      tone: "info",
+    },
+    {
+      value: `${bothRefs}/${total}`,
+      label: "con doble referencia",
+      text: "Incluyen provincia y Andalucía, sin convertir diferencias en veredictos sanitarios.",
+      tone: "solid",
+    },
+    {
+      value: `${localSample}/${total}`,
+      label: "muestra local",
+      text: "No están marcados como proxy contextual en el trazador canónico.",
+      tone: "solid",
+    },
+    {
+      value: `${proxyRows}`,
+      label: "proxy contextual",
+      text: "Deben leerse como apoyo territorial, no como estimación distrital completa.",
+      tone: proxyRows > 0 ? "warning" : "muted",
+    },
+  ];
+
+  return (
+    <section className="workspace-panel nhs-quality-panel">
+      <div className="nhs-snapshot-panel__header">
+        <p className="eyebrow">Calidad de lectura</p>
+        <h3>Qué puede leerse y qué debe producirse mejor</h3>
+      </div>
+      <div className="nhs-quality-grid" aria-label="Resumen de calidad de lectura">
+        {metrics.map((metric) => (
+          <div key={metric.label} className={`nhs-quality-card nhs-quality-card--${metric.tone}`}>
+            <span className="nhs-quality-card__value">{metric.value}</span>
+            <span className="nhs-quality-card__label">{metric.label}</span>
+            <span className="nhs-quality-card__text">{metric.text}</span>
+          </div>
+        ))}
+      </div>
+      <ul className="nhs-quality-notes" aria-label="Huecos metodológicos declarados">
+        {notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+      <p className="nhs-quality-panel__foot">
+        La calidad de lectura no pondera ni corrige valores: solo hace visible el alcance del dato disponible.
+      </p>
+    </section>
   );
 }
 
@@ -307,6 +455,8 @@ export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
               </span>
             </div>
           </section>
+
+          <ReadingQualityPanel rows={projection.rows} />
 
           <section className="workspace-panel nhs-spotlight-panel">
             <div className="nhs-snapshot-panel__header">
