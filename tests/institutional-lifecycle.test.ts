@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   approvePSL,
   validateApprovePSL,
+  invalidatePSL,
+  validateInvalidatePSL,
   createFormalValidation,
   validateCreateFormalValidation,
 } from "../src/application/institutional-lifecycle";
@@ -220,6 +222,68 @@ describe("approvePSL — transición validated → approved", () => {
     const result = approvePSL(inputSinRef);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.approvalRecord.externalReference).toBeUndefined();
+  });
+});
+
+// ── Tests: invalidatePSL ──────────────────────────────────────────────────────
+
+describe("invalidatePSL — transición validated → review", () => {
+  it("retira la validación y conserva íntegramente el contenido técnico", () => {
+    const psl = validatedPSL();
+    const result = invalidatePSL({
+      psl,
+      invalidatedAt: "2026-06-29T08:00:00.000Z",
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.reviewedPSL.status).toBe("review");
+    expect(result.reviewedPSL.version).toBe("2026-06-29T08:00:00.000Z");
+    expect(result.reviewedPSL.reviewStartedAt).toBe("2026-06-29T08:00:00.000Z");
+    expect(result.reviewedPSL.validatedAt).toBeUndefined();
+    expect(result.reviewedPSL.validatedBy).toBeUndefined();
+    expect(result.reviewedPSL.conclusiones).toEqual(psl.conclusiones);
+    expect(result.reviewedPSL.cierreInterpretativo).toEqual(psl.cierreInterpretativo);
+    expect(result.reviewedPSL.priorizacion).toEqual(psl.priorizacion);
+    expect(psl.status).toBe("validated");
+  });
+
+  it("rechaza retirar la validación de un Perfil aprobado", () => {
+    const result = invalidatePSL({
+      psl: validatedPSL({ status: "approved" }),
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.violations.some((v) => v.code === "PSL-INVALIDATE-01")).toBe(true);
+    }
+  });
+
+  it("la validación previa queda obsoleta al cambiar la versión", () => {
+    const psl = validatedPSL();
+    const record = {
+      id: "fval-before-invalidation",
+      target: "action-plan" as const,
+      sourcePSLId: psl.id,
+      sourcePSLVersion: psl.version,
+      validatedAt: "2026-06-28T11:00:00.000Z",
+      validatedBy: "Coordinadora RELAS",
+      validatedByRole: "group-motor" as const,
+    };
+    const result = invalidatePSL({
+      psl,
+      invalidatedAt: "2026-06-29T08:00:00.000Z",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(isFormalValidationStale(record, result.reviewedPSL)).toBe(true);
+    }
+  });
+
+  it("validateInvalidatePSL rechaza estados que no están validados", () => {
+    expect(
+      validateInvalidatePSL({ psl: validatedPSL({ status: "review" }) })
+        .some((v) => v.code === "PSL-INVALIDATE-01")
+    ).toBe(true);
   });
 });
 

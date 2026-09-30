@@ -32,7 +32,11 @@ export function selectDocumentPreviewContext(input: {
   const validatedAnswers = parseValidatedAnswersSnapshot(
     input.validatedAnswersSnapshot
   );
-  if (input.validatedPSL !== undefined && validatedAnswers !== null) {
+  if (
+    input.validatedPSL !== undefined &&
+    (input.validatedPSL.status === "validated" || input.validatedPSL.status === "approved") &&
+    validatedAnswers !== null
+  ) {
     return {
       previewPSL: input.validatedPSL,
       previewAnswers: validatedAnswers,
