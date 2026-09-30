@@ -19,3 +19,14 @@ export {
   validateCreateFormalValidation,
   createFormalValidation,
 } from "./createFormalValidation";
+
+export type {
+  InvalidatePSLInput,
+  InvalidatePSLViolation,
+  InvalidatePSLResult,
+} from "./invalidatePSL";
+
+export {
+  validateInvalidatePSL,
+  invalidatePSL,
+} from "./invalidatePSL";

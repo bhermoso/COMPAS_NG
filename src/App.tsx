@@ -42,7 +42,6 @@ import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import {
-  hasPSLHumanContent,
   computePerfilEpistemicMetrics,
   buildDiagnosticAnswers,
   serializeValidatedAnswers,
@@ -120,7 +119,7 @@ import { loadMunicipalitySeed } from "./infrastructure/seeds";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
 import { readSealedCanonicalDocument } from "./application/psl-c-canonical";
-import { approvePSL } from "./application/institutional-lifecycle";
+import { approvePSL, invalidatePSL } from "./application/institutional-lifecycle";
 import { createDeliberativePrioritySelection } from "./domain/deliberative-prioritisation";
 import {
   validateModuleReview,
@@ -601,23 +600,28 @@ export default function App() {
   }, [runtime.psl, setWorkspace]);
 
   const handleInvalidatePSL = useCallback(() => {
+    const current = workspace.validatedPSL;
+    if (current === undefined || current.status !== "validated") return;
     if (
-      workspace.validatedPSL !== undefined &&
-      hasPSLHumanContent(workspace.validatedPSL) &&
       !window.confirm(
-        "El Perfil de Salud Local contiene contenido redactado por el equipo técnico " +
-        "(conclusiones, cierre interpretativo o deliberación documentada).\n\n" +
-        "Al regenerar el perfil, este contenido se perderá definitivamente.\n\n" +
-        "¿Descartar el contenido y regenerar el perfil?"
+        "La validación técnica se retirará y el Perfil volverá a revisión.\n\n" +
+        "Se conservarán íntegramente las conclusiones, el cierre interpretativo, " +
+        "la deliberación y los documentos compilados anteriores. Para volver a usar " +
+        "el Perfil como versión vigente habrá que validarlo de nuevo.\n\n" +
+        "¿Retirar la validación técnica?"
       )
     ) {
       return;
     }
     setWorkspace((prev) => {
-      // CONV-A · invalidación CONJUNTA de validatedPSL y su snapshot de answers.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { validatedPSL: _psl, validatedAnswersSnapshot: _snap, ...rest } = prev;
-      return { ...rest, updatedAt: new Date().toISOString() };
+      if (prev.validatedPSL === undefined) return prev;
+      const result = invalidatePSL({ psl: prev.validatedPSL });
+      if (!result.ok) return prev;
+      return {
+        ...prev,
+        validatedPSL: result.reviewedPSL,
+        updatedAt: result.invalidatedAt,
+      };
     });
   }, [setWorkspace, workspace.validatedPSL]);
 

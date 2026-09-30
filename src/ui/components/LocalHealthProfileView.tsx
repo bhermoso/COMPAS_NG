@@ -994,6 +994,14 @@ export function LocalHealthProfileView({
         </div>
       )}
 
+      {psl.status === "review" && (
+        <div className="psl-doc-draft-notice">
+          <span className="psl-doc-draft-notice__label">En revisión técnica</span>{" "}
+          Se ha retirado la validación. El contenido se conserva y puede revisarse;
+          deberá validarse de nuevo antes de compilar una versión vigente.
+        </div>
+      )}
+
       {psl.status === "validated" && !pslIsStale && (
         <div className="psl-doc-validated-notice">
           <span className="psl-doc-validated-notice__label">Validado técnicamente</span>
@@ -1007,9 +1015,9 @@ export function LocalHealthProfileView({
           <button
             className="psl-doc-validated-notice__invalidate"
             onClick={onInvalidate}
-            title="Revertir a borrador para incorporar nueva evidencia"
+            title="Retirar la validación técnica y volver a revisión sin perder el contenido"
           >
-            Revertir a borrador
+            Retirar validación técnica
           </button>
         </div>
       )}
@@ -1039,12 +1047,14 @@ export function LocalHealthProfileView({
           La fuente documental o la evidencia han cambiado desde la validación del{" "}
           {psl.validatedAt ? formatDate(psl.validatedAt) : "perfil"}.
           Este perfil puede no reflejar la situación territorial actual.{" "}
-          <button
-            className="psl-doc-stale-notice__action"
-            onClick={onInvalidate}
-          >
-            Regenerar perfil
-          </button>
+          {psl.status === "validated" && (
+            <button
+              className="psl-doc-stale-notice__action"
+              onClick={onInvalidate}
+            >
+              Retirar validación y revisar
+            </button>
+          )}
         </div>
       )}
 
@@ -1075,14 +1085,14 @@ export function LocalHealthProfileView({
         localizaAssetCount={localizaAssetCount}
       />
 
-      {psl.status === "generated" && (
+      {(psl.status === "generated" || psl.status === "review") && (
         <section id="psl-ruta-compilacion" className="workspace-panel pslc-checklist">
           <p className="eyebrow">Ruta operativa</p>
           <h2>Validar y crear el documento institucional PSL-C</h2>
           <p className="panel-note">
             La salida breve tipo Local Health Profiles se activa cuando existe un
-            Perfil canónico compilado. El primer paso es validar técnicamente este
-            borrador; después aparecerá aquí la acción para compilar el PSL-C.
+            Perfil canónico compilado. Revisa el contenido y valida técnicamente
+            esta versión; después aparecerá aquí la acción para compilar el PSL-C.
           </p>
           <PSLValidationAction onValidate={onValidate} />
         </section>

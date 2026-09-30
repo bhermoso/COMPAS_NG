@@ -40,7 +40,7 @@ El PSL es el único objeto vivo con ciclo de vida de estados complejo.
 | Estado | Significado | Activado por |
 |---|---|---|
 | `generated` | Borrador generado automáticamente. Requiere revisión técnica. | Sistema |
-| `review` | En revisión técnica activa (transición opcional; sin implementación UI en Sprint 2.4). | Técnico de salud pública |
+| `review` | En revisión técnica activa; conserva el contenido cuando se retira una validación. | Técnico de salud pública |
 | `validated` | Validado técnicamente por el equipo. Habilita el PSL-C y el Nivel 3. | Técnico de salud pública / coordinación |
 | `approved` | Aprobado institucionalmente por el Grupo Motor o equivalente. Prerequisito del PLS. | Grupo Motor / coordinación |
 | `superseded` | Sustituido por un PSL posterior del mismo municipio. | Sistema (al validar un nuevo PSL) |
@@ -53,7 +53,7 @@ generated ──── [técnico/coord.] ────→ validated
     │                                    │
     │                               [técnico/coord.]
     │                                    ↓
-    │                               generated  (invalidación)
+    │                                 review  (retirada de validación)
     │
 [técnico/coord.]                    validated ──── [GrupoMotor/coord.] ──→ approved
     ↓                                   │
@@ -66,7 +66,7 @@ archived                           [técnico/coord.]
 
 | Transición | Reversible |
 |---|---|
-| `generated → validated` | Sí (mediante invalidación → vuelve a `generated`) |
+| `generated/review → validated` | Sí (mediante retirada de validación → vuelve a `review` sin perder contenido) |
 | `validated → approved` | No reversible directamente; si la evidencia cambia, se puede abrir un nuevo ciclo |
 | `→ archived` | No. Los archivados permanecen en historial. |
 | `→ superseded` | No. |
@@ -116,7 +116,7 @@ interface FormalValidationRecord {
 Un `FormalValidationRecord` es obsoleto cuando el PSL activo tiene una `version` distinta a `record.sourcePSLVersion`. Esta comprobación se realiza con `isFormalValidationStale(record, currentPSL)`.
 
 Cuándo queda obsoleta una validación:
-- Cuando se invalida el PSL (`validated → generated`) y se regenera.
+- Cuando se retira la validación del PSL (`validated → review`); la versión cambia y el contenido técnico se conserva.
 - Cuando el PSL incorpora nueva evidencia y cambia su `evidenceStoreVersion`.
 - Cuando se valida un PSL completamente nuevo.
 
@@ -169,7 +169,7 @@ Ambos son necesarios: el PSL lleva el estado mínimo (para que los gates funcion
 |---|---|---|---|
 | `generated → validated` | `technical-staff`, `coordination` | No | Sí |
 | `validated → approved` | `coordination`, `group-motor` | Sí (acta) | No |
-| `validated → generated` (invalidación) | `technical-staff`, `coordination` | No | — |
+| `validated → review` (retirada de validación) | `technical-staff`, `coordination` | No | Sí, mediante una nueva validación |
 | `→ archived` | `technical-staff`, `coordination` | No | No |
 | Validación formal Nivel 3 | `coordination`, `group-motor` | Sí (acta) | Sí (si PSL cambia) |
 | Aprobación institucional del PLS | `municipal-council` | Sí (acuerdo corporativo) | No |
@@ -184,6 +184,7 @@ Ambos son necesarios: el PSL lleva el estado mínimo (para que los gates funcion
 | Registro de aprobación del PSL | `src/domain/institutional-lifecycle/PSLApprovalRecord.ts` | ✅ Implementado |
 | Registro de validación formal | `src/domain/institutional-lifecycle/FormalValidationRecord.ts` | ✅ Implementado |
 | Transición `validated → approved` | `src/application/institutional-lifecycle/approvePSL.ts` | ✅ Implementado |
+| Transición `validated → review` | `src/application/institutional-lifecycle/invalidatePSL.ts` | ✅ Implementado |
 | Creación de FormalValidationRecord | `src/application/institutional-lifecycle/createFormalValidation.ts` | ✅ Implementado |
 | Actualización del workspace | `src/domain/workspace/MunicipalityWorkspace.ts` | ✅ Implementado (`pslApproval`, `formalValidations`) |
 | Tests | `tests/institutional-lifecycle.test.ts` (40 tests) | ✅ Implementado |
