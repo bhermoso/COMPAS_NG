@@ -42,7 +42,6 @@ import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import {
-  hasPSLHumanContent,
   computePerfilEpistemicMetrics,
   buildDiagnosticAnswers,
   serializeValidatedAnswers,

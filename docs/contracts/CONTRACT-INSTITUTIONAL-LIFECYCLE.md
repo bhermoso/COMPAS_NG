@@ -40,7 +40,7 @@ El PSL es el único objeto vivo con ciclo de vida de estados complejo.
 | Estado | Significado | Activado por |
 |---|---|---|
 | `generated` | Borrador generado automáticamente. Requiere revisión técnica. | Sistema |
-| `review` | En revisión técnica activa; conserva el contenido cuando se retira una validación. | Técnico de salud pública | | Técnico de salud pública |
+| `review` | En revisión técnica activa; conserva el contenido cuando se retira una validación. | Técnico de salud pública |
 | `validated` | Validado técnicamente por el equipo. Habilita el PSL-C y el Nivel 3. | Técnico de salud pública / coordinación |
 | `approved` | Aprobado institucionalmente por el Grupo Motor o equivalente. Prerequisito del PLS. | Grupo Motor / coordinación |
 | `superseded` | Sustituido por un PSL posterior del mismo municipio. | Sistema (al validar un nuevo PSL) |
