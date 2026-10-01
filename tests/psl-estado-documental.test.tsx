@@ -117,6 +117,30 @@ describe("estados documentales — borrador técnico", () => {
   });
 });
 
+describe("controles de validación técnica", () => {
+  it("ofrece validar cuando el Perfil está generado", () => {
+    expect(render(generado)).toContain("Validar técnicamente");
+  });
+
+  it("ofrece volver a validar cuando el Perfil está en revisión", () => {
+    const revision: LocalHealthProfile = {
+      ...validado,
+      status: "review",
+      validatedAt: undefined,
+      validatedBy: undefined,
+    };
+    const html = render(revision);
+    expect(html).toContain("En revisión técnica");
+    expect(html).toContain("Validar técnicamente");
+    expect(html).not.toContain("Retirar validación técnica");
+  });
+
+  it("ofrece retirar la validación cuando el Perfil está validado", () => {
+    const html = render(validado);
+    expect(html).toContain("Retirar validación técnica");
+  });
+});
+
 describe("estados documentales — validado sin compilar", () => {
   it("«validado» significa validación técnica, con la fase institucional pendiente", () => {
     const html = render(validado);
