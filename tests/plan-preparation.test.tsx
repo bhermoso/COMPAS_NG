@@ -50,6 +50,15 @@ describe("Preparación independiente del Plan", () => {
  expect(HEALTHY_AGING_MODULE.generalObjectives).toHaveLength(9);
  expect(ZAIDIN_AGING_PROPOSAL.generalObjectives[2].specificObjectives.map(o => o.code)).toContain("ENV-OE9.1");
  });
+ it("no aplica a otros municipios las etiquetas temáticas finales del Zaidín", () => {
+  const html = renderToStaticMarkup(
+   <PlanPreparationPanel module={HEALTHY_AGING_MODULE} municipalityId="alfacar" onChange={() => {}} renderWorksheet={() => null}/>
+  );
+  expect(html).toContain("ENV-OG1 · Preservar la autonomía y el bienestar de las personas mayores");
+  expect(html).toContain("Mantener la autonomía funcional de las personas mayores");
+  expect(html).not.toContain("<summary>Edadismo</summary>");
+  expect(html).toContain("ENV-OG5 · Reducir el edadismo y promover una imagen social positiva de las personas mayores");
+ });
  it("conserva el borrador anterior y avisa de la revisión editorial", () => {
  const previous = {...draft, version: "zaidin-4-bloques-2026-09-09", decisions: {"ENV-OE1.1": {status: "modified" as const, sourceText: "Autonomía funcional anterior", text: "Redacción propia que debe conservarse"}}};
  const before = JSON.stringify(previous);
