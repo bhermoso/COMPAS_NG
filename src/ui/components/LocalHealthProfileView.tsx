@@ -1002,6 +1002,19 @@ export function LocalHealthProfileView({
         </div>
       )}
 
+      {(psl.status === "generated" || psl.status === "review") && (
+        <section id="psl-ruta-compilacion" className="workspace-panel pslc-checklist">
+          <p className="eyebrow">Ruta operativa</p>
+          <h2>Validar y crear el documento institucional PSL-C</h2>
+          <p className="panel-note">
+            La salida breve tipo Local Health Profiles se activa cuando existe un
+            Perfil canónico compilado. Revisa el contenido y valida técnicamente
+            esta versión; después aparecerá aquí la acción para compilar el PSL-C.
+          </p>
+          <PSLValidationAction onValidate={onValidate} />
+        </section>
+      )}
+
       {psl.status === "validated" && !pslIsStale && (
         <div className="psl-doc-validated-notice">
           <span className="psl-doc-validated-notice__label">Validado técnicamente</span>
@@ -1084,19 +1097,6 @@ export function LocalHealthProfileView({
         matrixSignalCount={matrixSignalCount}
         localizaAssetCount={localizaAssetCount}
       />
-
-      {(psl.status === "generated" || psl.status === "review") && (
-        <section id="psl-ruta-compilacion" className="workspace-panel pslc-checklist">
-          <p className="eyebrow">Ruta operativa</p>
-          <h2>Validar y crear el documento institucional PSL-C</h2>
-          <p className="panel-note">
-            La salida breve tipo Local Health Profiles se activa cuando existe un
-            Perfil canónico compilado. Revisa el contenido y valida técnicamente
-            esta versión; después aparecerá aquí la acción para compilar el PSL-C.
-          </p>
-          <PSLValidationAction onValidate={onValidate} />
-        </section>
-      )}
 
       {(psl.status === "validated" || psl.status === "approved") && !pslIsStale && (
         <>
