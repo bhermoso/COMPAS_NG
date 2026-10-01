@@ -228,7 +228,7 @@ export function PlanPreparationPanel({module, municipalityId, draft, onChange, r
    const sourceGeneral = general.title;
    const visibleGeneral = canReview ? consolidatedText(general.code, sourceGeneral) : territorialText(general.code, (revised ? block?.text : undefined) ?? sourceGeneral);
    return <details className="pcm-general" key={general.code} open>
-    <summary>{block?.name ?? `${general.code} · ${visibleGeneral}`}</summary>
+    <summary>{(revised ? block?.name : undefined) ?? `${general.code} · ${visibleGeneral}`}</summary>
     <p><strong>Objetivo general:</strong> <ProposalText text={visibleGeneral}/></p>
     {control(general.code, sourceGeneral, [module.id], !finalApprovedText)}
     {general.specificObjectives.map(specific => {
