@@ -239,13 +239,14 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Diagnóstico territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
+  { id: "priorizacion",  label: "Priorización" },
   { id: "plan",          label: "Plan de Acción" },
   { id: "plan-local",    label: "Plan Local de Salud" },
   { id: "evaluacion",    label: "Evaluación" },
   { id: "ges",           label: "Gestor de Encuestas" },
 ];
 // Vistas eliminadas de la navegación principal pero accesibles para desarrollo:
-// "analisis" (D-002), "lectura" (D-004), "priorizacion" (integrada en Plan de Acción).
+// "analisis" (D-002), "lectura" (D-004).
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "health-report",             label: "Informe de Salud" },
@@ -2842,6 +2843,10 @@ export default function App() {
           pslIsStale={runtime.pslIsStale}
           pslCompiled={(runtime.workspace.compiledProfiles?.length ?? 0) > 0}
           thematicPrioritisationDone={runtime.workspace.thematicPrioritisation !== undefined}
+          prioritySelectionDone={
+            runtime.workspace.deliberativePrioritySelection !== undefined &&
+            !runtime.prioritySelectionIsStale
+          }
           onNavigate={(v) => setView(v as AppView)}
         />
       )}
@@ -3118,6 +3123,13 @@ export default function App() {
                       <p className="home-product__desc">
                         Síntesis interpretativa del diagnóstico territorial validada
                         técnicamente. Documento base para la planificación.
+                      </p>
+                    </div>
+                    <div className="home-product home-product--2">
+                      <p className="home-product__name">Priorización territorial</p>
+                      <p className="home-product__desc">
+                        Candidaturas técnicas, participación ciudadana y decisión
+                        deliberativa del Grupo Motor antes del Plan de Acción.
                       </p>
                     </div>
                     <div className="home-product home-product--3">
@@ -3492,7 +3504,7 @@ export default function App() {
         {/* ── ⑤ Priorizaciones — técnica y participativa ──────── */}
         {view === "priorizacion" && (
           <>
-            <section className="workspace-panel">
+            <section className="workspace-panel prioritization-stage">
               <p className="eyebrow">Plan Local de Salud 2027–2030</p>
               <h2>Priorización territorial</h2>
               <p className="panel-note">
@@ -3502,6 +3514,11 @@ export default function App() {
                 La decisión definitiva corresponde al equipo técnico y a la comunidad,
                 no al sistema.
               </p>
+              <div className="prioritization-stage__route" aria-label="Secuencia de priorización">
+                <span>Candidaturas técnicas</span>
+                <span>Participación ciudadana</span>
+                <span>Decisión del Grupo Motor</span>
+              </div>
             </section>
             {/* Candidaturas técnicas — derivadas del PSL */}
             <PrioritizationPanel
@@ -3520,6 +3537,37 @@ export default function App() {
               }
               onOpen={handleOpenThematicModal}
             />
+            <div className="repo-section-divider">
+              <span className="repo-section-divider__text">Decisión deliberativa</span>
+            </div>
+            {runtime.lectura ? (
+              <DeliberativePrioritySelectionPanel
+                key={`${runtime.lectura.id}-${workspace.deliberativePrioritySelection?.id ?? "pending"}`}
+                lectura={runtime.lectura}
+                citizenPrioritisation={workspace.thematicPrioritisation}
+                selection={workspace.deliberativePrioritySelection}
+                isStale={runtime.prioritySelectionIsStale}
+                onSave={handleSaveDeliberativePrioritySelection}
+              />
+            ) : (
+              <section className="workspace-panel deliberative-selection">
+                <p className="eyebrow">Compuerta deliberativa · Grupo Motor</p>
+                <h2>Selección de prioridades</h2>
+                <p className="panel-note">
+                  La selección formal del Grupo Motor se activa cuando el Perfil de
+                  Salud Local está validado y existe una lectura estratégica vigente.
+                  Mientras tanto, puedes preparar la participación ciudadana y revisar
+                  las candidaturas técnicas disponibles.
+                </p>
+                <div className="phase-blocked-notice">
+                  <strong>Prioridades todavía no cerrables</strong>
+                  <p>
+                    Valida el Perfil de Salud Local para abrir la decisión deliberativa
+                    que alimentará el Plan de Acción.
+                  </p>
+                </div>
+              </section>
+            )}
           </>
         )}
 
@@ -3562,23 +3610,40 @@ export default function App() {
               </p>
             </section>
             <LecturaEstrategicaView lectura={runtime.lectura} />
-            <div className="repo-section-divider">
-              <span className="repo-section-divider__text">Participación ciudadana</span>
-            </div>
-            <ThematicPrioritisationPanel
-              savedIds={
-                runtime.workspace.thematicPrioritisation?.selectedTopicIds ?? []
-              }
-              onOpen={handleOpenThematicModal}
-            />
-            <DeliberativePrioritySelectionPanel
-              key={`${runtime.lectura.id}-${workspace.deliberativePrioritySelection?.id ?? "pending"}`}
-              lectura={runtime.lectura}
-              citizenPrioritisation={workspace.thematicPrioritisation}
-              selection={workspace.deliberativePrioritySelection}
-              isStale={runtime.prioritySelectionIsStale}
-              onSave={handleSaveDeliberativePrioritySelection}
-            />
+            <section className="workspace-panel plan-prioritization-gate">
+              <p className="eyebrow">Prioridades que alimentan el Plan de Acción</p>
+              <h3>
+                {workspace.deliberativePrioritySelection && !runtime.prioritySelectionIsStale
+                  ? "Selección deliberativa vigente"
+                  : "Priorización pendiente"}
+              </h3>
+              <p className="panel-note">
+                El Plan de Acción toma como entrada la selección territorial adoptada
+                en la fase de Priorización. Mantén allí la decisión del Grupo Motor
+                antes de cerrar objetivos, indicadores y fichas.
+              </p>
+              {workspace.deliberativePrioritySelection && !runtime.prioritySelectionIsStale ? (
+                <p className="plan-prioritization-gate__status">
+                  Registrada por {workspace.deliberativePrioritySelection.decidedBy} el{" "}
+                  {new Date(workspace.deliberativePrioritySelection.decidedAt).toLocaleDateString("es-ES")}.
+                </p>
+              ) : (
+                <div className="phase-blocked-notice">
+                  <strong>Plan sin selección deliberativa vigente</strong>
+                  <p>
+                    Abre Priorización para documentar la decisión del Grupo Motor o
+                    renovar la selección si el diagnóstico ha cambiado.
+                  </p>
+                </div>
+              )}
+              <button
+                type="button"
+                className="tp-panel__open-btn"
+                onClick={() => setView("priorizacion")}
+              >
+                Abrir priorización territorial
+              </button>
+            </section>
             <ActionPlanCatalogPanel
               municipalityId={workspace.municipality.identity.id}
               lectura={runtime.lectura}

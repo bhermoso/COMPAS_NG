@@ -32,6 +32,7 @@ export interface LocalHealthPlanningCycleProps {
   /** Existe al menos un artefacto institucional PSL-C compilado/congelado. */
   pslCompiled: boolean;
   thematicPrioritisationDone: boolean;
+  prioritySelectionDone: boolean;
   onNavigate?: (view: AppViewId) => void;
 }
 
@@ -56,6 +57,7 @@ function derivePhases({
   pslIsStale,
   pslCompiled,
   thematicPrioritisationDone,
+  prioritySelectionDone,
 }: LocalHealthPlanningCycleProps): CyclePhase[] {
   const pslValidated  = pslStatus === "validated" && !pslIsStale;
   const pslStaleNote  = pslIsStale ? "La evidencia ha cambiado" : undefined;
@@ -82,26 +84,32 @@ function derivePhases({
 
   // 4 — Priorización (formal = participación + PSL validado + deliberación)
   // La participación ciudadana puede realizarse antes de validar el PSL.
-  // Mientras el PSL no está validado, la priorización formal permanece pendiente,
-  // no bloqueada, para reflejar el progreso real del expediente.
+  // La fase permanece accesible para que no quede enterrada bajo el Plan de Acción:
+  // permite preparar participación, ver candidaturas y documentar lo que falta.
   let prioPhase: PhaseStatus;
   let prioNote: string | undefined;
-  if (pslValidated && thematicPrioritisationDone) {
+  if (pslValidated && prioritySelectionDone) {
     prioPhase = "completed";
-  } else if (pslValidated && !thematicPrioritisationDone) {
+  } else if (pslValidated) {
     prioPhase = "current";
+    prioNote = thematicPrioritisationDone
+      ? "Pendiente de selección del Grupo Motor"
+      : "Pendiente de participación ciudadana";
   } else if (!pslValidated && thematicPrioritisationDone) {
-    prioPhase = "pending";
-    prioNote  = "Participación ciudadana recibida";
+    prioPhase = "current";
+    prioNote = "Participación ciudadana recibida; falta validar el Perfil";
+  } else if (pslHasEvidence) {
+    prioPhase = "current";
+    prioNote = "Preparar participación y criterios";
   } else {
-    prioPhase = "blocked";
+    prioPhase = "pending";
   }
 
   // 5 — Plan de Acción
   let planPhase: PhaseStatus;
   if (!pslValidated) {
     planPhase = "blocked";
-  } else if (thematicPrioritisationDone) {
+  } else if (prioritySelectionDone) {
     planPhase = "current";
   } else {
     planPhase = "pending";
@@ -138,7 +146,7 @@ function derivePhases({
       label:       "Priorización",
       status:      prioPhase,
       note:        prioNote,
-      navigateTo:  prioPhase !== "blocked" ? "priorizacion" : undefined,
+      navigateTo:  "priorizacion",
     },
     {
       id:          "plan-accion",

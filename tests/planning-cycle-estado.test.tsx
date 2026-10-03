@@ -16,6 +16,8 @@ function render(opts: {
   pslCompiled: boolean;
   pslIsStale?: boolean;
   pslHasEvidence?: boolean;
+  thematicPrioritisationDone?: boolean;
+  prioritySelectionDone?: boolean;
 }): string {
   return renderToStaticMarkup(
     <LocalHealthPlanningCycle
@@ -24,7 +26,8 @@ function render(opts: {
       pslStatus={opts.pslStatus}
       pslIsStale={opts.pslIsStale ?? false}
       pslCompiled={opts.pslCompiled}
-      thematicPrioritisationDone={false}
+      thematicPrioritisationDone={opts.thematicPrioritisationDone ?? false}
+      prioritySelectionDone={opts.prioritySelectionDone ?? false}
     />
   );
 }
@@ -63,9 +66,9 @@ describe("ciclo — fase Perfil de Salud Local", () => {
     expect(html).not.toContain("Completada");
   });
 
-  it("no altera la semántica de Priorización ni Plan de Acción", () => {
-    // Con PSL validado, la priorización pasa a «En curso» y el Plan de Acción
-    // queda «Pendiente», exista o no el artefacto compilado.
+  it("expone Priorización como fase navegable antes del Plan de Acción", () => {
+    // Con PSL validado, la priorización pasa a «En curso» hasta que exista una
+    // selección deliberativa vigente. El Plan de Acción queda «Pendiente».
     const sinArtefacto = render({ pslStatus: "validated", pslCompiled: false });
     const conArtefacto = render({ pslStatus: "validated", pslCompiled: true });
     for (const html of [sinArtefacto, conArtefacto]) {
@@ -73,6 +76,21 @@ describe("ciclo — fase Perfil de Salud Local", () => {
       expect(html).toContain("Plan de Acción");
       expect(html).toContain("En curso");
       expect(html).toContain("Pendiente");
+      expect(html).toContain("Pendiente de participación ciudadana");
     }
+  });
+
+  it("solo habilita el Plan de Acción como fase en curso tras selección deliberativa", () => {
+    const html = render({
+      pslStatus: "validated",
+      pslCompiled: true,
+      thematicPrioritisationDone: true,
+      prioritySelectionDone: true,
+    });
+    expect(html).toContain("Priorización");
+    expect(html).toContain("Plan de Acción");
+    expect(html).toContain("Completada");
+    expect(html).toContain("En curso");
+    expect(html).not.toContain("Pendiente de selección del Grupo Motor");
   });
 });

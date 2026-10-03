@@ -4956,6 +4956,49 @@ h3 {
 
 /* ── Advertencia priorización sobre PSL sin validar ─────────────────── */
 
+.prioritization-stage__route {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.prioritization-stage__route span {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d9e2ef;
+  border-radius: 6px;
+  background: #f8fbff;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.plan-prioritization-gate {
+  border-left: 4px solid #ffb61b;
+}
+
+.plan-prioritization-gate h3 {
+  margin: 0 0 8px;
+  color: #172033;
+  font-size: 1.15rem;
+  letter-spacing: 0;
+}
+
+.plan-prioritization-gate__status {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .prio-psl-warning {
   display: flex;
   gap: 12px;
@@ -4979,6 +5022,12 @@ h3 {
   font-size: 0.875rem;
   color: #526070;
   line-height: 1.6;
+}
+
+@media (max-width: 780px) {
+  .prioritization-stage__route {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Tarea 1: Índice de capítulos sticky ──────────────────────────── */
