@@ -40,6 +40,12 @@ import {
 } from "./appWorkspaceHydration";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
+import {
+  assignLibraryDocumentToWorkspace,
+  collectCompasDocumentLibrary,
+  libraryDocumentAssignmentId,
+  type CompasLibraryDocument,
+} from "./application/document-library";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import {
   hasPSLHumanContent,
@@ -114,6 +120,7 @@ import { parseThematicPrioritisationCSV, thematicPrioritisationToEvidenceAtoms }
 import { buildEstadoResumen } from "./application/territorial-interpretation";
 import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisation";
 import {
+  parseWorkspaceJSON,
   saveWorkspaceToLocalStorage,
 } from "./infrastructure/persistence/local-storage";
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
@@ -346,6 +353,28 @@ function attachDocumentIdToAtoms(
   }));
 }
 
+function loadPersistedWorkspacesForLibrary(
+  activeWorkspace: MunicipalityWorkspace
+): MunicipalityWorkspace[] {
+  const byMunicipality = new Map<string, MunicipalityWorkspace>();
+  try {
+    for (let index = 0; index < localStorage.length; index++) {
+      const key = localStorage.key(index);
+      if (key === null || !key.startsWith("compas-ng:workspace:")) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = parseWorkspaceJSON(raw);
+      if (parsed !== null) {
+        byMunicipality.set(parsed.municipality.identity.id, parsed);
+      }
+    }
+  } catch {
+    // localStorage can be disabled; the active workspace remains authoritative.
+  }
+  byMunicipality.set(activeWorkspace.municipality.identity.id, activeWorkspace);
+  return Array.from(byMunicipality.values());
+}
+
 // isEmptyWorkspaceForPersistenceGuard importada desde application/workspace
 // WorkspaceLoadResult / loadOrCreateMunicipalityWorkspace / shouldSkipPersistence
 // viven en ./appWorkspaceHydration (testables sin renderizar App).
@@ -425,6 +454,7 @@ export default function App() {
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
   const [isLoadingDocumentFile, setIsLoadingDocumentFile] = useState(false);
   const [documentFileMessage, setDocumentFileMessage] = useState<string | null>(null);
+  const [documentLibraryMessage, setDocumentLibraryMessage] = useState<string | null>(null);
   const [isLoadingIBSE, setIsLoadingIBSE] = useState(false);
   const [ibseMessage, setIbseMessage] = useState<string | null>(null);
   const [isLoadingDUKE, setIsLoadingDUKE] = useState(false);
@@ -812,6 +842,18 @@ export default function App() {
     () => [...DEMO_MUNICIPALITIES, ...customMunicipalities],
     [customMunicipalities]
   );
+  const compasDocumentLibrary = useMemo(
+    () =>
+      collectCompasDocumentLibrary(
+        loadPersistedWorkspacesForLibrary(workspace),
+        workspace.municipality.identity.id
+      ),
+    [workspace]
+  );
+
+  useEffect(() => {
+    setDocumentLibraryMessage(null);
+  }, [workspace.municipality.identity.id]);
 
   function handleProcessDocument() {
     // community-asset es un tipo canónico: una sola versión activa por municipio.
@@ -1174,6 +1216,61 @@ export default function App() {
     } finally {
       setIsLoadingDocumentFile(false);
     }
+  }
+
+  function handleAssignLibraryDocument(item: CompasLibraryDocument): void {
+    const targetMunicipalityId = workspace.municipality.identity.id;
+    const targetDocumentId = libraryDocumentAssignmentId(
+      item.sourceMunicipalityId,
+      item.document.id
+    );
+    const result = assignLibraryDocumentToWorkspace({
+      workspace,
+      sourceMunicipalityId: item.sourceMunicipalityId,
+      sourceMunicipalityName: item.sourceMunicipalityName,
+      document: item.document,
+      atoms: item.atoms,
+    });
+
+    if (result.status === "already-assigned") {
+      setDocumentLibraryMessage("Ese documento ya está asignado a este expediente.");
+      return;
+    }
+
+    if (result.status === "same-municipality") {
+      setDocumentLibraryMessage("El documento ya pertenece al expediente activo.");
+      return;
+    }
+
+    if (result.status === "not-assignable") {
+      setDocumentLibraryMessage(
+        "Este documento se puede consultar desde la biblioteca, pero no se asigna automáticamente como fuente reutilizable."
+      );
+      return;
+    }
+
+    setWorkspace(result.workspace);
+    if (result.document) {
+      setLastProcessedDocument(result.document);
+      setLastAtomCount(result.atomsCreated.length);
+    }
+    setDocumentLibraryMessage(
+      result.atomsCreated.length > 0
+        ? `Copia asignada al expediente con ${result.atomsCreated.length} evidencias trazables.`
+        : "Copia asignada al expediente como referencia documental trazable."
+    );
+
+    void loadOriginalFile(item.sourceMunicipalityId, item.document.id)
+      .then((original) => {
+        if (original === undefined) return undefined;
+        return saveOriginalFile(targetMunicipalityId, targetDocumentId, original);
+      })
+      .catch((error) => {
+        setDocumentLibraryMessage(
+          "Copia asignada, pero no se pudo copiar el archivo original conservado en este navegador: " +
+            (error as Error).message
+        );
+      });
   }
 
   async function handleLoadIBSECSV(file: File): Promise<void> {
@@ -3166,6 +3263,9 @@ export default function App() {
             <DocumentRepositoryPanel
               repository={runtime.workspace.repository}
               onDelete={handleDeleteDocument}
+              libraryDocuments={compasDocumentLibrary}
+              libraryMessage={documentLibraryMessage}
+              onAssignLibraryDocument={handleAssignLibraryDocument}
             />
 
             {/* ── BLOQUE 4: Añadir o sustituir fuentes ── */}

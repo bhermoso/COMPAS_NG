@@ -2950,6 +2950,43 @@ h3 {
   border-color: #dc143c;
 }
 
+.doc-repo__assign {
+  padding: 5px 11px;
+  border: 1px solid #0074c8;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #0074c8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.doc-repo__assign:hover {
+  background: #f1f7ff;
+}
+
+.doc-repo__scope-note {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.doc-repo__library-message {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.9rem;
+}
+
+.document-row--library {
+  background: #fbfdff;
+}
+
 .document-row--primary {
   border-left: 3px solid #0074c8;
   padding-left: 14px;

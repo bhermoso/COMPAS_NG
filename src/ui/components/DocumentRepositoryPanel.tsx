@@ -4,6 +4,7 @@ import type {
   MunicipalDocument,
   MunicipalDocumentRepository,
 } from "../../domain/repository";
+import type { CompasLibraryDocument } from "../../application/document-library";
 import { DocumentAccess } from './DocumentAccess.tsx';
 import { getCategory, KIND_LABEL, STUDY_LABEL_BY_TAG } from "./documentRepositoryCategorization";
 
@@ -50,6 +51,9 @@ function sortWithinCategory(docs: MunicipalDocument[]): MunicipalDocument[] {
 interface DocumentRepositoryPanelProps {
   repository: MunicipalDocumentRepository;
   onDelete?: (documentId: string) => void;
+  libraryDocuments?: CompasLibraryDocument[];
+  libraryMessage?: string | null;
+  onAssignLibraryDocument?: (document: CompasLibraryDocument) => void;
 }
 
 function DocumentRow({
@@ -101,7 +105,61 @@ function DocumentRow({
   );
 }
 
-export function DocumentRepositoryPanel({ repository, onDelete }: DocumentRepositoryPanelProps) {
+function LibraryDocumentRow({
+  item,
+  onAssign,
+}: {
+  item: CompasLibraryDocument;
+  onAssign?: (document: CompasLibraryDocument) => void;
+}) {
+  const status = item.alreadyAssigned
+    ? "Asignado"
+    : item.canAssign
+      ? "Disponible"
+      : "Consulta";
+
+  return (
+    <article
+      className="document-row document-row--library"
+      data-document-kind={item.document.kind}
+      data-document-tags={item.document.tags.join(" ")}
+      data-source-municipality={item.sourceMunicipalityId}
+    >
+      <div>
+        <p className="document-kind">{getDocumentKindLabel(item.document)}</p>
+        <h3>{item.document.title}</h3>
+        <p className="doc-repo__source">
+          Expediente origen: {item.sourceMunicipalityName}
+          {item.document.source.system ? ` · ${item.document.source.system}` : ""}
+        </p>
+      </div>
+      <div className="doc-repo__actions">
+        <span className="status-pill">{status}</span>
+        {item.canAssign && onAssign && (
+          <button
+            type="button"
+            className="doc-repo__assign"
+            onClick={() => onAssign(item)}
+          >
+            Asignar copia
+          </button>
+        )}
+        {!item.canAssign && !item.alreadyAssigned && (
+          <span className="doc-repo__scope-note">Solo consulta</span>
+        )}
+      </div>
+      <DocumentAccess document={item.document} />
+    </article>
+  );
+}
+
+export function DocumentRepositoryPanel({
+  repository,
+  onDelete,
+  libraryDocuments,
+  libraryMessage,
+  onAssignLibraryDocument,
+}: DocumentRepositoryPanelProps) {
   // Solo muestra "otras fuentes documentales" — las capas 1–3 (Informe de Salud,
   // Estudios complementarios, Activos para la salud) tienen sus propios paneles.
   const otherDocs = sortWithinCategory(
@@ -113,6 +171,11 @@ export function DocumentRepositoryPanel({ repository, onDelete }: DocumentReposi
   const strategicDocs = sortWithinCategory(
     repository.documents.filter((d) => getCategory(d) === "strategic-input")
   );
+  const libraryGroups = new Map<string, CompasLibraryDocument[]>();
+  for (const item of libraryDocuments ?? []) {
+    const key = item.sourceMunicipalityName;
+    libraryGroups.set(key, [...(libraryGroups.get(key) ?? []), item]);
+  }
 
   return (
     <>
@@ -124,6 +187,55 @@ export function DocumentRepositoryPanel({ repository, onDelete }: DocumentReposi
           <div className="document-list">{repository.documents.map(document=><DocumentRow key={document.id} document={document} onDelete={onDelete}/>)}</div>
         </details>
       </section>
+
+      {libraryDocuments !== undefined && (
+        <section className="workspace-panel">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Biblioteca documental COMPÁS</p>
+              <h2>
+                Documentación disponible en otros expedientes
+                {libraryDocuments.length > 0 && (
+                  <span className="doc-repo__count">{libraryDocuments.length}</span>
+                )}
+              </h2>
+            </div>
+            <p className="panel-note">
+              Consulta documentación acumulada en COMPÁS y asigna al expediente activo
+              una copia trazable de los marcos y fuentes reutilizables.
+            </p>
+          </div>
+          {libraryMessage && (
+            <p className="doc-repo__library-message" role="status">
+              {libraryMessage}
+            </p>
+          )}
+          {libraryDocuments.length === 0 ? (
+            <p className="empty-state">
+              No hay documentos guardados en otros expedientes de este navegador.
+            </p>
+          ) : (
+            <details>
+              <summary>Abrir biblioteca · {libraryDocuments.length} documentos</summary>
+              {Array.from(libraryGroups.entries()).map(([sourceName, items]) => (
+                <div className="doc-repo__group" key={sourceName}>
+                  <p className="doc-repo__group-label">{sourceName}</p>
+                  <div className="document-list">
+                    {items.map((item) => (
+                      <LibraryDocumentRow
+                        key={item.id}
+                        item={item}
+                        onAssign={onAssignLibraryDocument}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </details>
+          )}
+        </section>
+      )}
+
       <section className="workspace-panel">
         <div className="panel-header">
           <div>
