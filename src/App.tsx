@@ -123,6 +123,10 @@ import {
   parseWorkspaceJSON,
   saveWorkspaceToLocalStorage,
 } from "./infrastructure/persistence/local-storage";
+import {
+  loadWorkspaceFromIndexedDB,
+  saveWorkspaceToIndexedDB,
+} from "./infrastructure/persistence/indexed-db-workspace";
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
@@ -193,7 +197,9 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
 const DEFAULT_MUNICIPALITY_ID = "granada-zaidin";
 const WORKSPACE_PERSISTENCE_FAILURE_MESSAGE =
-  "No se pudo guardar el espacio de trabajo en este navegador. La selección puede perderse al recargar.";
+  "No se pudo guardar el espacio de trabajo en este navegador. Descarga una copia de recuperación antes de recargar.";
+const WORKSPACE_EXTENDED_STORAGE_MESSAGE =
+  "Expediente guardado en almacenamiento ampliado de este navegador. Para abrirlo en otro equipo o conservarlo en el remoto, descarga una copia de recuperación o crea un seed.";
 
 function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextInput[] {
   try {
@@ -375,6 +381,22 @@ function loadPersistedWorkspacesForLibrary(
   return Array.from(byMunicipality.values());
 }
 
+function shouldRestoreIndexedDbWorkspace(
+  current: MunicipalityWorkspace,
+  stored: MunicipalityWorkspace
+): boolean {
+  if (current.municipality.identity.id !== stored.municipality.identity.id) {
+    return false;
+  }
+  if (
+    isEmptyWorkspaceForPersistenceGuard(current) &&
+    !isEmptyWorkspaceForPersistenceGuard(stored)
+  ) {
+    return true;
+  }
+  return stored.updatedAt > current.updatedAt;
+}
+
 // isEmptyWorkspaceForPersistenceGuard importada desde application/workspace
 // WorkspaceLoadResult / loadOrCreateMunicipalityWorkspace / shouldSkipPersistence
 // viven en ./appWorkspaceHydration (testables sin renderizar App).
@@ -437,6 +459,12 @@ export default function App() {
       ? initialWorkspaceLoad.workspace.municipality.identity.id
       : null
   );
+  const [pendingIndexedDbHydrationId, setPendingIndexedDbHydrationId] =
+    useState<string | null>(() =>
+      isEmptyWorkspaceForPersistenceGuard(initialWorkspaceLoad.workspace)
+        ? initialWorkspaceLoad.workspace.municipality.identity.id
+        : null
+    );
 
   useEffect(() => {
     if (pendingSeedId || protectedEmptyWorkspaceIdRef.current === workspace.municipality.identity.id) return;
@@ -507,15 +535,55 @@ export default function App() {
         protectedEmptyWorkspaceId: protectedEmptyWorkspaceIdRef.current,
         isEmpty: isEmptyWorkspaceForPersistenceGuard(workspace),
       })
+      || pendingIndexedDbHydrationId === workspace.municipality.identity.id
     ) {
       setPersistenceMessage(null);
       return;
     }
 
     protectedEmptyWorkspaceIdRef.current = null;
-    const saved = saveWorkspaceToLocalStorage(workspace);
-    setPersistenceMessage(saved ? null : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE);
-  }, [workspace, pendingSeedId]);
+    const localSaved = saveWorkspaceToLocalStorage(workspace);
+    let cancelled = false;
+    void saveWorkspaceToIndexedDB(workspace).then((indexedDbSaved) => {
+      if (cancelled) return;
+      setPersistenceMessage(
+        localSaved
+          ? null
+          : indexedDbSaved
+            ? WORKSPACE_EXTENDED_STORAGE_MESSAGE
+            : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [workspace, pendingSeedId, pendingIndexedDbHydrationId]);
+
+  useEffect(() => {
+    if (pendingIndexedDbHydrationId === null) return;
+    const targetMunicipalityId = pendingIndexedDbHydrationId;
+    let cancelled = false;
+    void loadWorkspaceFromIndexedDB(targetMunicipalityId).then((stored) => {
+      if (cancelled) return;
+      if (stored !== null) {
+        setWorkspace((current) => {
+          if (!shouldRestoreIndexedDbWorkspace(current, stored)) return current;
+          queueMicrotask(() => {
+            setPendingTopics([
+              ...(stored.thematicPrioritisation?.selectedTopicIds ?? []),
+            ]);
+          });
+          return stored;
+        });
+      }
+      setPendingIndexedDbHydrationId((currentPending) =>
+        currentPending === targetMunicipalityId ? null : currentPending
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingIndexedDbHydrationId]);
 
   // Hidratación asíncrona del expediente municipal desde su seed canónico. Solo se
   // activa cuando `pendingSeedId` está fijado (no había expediente local y existe
@@ -2627,6 +2695,8 @@ export default function App() {
     protectedEmptyWorkspaceIdRef.current = nextWorkspaceLoad.protectExistingStorage
       ? municipalityId
       : null;
+    const shouldCheckIndexedDb = isEmptyWorkspaceForPersistenceGuard(nextWorkspace);
+    setPendingIndexedDbHydrationId(shouldCheckIndexedDb ? municipalityId : null);
     // Activa (o limpia) la hidratación asíncrona del seed para el nuevo municipio.
     setPendingSeedId(nextWorkspaceLoad.seedPending ? municipalityId : null);
     // Activa (o limpia) la migración incremental pendiente del nuevo municipio.

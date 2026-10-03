@@ -105,12 +105,18 @@ function stripHtmlFields(workspace: MunicipalityWorkspace): MunicipalityWorkspac
   };
 }
 
+export function serializeWorkspaceForStorage(
+  workspace: MunicipalityWorkspace
+): string {
+  return JSON.stringify(stripHtmlFields(workspace));
+}
+
 export function saveWorkspaceToLocalStorage(
   workspace: MunicipalityWorkspace
 ): boolean {
   try {
     const key = buildWorkspaceStorageKey(workspace.municipality.identity.id);
-    localStorage.setItem(key, JSON.stringify(stripHtmlFields(workspace)));
+    localStorage.setItem(key, serializeWorkspaceForStorage(workspace));
     return true;
   } catch {
     return false;
