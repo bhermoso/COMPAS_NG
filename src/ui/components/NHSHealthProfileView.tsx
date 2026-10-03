@@ -20,6 +20,7 @@ import {
 interface NHSHealthProfileViewProps {
   /** Documento canónico sellado, o `null` si es inexistente, legacy o incompleto. */
   document: CanonicalProfileDocument | null;
+  id?: string;
 }
 
 /** Agrupa filas en tramos CONSECUTIVOS por `bloque`, preservando orden exacto. */
@@ -354,12 +355,12 @@ function ReadingQualityPanel({ rows }: { rows: NHSDerivedRow[] }) {
   );
 }
 
-export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
+export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps) {
   const projection = projectNHSDerived(document);
 
   if (!projection.available || document === null) {
     return (
-      <section className="workspace-panel nhs-root">
+      <section id={id} className="workspace-panel nhs-root">
         <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
         <h2>Pendiente de compilar el Perfil canónico</h2>
         <p className="panel-note">
@@ -384,7 +385,7 @@ export function NHSHealthProfileView({ document }: NHSHealthProfileViewProps) {
   const territory = document.editorialView.header.territory;
 
   return (
-    <div className="nhs-root">
+    <div id={id} className="nhs-root">
 
       <section className="workspace-panel nhs-executive-hero">
         <div className="nhs-executive-hero__copy">

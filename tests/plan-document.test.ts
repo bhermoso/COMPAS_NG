@@ -8,6 +8,7 @@ import {
   buildPlanDocument,
   validatePlanDocumentForLocalHealthPlan,
 } from "../src/domain/action-plan-catalog/PlanDocument";
+import { createIndicatorWorksheet } from "../src/domain/action-plan-catalog/IndicatorWorksheet";
 import { buildPlanWord,buildPlanPdf,planDocumentParagraphs } from "../src/application/action-plan/exportPlanDocument";
 function fixture(){
  const draft:PlanPreparationDraft={municipalityId:"granada-zaidin",moduleId:module.id,version:module.version,updatedAt:"2026-09-16",decisions:{}};
@@ -95,5 +96,29 @@ describe("Versiones documentales del Plan",()=>{
   expect(texts).toContain("Necesidades diagnosticadas no priorizadas");
   expect(texts).toContain("Marco de evaluación");
   expect(texts.join("\n")).toContain("Equipo técnico municipal de salud");
+ });
+ it("congela el mapa de vínculos con fichas, actuaciones y actividades",()=>{
+  const draft=fixture();
+  const first=module.generalObjectives[0].specificObjectives[0];
+  const sheet=createIndicatorWorksheet({
+   municipalityId:draft.municipalityId,moduleId:module.id,moduleVersion:module.version,line:module.title,
+   generalObjective:module.generalObjectives[0].code,objective:first.code,indicatorCode:first.indicator.code,
+   indicator:first.indicator.title,unit:first.indicator.unit,source:module.sourceLabel,
+  });
+  sheet.actions=[{id:"a1",values:{
+   name:"Actuación conectada",owner:"Centro de salud",contribution:"Ejecuta sesiones vinculadas al objetivo.",
+   schedule:"Primer semestre",resources:"Sala y equipo técnico",requestedData:"Participantes y sesiones",source:"Registro de actividad",
+  },activities:[{id:"act-1",values:{name:"Taller inicial",status:"planificado"}}],returns:[{id:"r1",values:{period:"2027"}}]}];
+  sheet.consolidations=[{id:"c1",status:"pending",values:{period:"2027"}}];
+  const active=buildDefinitiveActionPlanProjection(draft.municipalityId,[module],[draft]);
+  const doc=validatePlanDocument(draft.municipalityId,active,"Equipo","2026-09-16",{worksheets:[sheet]});
+  expect(doc.traceabilityLinks?.find(link=>link.indicatorCode===first.indicator.code)?.actionCards[0].activities[0].name).toBe("Taller inicial");
+  sheet.actions[0].values.name="Cambio posterior sin validar";
+  expect(JSON.stringify(doc)).toContain("Actuación conectada");
+  expect(JSON.stringify(doc)).not.toContain("Cambio posterior sin validar");
+  const texts=planDocumentParagraphs(doc).map(p=>p.text).join("\n");
+  expect(texts).toContain("Mapa de vínculos, fichas y seguimiento");
+  expect(texts).toContain("Actuación conectada");
+  expect(texts).toContain("Taller inicial");
  });
 });

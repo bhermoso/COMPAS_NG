@@ -1,6 +1,6 @@
 import { Document, HeadingLevel, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from "docx";
 import {
-  actionFields, consolidationFields, indicatorFields, returnFields,
+  actionFields, activityFields, consolidationFields, indicatorFields, returnFields,
   type IndicatorWorksheet, type WorksheetValues,
 } from "../../domain/action-plan-catalog/IndicatorWorksheet";
 
@@ -36,6 +36,11 @@ export function buildIndicatorWorksheetDocument(sheet: IndicatorWorksheet, revie
   for (const action of actions) {
     children.push(new Paragraph({ text: "Ficha de actuación o programa", heading: HeadingLevel.HEADING_1, pageBreakBefore: true }),
       text(`Vínculo: ${context.indicatorCode} · Código de actuación: ${action.id}`), fields(actionFields, action.values));
+    const activities = action.activities ?? [];
+    children.push(heading("Actividades, hitos o productos verificables"));
+    if (activities.length) {
+      for (const activity of activities) children.push(fields(activityFields, activity.values));
+    } else children.push(fields(activityFields, {}));
     // An unfilled return is provided for handing the sheet to the action owner.
     const returns = action.returns.length ? action.returns : [{ id: "", values: {} }];
     for (const delivery of returns) children.push(heading("Entrega de datos del periodo"), fields(returnFields, delivery.values));

@@ -26,8 +26,20 @@ repositorio ni sustituye su función.
 ### Relación con el municipio activo
 
 Cada repositorio pertenece a exactamente un municipio. No existe estado
-documental global ni compartido entre municipios. El `municipalityId` del
-repositorio es el contexto obligatorio de todos sus documentos.
+documental global mutable ni documentos compartidos entre municipios. El
+`municipalityId` del repositorio es el contexto obligatorio de todos sus
+documentos.
+
+La aplicación puede construir una **Biblioteca documental COMPÁS** como vista
+derivada de los repositorios municipales ya persistidos en el navegador. Esta
+biblioteca permite consultar documentación acumulada en otros expedientes, pero
+no altera el repositorio de origen ni constituye un repositorio global. Cuando
+un documento de la biblioteca se asigna a otro expediente, el sistema registra
+una **copia trazable** dentro del repositorio municipal activo, con un nuevo
+`documentId`, el `municipalityId` del expediente destino y tags de procedencia
+(`compas-library-assigned`, `source-municipality:*`, `source-document:*`).
+La eliminación o sustitución posterior de esa copia solo afecta al expediente
+destino.
 
 ### Relación con el pipeline analítico
 
@@ -260,6 +272,28 @@ la capa de aplicación, con control explícito.
 Invariante: el `municipalityId` del documento queda vinculado al `municipalityId`
 del repositorio en el momento de la adición. No puede cambiarse posteriormente.
 
+### Asignar desde la Biblioteca documental COMPÁS
+
+La asignación de un documento existente en otro expediente se implementa como
+una adición especializada sobre el repositorio activo: nunca se enlaza el
+documento externo por referencia mutable. La copia conserva título, tipo,
+metadatos documentales, `sourceText` disponible y referencia al archivo original
+cuando exista; la procedencia de la copia queda expresada en `source.system` y
+en los tags de trazabilidad.
+
+Solo son asignables automáticamente los tipos acumulables de contexto y
+planificación que pueden ser reutilizados entre ámbitos con revisión técnica:
+`strategic-framework`, `territorial-documentation`, `qualitative-material` y
+`longitudinal-evidence`. El resto de documentos de la biblioteca puede
+consultarse, pero no se copia automáticamente al expediente destino.
+
+Si el documento origen ya tenía `EvidenceAtom` derivados, la asignación clona
+esos átomos reescribiendo `municipalityId` y `provenance.documentId` hacia el
+expediente destino, y añade una cautela metodológica sobre aplicabilidad local.
+Si no existen átomos derivados pero la copia contiene `sourceText` procesable,
+la capa de aplicación puede ejecutar la misma frontera documento → evidencia
+que una ingesta manual.
+
 ### Sustituir
 
 La sustitución solo aplica a documentos canónicos y tiene dos variantes:
@@ -377,6 +411,13 @@ Todo `EvidenceAtom` generado a partir de un documento registrado en el
 repositorio incluye en su `provenance` el `documentId` del documento origen.
 Esta vinculación no puede ser eliminada ni alterada retroactivamente por el
 sistema.
+
+**I-R12 — La reutilización intermunicipal siempre crea copia local**
+Un documento asignado desde la Biblioteca documental COMPÁS debe existir en el
+repositorio destino como `MunicipalDocument` propio, con el `municipalityId` del
+destino y tags de procedencia hacia el documento origen. No puede haber un
+documento de municipio ajeno dentro del repositorio destino, ni un borrado en el
+destino puede modificar el expediente origen.
 
 ---
 

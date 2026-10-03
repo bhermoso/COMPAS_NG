@@ -469,10 +469,11 @@ function PSLCCompilationChecklist({
 }
 
 // ── Salidas institucionales del PSL-C ────────────────────────────────────────
-// Hace visible el destino final de la ruta operativa: visor, DOCX, PDF e
-// impresión. Antes de compilar, las salidas se muestran bloqueadas (nunca como
-// acciones activas); después, reutilizan las mismas funciones de descarga que
-// la tarjeta del artefacto (sin duplicar lógica de generación).
+// Hace visible el destino final de la ruta operativa: visor, DOCX, PDF,
+// impresión y ficha visual derivada. Antes de compilar, las salidas se muestran
+// bloqueadas (nunca como acciones activas); después, reutilizan las mismas
+// funciones de descarga que la tarjeta del artefacto (sin duplicar lógica de
+// generación).
 
 function PSLCSalidasInstitucionales({
   compiledProfiles,
@@ -509,6 +510,10 @@ function PSLCSalidasInstitucionales({
               <strong>disponible tras compilar</strong>.
             </li>
             <li className="pslc-salidas__item">
+              <span aria-hidden="true">🔒</span> Ficha visual tipo Local
+              Health Profiles: <strong>disponible tras compilar</strong>.
+            </li>
+            <li className="pslc-salidas__item">
               <span aria-hidden="true">🔒</span> Impresión navegador:{" "}
               <strong>disponible tras abrir el visor institucional</strong>.
             </li>
@@ -527,6 +532,13 @@ function PSLCSalidasInstitucionales({
                 Ver documento institucional completo
               </a>{" "}
               (ir al artefacto compilado)
+            </li>
+            <li className="pslc-salidas__item pslc-salidas__item--ok">
+              <span aria-hidden="true">✓</span>{" "}
+              <a className="pslc-checklist__action" href="#perfil-health-profile-visual">
+                Ver ficha visual tipo Local Health Profiles
+              </a>{" "}
+              (salida breve en pantalla; no es el DOCX PSL-C)
             </li>
             <li className="pslc-salidas__item pslc-salidas__item--ok">
               <span aria-hidden="true">✓</span>{" "}
@@ -1720,7 +1732,14 @@ export function LocalHealthProfileView({
               ? "Un Perfil de Salud Local ha sido compilado como documento institucional. "
               : `${compiledProfiles.length} Perfiles de Salud Local han sido compilados como documentos institucionales. `}
             Cada compilación es un artefacto congelado e inmutable que representa el estado
-            del diagnóstico en el momento de su generación.
+            del diagnóstico en el momento de su generación. El DOCX/PDF es el PSL-C
+            completo; la ficha visual tipo Local Health Profiles se consulta como
+            salida breve en pantalla.
+          </p>
+          <p className="panel-note">
+            <a className="pslc-checklist__action" href="#perfil-health-profile-visual">
+              Ir a la ficha visual tipo Local Health Profiles
+            </a>
           </p>
           <div className="psl-compiled-list">
             {[...compiledProfiles].reverse().map((artifact) => {

@@ -40,6 +40,12 @@ import {
 } from "./appWorkspaceHydration";
 import { createMunicipalityRuntime } from "./application/runtime";
 import { ingestManualDocument, extractDocxText, removeEquivalentStrategicFramework } from "./application/document-ingestion";
+import {
+  assignLibraryDocumentToWorkspace,
+  collectCompasDocumentLibrary,
+  libraryDocumentAssignmentId,
+  type CompasLibraryDocument,
+} from "./application/document-library";
 // buildLocalHealthProfile is now called inside MunicipalityRuntime — not needed here.
 import {
   computePerfilEpistemicMetrics,
@@ -113,8 +119,13 @@ import { parseThematicPrioritisationCSV, thematicPrioritisationToEvidenceAtoms }
 import { buildEstadoResumen } from "./application/territorial-interpretation";
 import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisation";
 import {
+  parseWorkspaceJSON,
   saveWorkspaceToLocalStorage,
 } from "./infrastructure/persistence/local-storage";
+import {
+  loadWorkspaceFromIndexedDB,
+  saveWorkspaceToIndexedDB,
+} from "./infrastructure/persistence/indexed-db-workspace";
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
@@ -185,7 +196,9 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
 const DEFAULT_MUNICIPALITY_ID = "granada-zaidin";
 const WORKSPACE_PERSISTENCE_FAILURE_MESSAGE =
-  "No se pudo guardar el espacio de trabajo en este navegador. La selección puede perderse al recargar.";
+  "No se pudo guardar el espacio de trabajo en este navegador. Descarga una copia de recuperación antes de recargar.";
+const WORKSPACE_EXTENDED_STORAGE_MESSAGE =
+  "Expediente guardado en almacenamiento ampliado de este navegador. Para abrirlo en otro equipo o conservarlo en el remoto, descarga una copia de recuperación o crea un seed.";
 
 function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextInput[] {
   try {
@@ -345,6 +358,44 @@ function attachDocumentIdToAtoms(
   }));
 }
 
+function loadPersistedWorkspacesForLibrary(
+  activeWorkspace: MunicipalityWorkspace
+): MunicipalityWorkspace[] {
+  const byMunicipality = new Map<string, MunicipalityWorkspace>();
+  try {
+    for (let index = 0; index < localStorage.length; index++) {
+      const key = localStorage.key(index);
+      if (key === null || !key.startsWith("compas-ng:workspace:")) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = parseWorkspaceJSON(raw);
+      if (parsed !== null) {
+        byMunicipality.set(parsed.municipality.identity.id, parsed);
+      }
+    }
+  } catch {
+    // localStorage can be disabled; the active workspace remains authoritative.
+  }
+  byMunicipality.set(activeWorkspace.municipality.identity.id, activeWorkspace);
+  return Array.from(byMunicipality.values());
+}
+
+function shouldRestoreIndexedDbWorkspace(
+  current: MunicipalityWorkspace,
+  stored: MunicipalityWorkspace
+): boolean {
+  if (current.municipality.identity.id !== stored.municipality.identity.id) {
+    return false;
+  }
+  if (
+    isEmptyWorkspaceForPersistenceGuard(current) &&
+    !isEmptyWorkspaceForPersistenceGuard(stored)
+  ) {
+    return true;
+  }
+  return stored.updatedAt > current.updatedAt;
+}
+
 // isEmptyWorkspaceForPersistenceGuard importada desde application/workspace
 // WorkspaceLoadResult / loadOrCreateMunicipalityWorkspace / shouldSkipPersistence
 // viven en ./appWorkspaceHydration (testables sin renderizar App).
@@ -407,6 +458,12 @@ export default function App() {
       ? initialWorkspaceLoad.workspace.municipality.identity.id
       : null
   );
+  const [pendingIndexedDbHydrationId, setPendingIndexedDbHydrationId] =
+    useState<string | null>(() =>
+      isEmptyWorkspaceForPersistenceGuard(initialWorkspaceLoad.workspace)
+        ? initialWorkspaceLoad.workspace.municipality.identity.id
+        : null
+    );
 
   useEffect(() => {
     if (pendingSeedId || protectedEmptyWorkspaceIdRef.current === workspace.municipality.identity.id) return;
@@ -424,6 +481,7 @@ export default function App() {
   const [lastHealthReportMessage, setLastHealthReportMessage] = useState<string | null>(null);
   const [isLoadingDocumentFile, setIsLoadingDocumentFile] = useState(false);
   const [documentFileMessage, setDocumentFileMessage] = useState<string | null>(null);
+  const [documentLibraryMessage, setDocumentLibraryMessage] = useState<string | null>(null);
   const [isLoadingIBSE, setIsLoadingIBSE] = useState(false);
   const [ibseMessage, setIbseMessage] = useState<string | null>(null);
   const [isLoadingDUKE, setIsLoadingDUKE] = useState(false);
@@ -476,15 +534,55 @@ export default function App() {
         protectedEmptyWorkspaceId: protectedEmptyWorkspaceIdRef.current,
         isEmpty: isEmptyWorkspaceForPersistenceGuard(workspace),
       })
+      || pendingIndexedDbHydrationId === workspace.municipality.identity.id
     ) {
       setPersistenceMessage(null);
       return;
     }
 
     protectedEmptyWorkspaceIdRef.current = null;
-    const saved = saveWorkspaceToLocalStorage(workspace);
-    setPersistenceMessage(saved ? null : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE);
-  }, [workspace, pendingSeedId]);
+    const localSaved = saveWorkspaceToLocalStorage(workspace);
+    let cancelled = false;
+    void saveWorkspaceToIndexedDB(workspace).then((indexedDbSaved) => {
+      if (cancelled) return;
+      setPersistenceMessage(
+        localSaved
+          ? null
+          : indexedDbSaved
+            ? WORKSPACE_EXTENDED_STORAGE_MESSAGE
+            : WORKSPACE_PERSISTENCE_FAILURE_MESSAGE
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [workspace, pendingSeedId, pendingIndexedDbHydrationId]);
+
+  useEffect(() => {
+    if (pendingIndexedDbHydrationId === null) return;
+    const targetMunicipalityId = pendingIndexedDbHydrationId;
+    let cancelled = false;
+    void loadWorkspaceFromIndexedDB(targetMunicipalityId).then((stored) => {
+      if (cancelled) return;
+      if (stored !== null) {
+        setWorkspace((current) => {
+          if (!shouldRestoreIndexedDbWorkspace(current, stored)) return current;
+          queueMicrotask(() => {
+            setPendingTopics([
+              ...(stored.thematicPrioritisation?.selectedTopicIds ?? []),
+            ]);
+          });
+          return stored;
+        });
+      }
+      setPendingIndexedDbHydrationId((currentPending) =>
+        currentPending === targetMunicipalityId ? null : currentPending
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingIndexedDbHydrationId]);
 
   // Hidratación asíncrona del expediente municipal desde su seed canónico. Solo se
   // activa cuando `pendingSeedId` está fijado (no había expediente local y existe
@@ -816,6 +914,18 @@ export default function App() {
     () => [...DEMO_MUNICIPALITIES, ...customMunicipalities],
     [customMunicipalities]
   );
+  const compasDocumentLibrary = useMemo(
+    () =>
+      collectCompasDocumentLibrary(
+        loadPersistedWorkspacesForLibrary(workspace),
+        workspace.municipality.identity.id
+      ),
+    [workspace]
+  );
+
+  useEffect(() => {
+    setDocumentLibraryMessage(null);
+  }, [workspace.municipality.identity.id]);
 
   function handleProcessDocument() {
     // community-asset es un tipo canónico: una sola versión activa por municipio.
@@ -1178,6 +1288,61 @@ export default function App() {
     } finally {
       setIsLoadingDocumentFile(false);
     }
+  }
+
+  function handleAssignLibraryDocument(item: CompasLibraryDocument): void {
+    const targetMunicipalityId = workspace.municipality.identity.id;
+    const targetDocumentId = libraryDocumentAssignmentId(
+      item.sourceMunicipalityId,
+      item.document.id
+    );
+    const result = assignLibraryDocumentToWorkspace({
+      workspace,
+      sourceMunicipalityId: item.sourceMunicipalityId,
+      sourceMunicipalityName: item.sourceMunicipalityName,
+      document: item.document,
+      atoms: item.atoms,
+    });
+
+    if (result.status === "already-assigned") {
+      setDocumentLibraryMessage("Ese documento ya está asignado a este expediente.");
+      return;
+    }
+
+    if (result.status === "same-municipality") {
+      setDocumentLibraryMessage("El documento ya pertenece al expediente activo.");
+      return;
+    }
+
+    if (result.status === "not-assignable") {
+      setDocumentLibraryMessage(
+        "Este documento se puede consultar desde la biblioteca, pero no se asigna automáticamente como fuente reutilizable."
+      );
+      return;
+    }
+
+    setWorkspace(result.workspace);
+    if (result.document) {
+      setLastProcessedDocument(result.document);
+      setLastAtomCount(result.atomsCreated.length);
+    }
+    setDocumentLibraryMessage(
+      result.atomsCreated.length > 0
+        ? `Copia asignada al expediente con ${result.atomsCreated.length} evidencias trazables.`
+        : "Copia asignada al expediente como referencia documental trazable."
+    );
+
+    void loadOriginalFile(item.sourceMunicipalityId, item.document.id)
+      .then((original) => {
+        if (original === undefined) return undefined;
+        return saveOriginalFile(targetMunicipalityId, targetDocumentId, original);
+      })
+      .catch((error) => {
+        setDocumentLibraryMessage(
+          "Copia asignada, pero no se pudo copiar el archivo original conservado en este navegador: " +
+            (error as Error).message
+        );
+      });
   }
 
   async function handleLoadIBSECSV(file: File): Promise<void> {
@@ -2534,6 +2699,8 @@ export default function App() {
     protectedEmptyWorkspaceIdRef.current = nextWorkspaceLoad.protectExistingStorage
       ? municipalityId
       : null;
+    const shouldCheckIndexedDb = isEmptyWorkspaceForPersistenceGuard(nextWorkspace);
+    setPendingIndexedDbHydrationId(shouldCheckIndexedDb ? municipalityId : null);
     // Activa (o limpia) la hidratación asíncrona del seed para el nuevo municipio.
     setPendingSeedId(nextWorkspaceLoad.seedPending ? municipalityId : null);
     // Activa (o limpia) la migración incremental pendiente del nuevo municipio.
@@ -3170,6 +3337,9 @@ export default function App() {
             <DocumentRepositoryPanel
               repository={runtime.workspace.repository}
               onDelete={handleDeleteDocument}
+              libraryDocuments={compasDocumentLibrary}
+              libraryMessage={documentLibraryMessage}
+              onAssignLibraryDocument={handleAssignLibraryDocument}
             />
 
             {/* ── BLOQUE 4: Añadir o sustituir fuentes ── */}
@@ -3285,6 +3455,7 @@ export default function App() {
             {/* Representación derivada breve (GOV-P4-01 · PR-E): dentro del único
                 espacio «Perfil de Salud Local», proyectada del documento canónico. */}
             <NHSHealthProfileView
+              id="perfil-health-profile-visual"
               document={(() => {
                 const compiled = workspace.compiledProfiles ?? [];
                 const last = compiled[compiled.length - 1];

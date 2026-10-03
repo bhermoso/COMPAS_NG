@@ -1,5 +1,6 @@
 import type { MunicipalityWorkspace } from "../../domain/workspace";
 import { latestValidatedPlan } from "../../domain/action-plan-catalog/PlanDocument";
+import { traceabilityHasLinkedActionFichas } from "../../domain/action-plan-catalog/ActionPlanTraceability";
 import { computePSLHash } from "../health-profile-compiler/LocalHealthProfileCompiler";
 import { readSealedCanonicalDocument } from "../psl-c-canonical";
 import { buildPSLCDocumentModel, type PSLCDocumentModel, type PSLCDocumentSection } from "../psl-c-export";
@@ -8,6 +9,29 @@ import { planDocumentParagraphs } from "../action-plan/exportPlanDocument";
 export type InitialPlanCompilation =
  | { ok: true; document: PSLCDocumentModel }
  | { ok: false; issues: string[] };
+
+function actionImplementationParagraphs(plan: NonNullable<ReturnType<typeof latestValidatedPlan>>): string[] {
+ const links = plan.traceabilityLinks ?? [];
+ if (!traceabilityHasLinkedActionFichas(links)) {
+  return [
+   "Pendiente de incorporar y validar las fichas de actuaciones, su vinculación con objetivos e indicadores, responsables, calendario, recursos y agenda anual."
+  ];
+ }
+ const actionCount = links.reduce((total, link) => total + link.actionCards.length, 0);
+ const activityCount = links.reduce((total, link) => total + link.actionCards.reduce((sum, action) => sum + action.activities.length, 0), 0);
+ const paragraphs = [
+  `La versión validada del Plan de Acción incorpora ${actionCount} fichas de actuación vinculadas a indicadores y ${activityCount} actividades, hitos o productos verificables.`,
+ ];
+ for (const link of links.filter((item) => item.actionCards.length > 0)) {
+  paragraphs.push(`${link.objectiveCode} → ${link.indicatorCode}: ${link.actionCards.map((action) => action.name).join("; ")}.`);
+  const pending = link.pendingSummary.filter((item) => !item.includes("ficha de indicador pendiente"));
+  if (pending.length) paragraphs.push(`Pendiente de cierre en ${link.indicatorCode}: ${pending.join("; ")}.`);
+ }
+ const missing = links.filter((link) => link.actionCards.length === 0).map((link) => link.indicatorCode);
+ if (missing.length) paragraphs.push(`Indicadores todavía sin ficha de actuación vinculada: ${missing.join(", ")}.`);
+ paragraphs.push("Estas fichas documentan el estado de preparación; no sustituyen la aprobación institucional ni la agenda anual validada.");
+ return paragraphs;
+}
 
 /** Initial working document only. Never changes or approves the source snapshots. */
 export function compileInitialLocalHealthPlan(
@@ -62,7 +86,7 @@ export function compileInitialLocalHealthPlan(
   {title: "4. Plan de Acción validado", level: 1, paragraphs: []},
   ...actionSections,
   {title: "5. Actuaciones y agenda de implementación", level: 1, paragraphs: [
-   "Pendiente de incorporar y validar las fichas de actuaciones, su vinculación con objetivos e indicadores, responsables, calendario, recursos y agenda anual."
+   ...actionImplementationParagraphs(plan)
   ]},
   {title: "6. Seguimiento, evaluación y aprobación", level: 1, paragraphs: [
    plan.evaluationFramework

@@ -8,10 +8,13 @@ import {
  normaliseUnaddressedNeedsForPlan,
  thematicBlockNameFor,
 } from "./PlanPreparationDraft";
+import { buildActionPlanTraceability, type ActionPlanTraceabilityLink } from "./ActionPlanTraceability";
+import type { IndicatorWorksheet } from "./IndicatorWorksheet";
 
 export interface PlanDocumentOptions {
  unaddressedNeeds?: UnaddressedNeed[];
  evaluationFramework?: PLSEvaluationFramework;
+ worksheets?: IndicatorWorksheet[];
 }
 
 export interface PlanDocument {
@@ -22,6 +25,7 @@ export interface PlanDocument {
  validatedBy?: string;
  unaddressedNeeds?: UnaddressedNeed[];
  evaluationFramework?: PLSEvaluationFramework;
+ traceabilityLinks?: ActionPlanTraceabilityLink[];
  paragraphs: { text: string; heading?: boolean }[];
 }
 
@@ -75,6 +79,7 @@ export function buildPlanDocument(
  const draftOptions = optionsFromDrafts(active);
  const unaddressedNeeds = normaliseUnaddressedNeedsForPlan(options.unaddressedNeeds ?? draftOptions.unaddressedNeeds);
  const evaluationFramework = normaliseEvaluationFramework(options.evaluationFramework ?? draftOptions.evaluationFramework);
+ const traceabilityLinks = buildActionPlanTraceability(municipalityId, active, options.worksheets);
  return {
   schemaVersion: 1,
   municipalityId,
@@ -82,6 +87,7 @@ export function buildPlanDocument(
   status: "draft",
   ...(unaddressedNeeds !== undefined ? { unaddressedNeeds } : {}),
   ...(evaluationFramework !== undefined ? { evaluationFramework } : {}),
+  ...(traceabilityLinks.length > 0 ? { traceabilityLinks } : {}),
   paragraphs,
  };
 }

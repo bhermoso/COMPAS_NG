@@ -28,6 +28,36 @@ export function planDocumentParagraphs(plan: PlanDocument) {
    { text: "Línea base: " + (plan.evaluationFramework.baselineNote || "pendiente") }
   );
  }
+ if (plan.traceabilityLinks?.length) {
+  paragraphs.push({ text: "Mapa de vínculos, fichas y seguimiento", heading: true });
+  for (const link of plan.traceabilityLinks) {
+   paragraphs.push({
+    text: [
+     `${link.moduleTitle} → ${link.thematicBlock} → ${link.objectiveCode} → ${link.indicatorCode}`,
+     `Indicador del Plan de Acción: ${link.indicatorTitle}`,
+     `Ficha del indicador: ${
+      link.indicatorFichaStatus === "missing"
+       ? "pendiente"
+       : link.indicatorFichaStatus === "draft"
+        ? "abierta sin actuaciones vinculadas"
+        : "con actuaciones vinculadas"
+     }. Actuaciones: ${link.actionCards.length}. Actividades: ${link.actionCards.reduce((total, action) => total + action.activities.length, 0)}. Entregas: ${link.actionCards.reduce((total, action) => total + action.deliveryCount, 0)}. Consolidaciones: ${link.consolidationCount}.`,
+     link.pendingSummary.length ? `Pendiente: ${link.pendingSummary.join("; ")}` : "Sin campos obligatorios pendientes en las fichas registradas.",
+    ].join("\n"),
+   });
+   for (const action of link.actionCards) {
+    paragraphs.push({
+     text: [
+      `Ficha de actuación: ${action.name}`,
+      `Responsable: ${action.owner}. Calendario: ${action.schedule}. Recursos: ${action.resources}.`,
+      `Contribución: ${action.contribution}`,
+      `Datos/fuentes: ${action.requestedData} · ${action.source}`,
+      `Actividades: ${action.activities.length ? action.activities.map((activity) => `${activity.name} (${activity.status})`).join("; ") : "pendientes"}`,
+     ].join("\n"),
+    });
+   }
+  }
+ }
  return paragraphs;
 }
 export function buildPlanWord(plan: PlanDocument) {

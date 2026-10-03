@@ -1,7 +1,7 @@
 import { PlanningInstrumentCatalog } from "./PlanningInstrumentCatalog";
 import { useState } from "react";
 import {
-  actionFields, consolidationFields, createIndicatorWorksheet, indicatorFields,
+  actionFields, activityFields, consolidationFields, createIndicatorWorksheet, indicatorFields,
   returnFields, worksheetContextChanged,
   type IndicatorWorksheet, type WorksheetContext, type WorksheetValues,
 } from "../../domain/action-plan-catalog/IndicatorWorksheet";
@@ -79,7 +79,7 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
             <p>{proposal.values.contribution}</p>
             <p className="pcm-source">{proposal.values.population}</p>
             <button type="button" disabled={added} onClick={() => update({ ...draft,
-              actions: [...draft.actions, { id: proposal.id, values: { ...proposal.values }, returns: [] }],
+            actions: [...draft.actions, { id: proposal.id, values: { ...proposal.values }, activities: [], returns: [] }],
             })}>{added ? "Ficha de propuesta creada" : "Crear ficha desde esta propuesta"}</button>
           </article>;
         })}
@@ -92,6 +92,25 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
           actions: draft.actions.map((item) => item.id === action.id ? { ...item, values } : item),
         })} />
         <button type="button" disabled={exporting} onClick={() => void download(action.id)}>Descargar ficha de esta actuación (Word)</button>
+        <h5>Actividades, hitos o productos verificables</h5>
+        {(action.activities ?? []).length === 0 && <p className="panel-note">Añade actividades cuando exista una unidad concreta de ejecución. No se crean hitos automáticamente.</p>}
+        {(action.activities ?? []).map((activity, activityIndex) => <fieldset key={activity.id}>
+          <legend>Actividad {activityIndex + 1}</legend>
+          <Fields fields={activityFields} values={activity.values} onChange={(values) => update({ ...draft,
+            actions: draft.actions.map((item) => item.id === action.id ? { ...item,
+              activities: (item.activities ?? []).map((record) => record.id === activity.id ? { ...record, values } : record),
+            } : item),
+          })} />
+          <button type="button" onClick={() => {
+            if (window.confirm("¿Eliminar esta actividad de la ficha?")) update({ ...draft,
+              actions: draft.actions.map((item) => item.id === action.id
+                ? { ...item, activities: (item.activities ?? []).filter((item) => item.id !== activity.id) } : item),
+            });
+          }}>Eliminar actividad</button>
+        </fieldset>)}
+        <button type="button" onClick={() => update({ ...draft, actions: draft.actions.map((item) => item.id === action.id
+          ? { ...item, activities: [...(item.activities ?? []), { id: crypto.randomUUID(), values: {} }] } : item),
+        })}>Añadir actividad</button>
         <h5>Entregas de datos por periodo</h5>
         {action.returns.map((delivery, deliveryIndex) => <fieldset key={delivery.id}>
           <legend>Entrega {deliveryIndex + 1}</legend>
@@ -117,7 +136,7 @@ export function IndicatorWorksheetEditor({ context, sheet, reviewNotice, onChang
         }}>Eliminar ficha de actuación</button>
       </details>)}
       <button type="button" onClick={() => update({ ...draft,
-        actions: [...draft.actions, { id: crypto.randomUUID(), values: {}, returns: [] }],
+        actions: [...draft.actions, { id: crypto.randomUUID(), values: {}, activities: [], returns: [] }],
       })}>Crear ficha de actuación</button>
       <h4>Consolidación del indicador por periodo</h4>
       <p>No se suman automáticamente las entregas ni se promedian sus porcentajes. La persona responsable

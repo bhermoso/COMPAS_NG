@@ -37,10 +37,24 @@ export const actionFields = [
   ["otherObjectives", "Otros objetivos o indicadores a los que contribuye (códigos, si procede)"],
   ["population", "Población destinataria y ámbito"],
   ["schedule", "Calendario de ejecución"],
+  ["resources", "Recursos humanos, materiales o económicos previstos"],
   ["requestedData", "Datos que debe recoger y entregar para este indicador"],
   ["source", "Instrumento, registro y justificantes que aportará"],
   ["custody", "Quién recoge y custodia los datos; control de duplicados"],
   ["delivery", "Destinatario, fecha límite y canal de entrega"],
+] as const;
+
+export const activityFields = [
+  ["name", "Nombre de la actividad, hito o producto verificable"],
+  ["type", "Tipo: sesión, taller, campaña, reunión, intervención, hito o producto"],
+  ["status", "Estado de ejecución"],
+  ["schedule", "Fecha, periodo o frecuencia prevista"],
+  ["place", "Lugar, recurso o ámbito territorial"],
+  ["responsible", "Responsable operativo de la actividad"],
+  ["population", "Población destinataria o participantes previstos"],
+  ["resources", "Recursos necesarios para ejecutar la actividad"],
+  ["evidence", "Evidencia o justificante que permitirá verificarla"],
+  ["expectedOutput", "Producto o dato que aportará a la actuación"],
 ] as const;
 
 export const returnFields = [
@@ -69,9 +83,15 @@ export interface WorksheetReturn {
   id: string;
   values: WorksheetValues;
 }
+export interface WorksheetActivity {
+  id: string;
+  values: WorksheetValues;
+}
 export interface WorksheetAction {
   id: string;
   values: WorksheetValues;
+  /** Actividades concretas dentro de la actuación. Ausente en expedientes anteriores. */
+  activities?: WorksheetActivity[];
   returns: WorksheetReturn[];
 }
 export interface WorksheetConsolidation extends WorksheetReturn {

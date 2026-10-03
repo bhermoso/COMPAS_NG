@@ -127,7 +127,41 @@ function workspace(): MunicipalityWorkspace {
  const current: PlanDocument = {
   schemaVersion: 1, municipalityId: "granada-zaidin", status: "validated",
   generatedAt: "2026-09-28T09:00:00Z", validatedBy: "Grupo Motor",
-  paragraphs: [{text: "Edadismo", heading: true}, {text: "Reducir las actitudes edadistas entre las personas participantes en intervenciones comunitarias."}]
+  paragraphs: [{text: "Edadismo", heading: true}, {text: "Reducir las actitudes edadistas entre las personas participantes en intervenciones comunitarias."}],
+  traceabilityLinks: [{
+   moduleId: "env-2027-2030",
+   moduleTitle: "Envejecimiento saludable",
+   moduleVersion: "zaidin-plan-accion-final-2026-09-25",
+   strategicObjective: "Favorecer el envejecimiento saludable.",
+   thematicBlockCode: "ENV-OG1",
+   thematicBlock: "Edadismo",
+   generalObjective: "ENV-OG1 · Reducir el edadismo",
+   objectiveCode: "ENV-OE5.1",
+   objectiveTitle: "Reducir las actitudes edadistas.",
+   indicatorCode: "ENV-I5.1",
+   indicatorTitle: "% de participantes que reducen actitudes edadistas.",
+   indicatorRole: "action-plan",
+   indicatorWorksheetKey: "granada-zaidin/env-2027-2030/ENV-I5.1",
+   indicatorFichaStatus: "linked-actions",
+   actionCards: [{
+    id: "a1",
+    name: "Programa intergeneracional",
+    agreement: "Pendiente de acuerdo formal",
+    owner: "Centro de salud",
+    schedule: "Primer semestre",
+    resources: "Sala comunitaria y equipo técnico",
+    population: "Alumnado y personas mayores",
+    contribution: "Desarrolla sesiones para reducir estereotipos.",
+    requestedData: "Participantes y sesiones",
+    source: "Registro de actividad",
+    deliveryCount: 1,
+    activities: [{id: "act-1", name: "Taller inicial", status: "planificado", schedule: "2027", evidence: "Acta"}],
+    missingFields: [],
+    isUsableFicha: true,
+   }],
+   consolidationCount: 0,
+   pendingSummary: [],
+  }]
  };
  return structuredClone({...zaidin.ws, validatedPSL: zaidin.psl, compiledProfiles: [atarfe.v2, zaidin.v2],
   validatedActionPlans: [
@@ -150,7 +184,9 @@ describe("Compilación inicial del Plan Local de Salud", () => {
   const text = JSON.stringify(result.document);
   expect(text).toContain("intervenciones comunitarias");
   expect(text).not.toMatch(/OBJETIVO ANTIGUO|SIN VALIDAR|OTRO MUNICIPIO/);
-  expect(text).toContain("Pendiente de incorporar y validar las fichas");
+  expect(text).toContain("1 fichas de actuación vinculadas");
+  expect(text).toContain("Programa intergeneracional");
+  expect(text).not.toContain("Pendiente de incorporar y validar las fichas");
   expect(text).toContain("BORRADOR");
   expect(JSON.stringify(ws)).toBe(before);
   ws.validatedActionPlans![1].paragraphs[0].text = "CAMBIO POSTERIOR";
