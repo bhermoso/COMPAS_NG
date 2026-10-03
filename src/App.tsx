@@ -3281,6 +3281,7 @@ export default function App() {
             {/* Representación derivada breve (GOV-P4-01 · PR-E): dentro del único
                 espacio «Perfil de Salud Local», proyectada del documento canónico. */}
             <NHSHealthProfileView
+              id="perfil-health-profile-visual"
               document={(() => {
                 const compiled = workspace.compiledProfiles ?? [];
                 const last = compiled[compiled.length - 1];
