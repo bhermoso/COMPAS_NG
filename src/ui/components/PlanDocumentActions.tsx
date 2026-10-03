@@ -1,19 +1,20 @@
 import { useState } from "react";
 import type { DefinitiveActionPlanModuleProjection } from "../../domain/action-plan-catalog/DefinitiveActionPlanProjection";
 import { buildPlanDocument, latestValidatedPlan, validatePlanDocument, type PlanDocument } from "../../domain/action-plan-catalog/PlanDocument";
-export function PlanDocumentActions({municipalityId,active,versions=[],onValidate}:{
- municipalityId:string;active:DefinitiveActionPlanModuleProjection[];versions?:PlanDocument[];onValidate?:(document:PlanDocument)=>boolean;
+import type { IndicatorWorksheet } from "../../domain/action-plan-catalog/IndicatorWorksheet";
+export function PlanDocumentActions({municipalityId,active,versions=[],worksheets=[],onValidate}:{
+ municipalityId:string;active:DefinitiveActionPlanModuleProjection[];versions?:PlanDocument[];worksheets?:IndicatorWorksheet[];onValidate?:(document:PlanDocument)=>boolean;
 }){
  const [name,setName]=useState("");const [message,setMessage]=useState("");const [busy,setBusy]=useState(false);
  const latest=latestValidatedPlan(versions,municipalityId);
  async function download(format:"docx"|"pdf"){
   setBusy(true);setMessage("");
   try{const {downloadPlanDocument}=await import("../../application/action-plan/exportPlanDocument");
-   await downloadPlanDocument(latest??buildPlanDocument(municipalityId,active,new Date().toISOString()),format);
+   await downloadPlanDocument(latest??buildPlanDocument(municipalityId,active,new Date().toISOString(),{worksheets}),format);
   }catch{setMessage("No se pudo descargar el documento. Inténtalo de nuevo.");}finally{setBusy(false);}
  }
  function validate(){
-  try{const version=validatePlanDocument(municipalityId,active,name,new Date().toISOString());
+  try{const version=validatePlanDocument(municipalityId,active,name,new Date().toISOString(),{worksheets});
    if(!onValidate?.(version))throw new Error("No se pudo guardar la versión validada. Conserva una copia del expediente y vuelve a intentarlo.");
    setMessage("Versión validada guardada en este expediente.");
   }catch(e){setMessage((e as Error).message);}

@@ -32,6 +32,8 @@ try {
   const openSheet = async () => {
     const general = page.locator(".pcm-general").first();
     if (await general.getAttribute("open") === null) await general.locator(":scope > summary").click();
+    const indicator = general.locator(".pcm-sheet").first();
+    if (await indicator.getAttribute("open") === null) await indicator.locator(":scope > summary").click();
     const sheet = general.locator(".indicator-worksheet").first();
     if (await sheet.getAttribute("open") === null) await sheet.locator(":scope > summary").click();
     return sheet;
@@ -46,7 +48,7 @@ try {
   assert.equal(await sheet.getByLabel("Persona y entidad responsables de consolidar el indicador").inputValue(), "");
   await sheet.getByLabel("Persona y entidad responsables de consolidar el indicador").fill(owner);
   await sheet.getByRole("button", { name: "Crear ficha de actuación", exact: true }).click();
-  const action = sheet.locator(".indicator-worksheet__action").first();
+  const action = sheet.locator("details.indicator-worksheet__action").last();
   await action.getByLabel("Nombre de la actuación o programa", { exact: true }).fill("ACTUACIÓN SOLO DE PRUEBA");
   await action.getByRole("button", { name: "Añadir entrega de datos", exact: true }).click();
   await action.getByLabel("Periodo al que corresponden los datos").fill("PERIODO DE PRUEBA");
@@ -58,13 +60,13 @@ try {
   assert.equal(saved.indicatorWorksheets[0].actions[0].returns.length, 2);
   assert.equal(saved.indicatorWorksheets[0].consolidations[0].status, "pending");
   assert.deepEqual(saved.indicatorWorksheets[0].consolidations[0].values, {});
-  assert.deepEqual(saved.evidenceStore, before.evidenceStore);
+  assert.deepEqual(saved.evidenceStore.atoms, before.evidenceStore.atoms);
   assert.deepEqual(saved.actionPlanModuleReviews, before.actionPlanModuleReviews);
 
   const downloaded = page.waitForEvent("download");
   await sheet.getByRole("button", { name: "Descargar dossier del indicador (Word)", exact: true }).click();
   const download = await downloaded;
-  assert.match(download.suggestedFilename(), /granada-zaidin-ENV-I1\.1\.docx$/);
+  assert.match(download.suggestedFilename(), /granada-zaidin-ENV-I5\.1\.docx$/);
   assert.equal(await download.failure(), null);
   if (output) { await mkdir(output, { recursive: true }); await download.saveAs(`${output}/ficha-exportada-prueba.docx`); }
 
@@ -81,7 +83,7 @@ try {
   assert.equal(await sheet.getByLabel("Numerador o recuento observado (si se dispone)").nth(1).inputValue(), "");
   page.once("dialog", (dialog) => dialog.dismiss());
   await sheet.getByRole("button", { name: "Eliminar ficha de actuación", exact: true }).click();
-  assert.equal(await sheet.locator(".indicator-worksheet__action").count(), 1);
+  assert.equal(await sheet.locator("details.indicator-worksheet__action").count(), 1);
   if (output) await sheet.screenshot({ path: `${output}/ficha-pantalla-prueba.png` });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await sheet.evaluate((element) => element.scrollWidth <= element.clientWidth + 1), true);

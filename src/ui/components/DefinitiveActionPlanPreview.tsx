@@ -6,22 +6,28 @@ import {
   pendingPreparationDecisionCount,
   resolvedPlanDecisionText,
 } from "../../domain/action-plan-catalog/DefinitiveActionPlanProjection";
+import { buildActionPlanTraceability } from "../../domain/action-plan-catalog/ActionPlanTraceability";
 import type { PlanPreparationDraft } from "../../domain/action-plan-catalog/PlanPreparationDraft";
+import type { IndicatorWorksheet } from "../../domain/action-plan-catalog/IndicatorWorksheet";
 import { compareActionPlanNotation, thematicBlockNameFor } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 
-export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, validatedActionPlans, onValidatePlan}: {
+export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, worksheets = [], validatedActionPlans, onValidatePlan}: {
   validatedActionPlans?: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument[];
   onValidatePlan?: (document: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument) => boolean;
   municipalityId: string;
   modules: ActionPlanCatalogModule[];
   drafts?: PlanPreparationDraft[];
+  worksheets?: IndicatorWorksheet[];
 }) {
   const municipalityName = municipalityId === "granada-zaidin" ? "El Zaidín" : municipalityId;
   const active = useMemo(() => buildDefinitiveActionPlanProjection(municipalityId, modules, drafts), [municipalityId, modules, drafts]);
+  const traceability = useMemo(() => buildActionPlanTraceability(municipalityId, active, worksheets), [municipalityId, active, worksheets]);
 
   const pending = active.reduce((total, item) => total + pendingPreparationDecisionCount(item.module, item.draft), 0);
   const selectedObjectives = active.reduce((total, item) => total + item.rows.length, 0);
   const selectedIndicators = active.reduce((total, item) => total + item.rows.filter(row => row.indicatorIncluded).length, 0);
+  const linkedActionCards = traceability.reduce((total, link) => total + link.actionCards.length, 0);
+  const linkedActivities = traceability.reduce((total, link) => total + link.actionCards.reduce((sum, action) => sum + action.activities.length, 0), 0);
   const generationSignature = JSON.stringify(active.map(({ module, draft, rows }) => ({
     moduleId: module.id,
     version: module.version,
@@ -50,7 +56,7 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, va
   }
 
   return <section className="workspace-panel pcm-definitive-plan" aria-label={`Plan de Acción resultante · ${municipalityName}`}>
-    <PlanDocumentActions key={municipalityId} municipalityId={municipalityId} active={active} versions={validatedActionPlans} onValidate={onValidatePlan}/>
+    <PlanDocumentActions key={municipalityId} municipalityId={municipalityId} active={active} versions={validatedActionPlans} worksheets={worksheets} onValidate={onValidatePlan}/>
     <div className="pcm-module__header">
       <div>
         <p className="eyebrow">Vista consolidada del borrador territorial</p>
@@ -61,6 +67,31 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, va
     <p className="panel-note">Esta vista utiliza únicamente los elementos marcados como <strong>Incluir</strong> o <strong>Modificar</strong>. Los modificados conservan su redacción territorial; los excluidos no se incorporan.</p>
     {active.length === 0 ? <p>No hay todavía líneas con decisiones territoriales. Selecciona o modifica elementos para construir el Plan de Acción.</p> : <>
       <p><strong>{selectedObjectives}</strong> objetivos específicos seleccionados · <strong>{selectedIndicators}</strong> indicadores seleccionados.</p>
+      <section className="pcm-traceability-map" aria-label="Mapa de vínculos del Plan de Acción">
+        <div className="pcm-module__header">
+          <div>
+            <p className="eyebrow">Mapa de vínculos</p>
+            <h3>Objetivos, indicadores, fichas y seguimiento</h3>
+          </div>
+          <span className="status-pill">{linkedActionCards} fichas · {linkedActivities} actividades</span>
+        </div>
+        <p className="panel-note">Cada fila conserva la cadena línea estratégica → bloque → objetivo → indicador → ficha. Si falta una pieza, se declara como pendiente.</p>
+        <div className="pcm-traceability-grid">
+          {traceability.map((link) => <article key={link.indicatorWorksheetKey} className={`pcm-traceability-card pcm-traceability-card--${link.indicatorFichaStatus}`}>
+            <h4>{link.indicatorCode} · {link.indicatorTitle}</h4>
+            <p className="pcm-source">{link.moduleTitle} · {link.thematicBlock} · {link.objectiveCode}</p>
+            <p><strong>Objetivo:</strong> {link.objectiveTitle}</p>
+            <p><strong>Ficha del indicador:</strong> {link.indicatorFichaStatus === "missing" ? "pendiente" : link.indicatorFichaStatus === "draft" ? "abierta sin actuaciones" : "con actuaciones vinculadas"}</p>
+            <p><strong>Actuaciones:</strong> {link.actionCards.length} · <strong>Actividades:</strong> {link.actionCards.reduce((total, action) => total + action.activities.length, 0)} · <strong>Entregas:</strong> {link.actionCards.reduce((total, action) => total + action.deliveryCount, 0)} · <strong>Consolidaciones:</strong> {link.consolidationCount}</p>
+            {link.actionCards.length > 0 && <ul>
+              {link.actionCards.map((action) => <li key={action.id}>
+                <strong>{action.name}</strong> · Responsable: {action.owner}; calendario: {action.schedule}; recursos: {action.resources}.
+              </li>)}
+            </ul>}
+            {link.pendingSummary.length > 0 ? <p className="panel-note">Pendiente: {link.pendingSummary.join("; ")}</p> : <p className="panel-note">Fichas registradas sin campos obligatorios pendientes.</p>}
+          </article>)}
+        </div>
+      </section>
       {pending > 0 && <div className="phase-blocked-notice"><strong>Versión todavía no cerrable</strong><p>Quedan {pending} elementos pendientes dentro de las líneas que ya estás trabajando. Puedes ver el resultado actual, pero conviene resolverlos antes de declarar el Plan definitivo.</p></div>}
       <div className="backup-panel__actions pcm-generation-actions">
         <button type="button" disabled={!hasSelectableContent} onClick={generatePlan}>Generar Plan de Acción</button>

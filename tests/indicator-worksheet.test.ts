@@ -40,7 +40,7 @@ describe("Fichas cumplimentables — integridad y entrega", () => {
     sheet.actions.push({ id: "action-test", values: { name: "Actuación de prueba" }, returns: [
       { id: "r1", values: { period: "periodo uno", numerator: "0", denominator: "10" } },
       { id: "r2", values: { period: "periodo dos", limitations: "Sin datos" } },
-    ] });
+    ], activities: [{ id: "act-1", values: { name: "Taller verificable", evidence: "Acta" } }] });
     workspace.indicatorWorksheets = [sheet];
     const restored = parseWorkspaceJSON(JSON.stringify(workspace))!;
     expect(restored.indicatorWorksheets).toEqual([sheet]);
@@ -55,13 +55,15 @@ describe("Fichas cumplimentables — integridad y entrega", () => {
     const sheet = createIndicatorWorksheet(context);
     sheet.values.owner = "Responsable de prueba & equipo";
     sheet.actions = [
-      { id: "a1", values: { name: "Primera actuación" }, returns: [{ id: "r1", values: { numerator: "0" } }] },
+      { id: "a1", values: { name: "Primera actuación" }, activities: [{ id: "act-1", values: { name: "Sesión piloto", evidence: "Registro de asistencia" } }], returns: [{ id: "r1", values: { numerator: "0" } }] },
       { id: "a2", values: { name: "Segunda actuación" }, returns: [] },
     ];
     const buffer = await Packer.toBuffer(buildIndicatorWorksheetDocument(sheet, "Pendiente del Grupo Motor", true, "a1"));
     const { value } = await mammoth.extractRawText({ buffer });
     expect(value).toContain("Responsable de prueba & equipo");
     expect(value).toContain("Primera actuación");
+    expect(value).toContain("Sesión piloto");
+    expect(value).toContain("Registro de asistencia");
     expect(value).not.toContain("Segunda actuación");
     expect(value).toContain("\n0\n");
     expect(value).toContain("[Pendiente de cumplimentar]");
