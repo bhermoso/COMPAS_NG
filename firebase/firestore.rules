@@ -22,6 +22,29 @@ service cloud.firestore {
     get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.active == true &&
     get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role == 'coordinator';
   }
+  function canWriteScope(scope) {
+   return isAdministrator() || (request.auth != null && accountEnabled(scope) &&
+    get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.active == true &&
+    get(/databases/$(database)/documents/relas_memberships/$(request.auth.uid)/scopes/$(scope)).data.role in ['coordinator', 'administrator']);
+  }
+  function validWorkspaceManifest(scope) {
+   let d = request.resource.data;
+   return d.keys().hasAll(['schema','municipalityId','snapshotId','chunkCount','characterLength','workspaceUpdatedAt','savedBy','savedAt']) &&
+    d.keys().hasOnly(['schema','municipalityId','snapshotId','chunkCount','characterLength','workspaceUpdatedAt','savedBy','savedAt']) &&
+    d.schema == 'compas-workspace-chunks/v1' && d.municipalityId == scope &&
+    d.snapshotId is string && d.snapshotId.size() > 10 && d.snapshotId.size() <= 100 &&
+    d.chunkCount is int && d.chunkCount > 0 && d.chunkCount <= 400 &&
+    d.characterLength is int && d.characterLength >= 0 &&
+    d.workspaceUpdatedAt is string && d.savedBy == request.auth.uid && d.savedAt == request.time;
+  }
+  function validWorkspaceChunk() {
+   let d = request.resource.data;
+   return d.keys().hasAll(['index','content','savedBy','savedAt']) &&
+    d.keys().hasOnly(['index','content','savedBy','savedAt']) &&
+    d.index is int && d.index >= 0 && d.index < 400 &&
+    d.content is string && d.content.size() <= 720000 &&
+    d.savedBy == request.auth.uid && d.savedAt == request.time;
+  }
   function validDraft(scope, moduleId) {
    let d = request.resource.data;
    return d.keys().hasAll(['version','payload','updatedBy','updatedAt']) &&
@@ -90,6 +113,16 @@ service cloud.firestore {
     request.resource.data.type in ['municipio','mancomunidad','distrito-municipal'] &&
     request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time;
    allow update, delete: if false;
+  }
+  match /relas_scopes/{scope}/workspace/current {
+   allow read: if member(scope);
+   allow create, update: if canWriteScope(scope) && validWorkspaceManifest(scope);
+   allow delete: if false;
+  }
+  match /relas_scopes/{scope}/workspace_versions/{snapshotId}/chunks/{chunkId} {
+   allow read: if member(scope);
+   allow create, update: if canWriteScope(scope) && validWorkspaceChunk();
+   allow delete: if false;
   }
   match /relas_scopes/{scope}/drafts/{moduleId} {
    allow read: if member(scope);

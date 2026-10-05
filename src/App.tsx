@@ -128,6 +128,11 @@ import {
   saveWorkspaceToIndexedDB,
 } from "./infrastructure/persistence/indexed-db-workspace";
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
+import { createBrowserRelasClient } from "./infrastructure/relas/BrowserRelasClient";
+import {
+  readRemoteWorkspace,
+  saveRemoteWorkspace,
+} from "./infrastructure/relas/RemoteWorkspace";
 
 import { compileLocalHealthProfile } from "./application/health-profile-compiler";
 import { readSealedCanonicalDocument } from "./application/psl-c-canonical";
@@ -399,6 +404,11 @@ export default function App() {
     if (next === view || !canLeavePreparation()) return;
     setViewState(next);
   }
+  const remoteClient = useMemo(() => createBrowserRelasClient(), []);
+  const [remoteHydratedMunicipalityId, setRemoteHydratedMunicipalityId] =
+    useState<string | null>(null);
+  const [remotePersistenceMessage, setRemotePersistenceMessage] =
+    useState<string | null>(null);
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
   const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
   const [initialCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(
@@ -648,6 +658,100 @@ export default function App() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [workspace.municipality.identity.id]);
+
+  // En una sesión autenticada, Firestore es la copia compartida entre
+  // navegadores y equipos. La comparación por updatedAt impide que una copia
+  // remota antigua sustituya trabajo local más reciente.
+  useEffect(() => {
+    const municipalityId = workspace.municipality.identity.id;
+    const user = remoteClient.auth.currentUser;
+    if (!user) {
+      setRemoteHydratedMunicipalityId(municipalityId);
+      setRemotePersistenceMessage(null);
+      return;
+    }
+    let cancelled = false;
+    setRemoteHydratedMunicipalityId(null);
+    setRemotePersistenceMessage("Comprobando el expediente compartido…");
+    void readRemoteWorkspace(remoteClient, municipalityId)
+      .then((remoteWorkspace) => {
+        if (cancelled) return;
+        if (remoteWorkspace !== null) {
+          setWorkspace((current) => {
+            if (!shouldRestoreIndexedDbWorkspace(current, remoteWorkspace)) {
+              return current;
+            }
+            queueMicrotask(() => {
+              setPendingTopics([
+                ...(remoteWorkspace.thematicPrioritisation?.selectedTopicIds ?? []),
+              ]);
+            });
+            return remoteWorkspace;
+          });
+        }
+        setRemotePersistenceMessage(
+          remoteWorkspace === null
+            ? "No existe todavía una copia compartida; se creará con este expediente."
+            : "Expediente compartido recuperado."
+        );
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setRemotePersistenceMessage(
+          error instanceof Error
+            ? `No se pudo recuperar la copia compartida: ${error.message}`
+            : "No se pudo recuperar la copia compartida."
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setRemoteHydratedMunicipalityId(municipalityId);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [remoteClient, workspace.municipality.identity.id]);
+
+  useEffect(() => {
+    const municipalityId = workspace.municipality.identity.id;
+    if (
+      !remoteClient.auth.currentUser ||
+      remoteHydratedMunicipalityId !== municipalityId ||
+      pendingIndexedDbHydrationId === municipalityId ||
+      pendingSeedId === municipalityId
+    ) {
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setRemotePersistenceMessage("Guardando el expediente compartido…");
+      void saveRemoteWorkspace(remoteClient, workspace)
+        .then(() => {
+          if (!cancelled) {
+            setRemotePersistenceMessage(
+              "Expediente compartido guardado en Firebase."
+            );
+          }
+        })
+        .catch((error: unknown) => {
+          if (cancelled) return;
+          setRemotePersistenceMessage(
+            error instanceof Error
+              ? `No se pudo guardar la copia compartida: ${error.message}`
+              : "No se pudo guardar la copia compartida."
+          );
+        });
+    }, 3000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [
+    pendingIndexedDbHydrationId,
+    pendingSeedId,
+    remoteClient,
+    remoteHydratedMunicipalityId,
+    workspace,
+  ]);
 
   // Hidratación asíncrona del expediente municipal desde su seed canónico. Solo se
   // activa cuando `pendingSeedId` está fijado (no había expediente local y existe
@@ -2921,6 +3025,11 @@ export default function App() {
         {persistenceMessage !== null && (
           <div className="app-persistence-warning" role="alert">
             {persistenceMessage}
+          </div>
+        )}
+        {remotePersistenceMessage !== null && (
+          <div className="app-persistence-warning" role="status">
+            {remotePersistenceMessage}
           </div>
         )}
 
