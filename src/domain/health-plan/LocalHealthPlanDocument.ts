@@ -10,7 +10,7 @@
  *
  * Invariante: isCongealed === true.
  * El documento compilado nunca puede modificarse.
- * Cada ciclo de planificación produce un nuevo documento con versión mayor.
+ * Cada período de planificación produce un nuevo documento con versión mayor.
  */
 
 import type { MunicipalityId } from "../municipality";
@@ -39,7 +39,7 @@ export interface UnaddressedNeed {
   id: string;
   title: string;              // Necesidad identificada en el diagnóstico
   sourceAreaId?: string;      // ID del área de intervención del PSL de origen
-  justification: string;      // Por qué no se prioriza en este ciclo
+  justification: string;      // Por qué no se prioriza en este periodo
 }
 
 // ── Secciones del PLS ─────────────────────────────────────────────────────────
@@ -149,7 +149,7 @@ export interface PLSSectionPlanAccion {
 }
 
 export interface PLSSectionAgenda {
-  // Cap. VIII del PLS. Distribución temporal validada por ciclos municipales reales.
+  // Cap. VIII del PLS. Distribución temporal validada por calendarios municipales reales.
   items: Array<{
     id: string;
     linkedActionId: string;

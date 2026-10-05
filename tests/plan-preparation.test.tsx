@@ -111,10 +111,10 @@ describe("Preparación independiente del Plan", () => {
  const first = PlanPreparationPanel({module: ZAIDIN_AGING_PROPOSAL, municipalityId: draft.municipalityId, draft, onChange: next => changes.push(next), renderWorksheet: () => null});
  const needs = findElement(first, element => element.type === "textarea" && element.props["aria-label"] === "Necesidades diagnosticadas no priorizadas");
  expect(needs).toBeDefined();
- (needs!.props.onChange as (event: {target: {value: string}}) => void)({target: {value: "Movilidad segura — Queda fuera por falta de recursos este ciclo"}});
+ (needs!.props.onChange as (event: {target: {value: string}}) => void)({target: {value: "Movilidad segura — Queda fuera por falta de recursos este periodo"}});
  expect(changes[0].unaddressedNeeds?.[0]).toMatchObject({
   title: "Movilidad segura",
-  justification: "Queda fuera por falta de recursos este ciclo",
+  justification: "Queda fuera por falta de recursos este periodo",
  });
  expect(changes[0].decisions).toEqual(draft.decisions);
 

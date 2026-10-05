@@ -233,7 +233,7 @@ Contrato del `LocalHealthPlanCompiler`. Define cómo se produce el `LocalHealthP
 ### CONTRACT-INSTITUTIONAL-LIFECYCLE
 **Estado:** VIGENTE
 
-Contrato del modelo canónico de ciclos de vida institucional de los objetos de COMPÁS NG. Define los tres tipos de objeto por ciclo de vida (efímero, vivo con estados, artefacto institucional), el ciclo completo del PSL (6 estados, transiciones, irreversibilidad), la validación formal de objetos efímeros del Nivel 3 (`FormalValidationRecord`), la aprobación institucional del PSL (`PSLApprovalRecord`) y el actor model completo (5 roles con tabla de permisos por transición).
+Contrato del modelo canónico de ciclos de vida institucional de los objetos de COMPÁS NG. Define los tres tipos de objeto por ciclo de vida (efímero, vivo con estados, artefacto institucional), la secuencia completa del PSL (6 estados, transiciones, irreversibilidad), la validación formal de objetos efímeros del Nivel 3 (`FormalValidationRecord`), la aprobación institucional del PSL (`PSLApprovalRecord`) y el actor model completo (5 roles con tabla de permisos por transición).
 
 **Productores:** `src/application/institutional-lifecycle/approvePSL.ts`, `createFormalValidation.ts`.
 **Consumidores:** `handleApprovePSL` y `handleFormalValidation` en `src/App.tsx`; paneles `PSLApproveAction` y `FormalValidationForm`; `LocalHealthPlanCompiler` (futuro: gates G-PLS-1, G-PLS-5, G-PLS-6).
@@ -367,7 +367,7 @@ Investiga la posibilidad de construir hipótesis estructurales sobre determinant
 ### CONTRACT-NAVIGATION
 **Estado:** VIGENTE
 
-Contrato de navegación e identidad semántica de la interfaz de COMPÁS NG. Cubre el hueco entre el VISUAL-CONTRACT (identidad visual) y INSTITUTIONAL-PRODUCTS-ARCHITECTURE (catálogo de productos): define qué vocabulario es visible para el usuario y cuál permanece interno, qué representa cada espacio de trabajo, qué es la Home, y los principios para representar el ciclo institucional. Governa toda la interfaz durante la evolución futura del sistema.
+Contrato de navegación e identidad semántica de la interfaz de COMPÁS NG. Cubre el hueco entre el VISUAL-CONTRACT (identidad visual) y INSTITUTIONAL-PRODUCTS-ARCHITECTURE (catálogo de productos): define qué vocabulario es visible para el usuario y cuál permanece interno, qué representa cada espacio de trabajo, qué es la Home, y los principios para representar el proceso institucional. Governa toda la interfaz durante la evolución futura del sistema.
 
 **Productores:** Equipo responsable de la interfaz (governa la UI, no un componente de código).
 **Consumidores:** Todo el código React (`src/App.tsx`, `src/ui/components/`), cualquier nueva vista o componente.

@@ -393,7 +393,7 @@ Exportación de resultados REDCap (.csv con microdatos)
 Parser del instrumento específico
     │
     ▼
-EvidenceStore (nuevo ciclo de evidencia)
+EvidenceStore (actualización de evidencia longitudinal)
 ```
 
 ### V.2 Estado actual del Constructor
@@ -635,7 +635,7 @@ Exportación de resultados REDCap
 Parser del cuestionario generado
     │
     ▼
-EvidenceStore  [retroalimenta Flujo 1]
+EvidenceStore  [aporta base longitudinal al Flujo 1]
 ```
 
 ---
@@ -763,14 +763,14 @@ ni componente. No está claro si es parte del Plan Local de Salud o un documento
 **Acción necesaria:** CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT debe resolver si el Resumen Ejecutivo
 es una sección del Plan o un artefacto separado.
 
-### H-8 — El ciclo de evidencia longitudinal no está definido como flujo completo
+### H-8 — El flujo de evidencia longitudinal no está definido como continuidad completa
 
 `EstadoTerritorialEvolutivo` incluye dimensión longitudinal. El MonitoringDraft rastrea
 items de la agenda. Pero no existe un mecanismo para que el seguimiento de un Plan ejecutado
-retroalimente el EvidenceStore como evidencia longitudinal del siguiente ciclo.
+aporte al EvidenceStore evidencia longitudinal para una actualización posterior.
 
-**Impacto:** El sistema no cierra el ciclo RELAS (planificar → ejecutar → evaluar → planificar).
-**Acción necesaria:** Diseñar el mecanismo de retroalimentación longitudinal antes del Sprint 3.
+**Impacto:** El sistema no completa la continuidad RELAS (planificar → ejecutar → evaluar → actualizar).
+**Acción necesaria:** Diseñar el mecanismo de incorporación longitudinal antes del Sprint 3.
 
 ---
 
@@ -840,7 +840,7 @@ Corrección IBSE. 6 contratos nuevos. Consolidación visual. Deuda §9a document
 
 - Agenda inteligente (depende del MTE completo)
 - Seguimiento inteligente (depende de Agenda inteligente)
-- Ciclo de evidencia longitudinal (Hueco H-8)
+- Flujo de evidencia longitudinal (Hueco H-8)
 - Resumen Ejecutivo (depende de CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT)
 - Tripirámide visual / visualización SAM (motor SAM implementado en Producto 2; Tripirámide UI pendiente)
 - Cuadros de mando (sin definición; no diseñar antes de conocer los productos documentales)
@@ -863,7 +863,7 @@ Este plano debe respetarse con los mismos principios que la Constitución Arquit
 
 3. **Ningún contrato de compilador antes de que su artefacto esté metodológicamente definido.** El LocalHealthPlanCompiler no puede diseñarse sin saber qué compila.
 
-4. **El ciclo de evidencia longitudinal (H-8) debe diseñarse antes de que el Seguimiento inteligente exista.** Sin ello, el sistema no cierra el ciclo RELAS.
+4. **El flujo de evidencia longitudinal (H-8) debe diseñarse antes de que el Seguimiento inteligente exista.** Sin ello, el sistema no completa la continuidad RELAS.
 
 5. **La Biblioteca Metodológica es el prerequisito más urgente.** Todo lo demás del Sprint 2 depende parcial o totalmente de ella.
 

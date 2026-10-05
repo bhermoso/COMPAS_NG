@@ -34,7 +34,7 @@ export type DistribucionDesigualdad =
 
 /**
  * Laguna de equidad de una señal. El marco científico exige declararla como
- * laguna ESPECÍFICA (no una fórmula genérica repetida): qué ejes de
+ * laguna ESPECÍFICA (no una fórmula genérica duplicada): qué ejes de
  * desagregación faltan y qué no puede saberse de esta señal en concreto.
  */
 export interface DesigualdadNoObservable {

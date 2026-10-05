@@ -1022,7 +1022,7 @@ h3 {
   background: #059669;
 }
 
-/* ── Ciclo metodológico COMPÁS (vista Inicio) ────────────── */
+/* ── Proceso metodológico COMPÁS (vista Inicio) ───────────── */
 
 .compas-landing__method-heading {
   font-size: 1.45rem;
@@ -1377,7 +1377,7 @@ h3 {
   margin: 0 0 40px;
 }
 
-/* Ciclo de planificación — seis fases como composición horizontal */
+/* Proceso de planificación — seis fases como composición horizontal */
 .home-process__cycle {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -6390,7 +6390,7 @@ h3 {
 }
 
 
-/* ── Ciclo de Planificación Local ─────────────────────────────────────────── */
+/* ── Proceso de Planificación Local ───────────────────────────────────────── */
 
 .lhpc {
   background: #f8fafc;
@@ -6492,7 +6492,7 @@ h3 {
   margin-left: 4px;
 }
 
-/* ── Estados del ciclo ────────────────────────────────────── */
+/* ── Estados del proceso ───────────────────────────────────── */
 
 .lhpc__phase--completed .lhpc__phase-num {
   background: #d1fae5;
@@ -6631,7 +6631,7 @@ h3 {
 }
 
 
-/* ── Ciclo navegable — fase como botón ──────────────────────────────────── */
+/* ── Proceso navegable — fase como botón ────────────────────────────────── */
 
 .lhpc__phase--nav { cursor: default; }
 

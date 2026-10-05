@@ -521,7 +521,7 @@ export function DocumentIngestionPanel({
           )}
         </div>
       ) : isLongitudinalEvidence ? (
-        /* ── Evidencia longitudinal o comparativa entre ciclos ── */
+        /* ── Evidencia longitudinal o comparativa entre periodos ── */
         <div className="docx-upload">
           <select
             value={kind}
@@ -535,14 +535,14 @@ export function DocumentIngestionPanel({
             ))}
           </select>
           <p className="ingestion-hint">
-            Registra evidencia comparativa entre ciclos de planificación: datos de series
+            Registra evidencia comparativa entre periodos de planificación: datos de series
             históricas, evolución de indicadores de salud en años anteriores, resultados de
             evaluaciones de planes previos u otra evidencia que permita trazar la evolución
             del territorio en el tiempo.
           </p>
           <p className="ingestion-hint">
-            Esta categoría es especialmente útil en ciclos de actualización del Perfil,
-            cuando existe un diagnóstico anterior con el que contrastar. En un primer ciclo
+            Esta categoría es especialmente útil en actualizaciones del Perfil,
+            cuando existe un diagnóstico anterior con el que contrastar. En un primer periodo
             sin datos previos, puede dejarse sin contenido o incorporarse solo si hay series
             históricas disponibles externas al proceso actual.
           </p>

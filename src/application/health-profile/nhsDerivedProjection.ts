@@ -51,7 +51,7 @@ export interface NHSDerivedRow {
  *  - `available: true`  → hay documento canónico; `rows` refleja el trazador
  *    (puede ser un array vacío: proyección vacía válida, sin fabricar filas).
  *  - `available: false` → documento ausente, legacy o incompleto. NUNCA se
- *    recurre al artefacto NHS como fallback.
+ *    usa el artefacto NHS como fallback.
  */
 export type NHSDerivedProjection =
   | { available: true; rows: NHSDerivedRow[] }

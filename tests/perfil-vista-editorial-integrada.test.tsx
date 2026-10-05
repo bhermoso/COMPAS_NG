@@ -534,7 +534,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     }
   });
 
-  it("retira la plantilla metodológica repetida de los bloques integrados", () => {
+  it("retira la plantilla metodológica duplicada de los bloques integrados", () => {
     const serialized = JSON.stringify(editorialView.territorialReadings);
     for (const oldPattern of [
       "La señal disponible es",
@@ -659,7 +659,7 @@ describe("modelo puro — Vista editorial integrada", () => {
     expect(normalized(unit!.question)).toContain(
       "que grupos viven peor el descanso"
     );
-    // Cada pieza de conocimiento humano se consume una sola vez (sin repetición).
+    // Cada pieza de conocimiento humano se consume una sola vez (sin duplicación).
     const interps = humanEditorialView.interpretation.units.flatMap(
       (u) => u.documentAuthoredInterpretations
     );
@@ -997,17 +997,17 @@ describe("composición documental — estructura editorial", () => {
     expect(beforeTechnical.toLowerCase()).toContain(
       "como contexto, no como medición distrital"
     );
-    // No como lista de campos repetida hilo a hilo (mecanismo/exclusión sueltos).
+    // No como lista de campos duplicada hilo a hilo (mecanismo/exclusión sueltos).
     expect(beforeTechnical).not.toContain("pie-hilo__mechanism");
     expect(beforeTechnical).not.toContain("pie-hilo__exclusion");
   });
 
-  it("los rótulos repetitivos no dominan como etiquetas fijas en todos los hilos", () => {
+  it("los rótulos mecánicos no dominan como etiquetas fijas en todos los hilos", () => {
     const beforeTechnical = html.slice(0, html.indexOf("Espacio técnico del Perfil"));
-    // "Señal" y "Zona ciega" no aparecen como etiquetas de campo repetidas
+    // "Señal" y "Zona ciega" no aparecen como etiquetas de campo duplicadas
     const zonaCiegaMatches = (beforeTechnical.match(/Zona ciega:/g) ?? []).length;
     const senalMatches = (beforeTechnical.match(/class="[^"]*signal[^"]*"/g) ?? []).length;
-    // Zona ciega no debe ser el rótulo repetido en todos los bloques (sí puede aparecer en deliberación)
+    // Zona ciega no debe ser el rótulo duplicado en todos los bloques (sí puede aparecer en deliberación)
     expect(zonaCiegaMatches).toBeLessThanOrEqual(editorialView.groupMotorAgenda.length);
     // Las clases de señal están en los hilos territoriales, no en un grid de fichas idénticas
     expect(senalMatches).toBeGreaterThan(0);

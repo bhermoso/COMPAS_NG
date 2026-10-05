@@ -1,5 +1,13 @@
 # COMPÁS NG — Reglas permanentes de trabajo
 
+## Instrucciones canónicas
+
+Este archivo conserva reglas operativas históricas, pero el punto de entrada canónico para agentes es `AGENTS.md`.
+
+Para cualquier cambio de comportamiento, datos, indicadores, perfiles, lecturas estratégicas, planes, fuentes, evidencia local, terminología o repositorio, aplicar `docs/COMPAS_PROJECT_INSTRUCTIONS.md`.
+
+Para cualquier prosa sustantiva en castellano dentro de COMPÁS NG —interfaz, informes, contratos, documentación metodológica o plantillas de texto generado— aplicar además `docs/BLAS_WRITING_STYLE.md`. No es una preferencia decorativa: forma parte de la calidad del producto.
+
 ## Verdad del proyecto
 La única verdad es: el código, el historial Git, los contratos en docs/contracts/ y las validaciones ejecutables. Nunca uses conversaciones anteriores como verdad. Antes de cualquier tarea, reconstruye el estado: git status --short, git log --oneline -10, git rev-parse HEAD.
 

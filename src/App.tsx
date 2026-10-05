@@ -2834,7 +2834,7 @@ export default function App() {
         </div>}
       </nav>
 
-      {/* Ciclo de Planificación Local — oculto en inicio, visible en vistas operativas */}
+      {/* Proceso de Planificación Local — oculto en inicio, visible en vistas operativas */}
       {view !== "inicio" && (
         <LocalHealthPlanningCycle
           healthReportLoaded={runtime.workspace.healthReport !== undefined}
@@ -3020,7 +3020,7 @@ export default function App() {
             <section className="home-process">
               <div className="home-process__inner">
                 <p className="home-section-eyebrow">Proceso</p>
-                <h2 className="home-process__heading">El ciclo de planificación local en salud</h2>
+                <h2 className="home-process__heading">El proceso de planificación local en salud</h2>
                 <div className="home-process__cycle">
                   <div className="home-process__phase home-process__phase--1">
                     <span className="home-process__ordinal">01</span>
@@ -3067,7 +3067,7 @@ export default function App() {
                     <span className="home-process__verb">Evaluar</span>
                     <p className="home-process__desc">
                       Grado de cumplimiento del plan, resultados alcanzados y
-                      recomendaciones para el ciclo siguiente.
+                      propuestas de mejora para la actualización posterior.
                     </p>
                   </div>
                 </div>
@@ -3739,7 +3739,7 @@ export default function App() {
             <h2>Evaluación del Plan Local de Salud</h2>
             <p className="panel-note">
               El Informe de Evaluación valora el grado de cumplimiento del Plan Local de Salud,
-              los resultados alcanzados y las recomendaciones para el ciclo siguiente. Puede
+              los resultados alcanzados y las propuestas de mejora para la actualización posterior. Puede
               realizarse de forma anual, bianual, trianual o como evaluación final del plan.
             </p>
             <p className="panel-note">

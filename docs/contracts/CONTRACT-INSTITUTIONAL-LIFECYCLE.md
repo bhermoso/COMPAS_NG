@@ -67,7 +67,7 @@ archived                           [técnico/coord.]
 | Transición | Reversible |
 |---|---|
 | `generated → validated` | Sí (mediante invalidación → vuelve a `generated`) |
-| `validated → approved` | No reversible directamente; si la evidencia cambia, se puede abrir un nuevo ciclo |
+| `validated → approved` | No reversible directamente; si la evidencia cambia, se puede abrir un nuevo expediente formal |
 | `→ archived` | No. Los archivados permanecen en historial. |
 | `→ superseded` | No. |
 

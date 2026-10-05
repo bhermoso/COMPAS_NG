@@ -23,7 +23,7 @@ export interface TransitionPermission {
   allowedRoles: ReadonlyArray<InstitutionalActorRole>;
   /** Si true, la transición requiere evidencia externa documentada (acta, firma, etc.). */
   requiresExternalEvidence: boolean;
-  /** Si true, la transición es irreversible (o su reversión abre un nuevo ciclo). */
+  /** Si true, la transición es irreversible (o su reversión abre un nuevo expediente formal). */
   irreversible: boolean;
 }
 
@@ -42,7 +42,7 @@ export const PSL_TRANSITION_PERMISSIONS: Readonly<
   "validated→approved": {
     allowedRoles: ["coordination", "group-motor"],
     requiresExternalEvidence: true,   // requiere acuerdo del Grupo Motor documentado
-    irreversible: false,              // puede abrirse nuevo ciclo si la evidencia cambia
+    irreversible: false,              // puede abrirse nuevo expediente formal si la evidencia cambia
   },
   "validated→generated": {   // invalidación
     allowedRoles: ["technical-staff", "coordination"],

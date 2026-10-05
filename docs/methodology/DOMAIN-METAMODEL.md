@@ -196,7 +196,7 @@ contenidos específicos. La orientación es una referencia, no un mandato.
 |---|---|---|---|
 | `EST` EPVSA | (líneas LE1-LE4) | Prioridades locales del PLS | [D] MODEL-OF-INSTITUTIONAL-ARTICULATION §III.1; CONTRACT-STRATEGIC-REPOSITORY |
 | `EST` ESCA | (5 objetivos estratégicos) | Plan Operativo Territorial del Distrito | [D] ESCA Plan Operativo |
-| `EST` RELAS | (metodología de proceso) | Ciclo de planificación local | [D] MODEL-OF-INSTITUTIONAL-ARTICULATION §III.3 |
+| `EST` RELAS | (metodología de proceso) | Proceso de planificación local | [D] MODEL-OF-INSTITUTIONAL-ARTICULATION §III.3 |
 | `PL` Plan sectorial (PEM, PSMA) | (enfoques para grupos específicos) | Prioridades para esas poblaciones | [D] MODEL-OF-INSTITUTIONAL-ARTICULATION §III.5, §III.7 |
 | `PSL` | (áreas de intervención, Cap. IV) | Deliberación del Grupo Motor | [D] CONTRACT-MIT-PSL §6.1; METHODOLOGICAL-FOUNDATIONS PM-6 |
 | `PAI` | (propuesta razonada) | Deliberación del Grupo Motor → `PA` | [D] MODEL-OF-INSTITUTIONAL-ARTICULATION §VIII.4 |
@@ -240,7 +240,7 @@ sin que B sea el producto directo e intencionado de A.
 |---|---|---|---|---|
 | `PRG` Programa implantado | `AC` Activo comunitario | Cuando el programa está activo en el municipio | [D] GRUSE de mujeres Zagra (activo desde 2013) |
 | `PL` (ESCA línea 2.1.2) | `AC` Mapa de activos actualizado | Anualmente por UGC | [D] ESCA línea 2.1.2 |
-| Ciclo de evaluación del `PLS` | `E` Evidencia longitudinal | Al finalizar el período del plan | [D] METHODOLOGICAL-FOUNDATIONS PM-24; MODEL-OF-INSTITUTIONAL-ARTICULATION §II.9 |
+| Evaluación del `PLS` | `E` Evidencia longitudinal | Al finalizar el período del plan | [D] METHODOLOGICAL-FOUNDATIONS PM-24; MODEL-OF-INSTITUTIONAL-ARTICULATION §II.9 |
 
 ### IV.7 Relaciones de movilización (MOVILIZA)
 
@@ -493,19 +493,19 @@ conocimiento nunca debe aparecer en esa fase.
 │  articulación visible de contribuciones; legitimidad democrática│
 │                                                                 │
 │  Conocimiento que nunca aparece: resultados de ejecución;       │
-│  evaluación de impacto (esos son del ciclo siguiente).          │
+│  evaluación de impacto (pertenecen a la actualización posterior).│
 └─────────────────────────────────────────────────────────────────┘
          │ Evaluación final → evidencia longitudinal
          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  FASE 8 — CICLO SIGUIENTE                                       │
+│  FASE 8 — ACTUALIZACIÓN POSTERIOR                               │
 │                                                                 │
 │  La evaluación genera evidencia longitudinal (EvidenceAtom[]    │
-│  de origen "longi") que retroalimenta la Fase 2 del siguiente   │
-│  ciclo. El fin del plan es el inicio del diagnóstico siguiente. │
+│  de origen "longi") que aporta base documental a la nueva       │
+│  actualización diagnóstica. El cierre del plan abre la revisión.│
 │                                                                 │
 │  [Ver Hipótesis H-8 en §VII: el mecanismo exacto de esta        │
-│  retroalimentación no está completamente formalizado.]          │
+│  incorporación longitudinal no está completamente formalizado.] │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -517,18 +517,18 @@ Estas relaciones se han identificado como plausibles o necesarias pero no pueden
 incorporarse al metamodelo sin evidencia documental adicional. Se registran aquí para
 que la auditoría futura tenga un punto de partida explícito.
 
-### H-1 — Cómo la evaluación retroalimenta el EvidenceStore [H]
+### H-1 — Cómo la evaluación aporta evidencia longitudinal al EvidenceStore [H]
 
-Se sabe que la evaluación debe generar evidencia longitudinal para el siguiente ciclo.
+Se sabe que la evaluación debe generar evidencia longitudinal para una actualización diagnóstica posterior.
 No está formalizado: ¿qué tipo específico de EvidenceAtom produce el informe de evaluación?,
 ¿quién lo produce?, ¿es un proceso manual o asistido?, ¿cómo entra al EvidenceStore?
 
 *Fuente de la hipótesis:* METHODOLOGICAL-FOUNDATIONS PM-24; MODEL-OF-INSTITUTIONAL-ARTICULATION
 §II.9; Blueprint H-8.
 
-### H-2 — Cómo el Mapa de Activos se mantiene entre ciclos [H]
+### H-2 — Cómo el Mapa de Activos se mantiene entre actualizaciones [H]
 
-Se sabe que el Mapa de Activos debe ser actualizable y es transversal al ciclo de
+Se sabe que el Mapa de Activos debe ser actualizable y es transversal al proceso de
 planificación. No está formalizado el mecanismo de actualización: ¿quién actualiza?,
 ¿con qué frecuencia?, ¿cómo entran los activos nuevos al EvidenceStore?, ¿cómo se
 retiran los activos que dejan de existir?
@@ -633,7 +633,7 @@ las entidades y los arcos son los tipos de relación formalizados en §IV.
 [PL]  ──GARANTIZA─► contribuciones                         [PA]  ──compilación──► [PLS]
 [PRG] ──GENERA───► [AC] ──MOVILIZA──► objetivos                │
                                       indicadores              ▼
-[PLS] ──evaluación──► [E] longitudinal ──► [ES] ciclo siguiente
+[PLS] ──evaluación──► [E] longitudinal ──► [ES] actualización posterior
 ```
 
 Este grafo es el objeto formal del metamodelo. Cada arco tiene una marca de evidencia

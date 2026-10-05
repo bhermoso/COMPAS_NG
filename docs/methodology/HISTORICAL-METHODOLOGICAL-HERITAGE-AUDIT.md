@@ -118,21 +118,21 @@ CONTRACT-EVIDENCE-QUALITY distingue cuatro dimensiones de calidad pero no establ
 
 ---
 
-### PM-H-05. El territorio en su primer ciclo requiere protección metodológica especial
+### PM-H-05. El territorio en su primer período requiere protección metodológica especial
 
 **Descripción**
-El sistema histórico identificó un caso metodológico particular: el primer ciclo de planificación de un municipio sin cierres verificables de ciclos anteriores no puede interpretarse como indicador de baja capacidad institucional. Es simplemente una limitación de madurez longitudinal del sistema.
+El sistema histórico identificó un caso metodológico particular: el primer período de planificación de un municipio sin cierres verificables de períodos anteriores no puede interpretarse como indicador de baja capacidad institucional. Es simplemente una limitación de madurez longitudinal del sistema.
 
-Este caso recibía tratamiento diferenciado: `sin_cierres_primer_ciclo`, que modificaba la lectura de gobernanza para evitar penalizar a los municipios en su primera iteración.
+Este caso recibía tratamiento diferenciado: `sin_cierres_periodo_inicial`, que modificaba la lectura de gobernanza para evitar penalizar a los municipios en su primer despliegue operativo.
 
 **Evidencia**
 `AUDITORIA-CAPA-INTERPRETATIVA-R1.md`, análisis de `_v4_leerGobernanzaLongitudinal()`.
 
 **Por qué tiene valor**
-COMPÁS NG no tiene todavía un primer ciclo completo en producción para ningún municipio. Cuando lo tenga, la distinción entre "municipio sin historia institucional" y "municipio con baja capacidad" será metodológicamente crítica. El principio protege la equidad en la interpretación.
+COMPÁS NG no tiene todavía un primer período completo en producción para ningún municipio. Cuando lo tenga, la distinción entre "municipio sin historia institucional" y "municipio con baja capacidad" será metodológicamente crítica. El principio protege la equidad en la interpretación.
 
 **Estado: ○ Pendiente de recuperar.**
-METHODOLOGICAL-FOUNDATIONS (PM-12) menciona la continuidad entre ciclos pero no trata el primer ciclo como caso especial con requisitos propios. Candidato para incorporar en las notas metodológicas del MIT.
+METHODOLOGICAL-FOUNDATIONS (PM-12) menciona la continuidad longitudinal pero no trata el primer período como caso especial con requisitos propios. Candidato para incorporar en las notas metodológicas del MIT.
 
 ---
 
@@ -353,16 +353,16 @@ CONTRACT-INSTITUTIONAL-LIFECYCLE cubre el ciclo de vida del PSL. El modelo de do
 **Descripción**
 El sistema histórico acumuló interpretaciones territoriales de distintas generaciones sin eliminar las anteriores. LT1 (lectura territorial heredada), el análisis modular y la síntesis V4 coexistían. Cuando el sistema nuevo fallaba, el anterior actuaba como fallback. No había jerarquía declarada de qué versión era "la verdad": el equipo técnico evaluaba qué lectura era más útil para el momento.
 
-La lección fue que el conocimiento territorial acumulado de ciclos anteriores no es obsoleto cuando aparece uno nuevo: es un recurso de contraste que revela cómo ha evolucionado el territorio.
+La lección fue que el conocimiento territorial acumulado de períodos anteriores no es obsoleto cuando aparece una actualización: es un recurso de contraste que revela cómo ha evolucionado el territorio.
 
 **Evidencia**
 `AUDITORIA-CAPA-INTERPRETATIVA-R1.md`, genealogía de los sistemas interpretativos GEN-1, GEN-2.5, GEN-3.
 
 **Por qué tiene valor**
-COMPÁS NG tiene un modelo de versiones del PSL (PSL-C/v1, PSL-C/v2) pero el tratamiento de los Perfiles anteriores como recursos de contraste —no solo como historial— no está formalizado. La idea de que el diagnóstico del ciclo anterior ilumina el diagnóstico del ciclo actual es relevante para la evaluación y para el diseño de la evidencia longitudinal.
+COMPÁS NG tiene un modelo de versiones del PSL (PSL-C/v1, PSL-C/v2) pero el tratamiento de los Perfiles anteriores como recursos de contraste —no solo como historial— no está formalizado. La idea de que el diagnóstico anterior ilumina el diagnóstico actual es relevante para la evaluación y para el diseño de la evidencia longitudinal.
 
 **Estado: ○ Pendiente de recuperar.**
-PM-12 y PM-24 mencionan el ciclo, pero no el valor de contraste del conocimiento acumulado de ciclos anteriores.
+PM-12 y PM-24 mencionan la continuidad, pero no el valor de contraste del conocimiento acumulado de períodos anteriores.
 
 ---
 
@@ -417,16 +417,16 @@ No está formulado en COMPÁS NG. Candidato para las notas metodológicas sobre 
 
 ---
 
-### HEU-H-01. Primer ciclo sin referente temporal propio: no penalizar
+### HEU-H-01. Primer período sin referente temporal propio: no penalizar
 
 **Descripción**
-Heurística para la evaluación de la gobernanza territorial: cuando no existen cierres verificables de ciclos anteriores, el diagnóstico no puede interpretar esa ausencia como baja capacidad institucional. El sistema la reconocía como condición estructural del primer ciclo y la trataba con protección metodológica explícita.
+Heurística para la evaluación de la gobernanza territorial: cuando no existen cierres verificables de períodos anteriores, el diagnóstico no puede interpretar esa ausencia como baja capacidad institucional. El sistema la reconocía como condición estructural del primer período y la trataba con protección metodológica explícita.
 
 **Evidencia**
-`AUDITORIA-CAPA-INTERPRETATIVA-R1.md`, caso especial `sin_cierres_primer_ciclo`.
+`AUDITORIA-CAPA-INTERPRETATIVA-R1.md`, caso especial `sin_cierres_periodo_inicial`.
 
 **Por qué tiene valor**
-COMPÁS NG está produciendo los primeros ciclos para sus municipios. La heurística es directamente aplicable a la interpretación de la gobernanza en los primeros Perfiles que se produzcan.
+COMPÁS NG está produciendo los primeros expedientes para sus municipios. La heurística es directamente aplicable a la interpretación de la gobernanza en los primeros Perfiles que se produzcan.
 
 **Estado: ○ Pendiente de recuperar.**
 
@@ -549,12 +549,12 @@ El CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY (Arts. 8, 10, 14) cubre los puntos 
 
 ---
 
-### CAU-H-02. La persistencia incompleta destruye la trazabilidad del ciclo siguiente
+### CAU-H-02. La persistencia incompleta destruye la trazabilidad longitudinal
 
 **Descripción**
-El sistema histórico documentó un problema estructural: cada nivel de persistencia en el ciclo de planificación perdía campos respecto al nivel anterior. Lo que entraba como análisis completo con fuentes, justificaciones y contexto salía como plan con solo identificadores y actuaciones.
+El sistema histórico documentó un problema estructural: cada nivel de persistencia en el proceso de planificación perdía campos respecto al nivel anterior. Lo que entraba como análisis completo con fuentes, justificaciones y contexto salía como plan con solo identificadores y actuaciones.
 
-La consecuencia: al inicio del siguiente ciclo, era imposible saber por qué se habían tomado ciertas decisiones. La trazabilidad de la justificación de cada prioridad se perdía con cada ciclo.
+La consecuencia: en una actualización posterior, era imposible saber por qué se habían tomado ciertas decisiones. La trazabilidad de la justificación de cada prioridad se perdía cuando cambiaba el período de planificación.
 
 La cautela: la persistencia de conocimiento debe preservar la cadena completa de razonamiento, no solo el resultado.
 
@@ -562,10 +562,10 @@ La cautela: la persistencia de conocimiento debe preservar la cadena completa de
 `AUDITORIA-CONOCIMIENTO-CONSOLIDADO-R1.md`, análisis de los tres niveles de persistencia y la pérdida de información en cada transición.
 
 **Por qué tiene valor**
-COMPÁS NG tiene el principio de trazabilidad (PM-19) y los campos `sourcePSLId`, `sourceHash` en los artefactos. Sin embargo, la cautela sobre qué ocurre cuando la cadena de razonamiento no se preserva en la transición entre ciclos no está formulada explícitamente. Es especialmente relevante para el diseño del Informe de Evaluación y del modelo de evidencia longitudinal.
+COMPÁS NG tiene el principio de trazabilidad (PM-19) y los campos `sourcePSLId`, `sourceHash` en los artefactos. Sin embargo, la cautela sobre qué ocurre cuando la cadena de razonamiento no se preserva entre períodos de planificación no está formulada explícitamente. Es especialmente relevante para el diseño del Informe de Evaluación y del modelo de evidencia longitudinal.
 
 **Estado: ○ Pendiente de recuperar.**
-PM-19 exige trazabilidad pero no advierte específicamente sobre el riesgo de pérdida en la transición entre ciclos. La cautela histórica es directamente aplicable al diseño del expediente longitudinal en COMPÁS NG.
+PM-19 exige trazabilidad pero no advierte específicamente sobre el riesgo de pérdida entre períodos de planificación. La cautela histórica es directamente aplicable al diseño del expediente longitudinal en COMPÁS NG.
 
 ---
 
@@ -609,7 +609,7 @@ El TERRITORIAL-KNOWLEDGE-CATALOG (F-14) aborda los activos comunitarios pero no 
 
 ---
 
-## IX. PREGUNTAS RECURRENTES CON RESPUESTA METODOLÓGICA
+## IX. PREGUNTAS CRÍTICAS CON RESPUESTA METODOLÓGICA
 
 ---
 
@@ -625,7 +625,7 @@ El sistema histórico respondió esta pregunta con la jerarquía epistémica de 
 ### PRI-H-02. ¿Cuándo puede el sistema afirmar algo sobre el territorio?
 
 **Descripción**
-La pregunta más recurrente en el diseño del sistema interpretativo. La respuesta histórica: el sistema solo puede afirmar cuando el peso de evidencia supera un umbral definido; por debajo, solo puede formular hipótesis. Y el sistema nunca puede tomar decisiones: esas pertenecen al equipo técnico.
+La pregunta crítica en el diseño del sistema interpretativo. La respuesta histórica: el sistema solo puede afirmar cuando el peso de evidencia supera un umbral definido; por debajo, solo puede formular hipótesis. Y el sistema nunca puede tomar decisiones: esas pertenecen al equipo técnico.
 
 **Estado: ~ Parcialmente recuperado** — PM-20 establece que todo output es propuesta; los umbrales de cuándo afirmar vs. hipotizar no están en COMPÁS NG.
 
@@ -640,7 +640,7 @@ La respuesta histórica: registrando explícitamente las divergencias, declarand
 
 ---
 
-### PRI-H-04. ¿Qué pasa cuando el municipio está en su primer ciclo sin historia?
+### PRI-H-04. ¿Qué pasa cuando el municipio está en su primer período sin historia?
 
 **Descripción**
 La pregunta sobre equidad en la evaluación de municipios nuevos. La respuesta histórica: protección metodológica explícita, umbrales de evaluación adaptados y no comparación de lo inexistente con lo maduro.
@@ -656,12 +656,12 @@ La pregunta sobre equidad en la evaluación de municipios nuevos. La respuesta h
 ### MT-H-01. El municipio no es un agregado demográfico sino un actor institucional
 
 **Descripción**
-El sistema histórico trató consistentemente al municipio no como un conjunto de datos sino como un actor con historia, con ciclos, con capacidad de decisión y con responsabilidad sobre sus compromisos. El municipio en primer ciclo es diferente del municipio en tercer ciclo no porque sus datos sean distintos sino porque su capacidad institucional acumulada es diferente.
+El sistema histórico trató consistentemente al municipio no como un conjunto de datos sino como un actor con historia, con períodos de planificación, con capacidad de decisión y con responsabilidad sobre sus compromisos. El municipio en primer período es diferente del municipio con varios períodos documentados no porque sus datos sean distintos sino porque su capacidad institucional acumulada es diferente.
 
-Este modelo tiene implicaciones para la evaluación: no se evalúa si el municipio tiene buenos indicadores de salud sino si el municipio ha cumplido sus compromisos, ha mejorado su diagnóstico y ha aprendido del ciclo anterior.
+Este modelo tiene implicaciones para la evaluación: no se evalúa si el municipio tiene buenos indicadores de salud sino si el municipio ha cumplido sus compromisos, ha mejorado su diagnóstico y ha aprendido del período anterior.
 
 **Evidencia**
-`AUDITORIA-CONOCIMIENTO-CONSOLIDADO-R1.md`, concepto del ciclo institucional y la cadena diagnóstico-acción con P1 y P2.
+`AUDITORIA-CONOCIMIENTO-CONSOLIDADO-R1.md`, concepto del proceso institucional y la cadena diagnóstico-acción con P1 y P2.
 
 **Por qué tiene valor**
 COMPÁS NG tiene el ciclo de vida del PSL y el modelo de gobernanza. Lo que no está explicitado es la diferencia entre evaluación de indicadores de salud (qué tan sana está la población) y evaluación de la capacidad institucional del municipio (qué tan capaz es el municipio de planificar y ejecutar). Son objetos de evaluación distintos.
@@ -697,7 +697,7 @@ El EvidenceStore unifica tipos de evidencia en la misma estructura pero no decla
 | PM-H-02 | Conflicto como hallazgo | ~ Parcial | Alta |
 | PM-H-03 | Persistencia deliberada (AUSTERO) | ~ Parcial | Media |
 | PM-H-04 | Jerarquía epistémica con pesos numéricos | ○ Pendiente | Alta |
-| PM-H-05 | Protección metodológica del primer ciclo | ○ Pendiente | Alta |
+| PM-H-05 | Protección metodológica del primer período | ○ Pendiente | Alta |
 | TAX-H-01 | 15 técnicas cualitativas formalizadas | ○ Pendiente | Media |
 | TAX-H-02 | 10 enfoques interpretativos | ○ Pendiente | Baja |
 | TAX-H-03 | 6 niveles de maduración del análisis cualitativo | ○ Pendiente | Media |
@@ -709,7 +709,7 @@ El EvidenceStore unifica tipos de evidencia en la misma estructura pero no decla
 | MC-H-04 | Coexistencia de generaciones de conocimiento | ○ Pendiente | Baja |
 | CRI-H-01 | Umbrales de inferencia numéricos | ○ Pendiente | Alta |
 | CRI-H-02 | Naturalización vs verdad | ○ Pendiente | Media |
-| HEU-H-01 | No penalizar el primer ciclo | ○ Pendiente | Alta |
+| HEU-H-01 | No penalizar el primer período | ○ Pendiente | Alta |
 | HEU-H-02 | Convergencia como frecuencia, no como consenso | ~ Parcial | Alta |
 | HEU-H-03 | Recomendación universal = señal de ausencia de modulación | ○ Pendiente | Media |
 | VOC-H-01 | Léxico de niveles de certeza | ~ Parcial | Alta |
@@ -721,7 +721,7 @@ El EvidenceStore unifica tipos de evidencia en la misma estructura pero no decla
 | PRI-H-01 | Integrar fuentes heterogéneas sin dominación de una sobre otras | ○ Pendiente | Alta |
 | PRI-H-02 | Cuándo afirmar vs cuándo solo hipotizar | ~ Parcial | Alta |
 | PRI-H-03 | Preservar el disenso legítimo en el diagnóstico participativo | ~ Parcial | Alta |
-| PRI-H-04 | Tratamiento del municipio en primer ciclo | ○ Pendiente | Alta |
+| PRI-H-04 | Tratamiento del municipio en primer período | ○ Pendiente | Alta |
 | MT-H-01 | El municipio como actor institucional, no como agregado | ○ Pendiente | Media |
 | MT-H-02 | Familias cognitivas cuantitativa y cualitativa como sistemas distintos | ○ Pendiente | Media |
 
@@ -747,7 +747,7 @@ Los siguientes hallazgos tienen mayor urgencia de incorporación porque son rele
 
 2. **TAX-H-04 (SFA — 10 dimensiones de priorización):** Directamente aplicable al Cap. VII del PSL y al motor de candidaturas técnicas. El modelo de pesos reflejam años de reflexión sobre qué criterios importan en la planificación local andaluza.
 
-3. **PM-H-05 + HEU-H-01 (primer ciclo sin referente):** Aplicable inmediatamente a los primeros Perfiles que COMPÁS NG produce. Protegen la equidad en la interpretación de municipios en su primera iteración.
+3. **PM-H-05 + HEU-H-01 (primer período sin referente):** Aplicable inmediatamente a los primeros Perfiles que COMPÁS NG produce. Protegen la equidad en la interpretación de municipios en su primer despliegue operativo.
 
 4. **CAU-H-01 (bloque de cautelas sobre cualitativos):** Los puntos sobre ambivalencia, silencios y distinción mapa/diagnóstico no están en la documentación actual y son relevantes para cualquier Perfil con evidencia participativa.
 

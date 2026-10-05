@@ -117,7 +117,7 @@ producido automáticamente no es suficiente; se requiere validación explícita.
 
 ### 5.3 Agenda revisada
 
-El `AgendaDraft` con distribución trimestral ajustada a ciclos municipales
+El `AgendaDraft` con distribución trimestral ajustada a calendarios municipales
 reales, responsables concretos y condiciones de ejecución definidas.
 
 ### 5.4 Seguimiento inicial

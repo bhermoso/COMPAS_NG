@@ -179,9 +179,9 @@ export function LocalHealthPlanningCycle(props: LocalHealthPlanningCycleProps) {
   const phases = derivePhases(props);
 
   return (
-    <div className="lhpc" role="navigation" aria-label="Ciclo de planificación local de salud">
+    <div className="lhpc" role="navigation" aria-label="Proceso de planificación local de salud">
       <div className="lhpc__inner">
-        <p className="lhpc__heading">Ciclo de Planificación Local</p>
+        <p className="lhpc__heading">Proceso de Planificación Local</p>
         <ol className="lhpc__phases" role="list">
           {phases.map((phase) => {
             const isClickable = onNavigate !== undefined && phase.navigateTo !== undefined;

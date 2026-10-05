@@ -53,12 +53,12 @@ Se verifica toda la copia antes de escribir, y se repite la comprobación al
 recuperar. Se rechazan formato incompatible, claves no admitidas, identificadores
 incoherentes, duplicados, archivos alterados y diferencias con datos existentes.
 No existe combinación automática de dos versiones diferentes de un mismo ámbito.
-Repetir una recuperación idéntica es válido. Otros datos del navegador se respetan.
+Reintentar una recuperación idéntica es válido. Otros datos del navegador se respetan.
 
 Los originales nuevos se añaden mediante una transacción IndexedDB sin sustituir
 los existentes. Si falla la escritura de expedientes, se retiran las nuevas claves
 escritas durante esa operación; los originales ya copiados permanecen conservados,
-y la recuperación se puede repetir. No existe transacción única entre localStorage
+y la recuperación se puede reintentar. No existe transacción única entre localStorage
 e IndexedDB: tras un cierre abrupto puede haber una incorporación parcial; la copia
 original permite reintentar. No realizar ediciones simultáneas durante la operación.
 

@@ -55,7 +55,7 @@ La distinción no es semántica. Es funcional.
 
 Un informe es un documento descriptivo que relata lo que el sistema encontró.
 Un producto institucional es un artefacto con una finalidad precisa, una audiencia
-definida, un momento exacto en el ciclo de planificación y una responsabilidad
+definida, un momento exacto en el proceso de planificación y una responsabilidad
 explícita sobre quién lo usa y para qué.
 
 Un Perfil de Salud Local no sirve para lo mismo que un Plan Local de Salud.
@@ -98,8 +98,8 @@ del proceso de planificación local.
 ## 2. Catálogo de productos institucionales
 
 COMPÁS NG produce **siete** productos institucionales distinguibles (ver §0).
-Tres son productos del ciclo de diagnóstico y planificación.
-Dos son artefactos metodológicos para el ciclo de captura.
+Tres son productos del proceso de diagnóstico y planificación.
+Dos son artefactos metodológicos para el circuito de captura.
 Dos son productos complementarios del proceso.
 
 | Código | Producto | Tipo | Estado actual |
@@ -124,7 +124,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Documentar el estado de salud del territorio de forma trazable y revisable |
 | **Destinatarios** | Equipo técnico local, Distrito Sanitario, Junta de Andalucía |
-| **Momento del ciclo** | Al completar el diagnóstico territorial (antes de la priorización formal) |
+| **Momento del proceso** | Al completar el diagnóstico territorial (antes de la priorización formal) |
 | **Entradas** | `LocalHealthProfile` en estado `validated` |
 | **Salidas** | Documento institucional exportable; lectura única y **adaptativa** (sin recuento obligatorio de capítulos, ver §0) |
 | **Dependencias** | Requiere Informe de Salud, al menos un Estudio Complementario y PSL validado |
@@ -137,7 +137,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Comunicar el estado de salud en formato editorial accesible y comparativo |
 | **Destinatarios** | Corporación municipal, comunidad, prensa, público no técnico |
-| **Momento del ciclo** | Paralelo o posterior al PSL-C; usable en sesiones de priorización comunitaria |
+| **Momento del proceso** | Paralelo o posterior al PSL-C; usable en sesiones de priorización comunitaria |
 | **Entradas** | `LocalHealthProfile` en estado `validated` + datos de referencia (Granada/Andalucía) |
 | **Salidas** | Documento editorial de alta densidad; comparativo; sin jerga técnica |
 | **Dependencias** | PSL-C validado; datos de referencia disponibles |
@@ -151,10 +151,10 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Comprometer institucionalmente al municipio con un plan de acción en salud |
 | **Destinatarios** | Municipio, Distrito Sanitario, Junta de Andalucía, comunidad |
-| **Momento del ciclo** | Al completar la priorización, la traducción estratégica y la validación del plan |
+| **Momento del proceso** | Al completar la priorización, la traducción estratégica y la validación del plan |
 | **Entradas** | PSL `approved` + PrioritizationResult + StrategicTranslationResult + ActionPlanDraft validado + AgendaDraft validado + MonitoringDraft |
 | **Salidas** | Documento institucional completo del proceso de planificación |
-| **Dependencias** | Todos los productos anteriores del ciclo |
+| **Dependencias** | Todos los productos anteriores del proceso |
 | **Compilador** | `LocalHealthPlanCompiler` |
 | **Contrato pendiente** | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT` (prerequisito del compilador) |
 
@@ -164,7 +164,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Comunicar el proceso y sus resultados a audiencias no técnicas en 1-2 páginas |
 | **Destinatarios** | Alcaldía, corporación municipal, prensa, comunidad |
-| **Momento del ciclo** | Junto al Plan Local de Salud |
+| **Momento del proceso** | Junto al Plan Local de Salud |
 | **Entradas** | Síntesis del PSL-C + prioridades seleccionadas + compromisos del Plan |
 | **Salidas** | Documento breve de alta síntesis |
 | **Dependencias** | PLS completado |
@@ -177,7 +177,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Definir metodológicamente un instrumento de medición municipal |
 | **Destinatarios** | Equipo técnico, metodólogos, coordinadores de estudio |
-| **Momento del ciclo** | Antes de la captura de datos (upstream del EvidenceStore) |
+| **Momento del proceso** | Antes de la captura de datos (upstream del EvidenceStore) |
 | **Entradas** | Módulos de la Biblioteca Metodológica + Bloques de clasificación |
 | **Salidas** | `QuestionnaireDefinition`: definición metodológica completa del instrumento |
 | **Nota** | No es el Diccionario REDCap. El CM define el instrumento; el DD lo implementa en REDCap. |
@@ -189,7 +189,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Configurar el proyecto REDCap para la captura de datos del cuestionario municipal |
 | **Destinatarios** | Administradores REDCap, coordinadores técnicos |
-| **Momento del ciclo** | Inmediatamente antes del lanzamiento del estudio en REDCap |
+| **Momento del proceso** | Inmediatamente antes del lanzamiento del estudio en REDCap |
 | **Entradas** | `QuestionnaireDefinition` con todos los módulos completos (redcapFormField requerido) |
 | **Salidas** | CSV de Data Dictionary + branching logic + calculated fields + metadata |
 | **Dependencias** | Todos los módulos referenciados deben existir en el registry con adaptador REDCap |
@@ -201,7 +201,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Documentar el rigor metodológico del proceso para auditoría y revisión por pares |
 | **Destinatarios** | Revisores metodológicos, Junta de Andalucía, organismos de evaluación |
-| **Momento del ciclo** | Junto al PSL-C o al PLS |
+| **Momento del proceso** | Junto al PSL-C o al PLS |
 | **Entradas** | Metadata de la Biblioteca Metodológica + EvidenceStore statistics + quality assessments + cautelas declaradas |
 | **Salidas** | Nota metodológica detallada: instrumentos, fuentes, limitaciones, calidad muestral |
 | **Estado** | Sin definición estructural. Sin compilador. |
@@ -212,7 +212,7 @@ Dos son productos complementarios del proceso.
 |---|---|
 | **Objetivo** | Documentar el proceso participativo y deliberativo que acompañó la planificación |
 | **Destinatarios** | Comunidad, instituciones, futuras ediciones del plan |
-| **Momento del ciclo** | A lo largo de todo el proceso |
+| **Momento del proceso** | A lo largo de todo el proceso |
 | **Entradas** | Documentos endocualitativos (actas, acuerdos, registros de participación) |
 | **Salidas** | Memoria narrativa del proceso |
 | **Posición arquitectónica** | El sistema puede albergar estos documentos en el Repositorio Documental como evidencia endocualitativa (FOUNDATIONS — Principio endocualitativo). No los genera: los preserva. |
@@ -423,11 +423,11 @@ Su naturaleza como documento institucional implica que:
 - Tiene validez formal ante la Junta de Andalucía como resultado del proceso RELAS.
 - Compromete al municipio con actuaciones, plazos y responsables.
 - Puede auditarse en el tiempo: las actuaciones comprometidas deben poder evaluarse.
-- Es el documento que cierra un ciclo de planificación y abre el siguiente.
+- Es el documento que cierra un período de planificación y deja preparada su evaluación.
 
 ### 5.2 Qué objetos consume
 
-El PLS integra todos los outputs validados del ciclo de planificación:
+El PLS integra todos los outputs validados del proceso de planificación:
 
 | Objeto consumido | Contenido que aporta al PLS |
 |---|---|
@@ -688,7 +688,7 @@ Son capas complementarias con alcances distintos:
 | Ámbito | Documento de referencia |
 |---|---|
 | Identidad visual de la aplicación React (colores, tipografía, composición) | `VISUAL-CONTRACT` |
-| Semántica de navegación (vocabulario visible, espacios de trabajo, Home, ciclo) | `CONTRACT-NAVIGATION` |
+| Semántica de navegación (vocabulario visible, espacios de trabajo, Home, proceso) | `CONTRACT-NAVIGATION` |
 | Documentos institucionales compilados (PSL-C, PLS, PSL-NHS) | Contratos de compilador específicos |
 | HTML en diccionarios REDCap | `CONTRACT-REDCAP-VISUAL-TEMPLATE` (ver §7) |
 
@@ -766,7 +766,7 @@ NHS separado como producto propio.
 
 ### P-4 — Circuito Survey → EvidenceStore
 
-**Qué bloquea:** el ciclo completo del Constructor Metodológico. Sin este circuito,
+**Qué bloquea:** el circuito completo del Constructor Metodológico. Sin este circuito,
 la Encuesta Municipal genera datos en REDCap que nunca regresan al sistema.
 
 **El problema:** el REDCap Compiler genera un Diccionario. REDCap administra el cuestionario.
@@ -851,7 +851,7 @@ Las dependencias son entre productos, no entre componentes software.
                 │           │                     │
                 │    [Captura en REDCap]          │
                 └───────────┼─────────────────────┘
-                            │ (retroalimenta)
+                            │ (aporta evidencia longitudinal)
                             ▼
             ┌───────────────────────────────────────┐
             │         CICLO DE DIAGNÓSTICO          │
@@ -872,7 +872,7 @@ Las dependencias son entre productos, no entre componentes software.
                                  │
                                  ▼
             ┌───────────────────────────────────────┐
-            │        CICLO DE PLANIFICACIÓN         │
+            │       PROCESO DE PLANIFICACIÓN        │
             │                                       │
             │     Plan Local de Salud (PLS)         │
             │           │                           │
@@ -883,8 +883,8 @@ Las dependencias son entre productos, no entre componentes software.
             │ Ejecutivo (RE)   Metodológico (AT)   │
             └───────────────────────────────────────┘
                                  │
-                                 ▼ (cierra el ciclo)
-                    [Siguiente ciclo de planificación]
+                                 ▼ (cierra el período)
+                    [Actualización posterior de la planificación]
                     [La ejecución del PLS genera nueva evidencia]
                     [longitudinal — Hueco H-8 del Blueprint]
 ```
@@ -911,7 +911,7 @@ Las dependencias son entre productos, no entre componentes software.
 
 ### Justificación
 
-**Razón 1: Es el producto más upstream del ciclo compilado.**
+**Razón 1: Es el producto más upstream del itinerario compilado.**
 El PSL-C es el primer producto institucional exportable de COMPÁS NG. Todo lo que viene
 después (PSL-NHS, PLS, RE, AT) depende de que el PSL-C esté estructurado.
 Congelar el PSL-C primero crea el punto de anclaje de todo el sistema de productos.

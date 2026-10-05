@@ -26,7 +26,7 @@ La razón no es técnica. Es de naturaleza institucional.
 
 Los documentos disponibles para la planificación local —el Informe de Salud del
 Distrito, la ESCA, la EPVSA, los datos EAS, los activos comunitarios— proceden de
-instituciones distintas, con mandatos distintos, vocabularios distintos, ciclos
+instituciones distintas, con mandatos distintos, vocabularios distintos, calendarios
 de planificación distintos y sistemas de rendición de cuentas distintos.
 
 Acumularlos no produce un plan. Produce un archivo.
@@ -244,8 +244,8 @@ La ejecución requiere:
 - Un sistema de seguimiento que documente lo que se hace y cuándo.
 
 La ejecución no produce evidencia automáticamente para COMPÁS NG. [RMD] El sistema
-necesita ser diseñado para que los datos de seguimiento puedan retroalimentar el
-EvidenceStore del siguiente ciclo. Este mecanismo está pendiente de diseño (Hueco H-8).
+necesita ser diseñado para que los datos de seguimiento puedan incorporarse como
+evidencia longitudinal en una actualización posterior del EvidenceStore. Este mecanismo está pendiente de diseño (Hueco H-8).
 
 ---
 
@@ -294,12 +294,12 @@ Documentos fuente
                                [EVALUACIÓN] ──────────────────┘
                                     │ (evidencia longitudinal)
                                     ▼
-                            [NUEVO CICLO]
+                    [ACTUALIZACIÓN POSTERIOR]
 ```
 
-La línea punteada que va de la Evaluación de vuelta a la Evidencia es el **ciclo longitudinal**:
+La línea punteada que va de la Evaluación de vuelta a la Evidencia es la **continuidad longitudinal**:
 la evaluación genera evidencia del cambio (o la ausencia de cambio) que enriquece
-el diagnóstico del siguiente ciclo.
+una actualización diagnóstica posterior.
 
 ---
 
@@ -1123,7 +1123,7 @@ No es la generación de planes (aunque COMPÁS NG genera borradores de planes).
 No es el análisis territorial (aunque el MIT realiza análisis territorial).
 
 Es la creación de las condiciones metodológicas y técnicas para que actores
-institucionales distintos —con mandatos, vocabularios, ciclos y sistemas de
+institucionales distintos —con mandatos, vocabularios, calendarios y sistemas de
 rendición de cuentas propios— puedan co-producir un Plan Local de Salud con:
 
 - **Evidencia compartida** como base epistémica común.
@@ -1131,7 +1131,7 @@ rendición de cuentas propios— puedan co-producir un Plan Local de Salud con:
 - **Contribuciones atribuibles** a cada actor institucional.
 - **Compromisos verificables** con indicadores, tiempo cero y responsables.
 - **Trazabilidad completa** desde cada compromiso hasta la evidencia que lo justifica.
-- **Ciclo cerrado** que genera evidencia longitudinal para el siguiente proceso.
+- **Continuidad cerrada** que genera evidencia longitudinal para el siguiente proceso.
 
 Esta formalización es la que permite que COMPÁS NG sea reproducible: el modelo
 de articulación puede aplicarse a cualquier municipio de Andalucía con las
@@ -1152,7 +1152,7 @@ del proyecto), la auditoría del COMPÁS histórico y la taxonomía de instrumen
 
 [DCA, Continuidad Maestra] El Mapa de Activos Comunitarios para la Salud no es
 únicamente un apartado del diagnóstico. Es un objeto presente en todas las fases
-del ciclo de planificación:
+del proceso de planificación:
 
 - **Diagnóstico:** los activos son evidencia (`EvidenceAtom` tipo `asset`).
 - **Perfil:** los activos son parte del Cap. IV (interpretación territorial, categoría `assets`).

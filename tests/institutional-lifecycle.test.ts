@@ -369,7 +369,7 @@ describe("modelo canónico de estados", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("PSL approved NO puede aprobarse de nuevo (se requiere nuevo ciclo)", () => {
+  it("PSL approved NO puede aprobarse de nuevo (se requiere nuevo expediente formal)", () => {
     const pslAprobado = validatedPSL({ status: "approved", approvedAt: "2026-06-28T11:00:00.000Z", approvedBy: "x" });
     const result = approvePSL({ ...BASE_APPROVE_INPUT, psl: pslAprobado });
     expect(result.ok).toBe(false);

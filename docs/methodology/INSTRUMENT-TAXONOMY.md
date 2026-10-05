@@ -21,7 +21,7 @@ El COMPÁS histórico trató como equivalentes conceptos metodológicamente dist
 líneas EPVSA, programas comunitarios, activos, actuaciones, indicadores y protocolos
 aparecen mezclados en la misma capa de datos sin distinción de naturaleza.
 
-[DCA] COMPÁS NG no debe repetir este error. La distinción entre tipos de instrumentos
+[DCA] COMPÁS NG no debe mantener este error. La distinción entre tipos de instrumentos
 no es pedantería taxonómica: tiene consecuencias directas sobre qué consume el MTE,
 qué produce el Plan de Acción, qué referencia el StrategicRepository y qué contiene
 el Mapa de Activos Comunitarios.
@@ -142,7 +142,7 @@ para mejorar la salud de la población, con existencia real y verificable en el 
 **Función metodológica en COMPÁS NG:**
 Los activos comunitarios alimentan el EvidenceStore como átomos de tipo `asset`.
 Son la contrapartida salutogénica de los determinantes de riesgo.
-Son transversales a todo el ciclo: diagnóstico (evidencia), perfil (análisis), propuesta (articulación), plan (palanca de actuación), seguimiento (mantenimiento y desarrollo de activos).
+Son transversales a todo el proceso: diagnóstico (evidencia), perfil (análisis), propuesta (articulación), plan (palanca de actuación), seguimiento (mantenimiento y desarrollo de activos).
 
 **Tipología de activos:**
 | Tipo | Descripción | Ejemplo real (Zagra) |

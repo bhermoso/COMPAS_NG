@@ -301,11 +301,11 @@ cuadernos de trabajo, informes, fichas técnicas y documentación.
 
 ---
 
-## 9. Componente permanente: Ciclo de Planificación Local
+## 9. Componente permanente: Proceso de Planificación Local
 
 El componente `LocalHealthPlanningCycle` es un **elemento arquitectónico permanente** de
 la interfaz de COMPÁS NG. Representa el expediente institucional del municipio en su
-ciclo completo de planificación local de salud.
+proceso completo de planificación local de salud.
 
 ### 8.1 Propósito
 
@@ -357,7 +357,7 @@ Comunicar al usuario en todo momento:
 
 ---
 
-## 11. Evolución del Ciclo de Planificación Local
+## 11. Evolución del Proceso de Planificación Local
 
 El componente `LocalHealthPlanningCycle` en su estado actual es una franja horizontal
 funcional. Esta sección documenta su dirección de evolución hacia un **monitor institucional
@@ -365,7 +365,7 @@ de proceso**, sin autorizar su implementación hasta Sprint 1.
 
 ### 11.1 Dirección de evolución
 
-El ciclo debe evolucionar desde "segunda navegación" hacia "monitor de estado del expediente":
+El componente debe evolucionar desde "segunda navegación" hacia "monitor de estado del expediente":
 
 - **Aspecto**: proceso administrativo institucional, no wizard de pasos
 - **Formato**: banda horizontal continua con bloques densos
@@ -459,7 +459,7 @@ no a este documento.
 
 ## 14. Relación con el Contrato de Navegación
 
-`CONTRACT-NAVIGATION` complementa este documento en la capa semántica: define qué vocabulario es visible para el usuario, qué representa cada espacio de trabajo y los principios para el ciclo institucional. Ambos contratos operan en planos distintos y no se contradicen:
+`CONTRACT-NAVIGATION` complementa este documento en la capa semántica: define qué vocabulario es visible para el usuario, qué representa cada espacio de trabajo y los principios para el proceso institucional. Ambos contratos operan en planos distintos y no se contradicen:
 
 - Este contrato governa **cómo se ve** la interfaz (identidad visual, estilo, composición).
 - `CONTRACT-NAVIGATION` governa **qué se dice y qué representa** la interfaz (vocabulario, semántica, estructura institucional).
@@ -470,7 +470,7 @@ En caso de tensión entre principios visuales y principios semánticos, el caso 
 
 *Primera versión: 2026-06-21 — Contrato formalizado tras estabilización de Zagra.*
 *Revisado: 2026-06-27 — Transformado en contrato de identidad institucional.*
-*Revisado: 2026-06-27 — Sprint 0B: §9 Ciclo de Planificación Local.*
+*Revisado: 2026-06-27 — Sprint 0B: §9 Proceso de Planificación Local.*
 *Revisado: 2026-06-27 — Sprint 0 cierre definitivo: §0 Referencias institucionales
 (NHS Health Profiles, REDCap); §11 Evolución LocalHealthPlanningCycle; §12 Componentes
 pendientes de integración; §10 renumerado §13.*

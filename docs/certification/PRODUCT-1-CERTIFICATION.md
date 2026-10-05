@@ -16,7 +16,7 @@
 |---|---|
 | **Nombre oficial** | Sistema de Estudios Complementarios |
 | **Código** | PRODUCT-1 |
-| **Objetivo institucional** | Incorporar al ciclo diagnóstico municipal evidencia cuantitativa sobre dimensiones del estado de salud que el Informe de Salud Distrital no cubre con suficiente resolución territorial, poblacional o conceptual |
+| **Objetivo institucional** | Incorporar al proceso diagnóstico municipal evidencia cuantitativa sobre dimensiones del estado de salud que el Informe de Salud Distrital no cubre con suficiente resolución territorial, poblacional o conceptual |
 | **Fecha de emisión** | 2026-06-29 |
 | **Estado** | **CERTIFICADO** |
 | **Versión** | 1.0 |
@@ -140,7 +140,7 @@ MIT → EstadoTerritorialEvolutivo
     ▼
 PSL (LocalHealthProfile)
     │
-    ▼ [ciclo diagnóstico continúa hacia productos superiores]
+    ▼ [proceso diagnóstico continúa hacia productos superiores]
 ```
 
 El Producto 1 no produce documentos institucionales: produce evidencia estructurada.
@@ -169,10 +169,10 @@ en la Biblioteca. Ningún parser contiene nombres de columna hardcodeados.
 Si el módulo cambia, el parser refleja el cambio; si el módulo falta, el parser
 falla ruidosamente en lugar de asumir un valor por defecto.
 
-**G4 — Homogeneidad del ciclo**
-Los seis instrumentos siguen el mismo ciclo: módulo → parser → estudio interpretado
+**G4 — Homogeneidad del circuito**
+Los seis instrumentos siguen el mismo circuito: módulo → parser → estudio interpretado
 → EvidenceAtoms → EvidenceStore → MIT → PSL. No existen instrumentos con tratamiento
-diferenciado ni con atajos que salten algún paso del ciclo.
+diferenciado ni con atajos que salten algún paso del circuito.
 
 **G5 — Confianza calibrada**
 Los átomos tienen `confidence: "medium"` cuando el número de registros válidos
@@ -332,7 +332,7 @@ El build es limpio. 481 tests pasan, de los cuales 388 verifican directamente
 el Producto 1. No existe ningún impedimento objetivo para la certificación.
 
 > **El Producto 1 — Sistema de Estudios Complementarios queda certificado como
-> componente institucional de COMPÁS NG para su utilización dentro del ciclo
+> componente institucional de COMPÁS NG para su utilización dentro del proceso
 > diagnóstico municipal.**
 
 La deuda residual identificada (contraste bibliográfico de los seis módulos)

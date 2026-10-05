@@ -17,7 +17,7 @@ Los documentos existentes cubren:
 | `ARCHITECTURE-CONSTITUTION` Art. 5 | Separación evidencia / interpretación / propuesta | Reglas de nomenclatura de la interfaz |
 | `OPERATING-CONSTITUTION` Bloque F | "Un único nombre para cada concepto" | Qué nombres corresponden a qué espacios de trabajo |
 
-Existe un hueco contractual: **ningún documento define las reglas semánticas que gobiernan la interfaz** — qué conceptos son visibles, qué vocabulario se usa para nombrarlos, qué representa cada espacio de trabajo y cómo se representa el ciclo institucional.
+Existe un hueco contractual: **ningún documento define las reglas semánticas que gobiernan la interfaz** — qué conceptos son visibles, qué vocabulario se usa para nombrarlos, qué representa cada espacio de trabajo y cómo se representa el proceso institucional.
 
 Este contrato cubre ese hueco. No duplica ni contradice los documentos anteriores: los complementa en la capa de identidad semántica.
 
@@ -30,7 +30,7 @@ Este contrato governa:
 - el vocabulario visible al usuario en cualquier superficie de la interfaz;
 - la semántica de los espacios de trabajo (qué representa cada uno);
 - los principios de la Home (expediente municipal);
-- los principios del componente de ciclo institucional;
+- los principios del componente de proceso institucional;
 - la representación de los productos institucionales en la interfaz.
 
 Este contrato **no** governa:
@@ -108,7 +108,7 @@ Un **espacio de trabajo** es la vista que organiza un conjunto de funciones inst
 
 - Cada espacio tiene un nombre institucional que describe la actividad que el técnico realiza, no la arquitectura del software subyacente.
 - Un espacio de trabajo puede contener múltiples paneles técnicos sin que sus nombres internos sean visibles al usuario.
-- El orden de los espacios refleja el ciclo institucional, no el orden de implementación.
+- El orden de los espacios refleja el proceso institucional, no el orden de implementación.
 - El acceso a espacios de estadios posteriores puede bloquearse hasta que los requisitos anteriores se cumplan, con mensaje explicativo en lenguaje institucional.
 
 ### 5.2 Espacios de trabajo canónicos
@@ -158,32 +158,32 @@ La Home es el equivalente visual del expediente administrativo del municipio en 
 
 ---
 
-## 7. El Ciclo Institucional
+## 7. El Proceso Institucional
 
-### 7.1 Propósito del componente de ciclo
+### 7.1 Propósito del componente de proceso
 
-El componente de ciclo (`LocalHealthPlanningCycle`) representa el **proceso institucional completo de Acción Local en Salud**, no el alcance actual de la implementación de COMPÁS NG.
+El componente de proceso (`LocalHealthPlanningCycle`) representa el **proceso institucional completo de Acción Local en Salud**, no el alcance actual de la implementación de COMPÁS NG.
 
 ### 7.2 Principios
 
 **P-CIC-1 — Representar el proceso completo, no el software actual.**
-El ciclo debe mostrar todas las fases del proceso institucional, incluyendo las que COMPÁS NG no implementa aún. Las fases fuera del alcance actual del software aparecen en estado `blocked` o `pending` con indicación explícita de que son etapas institucionales más allá del diagnóstico y la planificación.
+El componente debe mostrar todas las fases del proceso institucional, incluyendo las que COMPÁS NG no implementa aún. Las fases fuera del alcance actual del software aparecen en estado `blocked` o `pending` con indicación explícita de que son etapas institucionales más allá del diagnóstico y la planificación.
 
 **P-CIC-2 — Lenguaje institucional.**
-Las fases del ciclo usan nombres del proceso institucional (Diagnóstico, Perfil, Priorización, Plan, Aprobación política, Implantación, Evaluación, Comunicación). Nunca nombres de objetos de software (PSL, LHPC, ActionPlanDraft).
+Las fases usan nombres del proceso institucional (Diagnóstico, Perfil, Priorización, Plan, Aprobación política, Implantación, Evaluación, Comunicación). Nunca nombres de objetos de software (PSL, LHPC, ActionPlanDraft).
 
 **P-CIC-3 — Inferencia honesta.**
 Solo se infiere el estado de una fase cuando el sistema tiene información verificable para ello. Un estado no puede presentarse como "completado" si el sistema no puede verificar la condición de completitud. Las fases sin señal verificable (adhesión a RELAS, comunicación) se muestran como `pending` con nota explicativa, o se omiten del ciclo visible si no aportan valor diagnóstico al técnico.
 
-**P-CIC-4 — El ciclo no es la navegación.**
-El componente de ciclo informa sobre el estado del proceso institucional. No es el mecanismo primario de navegación entre espacios de trabajo. Puede incluir atajos de navegación hacia los espacios correspondientes, pero su función primaria es diagnóstica.
+**P-CIC-4 — El proceso no es la navegación.**
+El componente de proceso informa sobre el estado del proceso institucional. No es el mecanismo primario de navegación entre espacios de trabajo. Puede incluir atajos de navegación hacia los espacios correspondientes, pero su función primaria es diagnóstica.
 
 **P-CIC-5 — Siempre visible.**
-El componente de ciclo es permanente en todas las vistas. Representa el expediente, no la vista actual.
+El componente de proceso es permanente en todas las vistas. Representa el expediente, no la vista actual.
 
-### 7.3 Fases institucionales que el ciclo debe representar
+### 7.3 Fases institucionales que el componente debe representar
 
-El ciclo canónico de Acción Local en Salud (marco RELAS / metodología COMPÁS NG) incluye:
+El proceso canónico de Acción Local en Salud (marco RELAS / metodología COMPÁS NG) incluye:
 
 | Fase | Correspondencia COMPÁS NG | Estado típico actual |
 |---|---|---|
@@ -197,7 +197,7 @@ El ciclo canónico de Acción Local en Salud (marco RELAS / metodología COMPÁS
 | Evaluación | Fuera del software actual | `blocked` |
 | Comunicación | Fuera del software actual | `blocked` |
 
-La decisión exacta sobre cuántas fases mostrar, en qué orden y con qué granularidad corresponde a la implementación. Este contrato establece el principio: el ciclo representa el proceso completo, no solo lo que el software hace hoy.
+La decisión exacta sobre cuántas fases mostrar, en qué orden y con qué granularidad corresponde a la implementación. Este contrato establece el principio: el componente representa el proceso completo, no solo lo que el software hace hoy.
 
 ---
 
@@ -300,8 +300,8 @@ La interfaz solo informa de estados que el sistema puede verificar. No inventa c
 **NAV-I4 — Municipio siempre presente:**
 Toda vista tiene el municipio como contexto visible. No existe navegación sin contexto municipal.
 
-**NAV-I5 — El ciclo representa el proceso completo:**
-El componente de ciclo muestra todo el proceso institucional, incluyendo las fases que el software no implementa todavía. Las fases futuras existen en el ciclo como pendientes o bloqueadas, nunca como ausentes.
+**NAV-I5 — El componente representa el proceso completo:**
+El componente de proceso muestra todo el proceso institucional, incluyendo las fases que el software no implementa todavía. Las fases futuras existen como pendientes o bloqueadas, nunca como ausentes.
 
 ---
 
@@ -329,7 +329,7 @@ Este contrato no define:
 | `CONTRACT-PSL-COMPAS` | Producto 3 y sus términos canónicos |
 | `CONTRACT-NHS-HEALTH-PROFILE` §0 | PSL-NHS derogado como producto autónomo; migración de código ejecutada |
 | `CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT` | Denominación canónica del Producto 7 |
-| `docs/methodology/METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING §I.3` | Las seis etapas canónicas del ciclo institucional |
+| `docs/methodology/METHODOLOGICAL-FOUNDATIONS-LOCAL-HEALTH-PLANNING §I.3` | Las seis etapas canónicas del proceso institucional |
 
 ---
 

@@ -16,9 +16,9 @@
 
 ## 1. Finalidad
 
-El `LocalHealthPlanCompiler` transforma el conjunto de objetos validados de un ciclo completo de planificación en el **Plan Local de Salud** (`LocalHealthPlanDocument`): el documento institucional definitivo del municipio, inmutable, trazable y verificable.
+El `LocalHealthPlanCompiler` transforma el conjunto de objetos validados de un proceso completo de planificación en el **Plan Local de Salud** (`LocalHealthPlanDocument`): el documento institucional definitivo del municipio, inmutable, trazable y verificable.
 
-Este compilador es el stage terminal del pipeline de COMPÁS NG. Una vez producido el `LocalHealthPlanDocument`, el sistema ha cumplido su función institucional en ese ciclo: facilitar la fundación trazable de un compromiso municipal explícito con la salud de su población.
+Este compilador es el stage terminal del pipeline de COMPÁS NG. Una vez producido el `LocalHealthPlanDocument`, el sistema ha cumplido su función institucional en ese expediente: facilitar la fundación trazable de un compromiso municipal explícito con la salud de su población.
 
 **Responsabilidad de este contrato:** especificar exactamente cómo se produce el PLS, qué lo constituye y qué lo excluye.
 **Responsabilidad de CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT:** especificar qué es el PLS como documento institucional y qué contiene.
@@ -72,7 +72,7 @@ parte del gate G-PLS-5 para **compilar el documento institucional definitivo**.
 | **Contenido humano mínimo** | Caps. V, VI y VII del PSL | Caps. V, VI y VII del PSL + responsables + plazos + recursos + necesidades no priorizadas + marco de evaluación |
 | **Artefactos de entrada** | Ninguno | PSL-C (referenciado en el diagnóstico del PLS) |
 | **Trazabilidad** | Hasta el EvidenceStore vía PSL | Hasta el EvidenceStore vía PSL y PSL-C |
-| **Ciclo de vida** | Un PSL-C por PSL validado | Un PLS por ciclo de planificación aprobado |
+| **Vigencia institucional** | Un PSL-C por PSL validado | Un PLS por período de planificación aprobado |
 
 ---
 
@@ -279,7 +279,7 @@ Cuando el PLS consume `LecturaEstrategicaLocal`, el campo `isProvisional` pasa a
 ## 11. Versionado del artefacto
 
 - `planVersion: "PLS/v1"` para el primer plan compilado de un municipio.
-- `planVersion: "PLS/v2"` para el segundo ciclo, etc.
+- `planVersion: "PLS/v2"` para el segundo período, etc.
 - El número de versión se calcula como `existingPlanCount + 1`.
 - Un PLS `superseded` sigue en el historial.
 

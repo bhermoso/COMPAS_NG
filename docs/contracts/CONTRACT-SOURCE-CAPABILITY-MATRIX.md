@@ -35,7 +35,7 @@ La matriz es el puente entre `CONTRACT-REPOSITORY`, `CONTRACT-EVIDENCE`,
 
 | Concepto | Definición |
 |---|---|
-| **Fuente fija** | Fuente que actúa como base primaria del ciclo diagnóstico. En el estado actual, el Informe de Salud. |
+| **Fuente fija** | Fuente que actúa como base primaria del diagnóstico. En el estado actual, el Informe de Salud. |
 | **Fuente variable** | Fuente que puede añadirse, sustituirse o acumularse según el municipio y el momento del proceso. |
 | **Fuente atomizable** | Fuente de la que el sistema puede generar `EvidenceAtom` con trazabilidad. |
 | **Fuente no atomizable** | Fuente preservada como documento o contexto, sin transformación a evidencia ordinaria. |
@@ -65,7 +65,7 @@ La matriz es el puente entre `CONTRACT-REPOSITORY`, `CONTRACT-EVIDENCE`,
 | Informes ERACIS u otros diagnósticos de programa | Normalmente `territorial-documentation`; `documentNature` pendiente si se especializa | Variable acumulable | Sí si hay texto procesable | Diagnóstico social/territorial complementario; desigualdades, vulnerabilidad, barrios, colectivos. | No debe transformarse automáticamente en comparador; requiere estructuración explícita. | Activa por ruta genérica |
 | Informes clínico-asistenciales UGC | `territorial-documentation` + `documentNature: "ugc-clinical-assistance-report"` | Variable contextual | No como evidencia ordinaria en N1b | Preguntas de contraste clínico-asistencial; no reemplaza escala municipal. | No genera filas comparativas municipales; escala UGC debe quedar visible. | Activa parcial |
 | Material cualitativo y participativo | `DocumentKind: "qualitative-material"`; `origin: "qualitative-material"` | Variable acumulable | Sí | Percepciones, relatos, actas, necesidades sentidas, contradicciones y preguntas. | No produce comparación cuantitativa; puede declarar participación cualitativa. | Activa |
-| Evidencia longitudinal | `DocumentKind: "longitudinal-evidence"`; `origin: "longi"` | Variable acumulable | Sí | Cambios entre ciclos, evolución temporal y memoria diagnóstica. | Puede mostrar tendencia solo si periodo, indicador y escala son comparables. | Activa |
+| Evidencia longitudinal | `DocumentKind: "longitudinal-evidence"`; `origin: "longi"` | Variable acumulable | Sí | Cambios entre períodos, evolución temporal y memoria diagnóstica. | Puede mostrar tendencia solo si periodo, indicador y escala son comparables. | Activa |
 | Dataset GES / importación de proyecto | `projectDatasetImports` y parsers disponibles | Variable | Sí si el módulo tiene adaptador | Carga estructurada de instrumentos del proyecto; preserva metadatos sin registros individuales. | Igual que estudios complementarios, limitado por comparadores y adaptadores. | Activa parcial |
 | BADEA/IECA y contexto municipal externo | Contexto/proxy del municipio matriz | Variable contextual | No como fuente ordinaria | Contextualiza condiciones del municipio matriz; no desplaza evidencia local. | Puede aparecer como referencia contextual, nunca como estimación distrital si el ámbito es inframunicipal. | Piloto/contextual |
 | Variables EAS sueltas | `DocumentKind: "eas-variable"`; `origin: "eas"` | Variable reservada | No en flujo visible | Reservado para parser real; no debe usarse como carga cómoda. | No disponible hasta parser validado. | Reservada |
@@ -94,9 +94,9 @@ Una fuente nueva entra por la ruta más específica disponible:
    `territorial-documentation`.
 7. Si es acta, entrevista, grupo focal, memoria participativa o relato
    comunitario, usa `qualitative-material`.
-8. Si compara ciclos, usa `longitudinal-evidence`.
+8. Si compara períodos documentados, usa `longitudinal-evidence`.
 
-Si una fuente se usa repetidamente y exige reglas propias de extracción,
+Si una fuente se usa de forma sostenida y exige reglas propias de extracción,
 canonicidad o escala, debe graduarse a parser o `documentNature` específico
 antes de condicionar decisiones del Perfil.
 
@@ -118,7 +118,7 @@ El Perfil es completo cuando:
 La llegada de una nueva fuente no invalida automáticamente el Perfil anterior:
 lo convierte en una instantánea histórica del expediente previo. Para que la
 nueva información tenga valor institucional debe producirse una nueva lectura,
-nueva validación o nueva compilación, según el punto del ciclo.
+nueva validación o nueva compilación, según el punto del proceso.
 
 ---
 

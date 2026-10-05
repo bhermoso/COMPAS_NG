@@ -6,7 +6,7 @@
  * sustantivos con lenguaje institucional y humano, y (b) una tabla compacta
  * de señales principales para deliberación. La matriz epistemológica
  * completa queda para el anexo, con notas de bloque en lugar de cautelas
- * repetidas fila a fila.
+ * duplicadas fila a fila.
  *
  * Regla editorial (contrato anti-plantilla, testeable):
  *   - La sección cuenta algo sobre la salud del territorio ANTES de
@@ -259,7 +259,7 @@ export function buildProfileSynthesis(
   };
 }
 
-// ── Matriz completa para el anexo (sin repetición mecánica) ──────────────────
+// ── Matriz completa para el anexo (sin duplicación mecánica) ─────────────────
 
 export interface MatrizAnexoFila {
   senal: string;
@@ -353,7 +353,7 @@ export function checkSynthesisAntiTemplate(
     const n = textoPrincipal.split(formula).length - 1;
     if (n > 1) {
       violations.push({
-        id: "cautela-repetida",
+        id: "cautela-duplicada",
         detalle: `«${formula}» aparece ${n} veces en la sección principal (máx. 1).`,
       });
     }

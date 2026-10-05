@@ -1,7 +1,7 @@
 /**
  * tests/planning-cycle-estado.test.tsx
  *
- * Estado del paso «Perfil de Salud Local» en el Ciclo de Planificación Local:
+ * Estado del paso «Perfil de Salud Local» en el Proceso de Planificación Local:
  * «Completada» exige el artefacto institucional PSL-C compilado/congelado.
  * La validación técnica del borrador, por sí sola, no cierra la fase.
  */
@@ -32,11 +32,11 @@ function render(opts: {
   );
 }
 
-describe("ciclo — fase Perfil de Salud Local", () => {
+describe("proceso — fase Perfil de Salud Local", () => {
   it("validado técnicamente sin PSL-C no aparece como «Completada»", () => {
     const html = render({ pslStatus: "validated", pslCompiled: false });
     // El Informe usa «Disponible» y la priorización queda «En curso», así que
-    // «Completada» no debe aparecer en ninguna fase del ciclo.
+    // «Completada» no debe aparecer en ninguna fase del proceso.
     expect(html).not.toContain("Completada");
     expect(html).toContain("Validado técnicamente");
     expect(html).toContain("Pendiente de compilación institucional");

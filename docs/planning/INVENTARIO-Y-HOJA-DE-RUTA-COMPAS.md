@@ -4,7 +4,7 @@ Fecha: 10 de septiembre de 2026. Base de código examinada: `d0c4d282de943bb32c5
 
 ## 1. Propósito y decisiones que se conservan
 
-COMPAS acompaña el ciclo de planificación de salud de municipios, mancomunidades y distritos municipales: documentación y recogida de datos, análisis, perfil de salud, prioridades, objetivos e indicadores, actuaciones, seguimiento y evaluación. Zaidín es el primer recorrido de integración; no define por sí solo todo el producto.
+COMPAS acompaña el proceso de planificación de salud de municipios, mancomunidades y distritos municipales: documentación y recogida de datos, análisis, perfil de salud, prioridades, objetivos e indicadores, actuaciones, seguimiento y evaluación. Zaidín es el primer recorrido de integración; no define por sí solo todo el producto.
 
 La evidencia, la interpretación técnica y la decisión institucional siguen separadas. El sistema ayuda a preparar propuestas; no atribuye aprobación al Grupo Motor ni al administrador sin un acto explícito. El perfil validado y vigente sigue siendo el puente hacia las decisiones derivadas, conforme a la [Constitución Operativa](../architecture/OPERATING-CONSTITUTION.md).
 

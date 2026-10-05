@@ -335,9 +335,9 @@ describe("narrativa — hilo sanitario", () => {
 
 describe("narrativa — cautela sin redundancia", () => {
   it("la cautela de escala se declara pocas veces y se referencia después", () => {
-    const repeticiones = texto.match(/estimación específica del/g) ?? [];
-    expect(repeticiones.length).toBeGreaterThanOrEqual(2); // Cap. I + BADEA
-    expect(repeticiones.length).toBeLessThanOrEqual(3);
+    const coincidencias = texto.match(/estimación específica del/g) ?? [];
+    expect(coincidencias.length).toBeGreaterThanOrEqual(2); // Cap. I + BADEA
+    expect(coincidencias.length).toBeLessThanOrEqual(3);
     // Las demás apariciones remiten a la cautela ya declarada
     expect(texto).toContain("cautela de escala del capítulo I");
   });

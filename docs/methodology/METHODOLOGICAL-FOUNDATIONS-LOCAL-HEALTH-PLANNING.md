@@ -46,7 +46,7 @@ Un Plan Local de Salud que no puede evaluarse es una declaración, no un plan.
 | Un documento del equipo técnico | Un documento del municipio validado por el equipo técnico |
 | Un informe de situación | El informe de situación precede al plan; no es el plan |
 | Un catálogo de servicios sanitarios | Los servicios sanitarios son del SSPA; el PLS puede referenciarlos como activos |
-| Un documento eterno | Tiene vigencia definida; expira y genera el siguiente ciclo |
+| Un documento eterno | Tiene vigencia definida; expira y deja base para una actualización posterior |
 
 ### I.3 Las seis etapas de la planificación local en salud
 
@@ -171,13 +171,13 @@ mejorando la salud?). Son preguntas distintas con métodos distintos.
 los cambios esperados en los indicadores de resultado y, en última instancia, en
 la salud de la población.
 
-**Producto:** el Informe de Evaluación. La base del siguiente ciclo diagnóstico.
+**Producto:** el Informe de Evaluación. La base de una actualización diagnóstica posterior.
 
 **Actor principal:** el equipo técnico de evaluación (puede incluir evaluadores
 externos para garantizar independencia).
 
 **Lo que puede aparecer:** comparación indicadores baseline → fin de período,
-análisis de qué funcionó y qué no, recomendaciones para el siguiente ciclo.
+análisis de qué funcionó y qué no, propuestas de mejora para la actualización posterior.
 
 **Por qué es la etapa más frecuentemente omitida:** la evaluación requiere
 haber definido el tiempo cero y los indicadores antes de ejecutar. Si no se hizo,
@@ -631,7 +631,7 @@ proceso que debe seguirse.
 **Ámbito:** los municipios de Andalucía adheridos a RELAS.
 
 **Contribución al PLS:**
-- Define el ciclo de planificación (diagnóstico → prioridades → plan → ejecución → evaluación).
+- Define la secuencia de planificación (diagnóstico → prioridades → plan → ejecución → evaluación).
 - Establece la figura del Grupo Motor y sus responsabilidades.
 - Proporciona metodologías de participación ciudadana.
 - Conecta el PLS con el sistema de apoyo institucional (Distrito Sanitario, SSPA).
@@ -766,7 +766,7 @@ PLS (decisión, con PSL-C como diagnóstico de referencia)
           Informe de evaluación
                 │
                 ▼
-         [Siguiente ciclo: nuevo EvidenceStore]
+         [Actualización posterior: nuevo EvidenceStore]
 
 Cuestionario Municipal (CM)
     ├──► Diccionario REDCap (DD)
@@ -774,7 +774,7 @@ Cuestionario Municipal (CM)
     │    [Captura de datos en REDCap]
     │         │
     │         ▼
-    └──► EvidenceStore (retroalimentación)
+    └──► EvidenceStore (incorporación longitudinal)
 
 Anexo Técnico Metodológico
     (alimentado por EvidenceStore + Biblioteca Metodológica)
@@ -1014,7 +1014,7 @@ De la ciudadanía (proceso participativo):
 - Prioridades técnicas que no reflejan la realidad vivida en el territorio.
 - Actuaciones propuestas que son inviables en el contexto local.
 - Indicadores que no pueden medirse con los recursos disponibles.
-- Cronogramas que ignoran los ciclos políticos y presupuestarios del municipio.
+- Cronogramas que ignoran los calendarios políticos y presupuestarios del municipio.
 
 ### VI.8 Lo que el Grupo Motor puede modificar
 
@@ -1023,7 +1023,7 @@ De la ciudadanía (proceso participativo):
 - Las actuaciones del Plan de Acción (pueden añadir, eliminar o modificar las
   propuestas del borrador técnico).
 - Los indicadores (pueden proponer indicadores más adecuados a la medición local).
-- Los cronogramas (pueden ajustarlos a los ciclos reales del municipio).
+- Los cronogramas (pueden ajustarlos a los calendarios reales del municipio).
 
 ### VI.9 Lo que el Grupo Motor aprueba
 
@@ -1232,13 +1232,13 @@ en el borrador del Plan de Acción.
 
 ---
 
-**PM-12 — El plan tiene vigencia definida y genera el siguiente ciclo**
+**PM-12 — El plan tiene vigencia definida y deja base longitudinal**
 
-*Formulación:* Un PLS sin fecha de expiración no es un plan: es una lista de intenciones. El cierre formal del ciclo (evaluación final) es la apertura del siguiente (nuevo diagnóstico).
+*Formulación:* Un PLS sin fecha de expiración no es un plan: es una lista de intenciones. El cierre formal del período de planificación (evaluación final) abre una actualización diagnóstica posterior.
 
-*Justificación:* La continuidad del proceso de planificación local depende de que cada ciclo genere evidencia longitudinal que enriquezca el siguiente.
+*Justificación:* La continuidad del proceso de planificación local depende de que cada período de planificación genere evidencia longitudinal útil para actualizaciones posteriores.
 
-*Impacto arquitectónico:* El PLS tiene un campo de vigencia (fecha de inicio y fin). La evaluación final genera evidencia longitudinal (`longi` origin) que retroalimenta el EvidenceStore del siguiente ciclo.
+*Impacto arquitectónico:* El PLS tiene un campo de vigencia (fecha de inicio y fin). La evaluación final genera evidencia longitudinal (`longi` origin) que se incorpora al EvidenceStore de una actualización posterior.
 
 ---
 
@@ -1354,13 +1354,13 @@ en el borrador del Plan de Acción.
 
 ---
 
-**PM-24 — El ciclo de planificación local cierra y abre en el mismo punto**
+**PM-24 — La planificación local deja continuidad documentada**
 
-*Formulación:* La evaluación final del PLS genera evidencia longitudinal que es el punto de partida del siguiente diagnóstico. El fin de un plan es el origen del siguiente.
+*Formulación:* La evaluación final del PLS genera evidencia longitudinal que sirve de punto de partida para una actualización diagnóstica posterior. El fin de un plan abre su revisión documentada.
 
-*Justificación:* La continuidad del proceso RELAS depende de que cada ciclo alimente el siguiente. Un plan que no genera evidencia para el siguiente ciclo cierra el proceso en lugar de perpetuarlo.
+*Justificación:* La continuidad del proceso RELAS depende de que cada período de planificación deje evidencia utilizable después. Un plan que no genera evidencia longitudinal cierra el proceso en lugar de sostenerlo.
 
-*Impacto arquitectónico:* El Informe de Evaluación final del PLS produce átomos de evidencia longitudinal (`origin: "longi"`) que se incorporan al EvidenceStore del siguiente ciclo de COMPÁS NG.
+*Impacto arquitectónico:* El Informe de Evaluación final del PLS produce átomos de evidencia longitudinal (`origin: "longi"`) que se incorporan al EvidenceStore de una actualización posterior de COMPÁS NG.
 
 ---
 
@@ -1417,17 +1417,17 @@ que guía la construcción, no el resultado de ella.
 17. `CONTRACT-REDCAP-VISUAL-TEMPLATE` y plantilla visual
 
 **Bloque G — Portada institucional** *(independiente)*
-18. Portada institucional que explica el sistema, el Expediente Territorial y el ciclo
+18. Portada institucional que explica el sistema, el Expediente Territorial y el proceso
 
 ### IX.3 Lo que pertenece al Sprint 3
 
 Desde la metodología, pertenecen al Sprint 3 los objetos que requieren que el
-ciclo completo de Sprint 2 esté en producción:
+bloque completo de Sprint 2 esté en producción:
 
 - La Agenda inteligente (requiere MTE operativo con ESCA integrado).
 - El Seguimiento inteligente (requiere Agenda inteligente validada en producción).
-- El cierre del ciclo longitudinal (Informe de Evaluación → nueva evidencia): requiere
-  haber ejecutado al menos un ciclo completo de PLS.
+- El cierre longitudinal (Informe de Evaluación → nueva evidencia): requiere
+  haber ejecutado al menos un período completo de PLS.
 - La Tripirámide Dinámica/SAM (requiere datos de padrón por municipio que no están disponibles).
 - La Inteligencia Territorial Explicable (requiere investigación metodológica previa
   formalizada en CONTRACT-TERRITORIAL-STRUCTURAL-INFERENCE).

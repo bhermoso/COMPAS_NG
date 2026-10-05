@@ -41,7 +41,7 @@ El Perfil **no es**:
 - Una declaración de intenciones. No anticipa lo que se va a hacer.
 - Un documento del sistema sanitario. Es del municipio, validado por el equipo técnico de salud pública.
 - Un catálogo de servicios sanitarios. Los servicios que el sistema sanitario presta en el territorio son activos o datos de contexto, no el objeto del diagnóstico.
-- Un producto eterno. Tiene un momento de generación, un responsable y una vigencia implícita ligada al siguiente ciclo diagnóstico.
+- Un producto eterno. Tiene un momento de generación, un responsable y una vigencia implícita ligada a una actualización diagnóstica posterior.
 
 ### Art. 2. Finalidad
 
@@ -116,7 +116,7 @@ El Perfil puede integrar evidencia de las siguientes familias:
 | **Evidencia cualitativa** | Perspectivas, relatos y conocimiento experiencial de los actores del territorio |
 | **Participación ciudadana** | Prioridades, percepciones y preferencias de la comunidad expresadas en el proceso participativo |
 | **Informes institucionales** | Diagnósticos producidos por el sistema sanitario, servicios sociales u otras instituciones |
-| **Evidencia longitudinal** | Cambios observados entre ciclos diagnósticos anteriores y el actual |
+| **Evidencia longitudinal** | Cambios observados entre diagnósticos anteriores y el actual |
 | **Cautelas metodológicas** | Limitaciones de las fuentes anteriores que condicionan la interpretación |
 | **Marcos estratégicos y normativos** | Orientaciones programáticas autonómicas o estatales relevantes para la planificación (EPVSA, ESCA, RELAS, etc.) |
 
@@ -190,7 +190,7 @@ El Perfil opera con exactamente siete tipos de afirmación. Toda afirmación inc
 *Ejemplo: "El tamaño muestral del estudio IBSE (n=47) es insuficiente para estimaciones estables por grupo de edad."*
 
 **Laguna:** declaración de que una dimensión relevante del territorio no está cubierta por la evidencia disponible.
-*Ejemplo: "No se dispone de datos sobre salud mental adulta en este municipio en el ciclo diagnóstico actual."*
+*Ejemplo: "No se dispone de datos sobre salud mental adulta en este municipio en el diagnóstico actual."*
 
 **Decisión posterior:** declaración explícita de que un aspecto del diagnóstico no puede resolverse en el Perfil y debe ser objeto de deliberación en la etapa de priorización o planificación.
 *Ejemplo: "La comparación entre el bienestar socioemocional escolar y los determinantes socioeconómicos requiere una discusión deliberativa que el Grupo Motor debe abordar en la etapa de priorización."*
@@ -243,9 +243,9 @@ En el contexto de COMPÁS NG, el referente provincial es más informativo que el
 
 **Comparación temporal**
 
-Cuando existe evidencia de ciclos anteriores, el Perfil registra la evolución de los indicadores entre ciclos. La evidencia longitudinal es una familia de evidencia con las mismas garantías de trazabilidad que cualquier otra.
+Cuando existe evidencia de diagnósticos anteriores, el Perfil registra la evolución de los indicadores entre períodos comparables. La evidencia longitudinal es una familia de evidencia con las mismas garantías de trazabilidad que cualquier otra.
 
-Cuando no existe evidencia de ciclos anteriores, el Perfil lo declara. El primer ciclo de diagnóstico de un municipio carece, por definición, de referente temporal propio.
+Cuando no existe evidencia de diagnósticos anteriores, el Perfil lo declara. El primer diagnóstico de un municipio carece, por definición, de referente temporal propio.
 
 ### Art. 13. Incertidumbre situada
 
@@ -376,7 +376,7 @@ Cuando no exista referencia territorial válida para un indicador, la salida com
 
 El Perfil debe poder absorber nueva información, nuevas fuentes y nuevos métodos sin perder su identidad como instrumento de síntesis interpretativa.
 
-La identidad del Perfil no depende de qué instrumentos están disponibles, cuántos estudios se han realizado, ni qué marcos institucionales son relevantes en cada ciclo. Depende de que:
+La identidad del Perfil no depende de qué instrumentos están disponibles, cuántos estudios se han realizado, ni qué marcos institucionales son relevantes en cada período de planificación. Depende de que:
 - La lectura emerge de la evidencia del territorio específico.
 - La incertidumbre está declarada.
 - La autoría humana es identificable.
@@ -402,7 +402,7 @@ Un Perfil de Salud Local es metodológicamente aceptable cuando puede responders
 | **Equilibrio activos-déficits** | ¿Los activos comunitarios tienen la misma visibilidad que los indicadores de necesidad? |
 | **No prescripción** | ¿El Perfil no prescribe automáticamente prioridades, actuaciones ni compromisos? |
 | **Autoría identificable** | ¿Los capítulos interpretativos tienen autoría humana explícita, con nombre y cargo? |
-| **Alcance delimitado** | ¿El Perfil declara qué no ha podido medir o conocer en este ciclo diagnóstico? |
+| **Alcance delimitado** | ¿El Perfil declara qué no ha podido medir o conocer en este diagnóstico? |
 | **Separación de etapas** | ¿El Perfil no anticipa decisiones de planificación que corresponden a etapas posteriores? |
 | **Equidad transversal** | ¿El diagnóstico incorpora la perspectiva de quién está en peor situación dentro del territorio? |
 

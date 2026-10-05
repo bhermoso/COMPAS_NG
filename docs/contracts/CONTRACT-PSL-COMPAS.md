@@ -33,7 +33,7 @@ El PSL-C **no es un plan**. No prescribe actuaciones. No selecciona prioridades 
 
 El PSL-C **no sustituye al equipo técnico**. Los capítulos de conclusiones (V) y cierre interpretativo (VI) son scaffold orientativo hasta que el equipo técnico los redacte y autorice explícitamente. **El PSL concluye, pero no recomienda**: las recomendaciones pertenecen al Motor de Traducción Estratégica y al Plan de Acción.
 
-El PSL-C es la condición necesaria para activar el Nivel 3 del ciclo de planificación. Ningún motor del Nivel 3 puede consumir directamente los outputs del MIT; todos deben pasar por el PSL (regla PSL-C1).
+El PSL-C es la condición necesaria para activar el Nivel 3 del proceso de planificación. Ningún motor del Nivel 3 puede consumir directamente los outputs del MIT; todos deben pasar por el PSL (regla PSL-C1).
 
 ---
 

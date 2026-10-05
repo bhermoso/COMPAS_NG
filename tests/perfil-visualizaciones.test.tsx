@@ -182,7 +182,7 @@ describe("tabla diagnóstica central — trazadores con referencias", () => {
     expect(
       lecturas.some((l) => l.includes("referencia andaluza") || l.includes("andaluza"))
     ).toBe(true);
-    // Ninguna lectura es la vieja cautela repetida
+    // Ninguna lectura es la vieja cautela duplicada
     for (const l of lecturas) {
       expect(l).not.toContain("comportamiento demo");
       expect(l).not.toContain("no constituye");

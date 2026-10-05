@@ -14,7 +14,7 @@
 Este contrato establece el comportamiento garantizado, los invariantes y los
 límites del Motor de Traducción Estratégica (MTE) de COMPÁS NG.
 
-El MTE es el Producto 5 del ciclo de planificación local de salud. Opera en
+El MTE es el Producto 5 del proceso de planificación local de salud. Opera en
 el Nivel 3 de la arquitectura, sobre el `LocalHealthProfile` validado como
 única fuente de información territorial.
 
@@ -266,7 +266,7 @@ documentadas como deuda de evolución futura.
 |---|---|---|---|
 | MTE-L1 | Agrupación 1:1 (una área → un escenario) | Escenarios potencialmente fragmentados; sinergias entre áreas no representadas | Algoritmo de agrupación por coherencia compartida |
 | MTE-L2 | `activosRelacionados: []` vacío | El escenario no identifica activos relevantes | Requiere acceso a tipos de átomos del EvidenceStore; decisión de diseño pendiente |
-| MTE-L3 | Tensiones de tipo `"marco"` no activas | El artefacto no detecta divergencias entre marcos | Análisis de elementos del FrameworkProvider; activar en iteración posterior |
+| MTE-L3 | Tensiones de tipo `"marco"` no activas | El artefacto no detecta divergencias entre marcos | Análisis de elementos del FrameworkProvider; activar en fase posterior |
 | MTE-L4 | Distribución no selectiva de tensiones del PSL | Tensiones del PSL se distribuyen a todos los escenarios sin discriminación | Vinculación de tensiones a áreas específicas del PSL |
 
 ---

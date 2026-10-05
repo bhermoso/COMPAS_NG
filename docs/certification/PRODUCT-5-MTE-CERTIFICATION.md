@@ -16,7 +16,7 @@
 |---|---|
 | **Nombre oficial** | Motor de Traducción Estratégica (MTE) |
 | **Código** | PRODUCT-5 |
-| **Objetivo institucional** | Identificar y hacer explícitas las coherencias estratégicas latentes en la intersección del diagnóstico territorial certificado (LocalHealthProfile validado) y el conocimiento estratégico institucional disponible (FrameworkProvider), produciendo la LecturaEstrategicaLocal como unidad canónica de transferencia al ciclo de planificación |
+| **Objetivo institucional** | Identificar y hacer explícitas las coherencias estratégicas latentes en la intersección del diagnóstico territorial certificado (LocalHealthProfile validado) y el conocimiento estratégico institucional disponible (FrameworkProvider), produciendo la LecturaEstrategicaLocal como unidad canónica de transferencia al proceso de planificación |
 | **Fecha de emisión** | 2026-06-30 |
 | **Estado** | **CERTIFICADO** |
 | **Versión** | 1.0 |

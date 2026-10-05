@@ -248,7 +248,7 @@ pipelines no se mezclan entre sí y no comparten lógica de extracción.
 >
 > El Informe de Salud se carga, conserva y referencia como fuente primaria documental
 > (`HealthReportDocument`) sin conversión a `EvidenceAtom`.
-> El `EvidenceStore` no recibe átomos con `origin: "health-report"` en el ciclo activo.
+> El `EvidenceStore` no recibe átomos con `origin: "health-report"` en el expediente activo.
 > Los átomos de `health-report` que pudieran existir en workspaces anteriores
 > se purgan al recargar el Informe de Salud.
 

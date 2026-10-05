@@ -29,7 +29,7 @@ discretos, trazables e inmutables.
 ## Misión
 
 Servir como unidad canónica de transferencia de conocimiento estratégico en
-el ciclo de planificación de COMPÁS NG.
+el proceso de planificación de COMPÁS NG.
 
 El `EscenarioEstratégico` agrupa el conocimiento diagnóstico de un municipio
 y lo pone en relación con los instrumentos estratégicos institucionales que le

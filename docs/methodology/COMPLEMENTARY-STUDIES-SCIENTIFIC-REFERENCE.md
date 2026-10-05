@@ -87,7 +87,7 @@ La obligatoriedad se refiere a examinar la existencia de una laguna, no a admini
 | `Incorporado` | Cumple los criterios y puede contribuir al Perfil dentro de sus límites |
 | `Condicional` | Solo procede en poblaciones, contextos o preguntas específicas |
 | `En transición` | Se conserva para continuidad, pero existe una alternativa preferida |
-| `Retirado` | No se usa en nuevos ciclos; se preserva para interpretar resultados anteriores |
+| `Retirado` | No se usa en nuevas actualizaciones; se preserva para interpretar resultados anteriores |
 | `No seleccionado` | Ha sido evaluado y no supera comparativamente los criterios para el uso propuesto |
 
 Los estados describen una decisión científica, no el grado de desarrollo operativo. [D:DEC-32]
@@ -523,7 +523,7 @@ Consolidar series temporales y comparabilidad territorial; decidir sobre funcion
 
 ### Años 7 a 8
 
-Desarrollar módulos condicionados por ciclo vital, discapacidad, entorno, clima y capacidad colectiva sin convertir el catálogo en una batería universal. [D:DEC-66]
+Desarrollar módulos condicionados por curso vital, discapacidad, entorno, clima y capacidad colectiva sin convertir el catálogo en una batería universal. [D:DEC-66]
 
 ### Años 9 a 10
 

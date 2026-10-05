@@ -30,7 +30,7 @@ export function generateAgendaDraft(actionPlan: ActionPlanDraft): AgendaDraft {
       "La agenda es una propuesta inicial y no implica compromiso ejecutivo.",
       "Cada actuación debe asignar responsables reales, calendario, recursos y condiciones de ejecución.",
       "No se activa seguimiento ni evaluación hasta que la agenda esté validada.",
-      "La distribución trimestral es orientativa y debe ajustarse a ciclos municipales y disponibilidad comunitaria.",
+      "La distribución trimestral es orientativa y debe ajustarse a calendarios municipales y disponibilidad comunitaria.",
     ],
     requiresHumanValidation: true,
   };

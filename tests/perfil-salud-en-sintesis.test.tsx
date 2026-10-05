@@ -135,7 +135,7 @@ describe("Salud en síntesis — mensajes sustantivos", () => {
     const violations = checkSynthesisAntiTemplate(plantilla);
     const ids = violations.map((v) => v.id);
     expect(ids).toContain("apertura-metodologica");
-    expect(ids).toContain("cautela-repetida");
+    expect(ids).toContain("cautela-duplicada");
     expect(ids).toContain("lectura-duplicada");
   });
 });

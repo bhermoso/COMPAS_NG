@@ -169,7 +169,7 @@ export interface IntegratedInterpretation {
 // Cada tema declara CÓMO se selecciona su agenda (N1) y su evidencia (N2), y el
 // razonamiento que gobierna. El CONTENIDO (hallazgos, valores, señales) procede
 // siempre de los datos reales; el marco es específico del tema, no una plantilla
-// común repetida.
+// común duplicada.
 
 type InterpretationUse = HealthReportStructuredFinding["interpretationUse"][number];
 

@@ -208,14 +208,14 @@ exención fiscal. Son documentos públicos.
 
 3. **La perspectiva comunitaria tiene condiciones de legitimidad.** No basta con haber "consultado"; el CHNA documenta quién participó, si los grupos más vulnerables estuvieron representados y qué limitaciones tuvo el proceso.
 
-4. **La duración es definida y el ciclo es explícito.** Cada tres años se repite el ciclo. El diagnóstico del siguiente ciclo incorpora la evaluación del anterior.
+4. **La duración es definida y la actualización es explícita.** Cada tres años se abre una revisión documentada. La actualización diagnóstica incorpora la evaluación del período anterior.
 
 ### III.4 Aplicación a COMPÁS NG
 
 La estructura CHNA refuerza tres decisiones arquitectónicas ya presentes en COMPÁS NG:
 - La priorización es un proceso deliberado (no automático).
 - El Cap. VII del PSL documenta tanto el consenso como la deliberación.
-- El PLS tiene una vigencia definida y genera el siguiente ciclo.
+- El PLS tiene una vigencia definida y deja base para una actualización posterior.
 
 ---
 
@@ -262,7 +262,7 @@ es, por tanto, un insumo explícito del Plan Operativo ESCA.
 | Área | Distrito Sanitario / UGC | Municipio |
 | Marcos | 15 líneas ESCA | EPVSA + RELAS + ESCA + otros |
 | Proceso | Comisión Territorial de profesionales | Grupo Motor con participación ciudadana |
-| Vigencia | 2 años (ciclos en 2027-28 y 2029-30) | Variable (típicamente 2-4 años) |
+| Vigencia | 2 años (períodos en 2027-28 y 2029-30) | Variable (típicamente 2-4 años) |
 | Contenido | Actuaciones de los equipos de AP | Compromisos municipales en salud |
 
 **Lo que esto significa para COMPÁS NG:** el PLS que genera COMPÁS NG debe ser compatible
@@ -464,10 +464,10 @@ El alcalde, los concejales y los medios de comunicación necesitan saber: qué e
 qué decidimos hacer y cuándo lo evaluaremos. Dos páginas máximo. Sin jerga técnica.
 Sin referencias a MIT, EvidenceStore, PSL, OIT ni ningún término del sistema.
 
-**P18 — El PLS tiene fecha de vigencia explícita y define la apertura del siguiente ciclo.**
+**P18 — El PLS tiene fecha de vigencia explícita y define la apertura de una actualización posterior.**
 Un PLS indefinido no es un plan: es un deseo. La fecha de expiración obliga a la
-evaluación y al siguiente ciclo. El cierre del PLS genera evidencia longitudinal
-que alimenta el siguiente ciclo de COMPÁS NG.
+evaluación y a una revisión documentada. El cierre del PLS genera evidencia longitudinal
+que alimenta una actualización posterior de COMPÁS NG.
 
 **P19 — El PLS hace explícita su vinculación con ESCA y EPVSA.**
 Cada objetivo del PLS debe poder vincularse con al menos una línea ESCA o una línea EPVSA.

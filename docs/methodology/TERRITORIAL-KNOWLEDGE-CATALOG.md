@@ -131,7 +131,7 @@ los de menos de 1.000 habitantes.
 **Productos que alimenta**
 PSL (capítulo de contexto territorial, denominadores para indicadores), PA (población diana
 de cada actuación), PLS (estimaciones de alcance de las actuaciones), EV (cambios en la
-estructura demográfica entre ciclos).
+estructura demográfica entre períodos).
 
 ---
 
@@ -430,7 +430,7 @@ a varios años para obtener estimaciones estables.
 **Productos que alimenta**
 PSL (diagnóstico epidemiológico), PA (priorización de causas de muerte evitables),
 PLS (objetivos de reducción de mortalidad prematura), EV (comparación de tasas de mortalidad
-entre ciclos del plan).
+entre períodos del plan).
 
 ---
 
@@ -472,7 +472,7 @@ para municipios pequeños.
 **Productos que alimenta**
 PSL (diagnóstico de carga de enfermedad), PA (actuaciones preventivas de enfermedades
 crónicas), PLS (objetivos de reducción de morbilidad evitable), EV (evolución de
-prevalencias entre ciclos).
+prevalencias entre períodos).
 
 ---
 
@@ -553,7 +553,7 @@ son con frecuencia la única fuente de datos específicamente municipales.
 
 **Frecuencia de actualización**
 Quinquenal (ENSE), bienal o cuatrienal (EAS). Los estudios propios se actualizan en cada
-ciclo diagnóstico de COMPÁS NG.
+proceso diagnóstico de COMPÁS NG.
 
 **Escala territorial disponible**
 Provincial o autonómica para las encuestas nacionales y regionales. **Municipal únicamente
@@ -601,7 +601,7 @@ funcional, SF-12 para salud percibida física y mental). Para municipios pequeñ
 instrumentos propios son la fuente con mayor resolución territorial.
 
 **Frecuencia de actualización**
-Cuatrienal o quinquenal para encuestas oficiales. Por ciclo diagnóstico para instrumentos propios.
+Cuatrienal o quinquenal para encuestas oficiales. Por proceso diagnóstico para instrumentos propios.
 
 **Escala territorial disponible**
 Provincial o autonómica para las encuestas. **Municipal únicamente con instrumentos propios.**
@@ -609,7 +609,7 @@ Es la familia con mayor brecha entre disponibilidad de datos oficiales y necesid
 
 **Productos que alimenta**
 PSL (diagnóstico de bienestar, comparación con referencias provinciales), PA (actuaciones
-sobre bienestar y calidad de vida), EV (cambios en percepción de salud entre ciclos).
+sobre bienestar y calidad de vida), EV (cambios en percepción de salud entre períodos).
 
 ---
 
@@ -648,7 +648,7 @@ de Salud (apoyo social); estudios de soledad y aislamiento (Fundación ONCE, CSI
 de servicios sociales sobre personas sin red de apoyo.
 
 **Frecuencia de actualización**
-Por ciclo diagnóstico para instrumentos propios. Las encuestas sobre soledad son escasas
+Por proceso diagnóstico para instrumentos propios. Las encuestas sobre soledad son escasas
 y de periodicidad irregular.
 
 **Escala territorial disponible**
@@ -737,7 +737,7 @@ resultados de grupos focales y talleres participativos; encuestas de percepción
 informes de mesas comunitarias.
 
 **Frecuencia de actualización**
-Por ciclo diagnóstico. El conocimiento experiencial de la comunidad cambia con el territorio
+Por proceso diagnóstico. El conocimiento experiencial de la comunidad cambia con el territorio
 y con las generaciones.
 
 **Escala territorial disponible**
@@ -869,12 +869,12 @@ El bienestar socioemocional escolar es observable directamente con instrumentos 
 - ¿Hay conductas de riesgo en adolescentes que requieran atención preventiva?
 
 **Posibles fuentes**
-Instrumento IBSE (COMPÁS NG, ciclo diagnóstico propio); datos de salud escolar (Delegación
+Instrumento IBSE (COMPÁS NG, diagnóstico propio); datos de salud escolar (Delegación
 de Educación y Salud); datos del programa de salud infantil del EAP; datos de servicios
 de protección de menores; registros educativos de absentismo y abandono.
 
 **Frecuencia de actualización**
-Por ciclo diagnóstico para instrumentos propios. Anual para registros de servicios.
+Por proceso diagnóstico para instrumentos propios. Anual para registros de servicios.
 
 **Escala territorial disponible**
 Municipal con instrumentos propios (IBSE). ZBS o municipal con datos de servicios educativos
@@ -1041,7 +1041,7 @@ instrumentos de recogida propia.
 
 **Ausencia de series temporales comparables.** El conocimiento territorial solo puede
 interpretarse longitudinalmente si los instrumentos, las definiciones y las fuentes han
-permanecido estables entre ciclos. Muchos cambios metodológicos en las encuestas oficiales
+permanecido estables entre períodos. Muchos cambios metodológicos en las encuestas oficiales
 impiden la comparación entre años.
 
 **Ausencia de datos de calidad sobre morbilidad a escala municipal.** Los registros de

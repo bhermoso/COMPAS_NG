@@ -580,7 +580,7 @@ describe("inmutabilidad del artefacto", () => {
     }
   });
 
-  it("compilación repetida: el hash del PSL no cambia entre ejecuciones", () => {
+  it("compilación sucesiva: el hash del PSL no cambia entre ejecuciones", () => {
     const psl = basePSL();
     const h1 = computePSLHash(psl);
     const h2 = computePSLHash(psl);

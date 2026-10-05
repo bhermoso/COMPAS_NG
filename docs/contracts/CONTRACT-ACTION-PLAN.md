@@ -385,7 +385,7 @@ en compromisos calendarizados.
 
 La distribución trimestral se asigna de forma rotatoria según la posición de
 la actuación en el plan (posición 1 → Q1, 2 → Q2, 3 → Q3, 4 → Q4, 5 → Q1, …).
-No refleja análisis de viabilidad ni ciclos municipales reales. Debe ajustarse
+No refleja análisis de viabilidad ni calendarios municipales reales. Debe ajustarse
 con el equipo antes de cualquier uso operativo.
 
 ### 9.4 Cautelas fijas de la Agenda
@@ -394,7 +394,7 @@ con el equipo antes de cualquier uso operativo.
 2. Cada actuación debe asignar responsables reales, calendario, recursos y
    condiciones de ejecución.
 3. No se activa seguimiento ni evaluación hasta que la agenda esté validada.
-4. La distribución trimestral es orientativa y debe ajustarse a ciclos
+4. La distribución trimestral es orientativa y debe ajustarse a calendarios
    municipales y disponibilidad comunitaria.
 
 ### 9.5 Lo que la Agenda no hace

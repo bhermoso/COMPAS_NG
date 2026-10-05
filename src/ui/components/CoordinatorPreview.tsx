@@ -47,7 +47,7 @@ const sections = {
   'Seguimiento del plan': {
     intro: 'Consultar la evolución de los indicadores y la procedencia de cada aportación.',
     items: ['Mediciones iniciales y posteriores', 'Cobertura y datos pendientes', 'Procedencia y fecha de los registros', 'Informes agregados del ámbito'],
-    detail: 'Sin resultados conectados. Las personas atendidas y la población general se analizarán por separado; los registros repetidos no se contarán como personas diferentes.',
+    detail: 'Sin resultados conectados. Las personas atendidas y la población general se analizarán por separado; los registros duplicados no se contarán como personas diferentes.',
   },
 };
 type Section = keyof typeof sections;

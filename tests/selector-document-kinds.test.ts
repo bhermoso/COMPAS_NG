@@ -130,7 +130,7 @@ describe("qualitative-material — material cualitativo y participativo", () => 
 
 // ── longitudinal-evidence ─────────────────────────────────────────────────────
 
-describe("longitudinal-evidence — evidencia comparativa entre ciclos", () => {
+describe("longitudinal-evidence — evidencia comparativa entre periodos", () => {
   it("persiste MunicipalDocument con kind longitudinal-evidence", () => {
     const result = ingestManualDocument({
       repository: makeRepository(),
@@ -180,7 +180,7 @@ describe("longitudinal-evidence — evidencia comparativa entre ciclos", () => {
       evidenceStore: makeStore(),
       kind: "longitudinal-evidence",
       title: "Serie longitudinal de referencia",
-      plainText: "Dato longitudinal para el ciclo 2024.",
+      plainText: "Dato longitudinal para el periodo 2024.",
     });
     const doc = result!.repository.documents.find((d) => d.kind === "longitudinal-evidence");
     for (const atom of result!.evidenceStore.atoms) {

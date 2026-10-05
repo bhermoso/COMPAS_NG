@@ -115,7 +115,7 @@ export interface PlanPreparationDraft {
  version: string;
  updatedAt: string;
  decisions: Record<string, PlanPreparationDecision>;
- /** Necesidades diagnosticadas que quedan fuera de este ciclo y su justificación. Gate G-PLS-7. */
+ /** Necesidades diagnosticadas que quedan fuera de este periodo y su justificación. Gate G-PLS-7. */
  unaddressedNeeds?: UnaddressedNeed[];
  /** Marco mínimo que hará evaluable el futuro PLS. Gate G-PLS-10. */
  evaluationFramework?: PLSEvaluationFramework;
@@ -124,7 +124,7 @@ export interface PlanPreparationDraft {
 export const ALL_DIAGNOSTIC_NEEDS_ADDRESSED: UnaddressedNeed = {
  id: "all-diagnostic-needs-addressed",
  title: "Sin necesidades diagnosticadas fuera del Plan de Acción",
- justification: "Todas las necesidades identificadas para este ciclo han quedado incorporadas al Plan de Acción.",
+ justification: "Todas las necesidades identificadas para este periodo han quedado incorporadas al Plan de Acción.",
 };
 
 export function normaliseUnaddressedNeedsForPlan(needs: UnaddressedNeed[] | undefined): UnaddressedNeed[] | undefined {

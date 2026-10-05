@@ -100,7 +100,7 @@ El PLS es un único documento que integra todas las etapas del proceso de planif
 | V | **Priorización** | Sí | Candidaturas técnicas (sistema), priorización ciudadana (proceso participativo), deliberación y consenso del Grupo Motor (humano), prioridades seleccionadas. Incluye obligatoriamente las necesidades identificadas pero no priorizadas, con justificación. |
 | VI | **Articulación institucional** | Sí; canónica cuando consume `LecturaEstrategicaLocal` del MTE / provisional si usa un fallback EPVSA anterior | Correspondencias entre prioridades y marcos estratégicos (EPVSA, ESCA, RELAS, PEM, PSMA). Distinción entre actuaciones SSPA-garantizadas y actuaciones municipales nuevas. |
 | VII | **Plan de Acción** | Sí | Objetivos (general y específico), actuaciones, indicadores con tiempo cero y meta, responsables nominados, plazos reales, recursos asignados. Validado por el Grupo Motor. |
-| VIII | **Agenda de implementación** | Sí | Distribución temporal validada por ciclos municipales reales, no la trimestrización orientativa del sistema. Responsables y condiciones de ejecución por ítem. |
+| VIII | **Agenda de implementación** | Sí | Distribución temporal validada por períodos municipales reales, no la trimestrización orientativa del sistema. Responsables y condiciones de ejecución por ítem. |
 | IX | **Marco de seguimiento** | Sí | Ítems de seguimiento con estados iniciales, responsable de medición, periodicidad y umbral de alerta. Marco de evaluación: preguntas de evaluación, momentos de medición, responsable. |
 | X | **Marco de gobernanza** | Sí | Composición del Grupo Motor, Mesa de participación ciudadana, Comisión de seguimiento. Periodicidad de sesiones, resolución de conflictos, comunicación pública. |
 | XI | **Memoria del proceso** | Condicional | Registro narrativo del proceso participativo: quién participó, qué se discutió, cómo se alcanzaron los acuerdos. Responsabilidad humana exclusiva. El sistema puede albergar sus documentos en el Repositorio Documental. No compilada por el sistema. |
@@ -186,7 +186,7 @@ El sistema **nunca puede generar automáticamente** los siguientes elementos:
 | **Validación política del PLS** (aprobación por la corporación municipal) | La aprobación es un acto institucional con consecuencias políticas y legales. No puede ser un clic de confirmación del equipo técnico. |
 | **Compromisos institucionales definitivos** (responsables nominados, plazos comprometidos, recursos asignados) | Los compromisos institucionales requieren el acuerdo explícito de las personas e instituciones que los asumen. |
 | **Responsables nominados** (persona + cargo concretos, no "el Ayuntamiento") | Sin responsable nominal, el ítem de seguimiento no tiene accountability (PM-8 invariante). |
-| **Plazos reales** (integrados en ciclos municipales reales, no la trimestrización orientativa del sistema) | Los plazos dependen de la capacidad real del municipio, del calendario municipal y de los compromisos intersectoriales. |
+| **Plazos reales** (integrados en calendarios municipales reales, no la trimestrización orientativa del sistema) | Los plazos dependen de la capacidad real del municipio, del calendario municipal y de los compromisos intersectoriales. |
 | **Recursos asignados** (presupuesto, personal, equipamiento) | La asignación de recursos es una decisión política del Ayuntamiento y de los socios institucionales. |
 | **Justificación de necesidades no priorizadas** | La transparencia sobre lo que no se aborda es parte de la rendición de cuentas. La justificación es un acto deliberativo. |
 | **Deliberación y consenso del Grupo Motor** (Cap. V del PSL, Cap. V del PLS) | La deliberación no puede simularse ni sustituirse. |
@@ -200,14 +200,14 @@ El sistema **nunca puede generar automáticamente** los siguientes elementos:
 
 ### 7.1 Cuándo queda congelado el PLS
 
-Un `LocalHealthPlanDocument` queda congelado en el momento en que el compilador produce el artefacto. La congelación es irrevocable: el documento compilado nunca puede modificarse. Si el plan cambia, debe abrirse un nuevo ciclo formal de planificación.
+Un `LocalHealthPlanDocument` queda congelado en el momento en que el compilador produce el artefacto. La congelación es irrevocable: el documento compilado nunca puede modificarse. Si el plan cambia, debe abrirse un nuevo expediente formal de planificación.
 
 El campo `isCongealed: true` es un literal type invariante, análogo al del `LocalHealthProfileArtifact`.
 
 ### 7.2 Versiones por municipio
 
 Puede haber múltiples `LocalHealthPlanDocument` por municipio:
-- Cada ciclo de planificación produce uno nuevo.
+- Cada período de planificación produce uno nuevo.
 - El anterior queda en estado `superseded` (marcado en UI) pero no se elimina.
 - El historial es acumulativo. La persistencia es análoga a `compiledProfiles` en el workspace: `compiledPlans?: LocalHealthPlanDocument[]`.
 
@@ -225,8 +225,8 @@ Esta trazabilidad permite verificar que el diagnóstico del PLS es el mismo que 
 Si el EvidenceStore cambia después de que el PLS esté compilado:
 - El PSL vivo (`LocalHealthProfile` en estado `generated`) reflejará los nuevos datos.
 - El PLS compilado **no cambia**. Es una instantánea histórica del estado del conocimiento en el momento de la aprobación.
-- Si los cambios en la evidencia son suficientemente relevantes, el Grupo Motor puede decidir iniciar un nuevo ciclo de diagnóstico y planificación.
-- La decisión de reabrir el ciclo es humana, no automática.
+- Si los cambios en la evidencia son suficientemente relevantes, el Grupo Motor puede decidir iniciar un nuevo expediente de diagnóstico y planificación.
+- La decisión de reabrir el expediente es humana, no automática.
 
 ---
 
@@ -236,17 +236,17 @@ Este contrato establece que el PLS **no es**:
 
 | Lo que el PLS no es | Lo que sí es |
 |---|---|
-| El PSL vivo (`LocalHealthProfile`) | El PSL es el objeto analítico del Nivel 2; el PLS es el documento institucional del ciclo completo |
+| El PSL vivo (`LocalHealthProfile`) | El PSL es el objeto analítico del Nivel 2; el PLS es el documento institucional del proceso completo |
 | El PSL-C aislado | El PSL-C es solo el capítulo diagnóstico del PLS; no es el plan |
 | Un `ActionPlanDraft` | El ActionPlanDraft es un borrador técnico; el Plan de Acción del PLS es el capítulo VII validado e integrado en el documento institucional |
 | Un `AgendaDraft` | La AgendaDraft es un borrador técnico; la Agenda del PLS es el capítulo VIII validado |
 | Un `MonitoringDraft` | El MonitoringDraft es un borrador técnico; el Marco de Seguimiento del PLS es el capítulo IX validado |
 | Una salida automática del sistema | El sistema asiste; los actores institucionales aprueban |
-| Un documento editable después de compilado | El PLS compilado es inmutable. La corrección requiere un nuevo ciclo |
+| Un documento editable después de compilado | El PLS compilado es inmutable. La corrección requiere un nuevo expediente formal |
 | Una decisión automática de COMPÁS NG | COMPÁS NG produce la propuesta técnica; el Grupo Motor y la corporación municipal deciden |
 | El Informe de Salud | El Informe de Salud lo elabora el Distrito Sanitario; el PLS lo referencia en el PSL-C |
 | El sistema sanitario del municipio | Los servicios del SSPA son externos al PLS; el PLS puede referenciarlos como activos o capacidades institucionales |
-| Un documento eterno | Tiene vigencia definida (período de planificación); expira y genera el siguiente ciclo |
+| Un documento eterno | Tiene vigencia definida (período de planificación); expira y deja base para una actualización posterior |
 
 ---
 
@@ -281,9 +281,9 @@ Las actuaciones ya comprometidas por el SSPA a través de la ESCA no pueden pres
 
 ---
 
-## 10. Relación con el ciclo de evaluación
+## 10. Relación con la evaluación
 
-El PLS cierra el ciclo de planificación y abre el ciclo de evaluación. La evaluación (comparación indicadores baseline → fin de período) no está dentro del alcance del `LocalHealthPlanCompiler`. Es un stage distinto del pipeline (`evaluation`), también sin implementación activa.
+El PLS cierra el período de planificación y abre la evaluación. La evaluación (comparación indicadores baseline → fin de período) no está dentro del alcance del `LocalHealthPlanCompiler`. Es un stage distinto del pipeline (`evaluation`), también sin implementación activa.
 
 Sin embargo, el PLS debe contener desde su compilación los elementos que harán posible la evaluación futura:
 - Los indicadores con tiempo cero documentados.
@@ -293,7 +293,7 @@ Sin embargo, el PLS debe contener desde su compilación los elementos que harán
 
 Un PLS sin estos elementos compromete la posibilidad de evaluar si el plan fue efectivo.
 
-La evaluación final, cuando se produzca, genera `EvidenceAtom[]` de tipo `longitudinal-evidence` que retroalimentarán el EvidenceStore del siguiente ciclo diagnóstico (Hueco H-8, no diseñado todavía).
+La evaluación final, cuando se produzca, genera `EvidenceAtom[]` de tipo `longitudinal-evidence` que se incorporarán al EvidenceStore de una actualización diagnóstica posterior (Hueco H-8, no diseñado todavía).
 
 ---
 
@@ -356,7 +356,7 @@ interface UnaddressedNeed {
   id: string;
   title: string;               // Necesidad identificada en el diagnóstico
   sourceAreaId?: string;       // ID del área de intervención del PSL de origen
-  justification: string;       // Por qué no se prioriza en este ciclo
+  justification: string;       // Por qué no se prioriza en este periodo
 }
 ```
 
@@ -400,7 +400,7 @@ Las siguientes cuestiones no quedan resueltas por este contrato y deben abordars
 | Cuota de localStorage para el PLS compilado: exportar fuera del workspace o persistir | CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
 | Integración de `LecturaEstrategicaLocal` en el Cap. VI del PLS | Implementación del `LocalHealthPlanCompiler` desde `CONTRACT-MTE` |
 | Contenido y estructura del StrategicRepository para el Cap. VI del PLS | CONTRACT-STRATEGIC-REPOSITORY + CONTRACT-STRATEGIC-RESOURCE |
-| Ciclo de evidencia longitudinal: cómo alimenta el EvidenceStore del ciclo siguiente | CONTRACT-EVIDENCE (ampliación, Hueco H-8) |
+| Evidencia longitudinal: cómo alimenta el EvidenceStore de una actualización posterior | CONTRACT-EVIDENCE (ampliación, Hueco H-8) |
 | Requisitos formales de la Junta de Andalucía para el PLS en el contexto RELAS | Decisión institucional externa, previa a CONTRACT-LOCAL-HEALTH-PLAN-COMPILER |
 
 ---
