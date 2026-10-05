@@ -568,6 +568,87 @@ export default function App() {
     };
   }, [pendingIndexedDbHydrationId]);
 
+  // Sincroniza una pestaña ya abierta con el expediente más reciente guardado por
+  // otra pestaña o recuperado mediante una entrada directa. localStorage emite el
+  // evento `storage`; IndexedDB no, por lo que también se comprueba al recuperar
+  // el foco o volver a hacer visible la página.
+  useEffect(() => {
+    const targetMunicipalityId = workspace.municipality.identity.id;
+    let cancelled = false;
+
+    const refreshPersistedWorkspace = async (): Promise<void> => {
+      let localWorkspace: MunicipalityWorkspace | null = null;
+      try {
+        const raw = localStorage.getItem(
+          `compas-ng:workspace:${targetMunicipalityId}`
+        );
+        localWorkspace = raw ? parseWorkspaceJSON(raw) : null;
+      } catch {
+        localWorkspace = null;
+      }
+      const indexedWorkspace = await loadWorkspaceFromIndexedDB(
+        targetMunicipalityId
+      );
+      if (cancelled) return;
+
+      setWorkspace((current) => {
+        if (current.municipality.identity.id !== targetMunicipalityId) {
+          return current;
+        }
+        let newest = current;
+        if (
+          localWorkspace !== null &&
+          shouldRestoreIndexedDbWorkspace(newest, localWorkspace)
+        ) {
+          newest = localWorkspace;
+        }
+        if (
+          indexedWorkspace !== null &&
+          shouldRestoreIndexedDbWorkspace(newest, indexedWorkspace)
+        ) {
+          newest = indexedWorkspace;
+        }
+        if (newest === current) return current;
+        queueMicrotask(() => {
+          setPendingTopics([
+            ...(newest.thematicPrioritisation?.selectedTopicIds ?? []),
+          ]);
+        });
+        return newest;
+      });
+    };
+
+    const handleStorage = (event: StorageEvent): void => {
+      if (event.key === CUSTOM_MUNICIPALITIES_KEY) {
+        setCustomMunicipalities(readCustomMunicipalitiesFromLocalStorage());
+      }
+      if (
+        event.key === `compas-ng:workspace:${targetMunicipalityId}` ||
+        event.key === CUSTOM_MUNICIPALITIES_KEY
+      ) {
+        void refreshPersistedWorkspace();
+      }
+    };
+    const handleFocus = (): void => {
+      void refreshPersistedWorkspace();
+    };
+    const handleVisibilityChange = (): void => {
+      if (document.visibilityState === "visible") {
+        void refreshPersistedWorkspace();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [workspace.municipality.identity.id]);
+
   // Hidratación asíncrona del expediente municipal desde su seed canónico. Solo se
   // activa cuando `pendingSeedId` está fijado (no había expediente local y existe
   // seed). Nunca sobreescribe trabajo del usuario ni un expediente local existente.
