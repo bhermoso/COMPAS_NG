@@ -238,13 +238,14 @@ const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
   { id: "repositorio",   label: "Diagnóstico territorial" },
   { id: "psl",           label: "Perfil de Salud Local" },
+  { id: "priorizacion",  label: "Priorización" },
   { id: "plan",          label: "Plan de Acción" },
   { id: "plan-local",    label: "Plan Local de Salud" },
   { id: "evaluacion",    label: "Evaluación" },
   { id: "ges",           label: "Gestor de Encuestas" },
 ];
 // Vistas eliminadas de la navegación principal pero accesibles para desarrollo:
-// "analisis" (D-002), "lectura" (D-004), "priorizacion" (integrada en Plan de Acción).
+// "analisis" (D-002) y "lectura" (D-004).
 
 const DOCUMENT_KINDS: { value: DocumentKind; label: string }[] = [
   { value: "health-report",             label: "Informe de Salud" },
