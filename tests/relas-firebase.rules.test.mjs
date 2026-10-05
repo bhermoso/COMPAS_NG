@@ -107,3 +107,41 @@ test('territory catalogue is owner-only; partial users see only assigned metadat
  await assertFails(setDoc(doc(db('coord'),'relas_scopes/distrito-nuevo'),{...space,createdBy:'coord'}));
  await assertFails(deleteDoc(doc(db('owner'),'relas_scopes/mancomunidad-prueba')));
 });
+
+const workspaceManifestPath=`relas_scopes/${scope}/workspace/current`;
+const workspaceChunkPath=`relas_scopes/${scope}/workspace_versions/snapshot-20261005/chunks/000000`;
+const manifest=uid=>({
+ schema:'compas-workspace-chunks/v1',municipalityId:scope,
+ snapshotId:'snapshot-20261005',chunkCount:1,characterLength:2,
+ workspaceUpdatedAt:'2026-10-05T10:00:00.000Z',savedBy:uid,savedAt:serverTimestamp()
+});
+const chunk=uid=>({index:0,content:'{}',savedBy:uid,savedAt:serverTimestamp()});
+
+test('coordinación guarda y miembros del ámbito leen el expediente remoto',async()=>{
+ await assertSucceeds(setDoc(doc(db('coord'),workspaceChunkPath),chunk('coord')));
+ await assertSucceeds(setDoc(doc(db('coord'),workspaceManifestPath),manifest('coord')));
+ await assertSucceeds(getDoc(doc(db('reader'),workspaceManifestPath)));
+ await assertSucceeds(getDoc(doc(db('reader'),workspaceChunkPath)));
+});
+
+test('consulta, anónimos y otros municipios no escriben ni leen el expediente',async()=>{
+ await assertFails(setDoc(doc(db('reader'),workspaceChunkPath),chunk('reader')));
+ await assertFails(setDoc(doc(db('reader'),workspaceManifestPath),manifest('reader')));
+ for(const d of [env.unauthenticatedContext().firestore(),db('other'),db('unknown')]){
+  await assertFails(getDoc(doc(d,workspaceManifestPath)));
+  await assertFails(getDoc(doc(d,workspaceChunkPath)));
+ }
+});
+
+test('administración general puede guardar y leer el expediente de cualquier ámbito',async()=>{
+ await owner();
+ await assertSucceeds(setDoc(doc(db('owner'),workspaceChunkPath),chunk('owner')));
+ await assertSucceeds(setDoc(doc(db('owner'),workspaceManifestPath),manifest('owner')));
+ await assertSucceeds(getDoc(doc(db('owner'),workspaceManifestPath)));
+});
+
+test('Firestore rechaza manifiestos y fragmentos que falsean autoría o municipio',async()=>{
+ await assertFails(setDoc(doc(db('coord'),workspaceManifestPath),{...manifest('other')}));
+ await assertFails(setDoc(doc(db('coord'),workspaceManifestPath),{...manifest('coord'),municipalityId:'atarfe'}));
+ await assertFails(setDoc(doc(db('coord'),workspaceChunkPath),{...chunk('other')}));
+});
