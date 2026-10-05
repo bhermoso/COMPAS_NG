@@ -362,6 +362,24 @@ Investiga la posibilidad de construir hipótesis estructurales sobre determinant
 
 ---
 
+## Gobernanza editorial transversal
+
+### CONTRACT-AUTHORIAL-STYLE
+**Estado:** VIGENTE — versión 0.1 (2026-10-05)
+
+Contrato transversal de estilo, razonamiento y edición. Convierte el script
+maestro del autor en una secuencia de trabajo, una jerarquía, una matriz de
+aplicación y ocho invariantes. Se aplica a la prosa generada y editada por
+COMPÁS sin alterar datos, citas, redacciones finales aprobadas ni las fronteras
+metodológicas de cada producto. La fuente literal versionada se conserva en
+`docs/contracts/sources/AUTHORIAL-STYLE-SCRIPT-v0.1.md`.
+
+**Productores:** Autor y equipo responsable de la edición.
+**Consumidores:** Generadores narrativos, documentación, contratos, interfaz y asistentes de IA.
+**Relacionado con:** PROFILE-WRITING-CONTRACT, CONTRACT-PMO, CONTRACT-NAVIGATION, CONTRACT-LOCAL-HEALTH-PROFILE-METHODOLOGY, CONTRACT-LOCAL-HEALTH-PLAN-DOCUMENT.
+
+---
+
 ## Identidad semántica e interfaz
 
 ### CONTRACT-NAVIGATION
