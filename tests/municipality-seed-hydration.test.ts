@@ -20,6 +20,7 @@ import {
   loadOrCreateMunicipalityWorkspace,
   shouldSkipPersistence,
   shouldReplaceWithSeed,
+  shouldRestoreIndexedDbWorkspace,
   resolveSeedMigration,
   applySeedDocumentMigration,
   backfillSeedMigrationMarker,
@@ -579,5 +580,28 @@ describe("migración incremental de activos Localiza para Atarfe", () => {
     const result = loadOrCreateMunicipalityWorkspace("atarfe", ATARFE_INPUT);
     expect(result.seedPending).toBe(false);
     expect(result.seedMigration).toEqual({ kind: "none" });
+  });
+});
+
+
+describe("recuperación desde almacenamiento ampliado", () => {
+  it("recupera IndexedDB aunque localStorage contenga un seed no vacío más antiguo", () => {
+    const current = JSON.parse(ATARFE_SEED_RAW) as MunicipalityWorkspace;
+    const stored = structuredClone(current);
+    current.updatedAt = "2026-09-01T00:00:00.000Z";
+    stored.updatedAt = "2026-10-05T09:00:00.000Z";
+    expect(isEmptyWorkspaceForPersistenceGuard(current)).toBe(false);
+    expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(true);
+  });
+
+  it("no sustituye una copia local más reciente ni mezcla municipios", () => {
+    const current = JSON.parse(ATARFE_SEED_RAW) as MunicipalityWorkspace;
+    const stored = structuredClone(current);
+    current.updatedAt = "2026-10-05T10:00:00.000Z";
+    stored.updatedAt = "2026-10-05T09:00:00.000Z";
+    expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(false);
+    stored.municipality.identity.id = "otro-municipio";
+    stored.updatedAt = "2026-10-05T11:00:00.000Z";
+    expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(false);
   });
 });

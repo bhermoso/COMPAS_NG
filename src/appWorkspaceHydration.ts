@@ -238,6 +238,27 @@ export function shouldSkipPersistence(params: {
  * documentos, evidencias, estudios, priorización, perfiles compilados ni ningún
  * otro contenido humano). Nunca sobreescribe contenido real. Predicado puro.
  */
+/**
+ * Decide si la copia ampliada de IndexedDB debe prevalecer sobre la copia cargada
+ * desde localStorage o seed. IndexedDB se consulta siempre porque localStorage
+ * puede conservar una copia válida pero antigua si agotó su cuota.
+ */
+export function shouldRestoreIndexedDbWorkspace(
+  current: MunicipalityWorkspace,
+  stored: MunicipalityWorkspace
+): boolean {
+  if (current.municipality.identity.id !== stored.municipality.identity.id) {
+    return false;
+  }
+  if (
+    isEmptyWorkspaceForPersistenceGuard(current) &&
+    !isEmptyWorkspaceForPersistenceGuard(stored)
+  ) {
+    return true;
+  }
+  return stored.updatedAt > current.updatedAt;
+}
+
 export function shouldReplaceWithSeed(
   current: MunicipalityWorkspace,
   seedMunicipalityId: string

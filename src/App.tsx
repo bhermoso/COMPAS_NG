@@ -31,6 +31,7 @@ import {
   loadOrCreateMunicipalityWorkspace,
   shouldSkipPersistence,
   shouldReplaceWithSeed,
+  shouldRestoreIndexedDbWorkspace,
   applySeedDocumentMigration,
   backfillSeedMigrationMarker,
   readActiveMunicipalityId,
@@ -381,22 +382,6 @@ function loadPersistedWorkspacesForLibrary(
   return Array.from(byMunicipality.values());
 }
 
-function shouldRestoreIndexedDbWorkspace(
-  current: MunicipalityWorkspace,
-  stored: MunicipalityWorkspace
-): boolean {
-  if (current.municipality.identity.id !== stored.municipality.identity.id) {
-    return false;
-  }
-  if (
-    isEmptyWorkspaceForPersistenceGuard(current) &&
-    !isEmptyWorkspaceForPersistenceGuard(stored)
-  ) {
-    return true;
-  }
-  return stored.updatedAt > current.updatedAt;
-}
-
 // isEmptyWorkspaceForPersistenceGuard importada desde application/workspace
 // WorkspaceLoadResult / loadOrCreateMunicipalityWorkspace / shouldSkipPersistence
 // viven en ./appWorkspaceHydration (testables sin renderizar App).
@@ -460,10 +445,8 @@ export default function App() {
       : null
   );
   const [pendingIndexedDbHydrationId, setPendingIndexedDbHydrationId] =
-    useState<string | null>(() =>
-      isEmptyWorkspaceForPersistenceGuard(initialWorkspaceLoad.workspace)
-        ? initialWorkspaceLoad.workspace.municipality.identity.id
-        : null
+    useState<string | null>(
+      initialWorkspaceLoad.workspace.municipality.identity.id
     );
 
   useEffect(() => {
@@ -2700,8 +2683,9 @@ export default function App() {
     protectedEmptyWorkspaceIdRef.current = nextWorkspaceLoad.protectExistingStorage
       ? municipalityId
       : null;
-    const shouldCheckIndexedDb = isEmptyWorkspaceForPersistenceGuard(nextWorkspace);
-    setPendingIndexedDbHydrationId(shouldCheckIndexedDb ? municipalityId : null);
+    // IndexedDB puede contener una copia más reciente cuando localStorage agotó
+    // su cuota. Se consulta siempre antes de persistir el workspace cargado.
+    setPendingIndexedDbHydrationId(municipalityId);
     // Activa (o limpia) la hidratación asíncrona del seed para el nuevo municipio.
     setPendingSeedId(nextWorkspaceLoad.seedPending ? municipalityId : null);
     // Activa (o limpia) la migración incremental pendiente del nuevo municipio.
