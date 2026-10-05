@@ -98,6 +98,20 @@ salud socialmente contextualizada.
 9. El cierre invita a deliberar y prepara la acción futura sin anticiparla.
 10. Tono: institucional con calor humano; prosa, no listado.
 
+### 3 bis. Contrato autorial transversal
+
+La prosa del Perfil aplica además
+`docs/contracts/CONTRACT-AUTHORIAL-STYLE.md`. Antes de redactar identifica el
+problema territorial, distingue hechos, inferencias, hipótesis y decisiones, y
+permite que la evidencia corrija la interpretación. Evita conceptos
+prescindibles, oposiciones fabricadas, grandilocuencia y estructuras de
+plantilla.
+
+Esta aplicación queda subordinada a las fronteras metodológicas del Perfil: la
+voz analítica no autoriza recomendaciones, causalidad falsa, experiencia
+comunitaria inventada ni sustitución de evidencia local por contexto externo.
+Las redacciones finales aportadas o aprobadas por el equipo se conservan.
+
 ## 4. Fronteras (inviolables)
 
 - **No recomendaciones**, actuaciones, programas ni objetivos estratégicos.
