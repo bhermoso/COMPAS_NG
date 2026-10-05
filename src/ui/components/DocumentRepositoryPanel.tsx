@@ -4,7 +4,10 @@ import type {
   MunicipalDocument,
   MunicipalDocumentRepository,
 } from "../../domain/repository";
-import type { CompasLibraryDocument } from "../../application/document-library";
+import {
+  libraryDocumentAssignmentId,
+  type CompasLibraryDocument,
+} from "../../application/document-library";
 import { DocumentAccess } from './DocumentAccess.tsx';
 import { getCategory, KIND_LABEL, STUDY_LABEL_BY_TAG } from "./documentRepositoryCategorization";
 
@@ -108,9 +111,11 @@ function DocumentRow({
 function LibraryDocumentRow({
   item,
   onAssign,
+  onRemove,
 }: {
   item: CompasLibraryDocument;
   onAssign?: (document: CompasLibraryDocument) => void;
+  onRemove?: (document: CompasLibraryDocument) => void;
 }) {
   const status = item.alreadyAssigned
     ? "Asignado"
@@ -142,6 +147,23 @@ function LibraryDocumentRow({
             onClick={() => onAssign(item)}
           >
             Asignar copia
+          </button>
+        )}
+        {item.alreadyAssigned && onRemove && (
+          <button
+            type="button"
+            className="doc-repo__delete"
+            onClick={() => {
+              if (
+                window.confirm(
+                  `¿Retirar «${item.document.title}» de este expediente?\nSe eliminarán la copia asignada y sus evidencias derivadas. El documento del expediente de origen se conservará.`
+                )
+              ) {
+                onRemove(item);
+              }
+            }}
+          >
+            Retirar copia
           </button>
         )}
         {!item.canAssign && !item.alreadyAssigned && (
@@ -226,6 +248,17 @@ export function DocumentRepositoryPanel({
                         key={item.id}
                         item={item}
                         onAssign={onAssignLibraryDocument}
+                        onRemove={
+                          onDelete
+                            ? (assignedItem) =>
+                                onDelete(
+                                  libraryDocumentAssignmentId(
+                                    assignedItem.sourceMunicipalityId,
+                                    assignedItem.document.id
+                                  )
+                                )
+                            : undefined
+                        }
                       />
                     ))}
                   </div>
