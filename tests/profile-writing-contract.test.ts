@@ -20,6 +20,8 @@ import { compileLocalHealthProfile } from "../src/application/health-profile-com
 import { buildPSLCDocumentModel } from "../src/application/psl-c-export";
 import {
   checkProfileWritingContract,
+  AUTHORIAL_REASONING_SEQUENCE,
+  AUTHORIAL_EDITORIAL_CRITERIA,
   DIAGNOSTIC_ENGINE_QUESTIONS,
   PROFILE_READING_DIMENSIONS,
   POSITIVE_WRITING_CRITERIA,
@@ -78,6 +80,26 @@ describe("contrato de escritura — definición operativa", () => {
     for (const q of DIAGNOSTIC_ENGINE_QUESTIONS) {
       expect(q.startsWith("¿")).toBe(true);
     }
+  });
+
+  it("incorpora la secuencia y los criterios del contrato autorial", () => {
+    expect(AUTHORIAL_REASONING_SEQUENCE).toHaveLength(8);
+    expect(AUTHORIAL_REASONING_SEQUENCE[0]).toContain("problema");
+    expect(
+      AUTHORIAL_REASONING_SEQUENCE.some((step) =>
+        step.includes("hechos, inferencias, hipótesis y decisiones")
+      )
+    ).toBe(true);
+    expect(
+      AUTHORIAL_EDITORIAL_CRITERIA.some((criterion) =>
+        criterion.includes("evidencia puede corregir")
+      )
+    ).toBe(true);
+    expect(
+      AUTHORIAL_EDITORIAL_CRITERIA.some((criterion) =>
+        criterion.includes("oposiciones proceden del objeto")
+      )
+    ).toBe(true);
   });
 
   it("el verificador caza recomendaciones, programas y causalidad falsa", () => {

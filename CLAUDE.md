@@ -14,6 +14,12 @@ Producto prioritario: el Perfil de Salud Local — documento científico, editor
 - Autoría acotada (Art. 16): el cuerpo diagnóstico es compilado y trazable, no editable a mano. La autoría humana vive en el cierre interpretativo y el enriquecimiento.
 - El NHS es representación derivada del conocimiento del Perfil, con estatuto de producto propio por audiencia. No puede ser segunda fuente de verdad.
 
+## Escritura y edición
+- Contrato transversal: `docs/contracts/CONTRACT-AUTHORIAL-STYLE.md`.
+- Secuencia: pensar bien → distinguir bien → documentar bien → escribir con naturalidad.
+- Aplicar la voz analítica según el tipo de texto: plena en análisis y documentación; sobria y directa en interfaz; fidelidad literal en datos, citas y redacciones finales aprobadas.
+- No fabricar oposiciones, proclamar originalidad ni crear conceptos sin función analítica. Distinguir siempre hechos, inferencias, hipótesis y decisiones.
+
 ## Disciplina de ejecución
 - Las instrucciones actuales del usuario prevalecen sobre estas reglas. Dentro del trabajo autorizado, se permiten commits, push y actualizaciones de la PR necesarios para completarlo, sin pedir confirmación adicional por cada paso.
 - Antes de publicar cambios, comprobar la rama y el estado remoto, conservar el trabajo existente y ejecutar las comprobaciones pertinentes. No usar force push, fusionar ni desplegar fuera del alcance autorizado.
