@@ -11,6 +11,31 @@
  * recomendación.
  */
 
+// ── Contrato autorial transversal ───────────────────────────────────────────
+// Aplicación operativa de docs/contracts/CONTRACT-AUTHORIAL-STYLE.md.
+// Estas reglas ordenan el razonamiento; las fronteras específicas del Perfil
+// siguen prevaleciendo sobre cualquier preferencia general de voz.
+
+export const AUTHORIAL_REASONING_SEQUENCE = [
+  "identificar el problema concreto",
+  "examinar los supuestos",
+  "distinguir hechos, inferencias, hipótesis y decisiones",
+  "localizar la tensión o insuficiencia explicativa",
+  "precisar las distinciones conceptuales necesarias",
+  "contrastar la evidencia",
+  "establecer qué aprenderá el lector",
+  "redactar con naturalidad y revisar la fuerza de cada afirmación",
+] as const;
+
+export const AUTHORIAL_EDITORIAL_CRITERIA = [
+  "la evidencia puede corregir la interpretación y no se limita a ilustrarla",
+  "las oposiciones proceden del objeto y no de una plantilla retórica",
+  "cada concepto cumple una función analítica necesaria",
+  "la originalidad se demuestra y no se proclama",
+  "la prosa evita burocracia, grandilocuencia y abstracciones prescindibles",
+  "los datos, citas y textos finales aprobados conservan su formulación",
+] as const;
+
 // ── Dimensiones obligatorias de lectura ───────────────────────────────────────
 
 export const PROFILE_READING_DIMENSIONS = [
