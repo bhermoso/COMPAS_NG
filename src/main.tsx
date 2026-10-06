@@ -10,7 +10,9 @@ const params = new URLSearchParams(window.location.search)
 const view = params.get('vista')
 const recovery = view === 'recuperacion'
 const coordinatorPreview = view === 'coordinacion-zaidin'
-const authenticatedEntry = view === 'acceso' || view === 'administracion' || view === 'app'
+// La entrada histórica ?vista=acceso vuelve a la aplicación ordinaria.
+// No se exige una cuenta que no haya sido creada ni acordada con la persona usuaria.
+const authenticatedEntry = view === 'administracion' || view === 'app'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
