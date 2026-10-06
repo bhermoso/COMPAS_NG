@@ -31,12 +31,14 @@ describe("alcance real de la persistencia del expediente municipal", () => {
 
     expect(contract).toContain("Firebase/Firestore no guarda `MunicipalityWorkspace` completos");
     expect(contract).toContain("RELAS puede guardar borradores y revisiones de Plan de Acción");
-    expect(contract).toContain("Granada-Zaidín reaparece en instalaciones limpias porque existe un seed canónico");
-    expect(contract).toContain("Alfacar");
+    expect(contract).toContain("Granada-Zaidín, Atarfe y Alfacar reaparecen en instalaciones limpias");
+    expect(contract).toContain("Churriana de la Vega, Zagra o ámbitos personalizados");
 
     expect(seedRegistry).toContain('"granada-zaidin"');
     expect(seedRegistry).toContain("compas-ng-workspace-granada-zaidin.json");
+    expect(seedRegistry).toContain("compas-ng-workspace-alfacar.json");
     expect(seedRegistry).toContain("Alfacar");
+    expect(seedRegistry).toContain("Churriana de la Vega y Zagra");
     expect(seedRegistry).toContain("NO tienen");
   });
 });

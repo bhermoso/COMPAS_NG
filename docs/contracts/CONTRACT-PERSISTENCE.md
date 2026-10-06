@@ -89,16 +89,18 @@ pertenece al módulo RELAS de preparación del Plan de Acción: borradores
 del expediente municipal, no contienen el repositorio documental completo, no
 contienen todos los estudios complementarios y no sustituyen al guardado local.
 
-La consecuencia operativa es estricta: Alfacar, Atarfe, Zagra o cualquier otro
-ámbito distinto de Granada-Zaidín no reaparecerán en otro navegador, otro equipo
-o un despliegue remoto por el mero hecho de haber sido cargados, validados o
-editados en COMPÁS NG. Para que un expediente completo sobreviva fuera del
-navegador debe exportarse, respaldarse o incorporarse como seed canónico real
+La consecuencia operativa es estricta: un ámbito no reaparece en otro navegador,
+otro equipo o un despliegue remoto por el mero hecho de haber sido cargado,
+validado o editado en COMPÁS NG. Para que un expediente completo sobreviva fuera
+del navegador debe exportarse, respaldarse o incorporarse como seed canónico real
 en el repositorio.
 
-Granada-Zaidín reaparece en instalaciones limpias porque existe un seed canónico
-desplegado en `public/seeds/compas-ng-workspace-granada-zaidin.json`, no porque
-su expediente completo se escriba en Firebase.
+Granada-Zaidín, Atarfe y Alfacar reaparecen en instalaciones limpias porque
+existen seeds canónicos desplegados en `public/seeds/`, no porque sus expedientes
+completos se escriban en Firebase. Los ámbitos sin seed canónico —por ejemplo,
+Churriana de la Vega, Zagra o ámbitos personalizados como Fuente Vaqueros— no
+pueden reconstruirse desde el repositorio hasta que exista un export real
+versionado.
 
 ### 3.2 Cambio de municipio activo
 
@@ -484,3 +486,4 @@ migración del workspace. Los siguientes aspectos quedan fuera de su alcance:
 | 2026-06-24 | Primera redacción. Documenta el estado del código a partir del commit `1e582f5`. Formaliza el esquema de claves, `schemaVersion`, las migraciones M-1 y M-2, la normalización de documentos canónicos, la purga de huérfanos, `stripHtmlFields` y el historial territorial con su límite de 50 entradas. |
 | 2026-06-27 | Sprint 0: §2 actualizado para incluir `dukeStudy`, `predimedStudy`, `sf12Study`, `suenoStudy` y `cageStudy`, añadidos al workspace en commits `0bf5026`, `9aad479`, `7f47034`, `20080cd` y `9c73fa0` respectivamente y omitidos en la primera redacción. |
 | 2026-10-06 | Se explicita la frontera real entre expediente local, copia IndexedDB, seeds canónicos y Firebase/RELAS. Queda fijado que Firebase no guarda expedientes completos: Granada-Zaidín se recupera por seed; Alfacar y otros ámbitos necesitan exportación, respaldo o seed real para sobrevivir fuera del navegador. |
+| 2026-10-06 | Se incorpora Alfacar como seed canónico extraído del expediente local real: Informe de Salud, Localiza Salud, 7 activos, PSL validado y perfil compilado. |

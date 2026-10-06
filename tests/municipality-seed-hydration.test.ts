@@ -58,6 +58,11 @@ const SEED_PATH = resolve(
   "../public/seeds/compas-ng-workspace-granada-zaidin.json"
 );
 const SEED_RAW = readFileSync(SEED_PATH, "utf8");
+const ALFACAR_SEED_PATH = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../public/seeds/compas-ng-workspace-alfacar.json"
+);
+const ALFACAR_SEED_RAW = readFileSync(ALFACAR_SEED_PATH, "utf8");
 
 // Export restaurable de origen. El seed desplegable puede conservar material
 // histórico adicional, pero debe mantener las fuentes observadas y los activos.
@@ -97,12 +102,12 @@ const GRANADA_INPUT = {
   territorialType: "distrito",
   createdBy: "test",
 };
-// Municipio SIN seed (Alfacar no tiene export canónico): comprueba el camino vacío.
-const ALFACAR_INPUT = {
-  id: "alfacar",
-  name: "Alfacar",
+// Municipio SIN seed: comprueba el camino vacío.
+const CHURRIANA_INPUT = {
+  id: "churriana",
+  name: "Churriana de la Vega",
   province: "Granada",
-  ineCode: "18011",
+  ineCode: "18062",
   createdBy: "test",
 };
 
@@ -171,15 +176,31 @@ describe("hidratación de expedientes municipales desde seed", () => {
   });
 
   it("5. un municipio sin seed crea un workspace vacío", async () => {
-    expect(hasMunicipalitySeed("alfacar")).toBe(false);
-    const result = loadOrCreateMunicipalityWorkspace("alfacar", ALFACAR_INPUT);
+    expect(hasMunicipalitySeed("churriana")).toBe(false);
+    const result = loadOrCreateMunicipalityWorkspace("churriana", CHURRIANA_INPUT);
     expect(result.seedPending).toBe(false);
     expect(result.workspace.repository.documents.length).toBe(0);
     expect(result.workspace.evidenceStore.atoms.length).toBe(0);
     // Y el loader de seed lo rechaza aunque se le pase contenido.
     await expect(
-      loadMunicipalitySeed("alfacar", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
+      loadMunicipalitySeed("churriana", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
     ).resolves.toBeNull();
+  });
+
+  it("5a. Alfacar carga el expediente canónico extraído del navegador real", async () => {
+    expect(hasMunicipalitySeed("alfacar")).toBe(true);
+    const ws = await loadMunicipalitySeed("alfacar", {
+      baseUrl: "/",
+      fetchImpl: okFetch(ALFACAR_SEED_RAW),
+    });
+    expect(ws).not.toBeNull();
+    expect(ws?.municipality.identity.id).toBe("alfacar");
+    expect(ws?.municipality.identity.name).toBe("Alfacar");
+    expect(ws?.repository.documents.length).toBe(2);
+    expect(ws?.evidenceStore.atoms.length).toBe(7);
+    expect(ws?.healthReport).toBeDefined();
+    expect(ws?.validatedPSL).toBeDefined();
+    expect(ws?.compiledProfiles?.length).toBe(1);
   });
 
   it("5b. granada-zaidin sin expediente local → seedPending true con placeholder vacío", () => {
@@ -229,6 +250,9 @@ describe("hidratación de expedientes municipales desde seed", () => {
     expect(municipalitySeedUrl(seed, "/COMPAS_NG/")).toBe(
       "/COMPAS_NG/seeds/compas-ng-workspace-granada-zaidin.json"
     );
+    expect(municipalitySeedUrl(MUNICIPALITY_SEEDS["alfacar"], "/COMPAS_NG/")).toBe(
+      "/COMPAS_NG/seeds/compas-ng-workspace-alfacar.json"
+    );
     // El loader pide EXACTAMENTE esa URL bajo el base de Pages.
     let requested = "";
     await loadMunicipalitySeed("granada-zaidin", {
@@ -250,6 +274,9 @@ describe("hidratación de expedientes municipales desde seed", () => {
     // La ruta registrada coincide con el fichero desplegable.
     expect(MUNICIPALITY_SEEDS["granada-zaidin"].path).toBe(
       "seeds/compas-ng-workspace-granada-zaidin.json"
+    );
+    expect(MUNICIPALITY_SEEDS["alfacar"].path).toBe(
+      "seeds/compas-ng-workspace-alfacar.json"
     );
   });
 
