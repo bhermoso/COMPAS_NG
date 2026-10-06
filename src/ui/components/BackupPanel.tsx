@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { MunicipalityWorkspace } from '../../domain/workspace';
-import { createBackup, inspectBackup, restoreBackup, type CheckedBackup } from '../../infrastructure/recovery/browserRecovery';
+import { createBackup, inspectBackup, inspectWorkspaceImport, restoreBackup, restoreWorkspaceImport, type CheckedBackup, type CheckedWorkspaceImport } from '../../infrastructure/recovery/browserRecovery';
 import { bundledDocuments } from './documentAccessUtils';
 import './BackupPanel.css';
 
 export function BackupPanel({workspace, ready = true, recovery = false}: {workspace?: MunicipalityWorkspace; ready?: boolean; recovery?: boolean}) {
  const [busy,setBusy] = useState(false); const [message,setMessage] = useState('');
- const [notices,setNotices] = useState<string[]>([]); const [checked,setChecked] = useState<CheckedBackup>(); const [source,setSource] = useState(''); const [done,setDone] = useState(false);
+ const [notices,setNotices] = useState<string[]>([]); const [checked,setChecked] = useState<CheckedBackup>(); const [checkedWorkspace,setCheckedWorkspace] = useState<CheckedWorkspaceImport>(); const [source,setSource] = useState(''); const [done,setDone] = useState(false);
  async function download() {
   setBusy(true); setMessage('Reuniendo expedientes y originales…'); setNotices([]);
   try {
@@ -27,12 +27,26 @@ export function BackupPanel({workspace, ready = true, recovery = false}: {worksp
   {!ready && <p>Espera a que termine la carga del expediente para crear la copia.</p>}
   {recovery && <>
    <p><strong>La comprobación no modifica datos.</strong> La recuperación incorpora lo que falta y conserva las versiones existentes. Si hay diferencias, utiliza este mismo enlace en un perfil de navegador vacío; no es necesario borrar el trabajo actual.</p>
-   <label>Seleccionar copia de COMPÁS <input type="file" accept=".json,application/json" disabled={busy} onChange={async e=>{
+   <label>Seleccionar copia o expediente JSON de COMPÁS <input type="file" accept=".json,.compas.json,application/json" disabled={busy} onChange={async e=>{
     const file=e.currentTarget.files?.[0]; e.currentTarget.value=''; if(!file)return;
-    setBusy(true);setChecked(undefined);setDone(false);setMessage('Comprobando integridad…');setNotices([]);setSource('');
-    try{const text=await file.text();const result=await inspectBackup(text);setSource(text);setChecked(result);setNotices(result.backup.payload.notices);setMessage('Copia comprobada. Revisa su contenido antes de recuperar.');}
-    catch(error){setMessage((error as Error).message);}finally{setBusy(false);}
+    setBusy(true);setChecked(undefined);setCheckedWorkspace(undefined);setDone(false);setMessage('Comprobando integridad…');setNotices([]);setSource('');
+    try {
+     const text=await file.text(); setSource(text);
+     try {
+      const result=await inspectBackup(text);setChecked(result);setNotices(result.backup.payload.notices);setMessage('Copia completa comprobada. Revisa su contenido antes de recuperar.');
+     } catch {
+      const result=inspectWorkspaceImport(text);setCheckedWorkspace(result);setMessage('Expediente individual comprobado. Revisa el ámbito antes de importarlo.');
+     }
+    } catch(error){setMessage((error as Error).message);}finally{setBusy(false);}
    }}/></label>
+   {checkedWorkspace && <div>
+    <p><strong>Expediente individual: {checkedWorkspace.name}</strong></p>
+    {checkedWorkspace.conflict
+      ? <p><strong>{checkedWorkspace.conflict}</strong> No se sobrescribirá.</p>
+      : <button type="button" disabled={busy || done} onClick={()=>{
+         setBusy(true);try{restoreWorkspaceImport(source);setDone(true);setMessage(`Expediente de ${checkedWorkspace.name} importado. Pulsa «Abrir COMPÁS» para continuar.`);}catch(error){setMessage((error as Error).message);}finally{setBusy(false);}
+        }}>Importar expediente</button>}
+   </div>}
    {checked && <div>
     <p><strong>{checked.workspaces.length} ámbitos · {checked.originals.length} originales</strong> · Copia del {new Date(checked.backup.payload.createdAt).toLocaleString('es-ES')}</p>
     <ul>{checked.workspaces.map((name,i)=><li key={i}>{name}</li>)}</ul>
