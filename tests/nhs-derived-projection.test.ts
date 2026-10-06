@@ -254,6 +254,7 @@ describe("PR-D · frontera N+1 y renderer", () => {
     expect(view).toContain("nhs-quality-panel");
     expect(view).toContain("Alcance honesto");
     expect(view).toContain("Tres mensajes de entrada");
+    expect(view).toContain("Descargar PDF LHP");
     expect(view).toContain("no emite dictamen sanitario");
     expect(view).toContain("La banda no evalúa");
     expect(view).toContain("ficha pública tipo Local Health Profiles");

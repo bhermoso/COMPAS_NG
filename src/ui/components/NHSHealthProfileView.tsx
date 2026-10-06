@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { CanonicalProfileDocument } from "../../application/health-profile/canonicalProfileDocument";
+import { downloadNHSDerivedPdf } from "../../application/health-profile/nhsDerivedPdf";
 import {
   projectNHSDerived,
   type NHSDerivedAgendaItem,
@@ -317,6 +319,17 @@ function DataGapsPanel({
 
 export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps) {
   const projection = projectNHSDerived(document);
+  const [pdfStatus, setPdfStatus] = useState<"idle" | "busy" | "done" | "error">("idle");
+
+  function handleDownloadPdf(): void {
+    setPdfStatus("busy");
+    try {
+      downloadNHSDerivedPdf(document);
+      setPdfStatus("done");
+    } catch {
+      setPdfStatus("error");
+    }
+  }
 
   if (!projection.available) {
     return (
@@ -352,6 +365,19 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
             expediente permite leer ahora: agenda sanitaria, activos, indicadores
             si existen, preguntas de equidad y límites metodológicos.
           </p>
+          <div className="nhs-download-actions">
+            <button
+              type="button"
+              className="psl-doc-compile-action__btn psl-doc-docx-btn"
+              disabled={pdfStatus === "busy"}
+              onClick={handleDownloadPdf}
+              title="Descargar esta ficha breve tipo Local Health Profiles en PDF"
+            >
+              {pdfStatus === "busy" ? "Preparando PDF..." : "Descargar PDF LHP"}
+            </button>
+            {pdfStatus === "done" && <span role="status">PDF descargado.</span>}
+            {pdfStatus === "error" && <span role="alert">No se pudo generar el PDF.</span>}
+          </div>
         </div>
         <div className="nhs-executive-hero__metrics" aria-label="Resumen visual de la ficha">
           <div className="nhs-executive-metric">
