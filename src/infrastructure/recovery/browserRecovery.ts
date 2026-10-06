@@ -2,6 +2,7 @@ import { ZAIDIN_AGING_PROPOSAL } from '../../domain/action-plan-catalog/PlanPrep
 import type { MunicipalityWorkspace } from '../../domain/workspace';
 import { buildWorkspaceStorageKey, parseWorkspaceJSON } from '../persistence/local-storage';
 import { listOriginalFiles, addOriginalFiles, type OriginalEntry } from '../document-files/originalFiles';
+import { ACTIVE_MUNICIPALITY_STORAGE_KEY } from '../../appWorkspaceHydration';
 
 export interface StoredValue { key: string; value: string }
 interface PackedFile { municipalityId: string; documentId: string; name: string; type: string; lastModified: number; size: number; sha256: string; base64: string }
@@ -107,6 +108,76 @@ export async function restoreBackup(text: string): Promise<CheckedBackup> {
   } catch (error) {
     for (const entry of written) if (localStorage.getItem(entry.key) === entry.value) localStorage.removeItem(entry.key);
     throw new Error('No se pudo completar la recuperación: ' + (error as Error).message + ' Los expedientes anteriores se conservan. Los originales ya copiados permanecen disponibles; conserva la copia y vuelve a intentarlo con espacio suficiente.', { cause: error });
+  }
+  return checked;
+}
+
+
+const CUSTOM_MUNICIPALITIES_KEY = 'compas-ng:custom-municipalities';
+const BUILT_IN_MUNICIPALITY_IDS = new Set(['atarfe','alfacar','churriana','zagra','granada-zaidin']);
+
+function readCustomMunicipalitiesForImport(): Array<{id:string; name:string; province:string; ineCode?:string; territorialType?:string; createdBy?:string}> {
+  const text = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
+  if (text === null) return [];
+  const parsed: unknown = JSON.parse(text);
+  if (!Array.isArray(parsed) || parsed.some(item => !item || typeof item.id !== 'string' || typeof item.name !== 'string' || typeof item.province !== 'string')) {
+    throw new Error('La lista de ámbitos guardada en este navegador no es válida.');
+  }
+  return parsed;
+}
+
+export function inspectWorkspaceImport(text: string): CheckedWorkspaceImport {
+  const workspace = parseWorkspaceJSON(text);
+  if (!workspace) throw new Error('El archivo no es una copia completa ni un expediente COMPÁS compatible.');
+  const municipality = workspace.municipality.identity;
+  const key = buildWorkspaceStorageKey(municipality.id);
+  const existing = localStorage.getItem(key);
+  return {
+    workspace,
+    name: municipality.name,
+    conflict: existing !== null && existing !== JSON.stringify(workspace)
+      ? `Ya existe una versión diferente del expediente de ${municipality.name} en este navegador.`
+      : undefined,
+  };
+}
+
+export function restoreWorkspaceImport(text: string): CheckedWorkspaceImport {
+  const checked = inspectWorkspaceImport(text);
+  if (checked.conflict) throw new Error(checked.conflict + ' No se ha sobrescrito ningún dato.');
+  const workspace = checked.workspace;
+  const municipality = workspace.municipality.identity;
+  const key = buildWorkspaceStorageKey(municipality.id);
+  const workspaceJSON = JSON.stringify(workspace);
+  const previousWorkspace = localStorage.getItem(key);
+  const previousCustom = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
+  const previousActive = localStorage.getItem(ACTIVE_MUNICIPALITY_STORAGE_KEY);
+  const custom = readCustomMunicipalitiesForImport();
+  const registered = custom.find(item => item.id === municipality.id);
+  if (registered && (registered.name !== municipality.name || registered.province !== municipality.province)) {
+    throw new Error('Ya existe un ámbito con el mismo identificador y otra identidad territorial.');
+  }
+  const shouldRegister = !BUILT_IN_MUNICIPALITY_IDS.has(municipality.id) && !registered;
+  const nextCustom = shouldRegister
+    ? [...custom, {
+        id: municipality.id,
+        name: municipality.name,
+        province: municipality.province,
+        ineCode: municipality.ineCode,
+        territorialType: municipality.territorialType,
+        createdBy: workspace.municipality.metadata.createdBy,
+      }]
+    : custom;
+  try {
+    if (previousWorkspace === null) localStorage.setItem(key, workspaceJSON);
+    if (shouldRegister) localStorage.setItem(CUSTOM_MUNICIPALITIES_KEY, JSON.stringify(nextCustom));
+    localStorage.setItem(ACTIVE_MUNICIPALITY_STORAGE_KEY, municipality.id);
+  } catch (error) {
+    if (previousWorkspace === null) localStorage.removeItem(key);
+    if (previousCustom === null) localStorage.removeItem(CUSTOM_MUNICIPALITIES_KEY);
+    else localStorage.setItem(CUSTOM_MUNICIPALITIES_KEY, previousCustom);
+    if (previousActive === null) localStorage.removeItem(ACTIVE_MUNICIPALITY_STORAGE_KEY);
+    else localStorage.setItem(ACTIVE_MUNICIPALITY_STORAGE_KEY, previousActive);
+    throw new Error('No se pudo importar el expediente. No se ha sobrescrito ningún dato.', {cause:error});
   }
   return checked;
 }
