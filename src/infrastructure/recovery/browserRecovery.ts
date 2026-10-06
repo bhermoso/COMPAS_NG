@@ -9,6 +9,7 @@ interface PackedFile { municipalityId: string; documentId: string; name: string;
 export interface BackupPayload { createdAt: string; storage: StoredValue[]; preservedStorage: StoredValue[]; files: PackedFile[]; notices: string[] }
 export interface BrowserBackup { format: 'compas-ng-browser-backup'; version: 1; sha256: string; payload: BackupPayload }
 export interface CheckedBackup { backup: BrowserBackup; originals: OriginalEntry[]; conflicts: string[]; workspaces: string[] }
+export interface CheckedWorkspaceImport { workspace: MunicipalityWorkspace; name: string; conflict?: string }
 const allowedKey = (key: string) => key.startsWith('compas-ng:workspace:') || key === 'compas-ng:custom-municipalities' || key === 'compas-ng:demo:coordinacion-zaidin:v1';
 const idOf = (entry: {municipalityId: string; documentId: string}) => JSON.stringify([entry.municipalityId, entry.documentId]);
 export async function digest(bytes: BufferSource) { return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join(''); }
