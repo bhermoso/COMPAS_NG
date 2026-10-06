@@ -227,15 +227,19 @@ beforeAll(() => {
 }, 60000);
 
 describe("navegación principal visible", () => {
-  it("retira el ítem principal de Perfil Ejecutivo y mantiene el flujo hasta Perfil de Salud Local", () => {
+  it("retira el ítem principal de Perfil Ejecutivo y fija las seis piezas del expediente", () => {
     const appHtml = renderToStaticMarkup(<App />);
     const navStart = appHtml.indexOf("<nav");
     const navEnd = appHtml.indexOf("</nav>", navStart);
     const navHtml = appHtml.slice(navStart, navEnd);
 
     expect(navHtml).toContain("Inicio");
-    expect(navHtml).toContain("Diagnóstico territorial");
-    expect(navHtml).toContain("Perfil de Salud Local");
+    expect(navHtml).toContain("Informe sobre la situación de salud");
+    expect(navHtml).toContain("Perfil de salud local");
+    expect(navHtml).toContain("Priorización");
+    expect(navHtml).toContain("Plan de acción");
+    expect(navHtml).toContain("Implantación");
+    expect(navHtml).toContain("Evaluación");
     expect(navHtml).not.toContain("Perfil Ejecutivo de Salud Local");
   });
 });

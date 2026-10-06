@@ -35,13 +35,13 @@ Contrato del Repositorio Documental Municipal (`MunicipalDocumentRepository`). D
 ---
 
 ### CONTRACT-PERSISTENCE
-**Estado:** VIGENTE
+**Estado:** VIGENTE — revisado 2026-10-06
 
-Contrato de persistencia y rehidratación del workspace municipal en localStorage. Define el esquema de serialización (versión 1.0.0), las reglas de migración inline y las garantías de consistencia al recargar.
+Contrato de persistencia y rehidratación del workspace municipal en el navegador. Define el esquema de serialización (versión 1.0.0), las reglas de migración inline, el uso de `localStorage` e IndexedDB, y la frontera estricta con Firebase: RELAS guarda borradores/revisiones de Plan de Acción, no expedientes completos.
 
-**Productores:** `LocalStorageWorkspacePersistence`.
+**Productores:** `LocalStorageWorkspacePersistence`, `saveWorkspaceToIndexedDB`.
 **Consumidores:** UI (rehidratación al arrancar).
-**Relacionado con:** CONTRACT-REPOSITORY.
+**Relacionado con:** CONTRACT-REPOSITORY, módulo RELAS.
 
 ---
 

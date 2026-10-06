@@ -104,8 +104,8 @@ try {
     homeText?.normalize("NFD").replace(/\p{Diacritic}/gu, "") ?? "";
   assert(normalizedHomeText.includes("COMPAS NG"), "Home does not show COMPAS NG.");
 
-  const repositoryButton = page.getByRole("button", { name: /Diagn.stico territorial/i });
-  assert(await repositoryButton.count() === 1, "Repository navigation button ('Diagnóstico territorial') not found.");
+  const repositoryButton = page.getByRole("button", { name: /Informe sobre la situaci.n de salud/i });
+  assert(await repositoryButton.count() === 1, "Repository navigation button ('Informe sobre la situación de salud') not found.");
   await repositoryButton.click();
 
   const repositoryText = await page.locator("body").textContent();

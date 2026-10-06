@@ -1,7 +1,7 @@
 /**
  * tests/planning-cycle-estado.test.tsx
  *
- * Estado del paso «Perfil de Salud Local» en el Proceso de Planificación Local:
+ * Estado del paso «Perfil de salud local» en el expediente local de salud:
  * «Completada» exige el artefacto institucional PSL-C compilado/congelado.
  * La validación técnica del borrador, por sí sola, no cierra la fase.
  */
@@ -32,7 +32,19 @@ function render(opts: {
   );
 }
 
-describe("proceso — fase Perfil de Salud Local", () => {
+describe("expediente local — fase Perfil de salud local", () => {
+  it("expone las seis piezas canónicas del expediente", () => {
+    const html = render({ pslStatus: "generated", pslCompiled: false });
+    expect(html).toContain("Informe sobre la situación de salud");
+    expect(html).toContain("Perfil de salud local");
+    expect(html).toContain("Priorización");
+    expect(html).toContain("Plan de acción");
+    expect(html).toContain("Implantación");
+    expect(html).toContain("Evaluación");
+    expect(html).not.toContain("Adhesión a RELAS");
+    expect(html).not.toContain("Agendas anuales");
+  });
+
   it("validado técnicamente sin PSL-C no aparece como «Completada»", () => {
     const html = render({ pslStatus: "validated", pslCompiled: false });
     // El Informe usa «Disponible» y la priorización queda «En curso», así que
@@ -66,21 +78,21 @@ describe("proceso — fase Perfil de Salud Local", () => {
     expect(html).not.toContain("Completada");
   });
 
-  it("expone Priorización como fase navegable antes del Plan de Acción", () => {
+  it("expone Priorización como fase navegable antes del Plan de acción", () => {
     // Con PSL validado, la priorización pasa a «En curso» hasta que exista una
-    // selección deliberativa vigente. El Plan de Acción queda «Pendiente».
+    // selección deliberativa vigente. El Plan de acción queda «Pendiente».
     const sinArtefacto = render({ pslStatus: "validated", pslCompiled: false });
     const conArtefacto = render({ pslStatus: "validated", pslCompiled: true });
     for (const html of [sinArtefacto, conArtefacto]) {
       expect(html).toContain("Priorización");
-      expect(html).toContain("Plan de Acción");
+      expect(html).toContain("Plan de acción");
       expect(html).toContain("En curso");
       expect(html).toContain("Pendiente");
       expect(html).toContain("Pendiente de participación ciudadana");
     }
   });
 
-  it("solo habilita el Plan de Acción como fase en curso tras selección deliberativa", () => {
+  it("solo habilita el Plan de acción como fase en curso tras selección deliberativa", () => {
     const html = render({
       pslStatus: "validated",
       pslCompiled: true,
@@ -88,7 +100,7 @@ describe("proceso — fase Perfil de Salud Local", () => {
       prioritySelectionDone: true,
     });
     expect(html).toContain("Priorización");
-    expect(html).toContain("Plan de Acción");
+    expect(html).toContain("Plan de acción");
     expect(html).toContain("Completada");
     expect(html).toContain("En curso");
     expect(html).not.toContain("Pendiente de selección del Grupo Motor");

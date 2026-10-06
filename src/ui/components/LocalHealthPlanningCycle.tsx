@@ -59,10 +59,10 @@ function derivePhases({
   thematicPrioritisationDone,
   prioritySelectionDone,
 }: LocalHealthPlanningCycleProps): CyclePhase[] {
-  const pslValidated  = pslStatus === "validated" && !pslIsStale;
+  const pslReady      = (pslStatus === "validated" || pslStatus === "approved") && !pslIsStale;
   const pslStaleNote  = pslIsStale ? "La evidencia ha cambiado" : undefined;
 
-  // 3 — Perfil de Salud Local
+  // 2 — Perfil de salud local
   // «Completada» exige el artefacto institucional PSL-C compilado/congelado:
   // la validación técnica del borrador no cierra la fase por sí sola.
   let pslPhase: PhaseStatus;
@@ -70,9 +70,9 @@ function derivePhases({
   let pslNote = pslStaleNote;
   if (pslStatus === "validated" && pslIsStale) {
     pslPhase = "requires-validation";
-  } else if (pslValidated && pslCompiled) {
+  } else if (pslReady && pslCompiled) {
     pslPhase = "completed";
-  } else if (pslValidated) {
+  } else if (pslReady) {
     pslPhase = "current";
     pslStatusLabel = "Validado técnicamente";
     pslNote = "Pendiente de compilación institucional";
@@ -82,22 +82,22 @@ function derivePhases({
     pslPhase = "pending";
   }
 
-  // 4 — Priorización (formal = participación + PSL validado + deliberación)
+  // 3 — Priorización (formal = participación + PSL validado + deliberación)
   // La participación ciudadana puede realizarse antes de validar el PSL.
-  // La fase permanece accesible para que no quede enterrada bajo el Plan de Acción:
+  // La fase permanece accesible para que no quede enterrada bajo el Plan de acción:
   // permite preparar participación, ver candidaturas y documentar lo que falta.
   let prioPhase: PhaseStatus;
   let prioNote: string | undefined;
-  if (pslValidated && prioritySelectionDone) {
+  if (pslReady && prioritySelectionDone) {
     prioPhase = "completed";
-  } else if (pslValidated) {
+  } else if (pslReady) {
     prioPhase = "current";
     prioNote = thematicPrioritisationDone
       ? "Pendiente de selección del Grupo Motor"
       : "Pendiente de participación ciudadana";
-  } else if (!pslValidated && thematicPrioritisationDone) {
+  } else if (!pslReady && thematicPrioritisationDone) {
     prioPhase = "current";
-    prioNote = "Participación ciudadana recibida; falta validar el Perfil";
+    prioNote = "Participación ciudadana recibida; falta validar el perfil";
   } else if (pslHasEvidence) {
     prioPhase = "current";
     prioNote = "Preparar participación y criterios";
@@ -105,9 +105,9 @@ function derivePhases({
     prioPhase = "pending";
   }
 
-  // 5 — Plan de Acción
+  // 4 — Plan de acción
   let planPhase: PhaseStatus;
-  if (!pslValidated) {
+  if (!pslReady) {
     planPhase = "blocked";
   } else if (prioritySelectionDone) {
     planPhase = "current";
@@ -115,26 +115,33 @@ function derivePhases({
     planPhase = "pending";
   }
 
+  // 5 — Implantación
+  const implantationPhase: PhaseStatus =
+    prioritySelectionDone ? "pending" : "blocked";
+  const implantationNote = prioritySelectionDone
+    ? "Pendiente de cierre operativo"
+    : "Requiere priorización adoptada";
+
+  // 6 — Evaluación
+  const evaluationPhase: PhaseStatus =
+    prioritySelectionDone ? "pending" : "blocked";
+  const evaluationNote = prioritySelectionDone
+    ? "Pendiente de implantación"
+    : "Requiere plan implantable";
+
   return [
     {
-      id:          "relas",
-      num:         1,
-      label:       "Adhesión a RELAS",
-      status:      "pending",
-      note:        "Sin datos de seguimiento",
-    },
-    {
       id:          "informe",
-      num:         2,
-      label:       "Informe de Salud",
+      num:         1,
+      label:       "Informe sobre la situación de salud",
       status:      healthReportLoaded ? "completed" : "current",
       statusLabel: healthReportLoaded ? "Disponible" : undefined,
       navigateTo:  "repositorio",
     },
     {
       id:          "psl",
-      num:         3,
-      label:       "Perfil de Salud Local",
+      num:         2,
+      label:       "Perfil de salud local",
       status:      pslPhase,
       statusLabel: pslStatusLabel,
       note:        pslNote,
@@ -142,7 +149,7 @@ function derivePhases({
     },
     {
       id:          "priorizacion",
-      num:         4,
+      num:         3,
       label:       "Priorización",
       status:      prioPhase,
       note:        prioNote,
@@ -150,24 +157,27 @@ function derivePhases({
     },
     {
       id:          "plan-accion",
-      num:         5,
-      label:       "Plan de Acción",
+      num:         4,
+      label:       "Plan de acción",
       status:      planPhase,
       navigateTo:  planPhase !== "blocked" ? "plan" : undefined,
     },
     {
-      id:            "agendas",
-      num:           6,
-      label:         "Agendas anuales",
-      status:        pslValidated ? "pending" : "blocked",
-      navigateTo:    pslValidated ? "plan" : undefined,
+      id:            "implantacion",
+      num:           5,
+      label:         "Implantación",
+      status:        implantationPhase,
+      note:          implantationNote,
+      navigateTo:    implantationPhase !== "blocked" ? "plan-local" : undefined,
       scopeBoundary: true,
     },
     {
-      id:          "plan-local",
-      num:         7,
-      label:       "Plan Local de Salud",
-      status:      "blocked",
+      id:          "evaluacion",
+      num:         6,
+      label:       "Evaluación",
+      status:      evaluationPhase,
+      note:        evaluationNote,
+      navigateTo:  evaluationPhase !== "blocked" ? "evaluacion" : undefined,
     },
   ];
 }
@@ -181,7 +191,7 @@ export function LocalHealthPlanningCycle(props: LocalHealthPlanningCycleProps) {
   return (
     <div className="lhpc" role="navigation" aria-label="Proceso de planificación local de salud">
       <div className="lhpc__inner">
-        <p className="lhpc__heading">Proceso de Planificación Local</p>
+        <p className="lhpc__heading">Expediente local de salud</p>
         <ol className="lhpc__phases" role="list">
           {phases.map((phase) => {
             const isClickable = onNavigate !== undefined && phase.navigateTo !== undefined;

@@ -18,7 +18,7 @@ export function MonitoringPanel({ monitoring, isEmpty = false, isBlocked = false
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Seguimiento</p>
+          <p className="eyebrow">Implantación · Seguimiento</p>
           <h2>{monitoring.title}</h2>
         </div>
         <p className="panel-note">
@@ -32,7 +32,7 @@ export function MonitoringPanel({ monitoring, isEmpty = false, isBlocked = false
           <strong>Seguimiento no disponible</strong>
           <p>Para activar esta fase se requiere:</p>
           <ul>
-            <li>Plan de Acción elaborado y revisado.</li>
+            <li>Plan de acción elaborado y revisado.</li>
             <li>Agenda anual acordada institucionalmente.</li>
           </ul>
           <p className="phase-blocked-notice__note">
@@ -46,7 +46,7 @@ export function MonitoringPanel({ monitoring, isEmpty = false, isBlocked = false
           <strong>Sin evidencia documental</strong>
           Este seguimiento ha sido generado sobre un repositorio sin evidencia.
           Los ítems mostrados no reflejan actuaciones en ejecución ni compromisos reales.
-          Incorpora documentos al repositorio para activar el seguimiento basado en el Plan de Acción.
+          Incorpora documentos al repositorio para activar el seguimiento basado en el Plan de acción.
         </div>
       ) : (
         <>

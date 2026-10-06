@@ -21,11 +21,11 @@ export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false, formal
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Agenda</p>
+          <p className="eyebrow">Implantación · Agenda</p>
           <h2>{agenda.title}</h2>
         </div>
         <p className="panel-note">
-          Borrador operativo derivado del Plan de Acción. No activa seguimiento
+          Borrador operativo derivado del Plan de acción. No activa seguimiento
           ni evaluación hasta validación.
         </p>
       </div>
@@ -36,10 +36,10 @@ export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false, formal
           <p>Para activar esta fase se requiere:</p>
           <ul>
             <li>Perfil de Salud Local validado técnicamente.</li>
-            <li>Plan de Acción elaborado y revisado.</li>
+            <li>Plan de acción elaborado y revisado.</li>
           </ul>
           <p className="phase-blocked-notice__note">
-            La agenda anual se deriva del Plan de Acción validado.
+            La agenda anual se deriva del Plan de acción validado.
             No es posible establecer calendarios operativos sin una planificación previa aprobada.
           </p>
         </div>
@@ -48,7 +48,7 @@ export function AgendaPanel({ agenda, isEmpty = false, isBlocked = false, formal
           <strong>Sin evidencia documental</strong>
           Esta agenda ha sido generada sobre un repositorio sin evidencia.
           Los ítems mostrados no representan compromisos ejecutivos ni calendarios reales.
-          Incorpora documentos al repositorio para obtener una agenda basada en el Plan de Acción.
+          Incorpora documentos al repositorio para obtener una agenda basada en el Plan de acción.
         </div>
       ) : (
         <div className="document-list">

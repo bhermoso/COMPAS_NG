@@ -27,9 +27,9 @@ export function InitialLocalHealthPlanPanel({ workspace, pslIsStale }: {
   catch { setError("No se ha podido generar la descarga. Vuelve a intentarlo."); }
   finally { setBusy(false); }
  }
- return <section className="workspace-panel" aria-label="Compilación inicial del Plan Local de Salud">
-  <h2>Compilación inicial del Plan Local de Salud</h2>
-  <p>Reúne el Perfil completo compilado, sus prioridades y la última versión validada del Plan de Acción. Las actuaciones pueden incorporarse después.</p>
+ return <section className="workspace-panel" aria-label="Implantación: compilación inicial del Plan Local de Salud">
+  <h2>Compilación inicial para la implantación</h2>
+  <p>Reúne el Perfil completo compilado, sus prioridades y la última versión validada del Plan de acción. Las actuaciones pueden incorporarse después.</p>
   <p>Para incluir cambios recientes, valida y guarda sus versiones antes de generar el documento.</p>
   {!ready.ok && <ul>{ready.issues.map(issue => <li key={issue}>{issue}</li>)}</ul>}
   <button type="button" disabled={!ready.ok || busy} onClick={generate}>Generar borrador del Plan Local de Salud</button>

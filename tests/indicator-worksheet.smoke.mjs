@@ -20,7 +20,7 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
   const address = server.httpServer.address();
   await page.goto(`http://127.0.0.1:${address.port}/COMPAS_NG/`);
-  const plan = () => page.locator(".app-nav__tab").filter({ hasText: "Plan de Acción" }).click();
+  const plan = () => page.locator(".app-nav__tab").filter({ hasText: "Plan de acción" }).click();
   const changeMunicipality = async (name, id) => {
     await page.getByRole("button", { name: /Cambiar ámbito/ }).click();
     await page.locator(".municipality-selector__option").filter({ hasText: name }).click();

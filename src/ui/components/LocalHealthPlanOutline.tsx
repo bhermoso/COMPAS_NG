@@ -68,7 +68,7 @@ export function LocalHealthPlanOutline({
     <article className="workspace-panel psl-outline" aria-labelledby="pls-outline-title">
       <header className="pcm-module__header">
         <div>
-          <p className="eyebrow">Esbozo de trabajo · Plan Local de Salud 2027–2030</p>
+          <p className="eyebrow">Implantación · Esbozo de trabajo 2027–2030</p>
           <h2 id="pls-outline-title">Plan Local de Salud del Distrito {municipalityName.replace(/^Granada-/, "")}</h2>
           <p className="panel-note">{municipalityName} · {province}</p>
         </div>
@@ -78,7 +78,7 @@ export function LocalHealthPlanOutline({
       <div className="phase-blocked-notice">
         <strong>Disponible antes de registrar actuaciones</strong>
         <p>
-          Este esbozo reúne el diagnóstico y la arquitectura estratégica ya seleccionada.
+          Este esbozo reúne la situación de salud documentada, el Perfil y la arquitectura estratégica ya seleccionada.
           Las actuaciones, sus fichas, responsables, plazos y recursos se incorporarán después.
           Su ausencia no impide consultar este borrador, pero sí cerrar y aprobar el Plan definitivo.
         </p>
@@ -93,7 +93,7 @@ export function LocalHealthPlanOutline({
       </section>
 
       <section className="pie-doc-section">
-        <h3>2. Diagnóstico territorial</h3>
+        <h3>2. Situación de salud documentada</h3>
         <p><strong>Estado:</strong> {PSL_STATUS_LABEL[pslStatus] ?? pslStatus}.</p>
         <p><strong>Perfil compilado:</strong> {pslCompiled ? "Disponible como PSL-C." : "Pendiente de compilación como PSL-C."}</p>
         <p><strong>Informe de Salud de referencia:</strong> {healthReportTitle ?? "No registrado."}</p>
@@ -162,7 +162,7 @@ export function LocalHealthPlanOutline({
         <h3>6. Seguimiento, evaluación y aprobación</h3>
         <p className="panel-note">
           El marco de seguimiento, la evaluación y la aprobación institucional se completarán
-          cuando el Plan de Acción y su agenda estén cerrados. Hasta entonces este documento
+          cuando el Plan de acción y su agenda estén cerrados. Hasta entonces este documento
           seguirá siendo un esbozo de trabajo y no un compromiso institucional definitivo.
         </p>
       </section>

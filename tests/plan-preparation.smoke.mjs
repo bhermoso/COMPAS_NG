@@ -8,7 +8,7 @@ try{
  browser=await chromium.launch({...(process.env.COMPAS_TEST_CHROMIUM ? {executablePath:process.env.COMPAS_TEST_CHROMIUM} : {}),headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
  const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/COMPAS_NG/`);
- const plan=()=>page.locator('.app-nav__tab').filter({hasText:'Plan de Acción'}).click();
+ const plan=()=>page.locator('.app-nav__tab').filter({hasText:'Plan de acción'}).click();
  const zaidin=async()=>{await page.getByRole('button',{name:/Cambiar ámbito/}).click();await page.locator('.municipality-selector__option').filter({hasText:'Zaidín'}).click();await page.waitForFunction(()=>!!localStorage.getItem('compas-ng:workspace:granada-zaidin'));};
  await plan();await zaidin();
  const panel=page.locator('.pcm-preparation').first();

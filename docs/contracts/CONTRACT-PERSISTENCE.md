@@ -4,7 +4,7 @@
 > Define el comportamiento garantizado, los invariantes y los límites de la
 > persistencia, rehidratación y migración del workspace municipal en COMPÁS NG.
 > No debe modificarse sin revisión explícita y deliberada.
-> Última revisión: 2026-06-27
+> Última revisión: 2026-10-06
 
 ---
 
@@ -12,8 +12,9 @@
 
 Este contrato establece cómo COMPÁS NG guarda, carga, normaliza y migra el
 estado completo de un municipio entre sesiones de trabajo. El objetivo es que
-el equipo técnico pueda cerrar y abrir la aplicación sin perder la información
-acumulada, y que esa información sea confiable y coherente cuando se recarga.
+el equipo técnico pueda cerrar y abrir la aplicación en el mismo navegador sin
+perder la información acumulada, y que esa información sea confiable y coherente
+cuando se recarga.
 
 La persistencia no es el pipeline analítico: no genera evidencia, no ejecuta
 motores ni produce propuestas. Es la garantía de que el estado válido sobrevive
@@ -23,7 +24,7 @@ entre sesiones.
 
 ## 2. Unidad persistida: el workspace municipal
 
-La unidad de persistencia es el **workspace municipal completo**
+La unidad de persistencia local es el **workspace municipal completo**
 (`MunicipalityWorkspace`). No se persisten documentos sueltos, átomos
 individuales, resultados de motores ni estados parciales.
 
@@ -51,7 +52,7 @@ El workspace contiene:
 
 ---
 
-## 3. Aislamiento municipal
+## 3. Aislamiento municipal y alcance remoto
 
 Cada municipio tiene su propio espacio de almacenamiento, identificado por una
 clave que incluye el `municipalityId`:
@@ -73,7 +74,33 @@ compas-ng:custom-municipalities
 Esta clave almacena solo los metadatos de identificación de cada municipio
 personalizado (`id`, `name`, `province`, `ineCode`), no su workspace.
 
-### 3.1 Cambio de municipio activo
+### 3.1 Alcance local: no hay sincronización remota del expediente
+
+El expediente completo vive en el navegador del equipo: `localStorage` como
+almacenamiento principal y, en las versiones actuales, IndexedDB como copia
+ampliada de apoyo para expedientes grandes. Esta persistencia no equivale a
+sincronización multi-dispositivo, ni a una copia remota en Firebase.
+
+Firebase/Firestore no guarda `MunicipalityWorkspace` completos. Su uso vigente
+pertenece al módulo RELAS de preparación del Plan de Acción: borradores
+(`PlanPreparationDraft`) y revisiones (`PlanPreparationReview`) bajo
+`relas_scopes/{scope}/drafts/{moduleId}` y
+`relas_scopes/{scope}/reviews/{moduleId}`. Esas colecciones no son una réplica
+del expediente municipal, no contienen el repositorio documental completo, no
+contienen todos los estudios complementarios y no sustituyen al guardado local.
+
+La consecuencia operativa es estricta: Alfacar, Atarfe, Zagra o cualquier otro
+ámbito distinto de Granada-Zaidín no reaparecerán en otro navegador, otro equipo
+o un despliegue remoto por el mero hecho de haber sido cargados, validados o
+editados en COMPÁS NG. Para que un expediente completo sobreviva fuera del
+navegador debe exportarse, respaldarse o incorporarse como seed canónico real
+en el repositorio.
+
+Granada-Zaidín reaparece en instalaciones limpias porque existe un seed canónico
+desplegado en `public/seeds/compas-ng-workspace-granada-zaidin.json`, no porque
+su expediente completo se escriba en Firebase.
+
+### 3.2 Cambio de municipio activo
 
 Al cambiar de municipio, la aplicación:
 
@@ -143,6 +170,11 @@ estado. La aplicación observa el workspace con `useEffect` y llama a
 desde el punto de vista del ciclo de React, aunque la escritura en localStorage
 es una operación del navegador.
 
+En paralelo, la aplicación intenta guardar el mismo workspace serializado en
+IndexedDB mediante `saveWorkspaceToIndexedDB`. Esta copia ampliada permite
+recuperar expedientes que excedan la cuota práctica de `localStorage`, siempre
+que el navegador mantenga disponible su almacenamiento local.
+
 Adicionalmente, hay un guardado explícito al completar la importación de
 Priorización Temática, para asegurar que el workspace actualizado se
 persiste aunque el efecto reactivo no se haya ejecutado aún.
@@ -157,10 +189,13 @@ estos se recalculan en cada sesión.
 ### 5.3 Fallo de guardado
 
 Si `localStorage.setItem` falla (cuota excedida, localStorage deshabilitado),
-`saveWorkspaceToLocalStorage` devuelve `false` y la aplicación muestra un aviso:
+`saveWorkspaceToLocalStorage` devuelve `false`. La aplicación intenta entonces
+conservar el expediente en IndexedDB. Si IndexedDB guarda correctamente, muestra
+un aviso de almacenamiento ampliado; si también falla, muestra el aviso de fallo
+de persistencia:
 
-> «No se pudo guardar el espacio de trabajo en este navegador. La selección
-> puede perderse al recargar.»
+> «No se pudo guardar el expediente completo en este navegador. Puede perderse
+> al recargar si no exportas una copia.»
 
 Un fallo de guardado no es un error fatal: la sesión continúa en memoria. Los
 datos de esa sesión se perderán al recargar.
@@ -175,12 +210,13 @@ Al inicializar la aplicación o al cambiar de municipio, se ejecuta:
 
 ```
 1. localStorage.getItem("compas-ng:workspace:{municipalityId}")
-2. Si null o excepción → crear workspace nuevo vacío
-3. JSON.parse del valor recuperado
-4. Verificar schemaVersion → si no coincide, descartar y crear nuevo
-5. Aplicar migraciones puntuales (§6.2)
-6. normalizeCanonicalDocuments → deduplicación + purga de huérfanos (§6.3)
-7. Devolver workspace rehidratado
+2. Si hay valor válido → JSON.parse, verificación de schemaVersion, migraciones
+   puntuales y normalización documental.
+3. Si no hay valor local válido y existe seed canónico → crear placeholder vacío,
+   bloquear su guardado y rehidratar asíncronamente desde el seed.
+4. Si no hay valor local válido ni seed → crear workspace nuevo vacío.
+5. Si el workspace inicial queda vacío, intentar recuperar una copia de IndexedDB
+   para el mismo `municipalityId` sin sobreescribir contenido real.
 ```
 
 ### 6.2 Migraciones puntuales aplicadas en la carga
@@ -354,6 +390,11 @@ adecuada para pruebas y entornos sin acceso a `localStorage`. Su comentario
 de cabecera indica explícitamente que no está inyectada en la aplicación
 actual y que el workspace vive en estado React.
 
+IndexedDB no implementa actualmente la interfaz `WorkspacePersistence`: opera
+como copia local ampliada desde `src/infrastructure/persistence/indexed-db-workspace.ts`.
+Su función es recuperar expedientes demasiado grandes para `localStorage`, no
+sincronizarlos con un servidor.
+
 ---
 
 ## 10. Garantías
@@ -404,6 +445,14 @@ Si `saveWorkspaceToLocalStorage` falla, la aplicación muestra un aviso
 explícito al equipo. No hay pérdida silenciosa de datos: el equipo sabe que
 la sesión actual no se está persistiendo.
 
+**G-P8 — Firebase no se interpreta como persistencia del expediente completo**
+
+Ningún texto técnico, pantalla o prueba debe presentar Firestore como lugar de
+guardado del `MunicipalityWorkspace` completo mientras no exista un adaptador
+remoto específico, reglas de seguridad y una política de conflictos para esa
+unidad de datos. RELAS puede guardar borradores y revisiones de Plan de Acción;
+eso no constituye persistencia del expediente municipal.
+
 ---
 
 ## 11. Exclusiones
@@ -421,8 +470,10 @@ migración del workspace. Los siguientes aspectos quedan fuera de su alcance:
 - **Plan de Acción, Agenda, Seguimiento y Compilador**: motores del Nivel 3.
 - **Interfaz de usuario**: presentación del estado de persistencia, mensajes
   de error, formularios.
-- **Sincronización multi-dispositivo o multi-sesión**: no implementada. El
-  sistema solo garantiza persistencia local en el dispositivo del equipo.
+- **Sincronización multi-dispositivo o multi-sesión**: no implementada para el
+  expediente completo. El sistema solo garantiza persistencia local en el
+  dispositivo del equipo. Firebase queda limitado al alcance RELAS descrito en
+  §3.1.
 
 ---
 
@@ -432,3 +483,4 @@ migración del workspace. Los siguientes aspectos quedan fuera de su alcance:
 |---|---|
 | 2026-06-24 | Primera redacción. Documenta el estado del código a partir del commit `1e582f5`. Formaliza el esquema de claves, `schemaVersion`, las migraciones M-1 y M-2, la normalización de documentos canónicos, la purga de huérfanos, `stripHtmlFields` y el historial territorial con su límite de 50 entradas. |
 | 2026-06-27 | Sprint 0: §2 actualizado para incluir `dukeStudy`, `predimedStudy`, `sf12Study`, `suenoStudy` y `cageStudy`, añadidos al workspace en commits `0bf5026`, `9aad479`, `7f47034`, `20080cd` y `9c73fa0` respectivamente y omitidos en la primera redacción. |
+| 2026-10-06 | Se explicita la frontera real entre expediente local, copia IndexedDB, seeds canónicos y Firebase/RELAS. Queda fijado que Firebase no guarda expedientes completos: Granada-Zaidín se recupera por seed; Alfacar y otros ámbitos necesitan exportación, respaldo o seed real para sobrevivir fuera del navegador. |

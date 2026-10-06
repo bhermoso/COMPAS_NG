@@ -160,6 +160,8 @@ import {
   PAIView,
   DeliberativePrioritySelectionPanel,
   ActionPlanCatalogPanel,
+  AgendaPanel,
+  MonitoringPanel,
   GESPanel,
   PerfilLocalDeSaludPanel,
   PerfilFuentesPanel,
@@ -237,13 +239,22 @@ type AppView = "inicio" | "repositorio" | "analisis" | "psl" | "priorizacion" | 
 
 const NAV_ITEMS: { id: AppView; label: string }[] = [
   { id: "inicio",        label: "Inicio" },
-  { id: "repositorio",   label: "Diagnóstico territorial" },
-  { id: "psl",           label: "Perfil de Salud Local" },
+  { id: "repositorio",   label: "Informe sobre la situación de salud" },
+  { id: "psl",           label: "Perfil de salud local" },
   { id: "priorizacion",  label: "Priorización" },
-  { id: "plan",          label: "Plan de Acción" },
-  { id: "plan-local",    label: "Plan Local de Salud" },
+  { id: "plan",          label: "Plan de acción" },
+  { id: "plan-local",    label: "Implantación" },
   { id: "evaluacion",    label: "Evaluación" },
   { id: "ges",           label: "Gestor de Encuestas" },
+];
+
+const PROCESS_NAV_VIEWS: AppView[] = [
+  "repositorio",
+  "psl",
+  "priorizacion",
+  "plan",
+  "plan-local",
+  "evaluacion",
 ];
 // Vistas eliminadas de la navegación principal pero accesibles para desarrollo:
 // "analisis" (D-002), "lectura" (D-004).
@@ -2780,21 +2791,28 @@ export default function App() {
             COMPÁS <span className="app-nav__brand-ng">NG</span>
           </span>
           <div className="app-nav__tabs">
-            {NAV_ITEMS.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                className={
-                  view === item.id
-                    ? "app-nav__tab app-nav__tab--active"
-                    : "app-nav__tab"
-                }
-                onClick={() => setView(item.id)}
-              >
-                <span className="app-nav__step-num">{index + 1}</span>
-                {item.label}
-              </button>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const processIndex = PROCESS_NAV_VIEWS.indexOf(item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={
+                    view === item.id
+                      ? "app-nav__tab app-nav__tab--active"
+                      : "app-nav__tab"
+                  }
+                  onClick={() => setView(item.id)}
+                >
+                  {processIndex >= 0 && (
+                    <span className="app-nav__step-num">
+                      {String(processIndex + 1).padStart(2, "0")}
+                    </span>
+                  )}
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -3020,59 +3038,59 @@ export default function App() {
             <section className="home-process">
               <div className="home-process__inner">
                 <p className="home-section-eyebrow">Proceso</p>
-                <h2 className="home-process__heading">El proceso de planificación local en salud</h2>
+                <h2 className="home-process__heading">El expediente de planificación local en salud</h2>
                 <div className="home-process__cycle">
                   <div className="home-process__phase home-process__phase--1">
                     <span className="home-process__ordinal">01</span>
-                    <span className="home-process__verb">Diagnosticar</span>
+                    <span className="home-process__verb">Informe sobre la situación de salud</span>
                     <p className="home-process__desc">
-                      Informe de salud, estudios complementarios y activos comunitarios
-                      organizados y analizados.
+                      Documento de partida y fuentes complementarias incorporadas al
+                      ámbito territorial.
                     </p>
                   </div>
                   <div className="home-process__phase home-process__phase--2">
                     <span className="home-process__ordinal">02</span>
-                    <span className="home-process__verb">Perfilar</span>
+                    <span className="home-process__verb">Perfil de salud local</span>
                     <p className="home-process__desc">
-                      Perfil de Salud Local: síntesis interpretativa validada técnicamente
-                      por el equipo.
+                      Lectura técnica de la situación de salud, con fuentes, límites e
+                      interpretación separadas.
                     </p>
                   </div>
                   <div className="home-process__phase home-process__phase--3">
                     <span className="home-process__ordinal">03</span>
-                    <span className="home-process__verb">Priorizar</span>
+                    <span className="home-process__verb">Priorización</span>
                     <p className="home-process__desc">
-                      Selección técnica y participativa de las áreas de actuación
-                      prioritarias.
+                      Decisión deliberativa sobre qué problemas y líneas pasan a ordenar
+                      la acción pública.
                     </p>
                   </div>
                   <div className="home-process__phase home-process__phase--4">
                     <span className="home-process__ordinal">04</span>
-                    <span className="home-process__verb">Planificar</span>
+                    <span className="home-process__verb">Plan de acción</span>
                     <p className="home-process__desc">
-                      Plan de Acción: líneas de actuación, objetivos e indicadores
-                      trazados al diagnóstico.
+                      Líneas, objetivos, indicadores y actuaciones trazables a la
+                      priorización adoptada.
                     </p>
                   </div>
                   <div className="home-process__phase home-process__phase--5">
                     <span className="home-process__ordinal">05</span>
-                    <span className="home-process__verb">Elaborar</span>
+                    <span className="home-process__verb">Implantación</span>
                     <p className="home-process__desc">
-                      Plan Local de Salud: diagnóstico, priorización y plan
-                      compilados como documento institucional.
+                      Organización práctica de actuaciones, responsables, calendario,
+                      recursos y seguimiento inicial.
                     </p>
                   </div>
                   <div className="home-process__phase home-process__phase--6">
                     <span className="home-process__ordinal">06</span>
-                    <span className="home-process__verb">Evaluar</span>
+                    <span className="home-process__verb">Evaluación</span>
                     <p className="home-process__desc">
-                      Grado de cumplimiento del plan, resultados alcanzados y
-                      propuestas de mejora para la actualización posterior.
+                      Valoración del cumplimiento, los resultados y los límites reales
+                      de lo ejecutado.
                     </p>
                   </div>
                 </div>
                 <p className="home-process__note">
-                  Las decisiones sobre el diagnóstico, la priorización y el plan corresponden
+                  Las decisiones sobre el informe, el perfil, la priorización y el plan corresponden
                   al equipo técnico, a la ciudadanía y a la autoridad competente.
                   COMPÁS organiza la información y apoya el proceso; no sustituye la deliberación
                   institucional.
@@ -3086,23 +3104,23 @@ export default function App() {
 
                 {/* Zona 1: Fuentes — entran en COMPÁS, no las genera */}
                 <div className="home-sources">
-                  <p className="home-section-eyebrow">Fuentes para el diagnóstico</p>
+                  <p className="home-section-eyebrow">01 · Punto de partida</p>
                   <p className="home-sources__note">
-                    Documentos elaborados fuera de COMPÁS e incorporados al proceso diagnóstico.
+                    Documentos elaborados fuera de COMPÁS e incorporados a la lectura de la situación de salud.
                   </p>
                   <div className="home-sources__list">
                     <div className="home-source">
-                      <p className="home-source__name">Informe de Salud</p>
+                      <p className="home-source__name">Informe sobre la situación de salud</p>
                       <p className="home-source__desc">
                         Documento fuente elaborado fuera de COMPÁS e incorporado
-                        al proceso diagnóstico.
+                        al expediente territorial.
                       </p>
                     </div>
                     <div className="home-source">
                       <p className="home-source__name">Estudios complementarios</p>
                       <p className="home-source__desc">
                         Información recogida mediante estudios específicos que
-                        complementa el diagnóstico territorial.
+                        matiza o completa la lectura de la situación de salud.
                       </p>
                     </div>
                   </div>
@@ -3111,46 +3129,45 @@ export default function App() {
                 {/* Conector — COMPÁS transforma las fuentes */}
                 <div className="home-transform">
                   <span className="home-transform__arrow">↓</span>
-                  <span className="home-transform__label">COMPÁS analiza y transforma</span>
+                  <span className="home-transform__label">COMPÁS ordena, contrasta y documenta</span>
                 </div>
 
                 {/* Zona 2: Salidas — documentos que genera COMPÁS */}
                 <div className="home-outputs">
-                  <p className="home-section-eyebrow">Documentos que produce COMPÁS NG</p>
+                  <p className="home-section-eyebrow">02–06 · Desarrollo del expediente</p>
                   <div className="home-products__list">
                     <div className="home-product home-product--1">
-                      <p className="home-product__name">Perfil de Salud Local</p>
+                      <p className="home-product__name">Perfil de salud local</p>
                       <p className="home-product__desc">
-                        Síntesis interpretativa del diagnóstico territorial validada
-                        técnicamente. Documento base para la planificación.
+                        Síntesis interpretativa validada técnicamente. Documento base
+                        para deliberar sin fabricar certezas.
                       </p>
                     </div>
                     <div className="home-product home-product--2">
-                      <p className="home-product__name">Priorización territorial</p>
+                      <p className="home-product__name">Priorización</p>
                       <p className="home-product__desc">
                         Candidaturas técnicas, participación ciudadana y decisión
-                        deliberativa del Grupo Motor antes del Plan de Acción.
+                        deliberativa del Grupo Motor antes del Plan de acción.
                       </p>
                     </div>
                     <div className="home-product home-product--3">
-                      <p className="home-product__name">Plan de Acción Local en Salud</p>
+                      <p className="home-product__name">Plan de acción</p>
                       <p className="home-product__desc">
                         Líneas estratégicas, objetivos, indicadores, programas y actuaciones
                         construidos a partir del diagnóstico y la priorización.
                       </p>
                     </div>
                     <div className="home-product home-product--4">
-                      <p className="home-product__name">Plan Local de Salud</p>
+                      <p className="home-product__name">Implantación</p>
                       <p className="home-product__desc">
-                        Documento institucional que integra diagnóstico, priorización,
-                        plan de acción, seguimiento y evaluación.
+                        Paso del plan a condiciones de trabajo: actuaciones, responsables,
+                        calendario, recursos y seguimiento inicial.
                       </p>
                     </div>
                     <div className="home-product home-product--5">
-                      <p className="home-product__name">Informe de Evaluación</p>
+                      <p className="home-product__name">Evaluación</p>
                       <p className="home-product__desc">
-                        Documento de evaluación anual, bianual, trianual o final
-                        del Plan Local de Salud.
+                        Lectura de cumplimiento, resultados y límites de la implantación.
                       </p>
                     </div>
                   </div>
@@ -3220,28 +3237,28 @@ export default function App() {
                 : "empty";
 
               const conclusionMsg: Record<DiagState, string> = {
-                ready:   "Diagnóstico con evidencia complementaria disponible para revisar el Perfil de Salud Local.",
-                partial: "Diagnóstico en elaboración. Incorpora el Informe de Salud y fuentes complementarias para enriquecer el análisis territorial.",
-                empty:   "El diagnóstico está vacío. Comienza incorporando el Informe de Salud del ámbito territorial.",
+                ready:   "Informe y fuentes complementarias disponibles para revisar el Perfil de salud local.",
+                partial: "Situación de salud en elaboración. Incorpora el informe y las fuentes complementarias antes de cerrar la lectura territorial.",
+                empty:   "El expediente no tiene todavía informe ni fuentes incorporadas. Comienza por el Informe sobre la situación de salud del ámbito territorial.",
               };
 
               return (
                 <section className="diag-header workspace-panel">
                   <div className="diag-header__title-row">
                     <div>
-                      <p className="eyebrow">Diagnóstico territorial</p>
+                      <p className="eyebrow">01 · Informe sobre la situación de salud</p>
                       <h2 className="diag-header__municipality">{municipality.name}</h2>
                       <p className="diag-header__subtitle">
-                        Estado metodológico del diagnóstico del ámbito territorial.
+                        Estado documental y analítico de la situación de salud del ámbito territorial.
                       </p>
                     </div>
                   </div>
 
                   <div className="diag-status">
-                    <p className="diag-status__heading">Estado del diagnóstico</p>
+                    <p className="diag-status__heading">Estado de la situación documentada</p>
                     <ul className="diag-status__list">
                       <li className={`diag-status__item diag-status__item--${hrLoaded ? "ok" : "missing"}`}>
-                        <span className="diag-status__label">Informe de Salud</span>
+                        <span className="diag-status__label">Informe sobre la situación de salud</span>
                         <span className="diag-status__value">
                           {hrLoaded ? "Fuente primaria disponible" : "No incorporado"}
                         </span>
@@ -3382,7 +3399,7 @@ export default function App() {
                 <div>
                   <p className="diag-continue__label">Siguiente paso</p>
                   <p className="diag-continue__text">
-                    Revisar el diagnóstico e iniciar la elaboración del Perfil de Salud Local
+                    Revisar la situación de salud documentada e iniciar el Perfil de salud local
                   </p>
                 </div>
                 <button
@@ -3390,7 +3407,7 @@ export default function App() {
                   className="diag-continue__btn"
                   onClick={() => setView("psl")}
                 >
-                  Ir al Perfil de Salud Local →
+                  Ir al Perfil de salud local →
                 </button>
               </div>
             </section>
@@ -3506,7 +3523,7 @@ export default function App() {
           <>
             <section className="workspace-panel prioritization-stage">
               <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-              <h2>Priorización territorial</h2>
+              <h2>Priorización</h2>
               <p className="panel-note">
                 La priorización integra dos fuentes complementarias: las áreas
                 candidatas derivadas del Perfil de Salud Local y las temáticas
@@ -3563,7 +3580,7 @@ export default function App() {
                   <strong>Prioridades todavía no cerrables</strong>
                   <p>
                     Valida el Perfil de Salud Local para abrir la decisión deliberativa
-                    que alimentará el Plan de Acción.
+                    que alimentará el Plan de acción.
                   </p>
                 </div>
               </section>
@@ -3596,93 +3613,93 @@ export default function App() {
           )
         )}
 
-        {/* ── ⑦ Plan de Acción — MTE + selección deliberativa + PAI ── */}
+        {/* ── ④ Plan de acción — MTE + selección deliberativa + PAI ── */}
         {view === "plan" && (
           runtime.lectura ? (
             <>
-            <section className="workspace-panel">
-              <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-              <h2>Plan de Acción</h2>
-              <p className="panel-note">
-                Cadena canónica: Lectura Estratégica Local, selección deliberativa del
-                Grupo Motor y propuesta técnica del Plan de Acción. El sistema aporta candidaturas;
-                no selecciona prioridades ni adopta compromisos municipales.
-              </p>
-            </section>
-            <LecturaEstrategicaView lectura={runtime.lectura} />
-            <section className="workspace-panel plan-prioritization-gate">
-              <p className="eyebrow">Prioridades que alimentan el Plan de Acción</p>
-              <h3>
-                {workspace.deliberativePrioritySelection && !runtime.prioritySelectionIsStale
-                  ? "Selección deliberativa vigente"
-                  : "Priorización pendiente"}
-              </h3>
-              <p className="panel-note">
-                El Plan de Acción toma como entrada la selección territorial adoptada
-                en la fase de Priorización. Mantén allí la decisión del Grupo Motor
-                antes de cerrar objetivos, indicadores y fichas.
-              </p>
-              {workspace.deliberativePrioritySelection && !runtime.prioritySelectionIsStale ? (
-                <p className="plan-prioritization-gate__status">
-                  Registrada por {workspace.deliberativePrioritySelection.decidedBy} el{" "}
-                  {new Date(workspace.deliberativePrioritySelection.decidedAt).toLocaleDateString("es-ES")}.
-                </p>
-              ) : (
-                <div className="phase-blocked-notice">
-                  <strong>Plan sin selección deliberativa vigente</strong>
-                  <p>
-                    Abre Priorización para documentar la decisión del Grupo Motor o
-                    renovar la selección si el diagnóstico ha cambiado.
-                  </p>
-                </div>
-              )}
-              <button
-                type="button"
-                className="tp-panel__open-btn"
-                onClick={() => setView("priorizacion")}
-              >
-                Abrir priorización territorial
-              </button>
-            </section>
-            <ActionPlanCatalogPanel
-              municipalityId={workspace.municipality.identity.id}
-              lectura={runtime.lectura}
-              selection={workspace.deliberativePrioritySelection}
-              eligibleModules={runtime.eligibleActionPlanModules}
-              reviews={workspace.actionPlanModuleReviews ?? []}
-              validatedActionPlans={workspace.validatedActionPlans ?? []}
-              onValidatePlan={(document) => {
-                if (document.municipalityId !== workspace.municipality.identity.id) return false;
-                const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
-                if (!saveWorkspaceToLocalStorage(next)) return false;
-                setWorkspace(next);
-                return true;
-              }}
-              drafts={workspace.planPreparationDrafts ?? []}
-              onDraftChange={handlePlanPreparationChange}
-              worksheets={workspace.indicatorWorksheets ?? []}
-              onWorksheetChange={handleIndicatorWorksheetChange}
-              onSave={handleSaveActionPlanModuleReview}
-            />
-            {runtime.pai ? (
-              <PAIView pai={runtime.pai} />
-            ) : (
               <section className="workspace-panel">
-                <div className="phase-blocked-notice">
-                  <strong>Borrador automático de actuaciones no disponible</strong>
-                  <p>
-                    La edición directa de objetivos e indicadores se guarda arriba en el expediente territorial.
-                    Para generar automáticamente actuaciones, el Grupo Motor debe registrar una selección vigente.
-                  </p>
-                </div>
+                <p className="eyebrow">04 · Plan de acción</p>
+                <h2>Plan de acción</h2>
+                <p className="panel-note">
+                  Cadena canónica: Lectura Estratégica Local, selección deliberativa del
+                  Grupo Motor y propuesta técnica del Plan de acción. El sistema aporta candidaturas;
+                  no selecciona prioridades ni adopta compromisos municipales.
+                </p>
               </section>
-            )}
+              <LecturaEstrategicaView lectura={runtime.lectura} />
+              <section className="workspace-panel plan-prioritization-gate">
+                <p className="eyebrow">Prioridades que alimentan el Plan de acción</p>
+                <h3>
+                  {workspace.deliberativePrioritySelection && !runtime.prioritySelectionIsStale
+                    ? "Selección deliberativa vigente"
+                    : "Priorización pendiente"}
+                </h3>
+                <p className="panel-note">
+                  El Plan de acción toma como entrada la selección territorial adoptada
+                  en la fase de Priorización. Mantén allí la decisión del Grupo Motor
+                  antes de cerrar objetivos, indicadores y fichas.
+                </p>
+                {workspace.deliberativePrioritySelection && !runtime.prioritySelectionIsStale ? (
+                  <p className="plan-prioritization-gate__status">
+                    Registrada por {workspace.deliberativePrioritySelection.decidedBy} el{" "}
+                    {new Date(workspace.deliberativePrioritySelection.decidedAt).toLocaleDateString("es-ES")}.
+                  </p>
+                ) : (
+                  <div className="phase-blocked-notice">
+                    <strong>Plan de acción sin selección deliberativa vigente</strong>
+                    <p>
+                      Abre Priorización para documentar la decisión del Grupo Motor o
+                      renovar la selección si la situación documentada ha cambiado.
+                    </p>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="tp-panel__open-btn"
+                  onClick={() => setView("priorizacion")}
+                >
+                  Abrir priorización
+                </button>
+              </section>
+              <ActionPlanCatalogPanel
+                municipalityId={workspace.municipality.identity.id}
+                lectura={runtime.lectura}
+                selection={workspace.deliberativePrioritySelection}
+                eligibleModules={runtime.eligibleActionPlanModules}
+                reviews={workspace.actionPlanModuleReviews ?? []}
+                validatedActionPlans={workspace.validatedActionPlans ?? []}
+                onValidatePlan={(document) => {
+                  if (document.municipalityId !== workspace.municipality.identity.id) return false;
+                  const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
+                  if (!saveWorkspaceToLocalStorage(next)) return false;
+                  setWorkspace(next);
+                  return true;
+                }}
+                drafts={workspace.planPreparationDrafts ?? []}
+                onDraftChange={handlePlanPreparationChange}
+                worksheets={workspace.indicatorWorksheets ?? []}
+                onWorksheetChange={handleIndicatorWorksheetChange}
+                onSave={handleSaveActionPlanModuleReview}
+              />
+              {runtime.pai ? (
+                <PAIView pai={runtime.pai} />
+              ) : (
+                <section className="workspace-panel">
+                  <div className="phase-blocked-notice">
+                    <strong>Borrador automático de actuaciones no disponible</strong>
+                    <p>
+                      La edición directa de objetivos e indicadores se guarda arriba en el expediente territorial.
+                      Para generar automáticamente actuaciones, el Grupo Motor debe registrar una selección vigente.
+                    </p>
+                  </div>
+                </section>
+              )}
             </>
           ) : (
             <>
               <section className="workspace-panel">
-                <p className="eyebrow">Plan Local de Salud 2027–2030</p>
-                <h2>Plan de Acción · edición directa</h2>
+                <p className="eyebrow">04 · Plan de acción</p>
+                <h2>Plan de acción · edición directa</h2>
                 <div className="phase-blocked-notice">
                   <strong>Edición territorial disponible</strong>
                   <p>
@@ -3695,56 +3712,75 @@ export default function App() {
                 municipalityId={workspace.municipality.identity.id}
                 eligibleModules={[]}
                 reviews={workspace.actionPlanModuleReviews ?? []}
-              validatedActionPlans={workspace.validatedActionPlans ?? []}
-              onValidatePlan={(document) => {
-                if (document.municipalityId !== workspace.municipality.identity.id) return false;
-                const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
-                if (!saveWorkspaceToLocalStorage(next)) return false;
-                setWorkspace(next);
-                return true;
-              }}
-              drafts={workspace.planPreparationDrafts ?? []}
-              onDraftChange={handlePlanPreparationChange}
-              worksheets={workspace.indicatorWorksheets ?? []}
-              onWorksheetChange={handleIndicatorWorksheetChange}
+                validatedActionPlans={workspace.validatedActionPlans ?? []}
+                onValidatePlan={(document) => {
+                  if (document.municipalityId !== workspace.municipality.identity.id) return false;
+                  const next = {...workspace, validatedActionPlans: [...(workspace.validatedActionPlans ?? []), document], updatedAt: new Date().toISOString()};
+                  if (!saveWorkspaceToLocalStorage(next)) return false;
+                  setWorkspace(next);
+                  return true;
+                }}
+                drafts={workspace.planPreparationDrafts ?? []}
+                onDraftChange={handlePlanPreparationChange}
+                worksheets={workspace.indicatorWorksheets ?? []}
+                onWorksheetChange={handleIndicatorWorksheetChange}
                 onSave={handleSaveActionPlanModuleReview}
               />
             </>
           )
         )}
 
-        {/* ── ⑧ Plan Local de Salud — esbozo previo a las actuaciones ── */}
+        {/* ── ⑤ Implantación — esbozo, agenda y seguimiento inicial ── */}
         {view === "plan-local" && (
           <>
-          <InitialLocalHealthPlanPanel workspace={workspace} pslIsStale={runtime.pslIsStale} />
-          <LocalHealthPlanOutline
-            municipalityId={workspace.municipality.identity.id}
-            municipalityName={municipality.name}
-            province={municipality.province}
-            healthReportTitle={workspace.healthReport?.title}
-            pslStatus={runtime.psl.status}
-            pslCompiled={(workspace.compiledProfiles?.length ?? 0) > 0}
-            selectedPriorities={THEMATIC_TOPICS
-              .filter((topic) => workspace.thematicPrioritisation?.selectedTopicIds.includes(topic.id))
-              .map((topic) => topic.label)}
-            drafts={workspace.planPreparationDrafts ?? []}
-          />
+            <section className="workspace-panel">
+              <p className="eyebrow">05 · Implantación</p>
+              <h2>Implantación</h2>
+              <p className="panel-note">
+                La implantación convierte el Plan de acción en condiciones de trabajo: actuaciones,
+                responsables, calendario, recursos, agenda y seguimiento inicial. Que COMPÁS ordene
+                esta información no equivale a acreditar ejecución real.
+              </p>
+            </section>
+            <InitialLocalHealthPlanPanel workspace={workspace} pslIsStale={runtime.pslIsStale} />
+            <LocalHealthPlanOutline
+              municipalityId={workspace.municipality.identity.id}
+              municipalityName={municipality.name}
+              province={municipality.province}
+              healthReportTitle={workspace.healthReport?.title}
+              pslStatus={runtime.psl.status}
+              pslCompiled={(workspace.compiledProfiles?.length ?? 0) > 0}
+              selectedPriorities={THEMATIC_TOPICS
+                .filter((topic) => workspace.thematicPrioritisation?.selectedTopicIds.includes(topic.id))
+                .map((topic) => topic.label)}
+              drafts={workspace.planPreparationDrafts ?? []}
+            />
+            <AgendaPanel
+              agenda={runtime.agenda}
+              isEmpty={pipelineIsEmpty}
+              isBlocked={runtime.lectura === undefined}
+            />
+            <MonitoringPanel
+              monitoring={runtime.monitoring}
+              isEmpty={pipelineIsEmpty}
+              isBlocked={runtime.lectura === undefined}
+            />
           </>
         )}
 
-        {/* ── ⑨ Evaluación — espacio canónico (pendiente de implementación) */}
+        {/* ── ⑥ Evaluación — espacio canónico (pendiente de implementación) */}
         {view === "evaluacion" && (
           <section className="workspace-panel">
-            <p className="eyebrow">Evaluación del Plan · {municipality.name}</p>
-            <h2>Evaluación del Plan Local de Salud</h2>
+            <p className="eyebrow">06 · Evaluación · {municipality.name}</p>
+            <h2>Evaluación</h2>
             <p className="panel-note">
-              El Informe de Evaluación valora el grado de cumplimiento del Plan Local de Salud,
-              los resultados alcanzados y las propuestas de mejora para la actualización posterior. Puede
-              realizarse de forma anual, bianual, trianual o como evaluación final del plan.
+              La evaluación valora el grado de cumplimiento del Plan de acción, los resultados
+              alcanzados y las limitaciones de la implantación. Puede realizarse de forma anual,
+              bianual, trianual o como evaluación final del plan.
             </p>
             <p className="panel-note">
-              Este espacio estará disponible cuando el Plan Local de Salud se encuentre en
-              fase de seguimiento y evaluación.
+              Este espacio estará disponible cuando existan actuaciones implantadas y seguimiento
+              suficiente para no confundir actividad registrada con resultado evaluable.
             </p>
           </section>
         )}

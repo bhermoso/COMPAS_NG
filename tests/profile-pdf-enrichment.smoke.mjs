@@ -13,7 +13,7 @@ try {
   localStorage.setItem('compas-ng:workspace:granada-zaidin',JSON.stringify(seed));
   return {atoms:seed.evidenceStore.atoms.length,validated:JSON.stringify(seed.validatedPSL),doc:seed.healthReport.linkedDocumentId};
  });
- await page.goto(base);await page.getByRole('button',{name:/Perfil de Salud Local$/}).first().click();
+await page.goto(base);await page.getByRole('button',{name:/Perfil de salud local$/}).first().click();
  await page.getByRole('button',{name:'Cambiar ámbito ▾'}).click();
  await page.getByRole('button',{name:/Granada-Zaidín/}).click();
  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('compas-ng:workspace:granada-zaidin')).healthReport.pdfExtraction?.pageCount===130,{},{timeout:90000});
