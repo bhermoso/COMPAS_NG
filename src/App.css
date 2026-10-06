@@ -5977,7 +5977,10 @@ h3 {
   .nhs-snapshot-grid,
   .nhs-quality-grid,
   .nhs-quality-notes,
-  .nhs-spotlight-grid,
+  .nhs-overview-grid,
+  .nhs-source-grid,
+  .nhs-reading-grid,
+  .nhs-agenda-grid,
   .nhs-domain__rows       { grid-template-columns: 1fr; }
   .nhs-executive-hero__metrics,
   .nhs-indicator-card__values,
@@ -7966,7 +7969,7 @@ h3 {
 
 .nhs-executive-hero__metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -7983,9 +7986,10 @@ h3 {
 
 .nhs-executive-metric__value {
   color: #0074c8;
-  font-size: 2rem;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 .nhs-executive-metric__label {
@@ -7997,15 +8001,37 @@ h3 {
 }
 
 .nhs-snapshot-panel,
-.nhs-spotlight-panel,
-.nhs-quality-panel {
+.nhs-overview-panel,
+.nhs-source-panel,
+.nhs-ranking-panel,
+.nhs-reading-panel,
+.nhs-agenda-panel,
+.nhs-quality-panel,
+.nhs-empty-comparators,
+.nhs-gaps-panel {
   border-top: 3px solid #94d40b;
 }
 
-.nhs-quality-panel {
+.nhs-quality-panel,
+.nhs-source-panel {
   border-top-color: #0074c8;
 }
 
+.nhs-ranking-panel,
+.nhs-agenda-panel {
+  border-top-color: #ffb61b;
+}
+
+.nhs-reading-panel,
+.nhs-empty-comparators {
+  border-top-color: #00a6a6;
+}
+
+.nhs-gaps-panel {
+  border-top-color: #dc143c;
+}
+
+.nhs-section-head,
 .nhs-snapshot-panel__header {
   display: flex;
   flex-direction: column;
@@ -8013,6 +8039,7 @@ h3 {
   margin-bottom: 14px;
 }
 
+.nhs-section-head h3,
 .nhs-snapshot-panel__header h3,
 .nhs-domain__header h3 {
   margin: 0;
@@ -8022,7 +8049,7 @@ h3 {
 
 .nhs-snapshot-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -8055,10 +8082,178 @@ h3 {
   border-color: #f4d27a;
 }
 
-.nhs-spotlight-grid {
+.nhs-overview-grid,
+.nhs-source-grid,
+.nhs-reading-grid,
+.nhs-agenda-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.nhs-source-grid,
+.nhs-reading-grid,
+.nhs-agenda-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.nhs-overview-card,
+.nhs-source-card,
+.nhs-reading-card,
+.nhs-agenda-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #dbe8f4;
+  border-top: 4px solid #0074c8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.nhs-overview-card h3,
+.nhs-source-card h3,
+.nhs-reading-card h3,
+.nhs-agenda-card h3 {
+  margin: 0 0 8px;
+  color: #14395b;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.nhs-overview-card p,
+.nhs-source-card dd,
+.nhs-reading-card p,
+.nhs-agenda-card p {
+  color: #526070;
+  font-size: 0.88rem;
+  line-height: 1.58;
+}
+
+.nhs-overview-card__source,
+.nhs-agenda-card__topic {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: #0074c8;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.nhs-overview-card__signal {
+  margin: 0 0 8px;
+  color: #1a2b3c;
+  font-weight: 800;
+}
+
+.nhs-source-card dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.nhs-source-card dt {
+  color: #1a2b3c;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.nhs-source-card dd {
+  margin: 0 0 8px;
+}
+
+.nhs-variant--informe { border-top-color: #0074c8; }
+.nhs-variant--estudio { border-top-color: #00acd9; }
+.nhs-variant--activo { border-top-color: #94d40b; }
+.nhs-variant--equidad { border-top-color: #dc143c; }
+
+.nhs-ranking-list {
+  display: grid;
+  gap: 10px;
+}
+
+.nhs-ranking-row {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.42fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.nhs-ranking-row__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #1a2b3c;
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.nhs-ranking-row__label strong {
+  color: #0074c8;
+}
+
+.nhs-ranking-row__bar {
+  height: 12px;
+  border-radius: 999px;
+  background: #e7eff7;
+  overflow: hidden;
+}
+
+.nhs-ranking-row__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0074c8, #00a6a6);
+}
+
+.nhs-caption {
+  margin: 12px 0 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nhs-reading-card__question,
+.nhs-agenda-card__question {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #0074c8;
+  border-radius: 6px;
+  background: #f3f8fd;
+  color: #14395b !important;
+  font-weight: 750;
+}
+
+.nhs-agenda-card__hidden {
+  border-left: 3px solid #dc143c;
+  padding-left: 10px;
+  color: #7f1d1d !important;
+}
+
+.nhs-empty-comparators p {
+  max-width: 82ch;
+  color: #526070;
+  line-height: 1.65;
+}
+
+.nhs-gaps-panel ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nhs-gaps-panel li {
+  padding: 12px 14px;
+  border-left: 4px solid #dc143c;
+  border-radius: 8px;
+  background: #fff7f8;
+  color: #4b5563;
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 
 .nhs-domain-panel {
@@ -8128,6 +8323,11 @@ h3 {
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.nhs-indicator-card__badge--local {
+  background: #eef7ff;
+  color: #14395b;
 }
 
 .nhs-indicator-card__values {

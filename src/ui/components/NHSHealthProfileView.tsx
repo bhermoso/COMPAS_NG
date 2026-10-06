@@ -1,29 +1,31 @@
 import type { CanonicalProfileDocument } from "../../application/health-profile/canonicalProfileDocument";
 import {
   projectNHSDerived,
+  type NHSDerivedAgendaItem,
+  type NHSDerivedInformeRanking,
+  type NHSDerivedOverviewMessage,
   type NHSDerivedRow,
+  type NHSDerivedSourceBlock,
+  type NHSDerivedTerritorialReading,
 } from "../../application/health-profile/nhsDerivedProjection";
 
 /**
- * NHSHealthProfileView — representación breve DERIVADA del Perfil canónico
- * (GOV-P4-01 · PR-D).
+ * NHSHealthProfileView — ficha publica breve derivada del Perfil canonico.
  *
- * Reoriginada: ya no consume `NHSHealthProfileArtifact`. Recibe el documento
- * canónico sellado y lo presenta a través del proyector puro `projectNHSDerived`.
- * No puntúa ni reconstruye contenido. La capa visual puede representar relaciones
- * numéricas simples entre valores ya presentes (local/provincia/Andalucía), pero
- * no las convierte en "mejor" o "peor": sin dirección epidemiológica explícita,
- * la lectura sigue correspondiendo al lector. La marca de proxy contextual depende
- * exclusivamente de `esProxy`.
+ * No es un producto autonomo ni una segunda fuente. Toma el documento canonico
+ * sellado y lo presenta con una composicion inspirada en OHID/Fingertips:
+ * titular claro, fuentes, indicadores cuando existen, temas del informe,
+ * lecturas territoriales, preguntas publicas y huecos de dato. Si faltan
+ * indicadores comparables, la salida no queda vacia: declara esa ausencia y usa
+ * las otras piezas del Perfil.
  */
 
 interface NHSHealthProfileViewProps {
-  /** Documento canónico sellado, o `null` si es inexistente, legacy o incompleto. */
+  /** Documento canonico sellado, o `null` si es inexistente, legacy o incompleto. */
   document: CanonicalProfileDocument | null;
   id?: string;
 }
 
-/** Agrupa filas en tramos CONSECUTIVOS por `bloque`, preservando orden exacto. */
 function groupByConsecutiveBloque(
   rows: NHSDerivedRow[]
 ): Array<{ bloque: string; rows: NHSDerivedRow[] }> {
@@ -50,18 +52,6 @@ function isAvailableValue(value: string): boolean {
   );
 }
 
-function valueTone(value: string): "available" | "missing" {
-  return isAvailableValue(value) ? "available" : "missing";
-}
-
-function hasAnyReference(row: NHSDerivedRow): boolean {
-  return isAvailableValue(row.refGranada) || isAvailableValue(row.refAndalucia);
-}
-
-function hasBothReferences(row: NHSDerivedRow): boolean {
-  return isAvailableValue(row.refGranada) && isAvailableValue(row.refAndalucia);
-}
-
 function parseNumericValue(value: string): number | null {
   if (!isAvailableValue(value)) return null;
   const match = value.replace(",", ".").match(/-?\d+(?:\.\d+)?/);
@@ -70,28 +60,8 @@ function parseNumericValue(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-type NumericRelation = "higher" | "lower" | "same" | "missing";
-
-function compareValues(local: string, reference: string): NumericRelation {
-  const localValue = parseNumericValue(local);
-  const referenceValue = parseNumericValue(reference);
-  if (localValue === null || referenceValue === null) return "missing";
-  const delta = localValue - referenceValue;
-  if (Math.abs(delta) < 0.05) return "same";
-  return delta > 0 ? "higher" : "lower";
-}
-
-function relationLabel(referenceName: string, relation: NumericRelation): string {
-  if (relation === "higher") return `Valor mayor que ${referenceName}`;
-  if (relation === "lower") return `Valor menor que ${referenceName}`;
-  if (relation === "same") return `Valor muy próximo a ${referenceName}`;
-  return `Sin dato comparable con ${referenceName}`;
-}
-
-function relationText(row: NHSDerivedRow): string {
-  const province = relationLabel("provincia", compareValues(row.valor, row.refGranada));
-  const andalusia = relationLabel("Andalucía", compareValues(row.valor, row.refAndalucia));
-  return `${province}; ${andalusia}.`;
+function hasBothReferences(row: NHSDerivedRow): boolean {
+  return isAvailableValue(row.refGranada) && isAvailableValue(row.refAndalucia);
 }
 
 function buildRangePoints(row: NHSDerivedRow): Array<{
@@ -123,14 +93,61 @@ function buildRangePoints(row: NHSDerivedRow): Array<{
   }));
 }
 
+function hasComparableBand(row: NHSDerivedRow): boolean {
+  return buildRangePoints(row).length >= 2;
+}
+
+function valueTone(value: string): "available" | "missing" {
+  return isAvailableValue(value) ? "available" : "missing";
+}
+
+function variantClass(variant: string): string {
+  if (variant === "informe") return "nhs-variant--informe";
+  if (variant === "activo") return "nhs-variant--activo";
+  if (variant === "equidad") return "nhs-variant--equidad";
+  return "nhs-variant--estudio";
+}
+
+function shorten(text: string, max = 320): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const lastStop = Math.max(cut.lastIndexOf("."), cut.lastIndexOf(";"), cut.lastIndexOf(","));
+  return `${cut.slice(0, lastStop > 160 ? lastStop : max).trim()}...`;
+}
+
+function readableStatus(status: string): string {
+  if (status === "integrated") return "lectura territorial integrada";
+  if (status === "prioritization-pending") return "lectura territorial pendiente";
+  return "lectura declarada";
+}
+
+function IndicatorValue({
+  label,
+  value,
+  featured = false,
+}: {
+  label: string;
+  value: string;
+  featured?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        "nhs-value-tile",
+        `nhs-value-tile--${valueTone(value)}`,
+        featured ? "nhs-value-tile--featured" : "",
+      ].filter(Boolean).join(" ")}
+    >
+      <span className="nhs-value-tile__label">{label}</span>
+      <span className="nhs-value-tile__value">{value}</span>
+    </div>
+  );
+}
+
 function ComparisonRail({ row }: { row: NHSDerivedRow }) {
   const points = buildRangePoints(row);
   if (points.length < 2) {
-    return (
-      <p className="nhs-range-note">
-        Banda no disponible: faltan valores numéricos comparables.
-      </p>
-    );
+    return <p className="nhs-range-note">Sin banda: faltan valores numéricos comparables.</p>;
   }
   return (
     <div className="nhs-range" aria-label={`Banda visual comparativa de ${row.indicador}`}>
@@ -155,202 +172,145 @@ function ComparisonRail({ row }: { row: NHSDerivedRow }) {
   );
 }
 
-function hasComparableBand(row: NHSDerivedRow): boolean {
-  return buildRangePoints(row).length >= 2;
-}
-
-type ScopeChipTone = "solid" | "info" | "warning" | "muted";
-
-function buildScopeChips(row: NHSDerivedRow): Array<{ label: string; tone: ScopeChipTone }> {
-  const chips: Array<{ label: string; tone: ScopeChipTone }> = [
-    row.esProxy
-      ? { label: "proxy contextual", tone: "warning" }
-      : { label: "muestra local", tone: "solid" },
-  ];
-  if (hasBothReferences(row)) {
-    chips.push({ label: "doble referencia", tone: "info" });
-  } else if (hasAnyReference(row)) {
-    chips.push({ label: "referencia parcial", tone: "warning" });
-  } else {
-    chips.push({ label: "sin referencias", tone: "muted" });
-  }
-  chips.push(
-    hasComparableBand(row)
-      ? { label: "banda disponible", tone: "info" }
-      : { label: "sin banda", tone: "muted" }
-  );
-  if (parseNumericValue(row.valor) === null) {
-    chips.push({ label: "valor no numérico", tone: "muted" });
-  }
-  return chips;
-}
-
-function IndicatorScopeChips({ row }: { row: NHSDerivedRow }) {
-  return (
-    <div className="nhs-scope-chips" aria-label={`Alcance de lectura de ${row.indicador}`}>
-      {buildScopeChips(row).map((chip) => (
-        <span key={chip.label} className={`nhs-scope-chip nhs-scope-chip--${chip.tone}`}>
-          {chip.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function IndicatorValue({
-  label,
-  value,
-  featured = false,
-}: {
-  label: string;
-  value: string;
-  featured?: boolean;
-}) {
-  return (
-    <div
-      className={[
-        "nhs-value-tile",
-        `nhs-value-tile--${valueTone(value)}`,
-        featured ? "nhs-value-tile--featured" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <span className="nhs-value-tile__label">{label}</span>
-      <span className="nhs-value-tile__value">{value}</span>
-    </div>
-  );
-}
-
 function IndicatorRow({ row }: { row: NHSDerivedRow }) {
   return (
     <article className="nhs-indicator-card">
       <div className="nhs-indicator-card__head">
         <p className="nhs-indicator-card__title">{row.indicador}</p>
-        {row.esProxy && (
-          <span className="nhs-indicator-card__badge">proxy contextual</span>
-        )}
+        <span className={row.esProxy ? "nhs-indicator-card__badge" : "nhs-indicator-card__badge nhs-indicator-card__badge--local"}>
+          {row.esProxy ? "proxy contextual" : "muestra local"}
+        </span>
       </div>
       <div className="nhs-indicator-card__values" aria-label={`Valores de ${row.indicador}`}>
         <IndicatorValue label="Territorio" value={row.valor} featured />
         <IndicatorValue label="Provincia" value={row.refGranada} />
         <IndicatorValue label="Andalucía" value={row.refAndalucia} />
       </div>
-      <IndicatorScopeChips row={row} />
       <ComparisonRail row={row} />
-      <p className="nhs-indicator-card__relation">{relationText(row)}</p>
+      <p className="nhs-indicator-card__relation">
+        La banda sitúa valores disponibles en una escala común; no emite dictamen sanitario.
+      </p>
     </article>
   );
 }
 
-function DomainStats({ rows }: { rows: NHSDerivedRow[] }) {
-  const withLocalValue = rows.filter((row) => isAvailableValue(row.valor)).length;
-  const withBothReferences = rows.filter(
-    (row) => isAvailableValue(row.refGranada) && isAvailableValue(row.refAndalucia)
-  ).length;
-  const proxies = rows.filter((row) => row.esProxy).length;
+function OverviewCard({ item }: { item: NHSDerivedOverviewMessage }) {
   return (
-    <div className="nhs-domain-stats" aria-label="Resumen del bloque">
-      <span>{withLocalValue}/{rows.length} con valor territorial</span>
-      <span>{withBothReferences} con doble referencia</span>
-      <span>{proxies} proxy</span>
-    </div>
+    <article className={`nhs-overview-card ${variantClass(item.variant)}`}>
+      <span className="nhs-overview-card__source">{item.source}</span>
+      <h3>{item.title}</h3>
+      <p className="nhs-overview-card__signal">{item.signal}</p>
+      <p>{item.text}</p>
+    </article>
   );
 }
 
-function buildReadingScopeNotes(rows: NHSDerivedRow[]): string[] {
-  const proxyRows = rows.filter((row) => row.esProxy).length;
-  const withoutComparableBand = rows.filter((row) => !hasComparableBand(row)).length;
-  const withoutProvince = rows.filter((row) => !isAvailableValue(row.refGranada)).length;
-  const withoutAndalusia = rows.filter((row) => !isAvailableValue(row.refAndalucia)).length;
-  const nonNumericLocal = rows.filter((row) => parseNumericValue(row.valor) === null).length;
-  const notes: string[] = [];
-
-  if (withoutComparableBand > 0) {
-    notes.push(
-      `${withoutComparableBand} indicador(es) no admiten banda visual por falta de valores numéricos comparables.`
-    );
-  }
-  if (proxyRows > 0) {
-    notes.push(
-      `${proxyRows} indicador(es) proceden de proxy contextual: orientan, pero no sustituyen una medición local directa.`
-    );
-  }
-  if (withoutProvince > 0 || withoutAndalusia > 0) {
-    notes.push(
-      `Faltan referencias en ${withoutProvince} indicador(es) para provincia y en ${withoutAndalusia} para Andalucía.`
-    );
-  }
-  if (nonNumericLocal > 0) {
-    notes.push(
-      `${nonNumericLocal} valor(es) territoriales no son numéricos y se mantienen como lectura textual.`
-    );
-  }
-  if (notes.length === 0) {
-    notes.push(
-      "Todas las filas visibles tienen valores numéricos comparables y referencia provincial y andaluza declarada."
-    );
-  }
-  return notes;
+function SourceCard({ block }: { block: NHSDerivedSourceBlock }) {
+  return (
+    <article className={`nhs-source-card ${variantClass(block.variant)}`}>
+      <h3>{block.title}</h3>
+      <dl>
+        <dt>Aporta</dt>
+        <dd>{block.whatItAdds}</dd>
+        <dt>No permite leer</dt>
+        <dd>{block.whatItDoesNotAllow}</dd>
+      </dl>
+    </article>
+  );
 }
 
-function ReadingQualityPanel({ rows }: { rows: NHSDerivedRow[] }) {
-  const total = rows.length;
-  const comparable = rows.filter((row) => hasComparableBand(row)).length;
-  const bothRefs = rows.filter((row) => hasBothReferences(row)).length;
-  const localSample = rows.filter((row) => !row.esProxy).length;
-  const proxyRows = total - localSample;
-  const notes = buildReadingScopeNotes(rows);
-  const metrics = [
-    {
-      value: `${comparable}/${total}`,
-      label: "con lectura visual",
-      text: "Al menos dos valores numéricos permiten situar territorio y referencia en una misma banda.",
-      tone: "info",
-    },
-    {
-      value: `${bothRefs}/${total}`,
-      label: "con doble referencia",
-      text: "Incluyen provincia y Andalucía, sin convertir diferencias en veredictos sanitarios.",
-      tone: "solid",
-    },
-    {
-      value: `${localSample}/${total}`,
-      label: "muestra local",
-      text: "No están marcados como proxy contextual en el trazador canónico.",
-      tone: "solid",
-    },
-    {
-      value: `${proxyRows}`,
-      label: "proxy contextual",
-      text: "Deben leerse como apoyo territorial, no como estimación distrital completa.",
-      tone: proxyRows > 0 ? "warning" : "muted",
-    },
-  ];
-
+function InformeRanking({ ranking }: { ranking: NHSDerivedInformeRanking }) {
   return (
-    <section className="workspace-panel nhs-quality-panel">
-      <div className="nhs-snapshot-panel__header">
-        <p className="eyebrow">Calidad de lectura</p>
-        <h3>Qué puede leerse y qué debe producirse mejor</h3>
+    <section className="workspace-panel nhs-ranking-panel">
+      <div className="nhs-section-head">
+        <p className="eyebrow">Mapa de temas del Informe</p>
+        <h3>Qué ocupa el texto sanitario de partida</h3>
       </div>
-      <div className="nhs-quality-grid" aria-label="Resumen de calidad de lectura">
-        {metrics.map((metric) => (
-          <div key={metric.label} className={`nhs-quality-card nhs-quality-card--${metric.tone}`}>
-            <span className="nhs-quality-card__value">{metric.value}</span>
-            <span className="nhs-quality-card__label">{metric.label}</span>
-            <span className="nhs-quality-card__text">{metric.text}</span>
+      <div className="nhs-ranking-list">
+        {ranking.items.map((item) => (
+          <div key={item.etiqueta} className="nhs-ranking-row">
+            <div className="nhs-ranking-row__label">
+              <span>{item.etiqueta}</span>
+              <strong>{item.valor}</strong>
+            </div>
+            <div className="nhs-ranking-row__bar" aria-hidden="true">
+              <span style={{ width: `${item.max > 0 ? Math.max(4, (item.valor / item.max) * 100) : 0}%` }} />
+            </div>
           </div>
         ))}
       </div>
-      <ul className="nhs-quality-notes" aria-label="Huecos metodológicos declarados">
-        {notes.map((note) => (
-          <li key={note}>{note}</li>
+      <p className="nhs-caption">{ranking.caption}</p>
+      <p className="nhs-caption">{ranking.unidad}</p>
+    </section>
+  );
+}
+
+function ReadingCard({ reading }: { reading: NHSDerivedTerritorialReading }) {
+  return (
+    <article className="nhs-reading-card">
+      <h3>{reading.title}</h3>
+      <p>{shorten(reading.reading)}</p>
+      <p className="nhs-reading-card__question">{reading.groupMotorQuestion}</p>
+    </article>
+  );
+}
+
+function AgendaCard({ item }: { item: NHSDerivedAgendaItem }) {
+  return (
+    <article className={`nhs-agenda-card ${variantClass(item.variant)}`}>
+      <span className="nhs-agenda-card__topic">{item.tema}</span>
+      <h3>{item.senal}</h3>
+      <p>{item.mecanismo}</p>
+      <p className="nhs-agenda-card__hidden">{item.oculto}</p>
+      <p className="nhs-agenda-card__question">{item.pregunta}</p>
+    </article>
+  );
+}
+
+function EmptyComparatorsPanel() {
+  return (
+    <section className="workspace-panel nhs-empty-comparators">
+      <div className="nhs-section-head">
+        <p className="eyebrow">Indicadores comparables</p>
+        <h3>No hay indicadores cuantitativos comparables en el trazador sellado</h3>
+      </div>
+      <p>
+        Esta ausencia no borra el Perfil: significa que el documento disponible
+        no contiene todavía una tabla de indicadores con valor territorial,
+        provincia y Andalucía. La ficha usa el Informe, los activos, las lecturas
+        territoriales y las preguntas de contraste, y deja visible qué dato
+        habría que producir para una lectura comparativa plena.
+      </p>
+    </section>
+  );
+}
+
+function DataGapsPanel({
+  warnings,
+  cautions,
+  pendingDeclaration,
+}: {
+  warnings: string[];
+  cautions: string[];
+  pendingDeclaration: string | null;
+}) {
+  const items = [
+    ...(pendingDeclaration !== null ? [pendingDeclaration] : []),
+    ...warnings,
+    ...cautions.filter((text) => !warnings.includes(text)).slice(0, 3),
+  ];
+  if (items.length === 0) return null;
+  return (
+    <section className="workspace-panel nhs-gaps-panel">
+      <div className="nhs-section-head">
+        <p className="eyebrow">Alcance honesto</p>
+        <h3>Qué no debe prometer este Perfil</h3>
+      </div>
+      <ul>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
         ))}
       </ul>
-      <p className="nhs-quality-panel__foot">
-        La calidad de lectura no pondera ni corrige valores: solo hace visible el alcance del dato disponible.
-      </p>
     </section>
   );
 }
@@ -358,7 +318,7 @@ function ReadingQualityPanel({ rows }: { rows: NHSDerivedRow[] }) {
 export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps) {
   const projection = projectNHSDerived(document);
 
-  if (!projection.available || document === null) {
+  if (!projection.available) {
     return (
       <section id={id} className="workspace-panel nhs-root">
         <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
@@ -367,83 +327,129 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
           Esta salida se inspira en los Local Authority Health Profiles de
           OHID/Fingertips, pero no es un producto autónomo ni una segunda fuente
           de verdad. Se mostrará cuando el Perfil se compile como PSL-C y exista
-          un documento canónico sellado del que derivar sus indicadores.
+          un documento canónico sellado.
         </p>
       </section>
     );
   }
 
   const groups = groupByConsecutiveBloque(projection.rows);
-  const proxyCount = projection.rows.filter((row) => row.esProxy).length;
-  const provincialRefs = projection.rows.filter((row) => isAvailableValue(row.refGranada)).length;
-  const andalusianRefs = projection.rows.filter((row) => isAvailableValue(row.refAndalucia)).length;
-  const completeReferenceRows = projection.rows.filter(
-    (row) => isAvailableValue(row.refGranada) && isAvailableValue(row.refAndalucia)
-  );
-  const comparableRows = projection.rows.filter((row) => buildRangePoints(row).length >= 2);
-  const spotlightRows = (completeReferenceRows.length > 0 ? completeReferenceRows : projection.rows).slice(0, 4);
-  const territory = document.editorialView.header.territory;
+  const comparableRows = projection.rows.filter((row) => hasComparableBand(row));
+  const doubleReferenceRows = projection.rows.filter((row) => hasBothReferences(row));
+  const proxyRows = projection.rows.filter((row) => row.esProxy);
+  const warnings = projection.documentaryBase?.scaleWarnings ?? [];
+  const cautionTexts = projection.methodologicalCautions.map((c) => c.text);
+  const featuredReadings = projection.territorialReadings.slice(0, 6);
 
   return (
     <div id={id} className="nhs-root">
-
       <section className="workspace-panel nhs-executive-hero">
         <div className="nhs-executive-hero__copy">
-          <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
-          <h2>{territory}: ficha ejecutiva de indicadores</h2>
+          <p className="eyebrow">Perfil de Salud Local · ficha pública tipo Local Health Profiles</p>
+          <h2>{projection.territory}: salud, capacidades y datos pendientes</h2>
           <p className="panel-note">
-            Representación derivada del Perfil canónico, inspirada en OHID/Fingertips.
-            Presenta valores del territorio y referencias provincial y andaluza tal
-            como constan en el documento. La relación visual indica mayor/menor
-            valor numérico, no valoración sanitaria.
+            Resumen visual derivado del Perfil canónico. Integra lo que el
+            expediente permite leer ahora: agenda sanitaria, activos, indicadores
+            si existen, preguntas de equidad y límites metodológicos.
           </p>
         </div>
         <div className="nhs-executive-hero__metrics" aria-label="Resumen visual de la ficha">
           <div className="nhs-executive-metric">
+            <span className="nhs-executive-metric__value">{projection.documentaryBase?.evidenceAtoms ?? "—"}</span>
+            <span className="nhs-executive-metric__label">evidencias</span>
+          </div>
+          <div className="nhs-executive-metric">
             <span className="nhs-executive-metric__value">{projection.rows.length}</span>
-            <span className="nhs-executive-metric__label">indicadores</span>
+            <span className="nhs-executive-metric__label">indicadores comparables</span>
           </div>
           <div className="nhs-executive-metric">
-            <span className="nhs-executive-metric__value">{groups.length}</span>
-            <span className="nhs-executive-metric__label">bloques</span>
+            <span className="nhs-executive-metric__value">{featuredReadings.length}</span>
+            <span className="nhs-executive-metric__label">lecturas clave</span>
           </div>
           <div className="nhs-executive-metric">
-            <span className="nhs-executive-metric__value">{proxyCount}</span>
-            <span className="nhs-executive-metric__label">proxy</span>
+            <span className="nhs-executive-metric__value">{readableStatus(projection.readingStatus)}</span>
+            <span className="nhs-executive-metric__label">{projection.generatedDateLabel}</span>
           </div>
         </div>
       </section>
 
-      {projection.rows.length === 0 ? (
-        <section className="workspace-panel">
-          <p className="panel-note">
-            El trazador del Perfil canónico no contiene filas disponibles para esta representación.
-          </p>
+      {projection.overview.length > 0 && (
+        <section className="workspace-panel nhs-overview-panel">
+          <div className="nhs-section-head">
+            <p className="eyebrow">Lectura para todos los públicos</p>
+            <h3>Tres mensajes de entrada</h3>
+          </div>
+          <div className="nhs-overview-grid">
+            {projection.overview.map((item) => (
+              <OverviewCard key={item.id} item={item} />
+            ))}
+          </div>
         </section>
+      )}
+
+      <section className="workspace-panel nhs-snapshot-panel">
+        <div className="nhs-section-head">
+          <p className="eyebrow">Cobertura de lectura</p>
+          <h3>Qué tipo de evidencia sostiene la ficha</h3>
+        </div>
+        <div className="nhs-snapshot-grid">
+          <div className="nhs-snapshot-card">
+            <span className="nhs-snapshot-card__value">{projection.sourceBlocks.length}</span>
+            <span className="nhs-snapshot-card__label">familias de fuente</span>
+          </div>
+          <div className="nhs-snapshot-card">
+            <span className="nhs-snapshot-card__value">{projection.informeSignalRanking?.items.length ?? 0}</span>
+            <span className="nhs-snapshot-card__label">temas del Informe</span>
+          </div>
+          <div className="nhs-snapshot-card">
+            <span className="nhs-snapshot-card__value">{projection.groupMotorAgenda.length}</span>
+            <span className="nhs-snapshot-card__label">preguntas públicas</span>
+          </div>
+          <div className="nhs-snapshot-card">
+            <span className="nhs-snapshot-card__value">{comparableRows.length}/{projection.rows.length}</span>
+            <span className="nhs-snapshot-card__label">con banda comparativa</span>
+          </div>
+        </div>
+      </section>
+
+      {projection.sourceBlocks.length > 0 && (
+        <section className="workspace-panel nhs-source-panel">
+          <div className="nhs-section-head">
+            <p className="eyebrow">Fuentes y alcance</p>
+            <h3>Qué aporta cada base de información</h3>
+          </div>
+          <div className="nhs-source-grid">
+            {projection.sourceBlocks.map((block) => (
+              <SourceCard key={block.id} block={block} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {projection.rows.length === 0 ? (
+        <EmptyComparatorsPanel />
       ) : (
         <>
-          <section className="workspace-panel nhs-snapshot-panel">
-            <div className="nhs-snapshot-panel__header">
-              <p className="eyebrow">Lectura ejecutiva</p>
-              <h3>Datos disponibles y huecos declarados</h3>
+          <section className="workspace-panel nhs-quality-panel">
+            <div className="nhs-section-head">
+              <p className="eyebrow">Indicadores comparables</p>
+              <h3>Valores territoriales y referencias</h3>
             </div>
-            <div className="nhs-snapshot-grid">
-              <div className="nhs-snapshot-card">
-                <span className="nhs-snapshot-card__value">{provincialRefs}</span>
-                <span className="nhs-snapshot-card__label">con referencia provincial</span>
+            <div className="nhs-quality-grid" aria-label="Resumen de indicadores comparables">
+              <div className="nhs-quality-card nhs-quality-card--info">
+                <span className="nhs-quality-card__value">{doubleReferenceRows.length}/{projection.rows.length}</span>
+                <span className="nhs-quality-card__label">con doble referencia</span>
+                <span className="nhs-quality-card__text">Provincia y Andalucía aparecen juntas.</span>
               </div>
-              <div className="nhs-snapshot-card">
-                <span className="nhs-snapshot-card__value">{andalusianRefs}</span>
-                <span className="nhs-snapshot-card__label">con referencia andaluza</span>
+              <div className="nhs-quality-card nhs-quality-card--warning">
+                <span className="nhs-quality-card__value">{proxyRows.length}</span>
+                <span className="nhs-quality-card__label">proxy contextual</span>
+                <span className="nhs-quality-card__text">Orientan contexto; no sustituyen una medición local directa.</span>
               </div>
-              <div className="nhs-snapshot-card">
-                <span className="nhs-snapshot-card__value">{comparableRows.length}</span>
-                <span className="nhs-snapshot-card__label">con banda comparativa</span>
-              </div>
-              <div className="nhs-snapshot-card nhs-snapshot-card--plain">
-                <span className="nhs-snapshot-card__label">
-                  Los valores no disponibles permanecen visibles: orientan qué datos conviene producir localmente.
-                </span>
+              <div className="nhs-quality-card nhs-quality-card--solid">
+                <span className="nhs-quality-card__value">{comparableRows.length}</span>
+                <span className="nhs-quality-card__label">con banda visual</span>
+                <span className="nhs-quality-card__text">La banda coloca valores, no los juzga.</span>
               </div>
             </div>
             <div className="nhs-key">
@@ -451,23 +457,7 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
               <span className="nhs-key__item nhs-key__item--local">Territorio</span>
               <span className="nhs-key__item nhs-key__item--province">Provincia</span>
               <span className="nhs-key__item nhs-key__item--andalusia">Andalucía</span>
-              <span className="nhs-key__note">
-                La banda no evalúa; solo coloca valores disponibles en una misma escala.
-              </span>
-            </div>
-          </section>
-
-          <ReadingQualityPanel rows={projection.rows} />
-
-          <section className="workspace-panel nhs-spotlight-panel">
-            <div className="nhs-snapshot-panel__header">
-              <p className="eyebrow">Indicadores destacados</p>
-              <h3>Primeras señales del trazador canónico</h3>
-            </div>
-            <div className="nhs-spotlight-grid">
-              {spotlightRows.map((row, ri) => (
-                <IndicatorRow key={`${row.indicador}-spotlight-${ri}`} row={row} />
-              ))}
+              <span className="nhs-key__note">La banda no evalúa; muestra distancia numérica visible.</span>
             </div>
           </section>
 
@@ -476,28 +466,60 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
               key={`${group.bloque}-${gi}`}
               className={`workspace-panel nhs-domain-panel nhs-domain-panel--tone-${(gi % 3) + 1}`}
             >
-              <div className="nhs-domain">
-                <div className="nhs-domain__header">
-                  <div>
-                    <p className="eyebrow">{group.bloque}</p>
-                    <h3>{group.bloque}</h3>
-                  </div>
-                  <p className="nhs-domain__count">
-                    {group.rows.length} indicador{group.rows.length !== 1 ? "es" : ""}
-                  </p>
+              <div className="nhs-domain__header">
+                <div>
+                  <p className="eyebrow">{group.bloque}</p>
+                  <h3>{group.bloque}</h3>
                 </div>
-                <DomainStats rows={group.rows} />
-                <div className="nhs-domain__rows">
-                  {group.rows.map((row, ri) => (
-                    <IndicatorRow key={`${row.indicador}-${ri}`} row={row} />
-                  ))}
-                </div>
+                <p className="nhs-domain__count">{group.rows.length} indicador{group.rows.length !== 1 ? "es" : ""}</p>
+              </div>
+              <div className="nhs-domain__rows">
+                {group.rows.map((row, ri) => (
+                  <IndicatorRow key={`${row.indicador}-${ri}`} row={row} />
+                ))}
               </div>
             </section>
           ))}
         </>
       )}
 
+      {projection.informeSignalRanking !== null && (
+        <InformeRanking ranking={projection.informeSignalRanking} />
+      )}
+
+      {featuredReadings.length > 0 && (
+        <section className="workspace-panel nhs-reading-panel">
+          <div className="nhs-section-head">
+            <p className="eyebrow">Lecturas territoriales</p>
+            <h3>Lo que el expediente permite formular</h3>
+          </div>
+          <div className="nhs-reading-grid">
+            {featuredReadings.map((reading) => (
+              <ReadingCard key={reading.title} reading={reading} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {projection.groupMotorAgenda.length > 0 && (
+        <section className="workspace-panel nhs-agenda-panel">
+          <div className="nhs-section-head">
+            <p className="eyebrow">Para conversación pública</p>
+            <h3>Preguntas que abren desigualdad y acceso real</h3>
+          </div>
+          <div className="nhs-agenda-grid">
+            {projection.groupMotorAgenda.map((item) => (
+              <AgendaCard key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <DataGapsPanel
+        warnings={warnings}
+        cautions={cautionTexts}
+        pendingDeclaration={projection.pendingDeclaration}
+      />
     </div>
   );
 }

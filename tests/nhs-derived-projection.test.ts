@@ -4,33 +4,37 @@
  * La vista breve NHS es una PROYECCIÓN PURA del documento canónico. Se verifica:
  *  1. Paridad 1:1 por posición con `editorialView.tracerTable` (el trazador NO
  *     tiene ID de fila: la identidad es posicional + textual, no se inventa).
- *  2. Rastreabilidad total: toda celda procede del trazador; el módulo no importa
+ *  2. Rastreabilidad total: las celdas comparativas proceden del trazador; el
+ *     resto procede de piezas canónicas ya selladas. El módulo no importa
  *     workspace, `NHS*`, el compilador NHS ni módulos metodológicos.
  *  3. Ausencia de semántica fabricada: sin `position`, `above/below/similar`,
- *     «mejor/peor», ranking, diferencia, umbral ni `lectura`.
+ *     «mejor/peor», ranking comparativo, diferencia, umbral ni `lectura`.
  *  4. Ausencias (refs, valor sintético defensivo, trazador vacío, doc null/legacy).
  *  5. Proxy: `esProxy` se preserva y manda; no se infiere del texto de `escala`.
- *  6. Frontera N+1: el proyector solo depende del trazador; el renderer no emite
- *     veredictos (comprobación estática).
+ *  6. Frontera N+1: sin trazador no fabrica indicadores comparables; usa las
+ *     otras piezas canónicas disponibles sin emitir veredictos.
  */
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   projectNHSDerived,
   type NHSDerivedProjection,
 } from "../src/application/health-profile/nhsDerivedProjection";
 import type { CanonicalProfileDocument } from "../src/application/health-profile/canonicalProfileDocument";
 import type { TrazadorRow } from "../src/application/health-profile/profileDiagnosticVisuals";
+import { NHSHealthProfileView } from "../src/ui/components/NHSHealthProfileView";
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "..", "src");
 const readSrc = (rel: string) => readFileSync(resolve(SRC, rel), "utf8");
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
-// El proyector solo lee `editorialView.tracerTable`; el resto del documento se
-// omite deliberadamente (cast) para probar que NADA más influye en la salida.
+// Fixture mínimo: permite probar la paridad de filas comparativas sin construir
+// todo el documento canónico.
 
 function docWith(
   tracerTable: TrazadorRow[],
@@ -191,10 +195,12 @@ describe("PR-D · preservación de esProxy", () => {
 
 // ── 6 · Frontera N+1 y renderer sin veredicto ─────────────────────────────────
 describe("PR-D · frontera N+1 y renderer", () => {
-  it("el proyector solo depende del trazador: ignora readingStatus y no cuenta evidencia", () => {
+  it("las filas comparativas mantienen paridad con el trazador aunque el estado editorial cambie", () => {
     const a = projectNHSDerived(docWith(SAMPLE, { readingStatus: "integrated", pendingDeclaration: null }));
     const b = projectNHSDerived(docWith(SAMPLE, { readingStatus: "prioritization-pending", pendingDeclaration: "pendiente" }));
-    expect(a).toEqual(b);
+    expect(rowsOf(a)).toEqual(rowsOf(b));
+    expect(a.available && a.readingStatus).toBe("integrated");
+    expect(b.available && b.readingStatus).toBe("prioritization-pending");
   });
 
   it("NHSHealthProfileView no contiene POSITION_LABEL, columna Posición ni etiquetas Mejor/Peor/Similar", () => {
@@ -220,7 +226,7 @@ describe("PR-D · frontera N+1 y renderer", () => {
     // ausencia de indicadores con referencia: la redacción no debe fabricar esa
     // inferencia no contenida en el canónico.
     const view = readSrc("ui/components/NHSHealthProfileView.tsx");
-    expect(view).toContain("no contiene filas disponibles para esta representación");
+    expect(view).toContain("No hay indicadores cuantitativos comparables en el trazador sellado");
     expect(view).not.toContain("no contiene indicadores con referencia");
   });
 
@@ -238,21 +244,50 @@ describe("PR-D · frontera N+1 y renderer", () => {
     expect(view).toContain("nhs-executive-hero");
     expect(view).toContain("nhs-snapshot-panel");
     expect(view).toContain("nhs-indicator-card");
+    expect(view).toContain("nhs-overview-panel");
+    expect(view).toContain("nhs-source-panel");
+    expect(view).toContain("nhs-ranking-panel");
+    expect(view).toContain("nhs-reading-panel");
+    expect(view).toContain("nhs-agenda-panel");
     expect(view).toContain("nhs-key");
     expect(view).toContain("nhs-range__rail");
     expect(view).toContain("nhs-quality-panel");
-    expect(view).toContain("nhs-scope-chips");
-    expect(view).toContain("Calidad de lectura");
-    expect(view).toContain("Qué puede leerse y qué debe producirse mejor");
-    expect(view).toContain("valor numérico, no valoración sanitaria");
+    expect(view).toContain("Alcance honesto");
+    expect(view).toContain("Tres mensajes de entrada");
+    expect(view).toContain("no emite dictamen sanitario");
     expect(view).toContain("La banda no evalúa");
-    expect(view).toContain("La calidad de lectura no pondera ni corrige valores");
-    expect(view).toContain("ficha ejecutiva de indicadores");
-    expect(view).toContain("Datos disponibles y huecos declarados");
+    expect(view).toContain("ficha pública tipo Local Health Profiles");
+    expect(view).toContain("Qué tipo de evidencia sostiene la ficha");
     expect(styles).toContain("nhs-range__point--province");
     expect(styles).toContain("nhs-key__item--andalusia");
-    expect(styles).toContain("nhs-domain-stats");
+    expect(styles).toContain("nhs-overview-grid");
+    expect(styles).toContain("nhs-ranking-row__bar");
     expect(styles).toContain("nhs-quality-grid");
-    expect(styles).toContain("nhs-scope-chip--warning");
+    expect(styles).toContain("nhs-gaps-panel");
+  });
+
+  it("Alfacar sin trazador comparativo produce una ficha pública rica, no una pantalla vacía", () => {
+    const seedPath = resolve(dirname(fileURLToPath(import.meta.url)), "../public/seeds/compas-ng-workspace-alfacar.json");
+    const workspace = JSON.parse(readFileSync(seedPath, "utf8"));
+    const artifact = workspace.compiledProfiles[workspace.compiledProfiles.length - 1];
+    const document = JSON.parse(artifact.canonicalDocument.payload) as CanonicalProfileDocument;
+    const projection = projectNHSDerived(document);
+
+    expect(projection.available).toBe(true);
+    if (!projection.available) return;
+    expect(projection.rows).toHaveLength(0);
+    expect(projection.overview.length).toBeGreaterThanOrEqual(3);
+    expect(projection.informeSignalRanking?.items.length).toBeGreaterThanOrEqual(6);
+    expect(projection.territorialReadings.length).toBeGreaterThanOrEqual(5);
+    expect(projection.groupMotorAgenda.length).toBeGreaterThanOrEqual(2);
+
+    const html = renderToStaticMarkup(createElement(NHSHealthProfileView, { document }));
+    expect(html).toContain("Alfacar: salud, capacidades y datos pendientes");
+    expect(html).toContain("Agenda sanitaria de partida");
+    expect(html).toContain("cáncer y tumores");
+    expect(html).toContain("Mapa de temas del Informe");
+    expect(html).toContain("No hay indicadores cuantitativos comparables");
+    expect(html).toContain("Cronicidad, envejecimiento y condiciones de vida");
+    expect(html).toContain("Preguntas que abren desigualdad y acceso real");
   });
 });
