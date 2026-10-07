@@ -1373,7 +1373,7 @@ export default function App() {
             setLastProcessedDocument(result.document);
             setLastAtomCount(result.atomsCreated);
             setDocumentFileMessage(
-              `«${docTitle}» registrado. ${result.atomsCreated} unidades de evidencia extraídas del texto.`
+              `Carga completada: «${docTitle}» se ha registrado desde el archivo. No necesitas rellenar el cuadro de texto. ${result.atomsCreated} unidades de evidencia extraídas.`
             );
           });
 
