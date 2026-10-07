@@ -23,8 +23,9 @@ export interface MunicipalitySeed {
  * real vigente y rehidratable.
  *
  * Estado (2026-09-07): expedientes canónicos cargables = Granada-Zaidín (7
- * documentos, 56 activos, 0 estudios aplicados) y Atarfe (Informe de Salud + IBSE municipal: 2
- * documentos, 6 evidencias). Alfacar, Churriana de la Vega y Zagra NO tienen
+ * documentos, 56 activos, 0 estudios aplicados), Atarfe (Informe de Salud + IBSE municipal: 2
+ * documentos, 6 evidencias) y Fuente Vaqueros (selección territorial del PLIZD+ 2024-2028).
+ * Alfacar, Churriana de la Vega y Zagra NO tienen
  * export real: se abren vacíos hasta que exista uno (no se inventa contenido; las
  * fixtures sintéticas o provinciales NO se promueven a datos de producción).
  */
@@ -38,6 +39,11 @@ export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
     municipalityId: "atarfe",
     expectedName: "Atarfe",
     path: "seeds/compas-ng-workspace-atarfe.json",
+  },
+  "fuente-vaqueros": {
+    municipalityId: "fuente-vaqueros",
+    expectedName: "Fuente Vaqueros",
+    path: "seeds/compas-ng-workspace-fuente-vaqueros.json",
   },
 };
 
