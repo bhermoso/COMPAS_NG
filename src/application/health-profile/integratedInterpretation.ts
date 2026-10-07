@@ -35,6 +35,10 @@ import {
   type IntegratedHealthProfileSignal,
   type IntegratedSignalSet,
 } from "./integratedProfileSignals";
+import {
+  buildHealthDeterminantFrameSummary,
+  type HealthDeterminantFrameSummary,
+} from "./healthDeterminantFrames";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -99,6 +103,8 @@ export interface IntegratedInterpretationUnit {
   corroboratingSignals: InterpretationSignalRef[];
   contextualSignals: InterpretationSignalRef[];
   plausibleDeterminants: string[];
+  recognizedDeterminants: string[];
+  determinantCaution?: string;
   inequalitiesOrUncertainties: string[];
   salutogenicCapacities: string[];
   limitations: string[];
@@ -568,6 +574,26 @@ function determinantesDelTema(
   );
 }
 
+function marcoDeterminantesDelTema(input: {
+  theme: InterpretationTheme;
+  findings: HealthReportStructuredFinding[];
+  sets: IntegratedSignalSet[];
+}): HealthDeterminantFrameSummary | undefined {
+  const { theme, findings, sets } = input;
+  const text = [
+    theme.title,
+    theme.question,
+    theme.territorialFrame,
+    theme.agendaTopicIncludes.join(" "),
+    findings.map((f) => `${f.topic} ${f.statement}`).join(" "),
+    sets
+      .flatMap((set) => set.all)
+      .map((signal) => `${signal.senal} ${signal.dimension}`)
+      .join(" "),
+  ].join(" ");
+  return buildHealthDeterminantFrameSummary(text);
+}
+
 /**
  * Conocimiento de autoría humana del técnico (porEspacio) que modula el tema.
  * Cada pieza se consume UNA vez (registro compartido), para que la
@@ -779,14 +805,27 @@ function tramoHumano(input: {
   return partes.length > 0 ? partes.join(" ") : undefined;
 }
 
+function tramoMarcoDeterminantes(
+  frame: HealthDeterminantFrameSummary | undefined
+): string {
+  if (frame === undefined) return "";
+  const determinants = frame.determinants.slice(0, 2).join(", ");
+  return (
+    ` Determinantes reconocidos: ${determinants}. ` +
+    "No ordena peso local."
+  );
+}
+
 function tramoMecanismo(
   theme: InterpretationTheme,
-  determinantes: string[]
+  determinantes: string[],
+  frame: HealthDeterminantFrameSummary | undefined
 ): string {
+  const marco = tramoMarcoDeterminantes(frame);
   if (determinantes.length === 0) {
-    return `${theme.mechanismFrame}; el mecanismo concreto queda por contrastar con el territorio.`;
+    return `${theme.mechanismFrame}; el mecanismo concreto queda por contrastar con el territorio.${marco}`;
   }
-  return `${theme.mechanismFrame}: ${determinantes[0]}. Es un mecanismo plausible, no una causa demostrada.`;
+  return `${theme.mechanismFrame}: ${determinantes[0]}. Es un mecanismo plausible, no una causa demostrada.${marco}`;
 }
 
 function tramoCapacidad(capacidades: string[]): string | undefined {
@@ -816,6 +855,7 @@ function componerRazonamiento(input: {
   corroborating: InterpretationSignalRef[];
   contextual: InterpretationSignalRef[];
   determinantes: string[];
+  determinantFrame?: HealthDeterminantFrameSummary;
   capacidades: string[];
   incertidumbres: string[];
   interpretaciones: string[];
@@ -830,7 +870,7 @@ function componerRazonamiento(input: {
       interpretaciones: input.interpretaciones,
       hipotesis: input.hipotesis,
     }),
-    tramoMecanismo(input.theme, input.determinantes),
+    tramoMecanismo(input.theme, input.determinantes, input.determinantFrame),
     tramoIncertidumbre(input.incertidumbres),
     tramoCapacidad(input.capacidades)
   );
@@ -897,6 +937,11 @@ export function buildIntegratedInterpretation(
     const determinantStatements = determinantes.map((d) => d.enunciado);
     const capacidades = capacidadesDelTema(answers, theme);
     const humano = conocimientoHumanoDelTema(answers, theme, humanLedger);
+    const determinantFrame = marcoDeterminantesDelTema({
+      theme,
+      findings,
+      sets,
+    });
 
     // Incertidumbres: la laguna específica de la señal local principal, la
     // limitación de escala del Informe cuando aplica, y la muestra pequeña.
@@ -962,6 +1007,7 @@ export function buildIntegratedInterpretation(
       determinantes: determinantes
         .filter((d) => d.kind === "plausible" || d.kind === "a-contrastar")
         .map((d) => d.enunciado),
+      determinantFrame,
       capacidades,
       incertidumbres: inequalitiesOrUncertainties,
       interpretaciones: humano.interpretaciones,
@@ -994,6 +1040,8 @@ export function buildIntegratedInterpretation(
       corroboratingSignals,
       contextualSignals,
       plausibleDeterminants: determinantStatements,
+      recognizedDeterminants: determinantFrame?.determinants ?? [],
+      determinantCaution: determinantFrame?.caution,
       inequalitiesOrUncertainties,
       salutogenicCapacities: capacidades,
       limitations: [

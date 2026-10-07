@@ -327,6 +327,18 @@ describe("determinantes, desigualdades y capacidades", () => {
     );
   });
 
+  it("16b. aporta determinantes reconocidos sin fingir jerarquía local", () => {
+    const cron = unit("cronicidad-condiciones-de-vida");
+    const text = cron.reasoning
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+    expect(text).toContain("determinantes reconocidos");
+    expect(text).toContain("no ordena peso local");
+    expect(text).toMatch(/actividad fisica|alimentacion|tabaco|condiciones sociales/);
+    expect(cron.recognizedDeterminants.length).toBeGreaterThan(0);
+  });
+
   it("15. la ausencia de desagregación es incertidumbre central, no marginal", () => {
     expect(interp.centralUncertainty.toLowerCase()).toMatch(
       /barrios|unidades asistenciales|desagregaci/

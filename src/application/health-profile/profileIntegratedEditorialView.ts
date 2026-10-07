@@ -1001,6 +1001,17 @@ function variantForUnit(unit: IntegratedInterpretationUnit): EvidenceVariant {
   return "informe";
 }
 
+function mechanismForUnit(unit: IntegratedInterpretationUnit): string {
+  if (unit.plausibleDeterminants.length > 0) return unit.plausibleDeterminants[0];
+  if (unit.recognizedDeterminants.length > 0) {
+    return (
+      `Determinantes reconocidos: ${unit.recognizedDeterminants.slice(0, 5).join(", ")}. ` +
+      (unit.determinantCaution ?? "")
+    ).trim();
+  }
+  return "por contrastar con el territorio";
+}
+
 function interpretationUnitToReadingBlock(
   unit: IntegratedInterpretationUnit,
   visibleAssistanceUnitIds: ReadonlySet<string>,
@@ -1027,7 +1038,7 @@ function interpretationUnitToReadingBlock(
     source,
     scale,
     reading: unit.reasoning,
-    mechanism: unit.plausibleDeterminants[0] ?? "por contrastar con el territorio",
+    mechanism: mechanismForUnit(unit),
     exclusion: unit.inequalitiesOrUncertainties[0] ?? lex.sinDesagregacionInterna,
     groupMotorQuestion: unit.question,
     motorQuestion: unit.question,

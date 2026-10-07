@@ -95,6 +95,15 @@ export {
   CAUSAL_STATUS_LABEL,
 } from "./profileScientificFramework";
 export type {
+  HealthDeterminantFrame,
+  HealthDeterminantFrameId,
+  HealthDeterminantFrameSummary,
+} from "./healthDeterminantFrames";
+export {
+  buildHealthDeterminantFrameSummary,
+  findHealthDeterminantFrames,
+} from "./healthDeterminantFrames";
+export type {
   IntegratedHealthProfileSignal,
   IntegratedMatrixRow,
   IntegratedSignalSet,

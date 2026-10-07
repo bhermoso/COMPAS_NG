@@ -20,6 +20,7 @@ import type { DiagnosticAnswers } from "./diagnosticAnswers";
 import { formatIndicatorValue } from "./complementaryIndicatorReferences";
 import { buildIntegratedProfileSignals } from "./integratedProfileSignals";
 import type { CausalStatus } from "./profileScientificFramework";
+import { buildHealthDeterminantFrameSummary } from "./healthDeterminantFrames";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -77,13 +78,17 @@ export function buildProfileSynthesis(
 
   // 1. Hilo sanitario primero: qué dice la fuente primaria (regla editorial).
   const dims = answers.sanitaria.senales.map((s) => s.dimension);
+  const sanitaryFrame = buildHealthDeterminantFrameSummary(dims.join(" "));
   if (answers.sanitaria.present && dims.length >= 3) {
     mensajes.push({
       id: "hilo-sanitario",
       texto:
         `${informe} marca la agenda sanitaria de partida: ${dims[0]}, ` +
         `${dims[1]} y ${dims[2]} concentran su atención, con las magnitudes ` +
-        `recogidas en el propio documento.`,
+        `recogidas en el propio documento.` +
+        (sanitaryFrame !== undefined
+          ? ` ${sanitaryFrame.statement} ${sanitaryFrame.caution}`
+          : ""),
     });
   }
 
@@ -160,7 +165,8 @@ export function buildProfileSynthesis(
       fuente: informe,
       escala: "ámbito del Informe",
       lectura:
-        "agenda de partida del diagnóstico; magnitudes en el propio Informe",
+        "agenda de partida del diagnóstico; magnitudes en el propio Informe" +
+        (sanitaryFrame !== undefined ? `; ${sanitaryFrame.statement}` : ""),
       pregunta: `¿Cómo se expresan ${dims[0]} y ${dims[1]} en la vida del barrio?`,
     });
   }

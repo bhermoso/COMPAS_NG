@@ -25,6 +25,10 @@ import type { DiagnosticAnswers } from "./diagnosticAnswers";
 import type { CausalStatus } from "./profileScientificFramework";
 import type { TerritorialLexicon } from "./territorialGrammar";
 import { formatIndicatorValue } from "./complementaryIndicatorReferences";
+import {
+  buildHealthDeterminantFrameSummary,
+  type HealthDeterminantFrameSummary,
+} from "./healthDeterminantFrames";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -75,6 +79,8 @@ export interface IntegratedHealthProfileSignal {
   desigualdad: DesigualdadNoObservable;
   /** Mecanismo social plausible (hipótesis trazable), si existe. */
   mecanismoPlausible?: string;
+  /** Determinantes reconocidos por salud pública para interpretar esta señal. */
+  determinantFrame?: HealthDeterminantFrameSummary;
   /** Ámbito de capacidad comunitaria relacionado, si existe. */
   activoRelacionado?: string;
   /** Popay: pendiente hasta material cualitativo/deliberación registrada. */
@@ -193,6 +199,41 @@ function buscarAmbito(
   )?.ambito;
 }
 
+function marcoDeterminantes(...parts: string[]): HealthDeterminantFrameSummary | undefined {
+  return buildHealthDeterminantFrameSummary(parts.join(" "));
+}
+
+function preguntaGrupoMotorPara(
+  senal: string,
+  lex: TerritorialLexicon,
+  frame: HealthDeterminantFrameSummary | undefined
+): string {
+  if (frame !== undefined) {
+    return (
+      `¿Cómo se expresa «${senal}» en la vida cotidiana ${lex.vidaCotidianaLocus}, ` +
+      `qué grupos cargan con más exposición y qué determinantes reconocidos ` +
+      `aparecen o faltan en el expediente?`
+    );
+  }
+  return (
+    `¿Cómo se expresa «${senal}» en la vida cotidiana ${lex.vidaCotidianaLocus} y ` +
+    `en qué grupos pesa más?`
+  );
+}
+
+function mecanismoIntegrado(s: IntegratedHealthProfileSignal): string {
+  const base = s.mecanismoPlausible;
+  const frame = s.determinantFrame;
+  if (base === undefined && frame === undefined) {
+    return "sin mecanismo formulado todavía";
+  }
+  if (frame === undefined) return base!;
+  if (base === undefined || base === frame.mechanism) {
+    return `${frame.mechanism} ${frame.caution}`;
+  }
+  return `${base} ${frame.statement} ${frame.caution}`;
+}
+
 // ── Constructor ───────────────────────────────────────────────────────────────
 
 export function buildIntegratedProfileSignals(
@@ -203,6 +244,7 @@ export function buildIntegratedProfileSignals(
 
   // 1. Señales sanitarias del Informe: presencia textual, nunca prevalencia.
   for (const s of answers.sanitaria.senales) {
+    const frame = marcoDeterminantes(s.dimension, s.terminos.join(" "));
     signals.push({
       id: `informe-${s.dimension.replace(/[^a-záéíóúñ]+/gi, "-").toLowerCase()}`,
       senal: s.dimension,
@@ -216,13 +258,12 @@ export function buildIntegratedProfileSignals(
       ambito: "informe",
       caracterExploratorio: false,
       desigualdad: desigualdadNoObservable(s.dimension, "informe", lex),
-      mecanismoPlausible: buscarMecanismo(s.dimension, answers),
+      mecanismoPlausible: buscarMecanismo(s.dimension, answers) ?? frame?.mechanism,
+      determinantFrame: frame,
       activoRelacionado: buscarAmbito(s.dimension, answers),
       validacionComunitariaPendiente: true,
       estatusCausal: "presencia-textual",
-      preguntaGrupoMotor:
-        `¿Cómo se expresa «${s.dimension}» en la vida cotidiana ${lex.vidaCotidianaLocus} y ` +
-        `en qué grupos pesa más?`,
+      preguntaGrupoMotor: preguntaGrupoMotorPara(s.dimension, lex, frame),
     });
   }
 
@@ -237,6 +278,7 @@ export function buildIntegratedProfileSignals(
     if (r.territorialValue === undefined) continue;
     const bloque = bloquePorId.get(r.diagnosticBlockId);
     const mecanismo = bloque?.relatedDeterminantHypotheses[0];
+    const frame = marcoDeterminantes(r.narrativeLabel, r.dimension, bloque?.title ?? "");
     const muestraStr =
       r.sampleSize !== undefined ? `n=${r.sampleSize}` : "muestra declarada";
     const escala = r.esLocal
@@ -259,13 +301,17 @@ export function buildIntegratedProfileSignals(
       caracterExploratorio: r.esLocal,
       tracerPriority: r.tracerPriority,
       desigualdad: desigualdadNoObservable(r.narrativeLabel, "trazador", lex),
-      mecanismoPlausible: mecanismo,
+      mecanismoPlausible: mecanismo ?? frame?.mechanism,
+      determinantFrame: frame,
       activoRelacionado: buscarAmbito(bloque?.title ?? r.narrativeLabel, answers),
       validacionComunitariaPendiente: true,
-      estatusCausal: mecanismo !== undefined ? "hipotesis-plausible" : "descriptivo",
+      estatusCausal:
+        mecanismo !== undefined || frame !== undefined
+          ? "hipotesis-plausible"
+          : "descriptivo",
       preguntaGrupoMotor:
         bloque?.contrastQuestions[0] ??
-        `¿Qué condiciones de vida del ámbito producen el patrón de ${r.narrativeLabel}?`,
+        preguntaGrupoMotorPara(r.narrativeLabel, lex, frame),
     });
   }
 
@@ -334,7 +380,7 @@ export function buildIntegratedMatrix(
       s.desigualdad.distribucion === "conocida"
         ? s.desigualdad.nota
         : `desconocida — ${s.desigualdad.nota}`,
-    mecanismo: s.mecanismoPlausible ?? "sin mecanismo formulado todavía",
+    mecanismo: mecanismoIntegrado(s),
     activoCapacidad:
       s.activoRelacionado !== undefined
         ? `${s.activoRelacionado} (capacidad potencial, pendiente de validación comunitaria)`

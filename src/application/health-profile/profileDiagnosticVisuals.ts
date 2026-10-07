@@ -248,11 +248,11 @@ export function buildDiagnosticVisuals(
     senal:
       "ningún dato del expediente está desagregado por sexo, edad o renta",
     mecanismo:
-      "distribución desigual de recursos, exposiciones y poder que los agregados ocultan",
+      "distribución desigual de recursos, exposiciones, poder y protección sanitaria que los agregados ocultan",
     oculto:
-      "los grupos que los agregados promedian: quien vive con menos renta, quien cuida, quien no llega a los servicios",
+      "los grupos que los agregados promedian: quien vive con menos renta, quien cuida, quien hereda vulnerabilidad o quien no llega a los servicios",
     pregunta:
-      "¿Qué grupos del territorio concentran el malestar y cuáles quedan fuera de los datos?",
+      "¿Qué grupos del territorio concentran exposición, menor protección o malestar y cuáles quedan fuera de los datos?",
     variant: "equidad",
   });
 
