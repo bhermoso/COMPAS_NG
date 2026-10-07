@@ -605,3 +605,39 @@ describe("recuperación desde almacenamiento ampliado", () => {
     expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(false);
   });
 });
+
+
+describe("expediente canónico de Fuente Vaqueros", () => {
+  const fuenteSeedPath = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    "../public/seeds/compas-ng-workspace-fuente-vaqueros.json"
+  );
+
+  it("se despliega, conserva la identidad y contiene únicamente la selección territorial autorizada", async () => {
+    const raw = readFileSync(fuenteSeedPath, "utf8");
+    const parsed = parseWorkspaceJSON(raw);
+    expect(hasMunicipalitySeed("fuente-vaqueros")).toBe(true);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.municipality.identity).toMatchObject({
+      id: "fuente-vaqueros",
+      name: "Fuente Vaqueros",
+      province: "Granada",
+      ineCode: "18079",
+    });
+    expect(parsed?.repository.documents).toHaveLength(1);
+    expect(parsed?.repository.documents[0]).toMatchObject({
+      kind: "territorial-documentation",
+      sourceFileName: "PLIZD FUENTE VAQUEROS 2024.pdf",
+    });
+    expect(parsed?.evidenceStore.atoms.length).toBeGreaterThan(0);
+
+    await expect(
+      loadMunicipalitySeed("fuente-vaqueros", {
+        baseUrl: "/COMPAS_NG/",
+        fetchImpl: okFetch(raw),
+      })
+    ).resolves.toMatchObject({
+      municipality: { identity: { id: "fuente-vaqueros" } },
+    });
+  });
+});
