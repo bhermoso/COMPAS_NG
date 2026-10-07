@@ -125,6 +125,7 @@ import {
 } from "./infrastructure/persistence/local-storage";
 import {
   loadWorkspaceFromIndexedDB,
+  loadAllWorkspacesFromIndexedDB,
   saveWorkspaceToIndexedDB,
 } from "./infrastructure/persistence/indexed-db-workspace";
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
@@ -417,6 +418,49 @@ export default function App() {
   const [customMunicipalities, setCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(
     () => initialCustomMunicipalities
   );
+
+  // El expediente completo puede sobrevivir en IndexedDB aunque la lista ligera
+  // de ámbitos de localStorage falte. Reconstruir el selector evita que un ámbito
+  // ya creado desaparezca al abrir otra pestaña o recargar la aplicación.
+  useEffect(() => {
+    let cancelled = false;
+    void loadAllWorkspacesFromIndexedDB().then((storedWorkspaces) => {
+      if (cancelled || storedWorkspaces.length === 0) return;
+      setCustomMunicipalities((current) => {
+        const byId = new Map(current.map((municipality) => [municipality.id, municipality]));
+        for (const stored of storedWorkspaces) {
+          const identity = stored.municipality.identity;
+          if (DEMO_MUNICIPALITIES.some((municipality) => municipality.id === identity.id)) {
+            continue;
+          }
+          byId.set(identity.id, {
+            id: identity.id,
+            name: identity.name,
+            province: identity.province,
+            ineCode: identity.ineCode,
+            territorialType: identity.territorialType,
+            createdBy: stored.municipality.metadata.createdBy ?? "Usuario",
+          });
+        }
+        const recovered = Array.from(byId.values());
+        if (
+          recovered.length === current.length &&
+          recovered.every((municipality, index) => municipality.id === current[index]?.id)
+        ) {
+          return current;
+        }
+        try {
+          localStorage.setItem(CUSTOM_MUNICIPALITIES_KEY, JSON.stringify(recovered));
+        } catch {
+          // IndexedDB sigue siendo la fuente de recuperación del catálogo.
+        }
+        return recovered;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [initialWorkspaceLoad] = useState<WorkspaceLoadResult>(() => {
     const initialMunicipality = resolveInitialMunicipality(initialCustomMunicipalities);
