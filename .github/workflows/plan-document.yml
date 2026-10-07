@@ -4,6 +4,8 @@ on:
     paths:
       - 'src/**'
       - 'tests/plan-document.test.ts'
+      - 'tests/municipality-seed-hydration.test.ts'
+      - 'public/seeds/**'
       - '.github/workflows/plan-document.yml'
 permissions:
   contents: read
@@ -18,4 +20,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npx vitest run tests/initial-local-health-plan.test.tsx tests/local-health-plan-outline.test.tsx tests/psl-c-canonical-projector.test.ts tests/zaidin-final-replacement.test.ts tests/plan-document.test.ts tests/plan-editor-whitespace.test.tsx tests/definitive-action-plan-preview.test.tsx
+      - run: npx vitest run tests/initial-local-health-plan.test.tsx tests/local-health-plan-outline.test.tsx tests/psl-c-canonical-projector.test.ts tests/zaidin-final-replacement.test.ts tests/plan-document.test.ts tests/plan-editor-whitespace.test.tsx tests/definitive-action-plan-preview.test.tsx tests/municipality-seed-hydration.test.ts
