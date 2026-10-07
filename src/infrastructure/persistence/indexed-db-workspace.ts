@@ -88,3 +88,41 @@ export async function loadWorkspaceFromIndexedDB(
     db.close();
   }
 }
+
+
+/**
+ * Recupera todos los expedientes del almacenamiento ampliado. Permite reconstruir
+ * el catálogo de ámbitos cuando la lista ligera de localStorage falta o quedó
+ * desactualizada, sin perder municipios que sí conservan su expediente.
+ */
+export async function loadAllWorkspacesFromIndexedDB(): Promise<MunicipalityWorkspace[]> {
+  let db: IDBDatabase;
+  try {
+    db = await database();
+  } catch {
+    return [];
+  }
+
+  try {
+    const rawValues = await new Promise<unknown[]>((resolve, reject) => {
+      const request = db
+        .transaction(STORE_NAME)
+        .objectStore(STORE_NAME)
+        .getAll();
+      request.onsuccess = () =>
+        resolve(Array.isArray(request.result) ? request.result : []);
+      request.onerror = () =>
+        reject(new Error("No se pudo reconstruir el catálogo de expedientes."));
+    });
+
+    return rawValues.flatMap((raw) => {
+      if (typeof raw !== "string") return [];
+      const workspace = parseWorkspaceJSON(raw);
+      return workspace === null ? [] : [workspace];
+    });
+  } catch {
+    return [];
+  } finally {
+    db.close();
+  }
+}
