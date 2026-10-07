@@ -65,6 +65,11 @@ export function DocumentIngestionPanel({
   const isTerritorialDocumentation = kind === "territorial-documentation";
   const isQualitativeMaterial = kind === "qualitative-material";
   const isLongitudinalEvidence = kind === "longitudinal-evidence";
+  const acceptsDocumentFile =
+    isStrategicFramework || isTerritorialDocumentation || isQualitativeMaterial;
+  const submissionHint = acceptsDocumentFile
+    ? "La carga desde archivo se registra automáticamente. Este formulario solo se usa si prefieres pegar el contenido manualmente."
+    : hint;
 
   return (
     <section className="workspace-panel">
@@ -74,10 +79,9 @@ export function DocumentIngestionPanel({
           <h2>Incorporar nueva documentación</h2>
         </div>
         <p className="panel-note">
-          Pega el texto de cualquier documento municipal —informe de salud,
-          memoria de actividades, diagnóstico de barrio, encuesta de
-          participación— y el sistema lo transforma en evidencias que
-          alimentan el análisis territorial.
+          Selecciona un archivo para registrarlo directamente o utiliza el
+          formulario manual como alternativa. Los documentos con texto extraíble
+          alimentan el análisis territorial con evidencias trazables.
         </p>
       </div>
 
@@ -182,7 +186,7 @@ export function DocumentIngestionPanel({
 
           {/* Vía B: pegar extracto analítico (genera prioridades estratégicas) */}
           <p className="ingestion-hint">
-            — O bien, pega un extracto analítico (líneas de actuación, objetivos, principios rectores).
+            Alternativa manual opcional: pega un extracto analítico (líneas de actuación, objetivos, principios rectores).
             Cada línea se registrará como prioridad estratégica de referencia trazable.
           </p>
           <textarea
@@ -201,12 +205,12 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar extracto
             </button>
           </div>
-          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {!canSubmit && <p className="ingestion-hint">{submissionHint}</p>}
           {lastProcessedDocument && lastProcessedDocument.kind === "strategic-framework" && (
             <p className="panel-note">
               Último marco registrado:{" "}
@@ -257,12 +261,12 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar documento
             </button>
           </div>
-          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {!canSubmit && <p className="ingestion-hint">{submissionHint}</p>}
           {lastProcessedDocument && lastProcessedDocument.kind === "complementary-study" && (
             <p className="panel-note">
               Último documento registrado:{" "}
@@ -325,12 +329,12 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar activos
             </button>
           </div>
-          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {!canSubmit && <p className="ingestion-hint">{submissionHint}</p>}
           {lastProcessedDocument && lastProcessedDocument.kind === "localiza-salud" && (
             <p className="panel-note">
               Último listado registrado:{" "}
@@ -397,7 +401,7 @@ export function DocumentIngestionPanel({
             )}
 
           {/* Vía B: pegar texto */}
-          <p className="ingestion-hint">— O bien, pega el contenido directamente:</p>
+          <p className="ingestion-hint">Alternativa manual opcional: pega el contenido directamente:</p>
           <textarea
             value={plainText}
             onChange={(event) => onPlainTextChange(event.target.value)}
@@ -414,12 +418,12 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar documentación
             </button>
           </div>
-          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {!canSubmit && <p className="ingestion-hint">{submissionHint}</p>}
           {lastProcessedDocument && lastProcessedDocument.kind === "territorial-documentation" && (
             <p className="panel-note">
               Último documento registrado:{" "}
@@ -487,7 +491,7 @@ export function DocumentIngestionPanel({
             )}
 
           {/* Vía B: pegar texto */}
-          <p className="ingestion-hint">— O bien, pega el contenido directamente:</p>
+          <p className="ingestion-hint">Alternativa manual opcional: pega el contenido directamente:</p>
           <textarea
             value={plainText}
             onChange={(event) => onPlainTextChange(event.target.value)}
@@ -504,12 +508,12 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar material cualitativo
             </button>
           </div>
-          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {!canSubmit && <p className="ingestion-hint">{submissionHint}</p>}
           {lastProcessedDocument && lastProcessedDocument.kind === "qualitative-material" && (
             <p className="panel-note">
               Último material registrado:{" "}
@@ -562,12 +566,12 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar evidencia longitudinal
             </button>
           </div>
-          {!canSubmit && <p className="ingestion-hint">{hint}</p>}
+          {!canSubmit && <p className="ingestion-hint">{submissionHint}</p>}
           {lastProcessedDocument && lastProcessedDocument.kind === "longitudinal-evidence" && (
             <p className="panel-note">
               Última evidencia registrada:{" "}
@@ -610,7 +614,7 @@ export function DocumentIngestionPanel({
               type="button"
               onClick={onProcessDocument}
               disabled={!canSubmit}
-              title={canSubmit ? undefined : hint}
+              title={canSubmit ? undefined : submissionHint}
             >
               Registrar documento
             </button>
