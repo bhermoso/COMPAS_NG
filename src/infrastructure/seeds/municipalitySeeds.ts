@@ -1,4 +1,5 @@
 import fuenteVaquerosSeed from "./fuenteVaquerosSeed";
+import lojaSeed from "./lojaSeed";
 import type { MunicipalityWorkspace } from "../../domain/workspace";
 import { parseWorkspaceJSON } from "../persistence/local-storage";
 
@@ -46,6 +47,11 @@ export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
     expectedName: "Fuente Vaqueros",
     path: "seeds/compas-ng-workspace-fuente-vaqueros.json",
   },
+  loja: {
+    municipalityId: "loja",
+    expectedName: "Loja",
+    path: "seeds/compas-ng-workspace-loja.json",
+  },
 };
 
 export function hasMunicipalitySeed(municipalityId: string): boolean {
@@ -92,6 +98,8 @@ export async function loadMunicipalitySeed(
     let raw: string;
     if (municipalityId === "fuente-vaqueros") {
       raw = JSON.stringify(fuenteVaquerosSeed);
+    } else if (municipalityId === "loja") {
+      raw = JSON.stringify(lojaSeed);
     } else {
       const response = await doFetch(municipalitySeedUrl(seed, options.baseUrl));
       if (!response.ok) return null;
