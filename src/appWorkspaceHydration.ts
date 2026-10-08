@@ -45,6 +45,11 @@ export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
     documentId: "doc-localiza-atarfe",
     marker: "atarfe-localiza-v1",
   },
+  {
+    municipalityId: "fuente-vaqueros",
+    documentId: "doc-territorial-fuente-vaqueros-plizd-2024",
+    marker: "fuente-vaqueros-plizd-v1",
+  },
 ];
 
 export const ACTIVE_MUNICIPALITY_STORAGE_KEY = "compas-ng:active-municipality";
