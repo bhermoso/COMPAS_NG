@@ -29,7 +29,6 @@ export interface MunicipalitySeed {
  * Alfacar, Atarfe, Fuente Vaqueros y Loja. Churriana de la Vega y Zagra se
  * abren vacíos mientras no exista documentación municipal real publicada.
  */
- */
 export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
   alfacar: {
     municipalityId: "alfacar",
