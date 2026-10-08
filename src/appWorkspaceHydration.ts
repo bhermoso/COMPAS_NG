@@ -33,6 +33,8 @@ export interface SeedDocumentMigration {
   municipalityId: string;
   documentId: string;
   marker: string;
+  /** Fusiona todos los documentos y átomos del seed en una sola migración. */
+  mergeAllDocuments?: boolean;
 }
 
 /**
