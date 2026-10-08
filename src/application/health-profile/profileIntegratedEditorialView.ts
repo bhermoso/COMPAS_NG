@@ -359,7 +359,12 @@ function pickSignal(
       includesAny(signalText(signal), definition.signalMatches)
   );
   if (preferred !== undefined) return preferred;
-  return signals.find((signal) => !used.has(signal.id));
+
+  // Un bloque editorial solo existe cuando el expediente contiene una señal
+  // relacionada con su tema. Reutilizar aquí «la primera señal libre» hacía que
+  // una evidencia cualquiera alimentara bloques de sueño, sedentarismo, apoyo
+  // social o alimentación y producía perfiles casi idénticos entre territorios.
+  return undefined;
 }
 
 function pickAgenda(
