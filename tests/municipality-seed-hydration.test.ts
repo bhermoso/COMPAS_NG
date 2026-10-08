@@ -594,6 +594,16 @@ describe("recuperación desde almacenamiento ampliado", () => {
     expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(true);
   });
 
+  it("no permite que una copia vacía más reciente sustituya el seed hidratado", () => {
+    const current = JSON.parse(ATARFE_SEED_RAW) as MunicipalityWorkspace;
+    const stored = createCompleteMunicipalityWorkspace(ATARFE_INPUT);
+    current.updatedAt = "2026-10-05T09:00:00.000Z";
+    stored.updatedAt = "2026-10-08T10:00:00.000Z";
+    expect(isEmptyWorkspaceForPersistenceGuard(current)).toBe(false);
+    expect(isEmptyWorkspaceForPersistenceGuard(stored)).toBe(true);
+    expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(false);
+  });
+
   it("no sustituye una copia local más reciente ni mezcla municipios", () => {
     const current = JSON.parse(ATARFE_SEED_RAW) as MunicipalityWorkspace;
     const stored = structuredClone(current);
