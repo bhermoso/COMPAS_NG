@@ -641,3 +641,57 @@ describe("expediente canónico de Fuente Vaqueros", () => {
     });
   });
 });
+
+describe("Fuente Vaqueros en navegadores sin descarga de JSON", () => {
+  const input = {
+    id: "fuente-vaqueros", name: "Fuente Vaqueros",
+    province: "Granada", ineCode: "18079", createdBy: "test",
+  };
+  it("recupera un placeholder persistido sin ninguna petición de red", async () => {
+    const placeholder = createCompleteMunicipalityWorkspace(input);
+    expect(saveWorkspaceToLocalStorage(placeholder)).toBe(true);
+    const loaded = loadOrCreateMunicipalityWorkspace(input.id, input);
+    expect(loaded.seedPending).toBe(true);
+    let requests = 0;
+    const blockedFetch = (async () => {
+      requests++;
+      throw new Error("ERR_BLOCKED_BY_CLIENT");
+    }) as typeof fetch;
+    const seed = await loadMunicipalitySeed(input.id, {
+      baseUrl: "/COMPAS_NG/", fetchImpl: blockedFetch,
+    });
+    expect(requests).toBe(0);
+    expect(seed).not.toBeNull();
+    expect(shouldReplaceWithSeed(loaded.workspace, input.id)).toBe(true);
+    expect(seed!.repository.documents).toHaveLength(1);
+    expect(seed!.evidenceStore.atoms).toHaveLength(29);
+    expect(saveWorkspaceToLocalStorage(seed!)).toBe(true);
+    const reloaded = loadOrCreateMunicipalityWorkspace(input.id, input);
+    expect(reloaded.seedPending).toBe(false);
+    expect(reloaded.workspace.repository.documents).toHaveLength(1);
+    expect(reloaded.workspace.evidenceStore.atoms).toHaveLength(29);
+  });
+  it("la copia incluida coincide con el seed público y cada carga es independiente", async () => {
+    const raw = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),
+      "../public/seeds/compas-ng-workspace-fuente-vaqueros.json"), "utf8");
+    const first = await loadMunicipalitySeed(input.id, { baseUrl: "/COMPAS_NG/" });
+    expect(first).toEqual(parseWorkspaceJSON(raw));
+    first!.repository.documents.length = 0;
+    const second = await loadMunicipalitySeed(input.id, { baseUrl: "/COMPAS_NG/" });
+    expect(second!.repository.documents).toHaveLength(1);
+  });
+  it("conserva trabajo local del usuario sin sustituirlo por el expediente inicial", () => {
+    const local = {
+      ...createCompleteMunicipalityWorkspace(input),
+      thematicPrioritisation: {
+        municipalityId: input.id, selectedTopicIds: ["bienestar-emocional"],
+        updatedAt: "2026-10-08T10:00:00.000Z",
+      },
+    };
+    expect(saveWorkspaceToLocalStorage(local)).toBe(true);
+    const loaded = loadOrCreateMunicipalityWorkspace(input.id, input);
+    expect(loaded.seedPending).toBe(false);
+    expect(shouldReplaceWithSeed(loaded.workspace, input.id)).toBe(false);
+    expect(loaded.workspace.thematicPrioritisation).toEqual(local.thematicPrioritisation);
+  });
+});
