@@ -43,6 +43,12 @@ export interface SeedDocumentMigration {
  */
 export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
   {
+    municipalityId: "alfacar",
+    documentId: "__all__",
+    marker: "alfacar-documentacion-canonica-v1",
+    mergeAllDocuments: true,
+  },
+  {
     municipalityId: "granada-zaidin",
     documentId: "__all__",
     marker: "granada-zaidin-documentacion-canonica-v1",
