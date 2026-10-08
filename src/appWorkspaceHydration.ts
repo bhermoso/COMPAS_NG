@@ -43,18 +43,26 @@ export interface SeedDocumentMigration {
  */
 export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
   {
+    municipalityId: "granada-zaidin",
+    documentId: "__all__",
+    marker: "granada-zaidin-documentacion-canonica-v1",
+    mergeAllDocuments: true,
+  },
+  {
     municipalityId: "atarfe",
-    documentId: "doc-localiza-atarfe",
-    marker: "atarfe-localiza-v1",
+    documentId: "__all__",
+    marker: "atarfe-documentacion-canonica-v2",
+    mergeAllDocuments: true,
   },
   {
     municipalityId: "fuente-vaqueros",
-    documentId: "doc-territorial-fuente-vaqueros-plizd-2024",
-    marker: "fuente-vaqueros-plizd-v1",
+    documentId: "__all__",
+    marker: "fuente-vaqueros-documentacion-canonica-v2",
+    mergeAllDocuments: true,
   },
   {
     municipalityId: "loja",
-    documentId: "doc-loja-perfil-salud-local-completo",
+    documentId: "__all__",
     marker: "loja-documentacion-base-v1",
     mergeAllDocuments: true,
   },

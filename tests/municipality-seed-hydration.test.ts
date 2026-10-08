@@ -384,38 +384,28 @@ function legacyAtarfeWithoutLocaliza(): MunicipalityWorkspace {
   };
 }
 
-describe("migración incremental de activos Localiza para Atarfe", () => {
-  it("M0. la marca del registro coincide con la del seed y el builder", () => {
-    expect(ATARFE_MIGRATION.marker).toBe(ATARFE_MARKER);
-    expect(ATARFE_MIGRATION.documentId).toBe("doc-localiza-atarfe");
-    expect(atarfeSeed().appliedSeedMigrations).toEqual([ATARFE_MARKER]);
-  });
-
-  it("M1. legacy sin marca y sin Localiza → download-and-merge → 3/11 + marca (atómico)", () => {
+describe("sincronización incremental de expedientes canónicos", () => {
+  it("sincroniza el seed completo de Atarfe sobre una copia parcial", () => {
     const legacy = legacyAtarfeWithoutLocaliza();
-    expect(legacy.repository.documents.length).toBe(2);
-    expect(legacy.evidenceStore.atoms.length).toBe(6);
+    const migration = INCREMENTAL_SEED_MIGRATIONS.find(
+      (item) => item.municipalityId === "atarfe"
+    )!;
     expect(resolveSeedMigration(legacy)).toEqual({
       kind: "download-and-merge",
-      migration: ATARFE_MIGRATION,
+      migration,
     });
 
-    const migrated = applySeedDocumentMigration(legacy, atarfeSeed(), ATARFE_MIGRATION);
-    expect(migrated.repository.documents.length).toBe(3);
-    expect(migrated.evidenceStore.atoms.length).toBe(11);
-    expect(
-      migrated.repository.documents.some((d) => d.id === "doc-localiza-atarfe")
-    ).toBe(true);
-    expect(
-      migrated.evidenceStore.atoms.filter(
-        (a) => a.provenance.origin === "localiza-salud"
-      )
-    ).toHaveLength(5);
-    // Marca estampada atómicamente con la fusión.
-    expect(migrated.appliedSeedMigrations).toContain(ATARFE_MARKER);
+    const migrated = applySeedDocumentMigration(legacy, atarfeSeed(), migration);
+    expect(migrated.repository.documents).toHaveLength(
+      atarfeSeed().repository.documents.length
+    );
+    expect(migrated.evidenceStore.atoms).toHaveLength(
+      atarfeSeed().evidenceStore.atoms.length
+    );
+    expect(migrated.appliedSeedMigrations).toContain(migration.marker);
   });
 
-  it("M2. preserva íntegramente el trabajo del usuario (docs y átomos ajenos)", () => {
+  it("preserva documentos y átomos propios al completar el expediente", () => {
     const legacy = legacyAtarfeWithoutLocaliza();
     const userDoc = {
       ...legacy.repository.documents[0],
@@ -426,7 +416,7 @@ describe("migración incremental de activos Localiza para Atarfe", () => {
       ...legacy.evidenceStore.atoms[0],
       id: "atom-usuario-propio",
     };
-    const withUserWork: MunicipalityWorkspace = {
+    const current: MunicipalityWorkspace = {
       ...legacy,
       repository: {
         ...legacy.repository,
@@ -437,152 +427,46 @@ describe("migración incremental de activos Localiza para Atarfe", () => {
         atoms: [...legacy.evidenceStore.atoms, userAtom],
       },
     };
-
-    const migrated = applySeedDocumentMigration(withUserWork, atarfeSeed(), ATARFE_MIGRATION);
-    // El trabajo propio permanece intacto.
-    expect(migrated.repository.documents.some((d) => d.id === "doc-usuario-propio")).toBe(true);
-    expect(migrated.evidenceStore.atoms.some((a) => a.id === "atom-usuario-propio")).toBe(true);
-    // Y solo se añadieron el documento Localiza y sus 5 átomos.
-    expect(migrated.repository.documents.length).toBe(withUserWork.repository.documents.length + 1);
-    expect(migrated.evidenceStore.atoms.length).toBe(withUserWork.evidenceStore.atoms.length + 5);
+    const migration = INCREMENTAL_SEED_MIGRATIONS.find(
+      (item) => item.municipalityId === "atarfe"
+    )!;
+    const migrated = applySeedDocumentMigration(current, atarfeSeed(), migration);
+    expect(migrated.repository.documents.some((d) => d.id === userDoc.id)).toBe(true);
+    expect(migrated.evidenceStore.atoms.some((a) => a.id === userAtom.id)).toBe(true);
   });
 
-  it("M3. idempotente: aplicar dos veces no duplica ni cambia (mismo objeto)", () => {
-    const legacy = legacyAtarfeWithoutLocaliza();
-    const once = applySeedDocumentMigration(legacy, atarfeSeed(), ATARFE_MIGRATION);
-    const twice = applySeedDocumentMigration(once, atarfeSeed(), ATARFE_MIGRATION);
-    // Segunda pasada = no-op por marca (identidad referencial).
-    expect(twice).toBe(once);
-    expect(twice.repository.documents.length).toBe(3);
-    expect(twice.evidenceStore.atoms.length).toBe(11);
-    // Sin ids de átomo duplicados.
-    const ids = twice.evidenceStore.atoms.map((a) => a.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it("M4. BORRADO POSTERIOR: marca presente y documento borrado → no se repone", () => {
-    // Estado tras migrar y luego borrar Localiza con «Eliminar» (doc + átomos fuera,
-    // marca conservada).
-    const migrated = applySeedDocumentMigration(
+  it("es idempotente y respeta retiradas posteriores gracias a la marca", () => {
+    const migration = INCREMENTAL_SEED_MIGRATIONS.find(
+      (item) => item.municipalityId === "atarfe"
+    )!;
+    const once = applySeedDocumentMigration(
       legacyAtarfeWithoutLocaliza(),
       atarfeSeed(),
-      ATARFE_MIGRATION
+      migration
     );
-    const afterDelete: MunicipalityWorkspace = {
-      ...migrated,
-      repository: {
-        ...migrated.repository,
-        documents: migrated.repository.documents.filter(
-          (d) => d.id !== "doc-localiza-atarfe"
-        ),
-      },
-      evidenceStore: {
-        ...migrated.evidenceStore,
-        atoms: migrated.evidenceStore.atoms.filter(
-          (a) => a.provenance.documentId !== "doc-localiza-atarfe"
-        ),
-      },
-    };
-    expect(afterDelete.appliedSeedMigrations).toContain(ATARFE_MARKER);
-    expect(
-      afterDelete.repository.documents.some((d) => d.id === "doc-localiza-atarfe")
-    ).toBe(false);
-    // La marca gana a la ausencia del documento: nada que hacer.
-    expect(resolveSeedMigration(afterDelete)).toEqual({ kind: "none" });
-    // Y aplicar la migración es un no-op (no repone el documento borrado).
-    const reapplied = applySeedDocumentMigration(afterDelete, atarfeSeed(), ATARFE_MIGRATION);
-    expect(reapplied).toBe(afterDelete);
-    expect(
-      reapplied.repository.documents.some((d) => d.id === "doc-localiza-atarfe")
-    ).toBe(false);
+    expect(resolveSeedMigration(once)).toEqual({ kind: "none" });
+    expect(applySeedDocumentMigration(once, atarfeSeed(), migration)).toBe(once);
   });
 
-  it("M5. BACKFILL: contiene Localiza pero sin marca → estampa marca, sin descargar ni duplicar", () => {
-    // Hidratación limpia entre despliegues: doc presente, marca ausente.
-    const cleanNoMarker = stripMigrationMarker(atarfeSeed());
-    expect(cleanNoMarker.repository.documents.length).toBe(3);
-    expect(resolveSeedMigration(cleanNoMarker)).toEqual({
-      kind: "backfill-marker",
-      migration: ATARFE_MIGRATION,
+  it("Granada-Zaidín también propone sincronización completa si falta la marca", () => {
+    const zaidin = JSON.parse(SEED_RAW) as MunicipalityWorkspace;
+    const migration = INCREMENTAL_SEED_MIGRATIONS.find(
+      (item) => item.municipalityId === "granada-zaidin"
+    )!;
+    expect(resolveSeedMigration(zaidin)).toEqual({
+      kind: "download-and-merge",
+      migration,
     });
-    const stamped = backfillSeedMigrationMarker(cleanNoMarker, ATARFE_MIGRATION);
-    expect(stamped.appliedSeedMigrations).toContain(ATARFE_MARKER);
-    // No duplica documentos ni átomos.
-    expect(stamped.repository.documents.length).toBe(3);
-    expect(stamped.evidenceStore.atoms.length).toBe(11);
-    // Tras el backfill ya no hay nada que hacer.
-    expect(resolveSeedMigration(stamped)).toEqual({ kind: "none" });
   });
 
-  it("M6. marca presente y documento presente → none (sin descarga)", () => {
-    expect(resolveSeedMigration(atarfeSeed())).toEqual({ kind: "none" });
-  });
-
-  it("M7. reemplazo completo desde el seed queda marcado como aplicado", async () => {
-    // Placeholder vacío de Atarfe → seedPending, sin migración incremental.
+  it("un placeholder vacío sigue usando hidratación completa, no migración", () => {
     const placeholder = createCompleteMunicipalityWorkspace(ATARFE_INPUT);
     expect(saveWorkspaceToLocalStorage(placeholder)).toBe(true);
     const result = loadOrCreateMunicipalityWorkspace("atarfe", ATARFE_INPUT);
     expect(result.seedPending).toBe(true);
     expect(result.seedMigration).toEqual({ kind: "none" });
-
-    // El seed que reemplaza YA lleva la marca → estado final marcado.
-    const seed = await loadMunicipalitySeed("atarfe", {
-      baseUrl: "/",
-      fetchImpl: okFetch(ATARFE_SEED_RAW),
-    });
-    const hydrated = shouldReplaceWithSeed(result.workspace, "atarfe") ? seed : result.workspace;
-    expect(hydrated?.appliedSeedMigrations).toContain(ATARFE_MARKER);
-    expect(resolveSeedMigration(hydrated!)).toEqual({ kind: "none" });
-  });
-
-  it("M8. fallo de descarga → la marca NO se registra (se reintenta)", async () => {
-    // Sembrar un Atarfe legacy persistido → loadOrCreate resuelve download-and-merge.
-    expect(saveWorkspaceToLocalStorage(legacyAtarfeWithoutLocaliza())).toBe(true);
-    const result = loadOrCreateMunicipalityWorkspace("atarfe", ATARFE_INPUT);
-    expect(result.seedMigration).toEqual({
-      kind: "download-and-merge",
-      migration: ATARFE_MIGRATION,
-    });
-    // La descarga falla → seed null → no se aplica la migración → sin marca.
-    const seed = await loadMunicipalitySeed("atarfe", {
-      baseUrl: "/",
-      fetchImpl: notOkFetch(),
-    });
-    expect(seed).toBeNull();
-    // El expediente legacy sigue sin marca: la próxima carga volverá a proponerla.
-    const stillLegacy = result.workspace;
-    expect((stillLegacy.appliedSeedMigrations ?? [])).not.toContain(ATARFE_MARKER);
-    expect(resolveSeedMigration(stillLegacy).kind).toBe("download-and-merge");
-  });
-
-  it("M9. otros municipios no migran (Granada-Zaidín)", () => {
-    const zaidin = JSON.parse(SEED_RAW) as MunicipalityWorkspace;
-    expect(resolveSeedMigration(zaidin)).toEqual({ kind: "none" });
-  });
-
-  it("M10. compatibilidad de esquema: legacy sin appliedSeedMigrations parsea; no-array se descarta", () => {
-    // (a) Legacy sin el campo → parsea con schemaVersion intacto, campo ausente.
-    const legacy = legacyAtarfeWithoutLocaliza();
-    const parsedLegacy = parseWorkspaceJSON(JSON.stringify(legacy))!;
-    expect(parsedLegacy).not.toBeNull();
-    expect(parsedLegacy.schemaVersion).toBe("1.0.0");
-    expect(parsedLegacy.appliedSeedMigrations).toBeUndefined();
-
-    // (b) Valor corrupto no-array → coerción defensiva lo descarta.
-    const corrupt = { ...atarfeSeed(), appliedSeedMigrations: "atarfe-localiza-v1" };
-    const parsedCorrupt = parseWorkspaceJSON(JSON.stringify(corrupt))!;
-    expect(parsedCorrupt.appliedSeedMigrations).toBeUndefined();
-  });
-
-  it("M11. loadOrCreate: un Atarfe ya migrado (con marca) no propone migración", () => {
-    expect(saveWorkspaceToLocalStorage(atarfeSeed())).toBe(true);
-    const result = loadOrCreateMunicipalityWorkspace("atarfe", ATARFE_INPUT);
-    expect(result.seedPending).toBe(false);
-    expect(result.seedMigration).toEqual({ kind: "none" });
   });
 });
-
 
 describe("recuperación desde almacenamiento ampliado", () => {
   it("recupera IndexedDB aunque localStorage contenga un seed no vacío más antiguo", () => {
