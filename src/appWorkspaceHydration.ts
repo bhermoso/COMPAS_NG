@@ -250,12 +250,12 @@ export function shouldRestoreIndexedDbWorkspace(
   if (current.municipality.identity.id !== stored.municipality.identity.id) {
     return false;
   }
-  if (
-    isEmptyWorkspaceForPersistenceGuard(current) &&
-    !isEmptyWorkspaceForPersistenceGuard(stored)
-  ) {
-    return true;
-  }
+  const currentIsEmpty = isEmptyWorkspaceForPersistenceGuard(current);
+  const storedIsEmpty = isEmptyWorkspaceForPersistenceGuard(stored);
+  if (currentIsEmpty && !storedIsEmpty) return true;
+  // Una copia vacía de IndexedDB puede ser más reciente que el seed porque se
+  // creó antes de que terminara la hidratación. Nunca debe borrar contenido real.
+  if (!currentIsEmpty && storedIsEmpty) return false;
   return stored.updatedAt > current.updatedAt;
 }
 
