@@ -1,3 +1,4 @@
+import fuenteVaquerosSeed from "./fuenteVaquerosSeed";
 import type { MunicipalityWorkspace } from "../../domain/workspace";
 import { parseWorkspaceJSON } from "../persistence/local-storage";
 
@@ -85,9 +86,17 @@ export async function loadMunicipalitySeed(
   if (seed === undefined) return null;
   const doFetch = options.fetchImpl ?? fetch;
   try {
-    const response = await doFetch(municipalitySeedUrl(seed, options.baseUrl));
-    if (!response.ok) return null;
-    const raw = await response.text();
+    // Fuente Vaqueros viaja con la aplicación: algunos navegadores integrados
+    // bloquean la descarga separada de JSON. Se valida con el mismo parser y se
+    // crea una copia nueva en cada carga para no compartir objetos mutables.
+    let raw: string;
+    if (municipalityId === "fuente-vaqueros") {
+      raw = JSON.stringify(fuenteVaquerosSeed);
+    } else {
+      const response = await doFetch(municipalitySeedUrl(seed, options.baseUrl));
+      if (!response.ok) return null;
+      raw = await response.text();
+    }
     const workspace = parseWorkspaceJSON(raw);
     if (workspace === null) return null;
     // Identidad municipal: el seed debe corresponder EXACTAMENTE al municipio pedido.
