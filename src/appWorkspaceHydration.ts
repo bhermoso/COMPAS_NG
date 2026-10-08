@@ -33,6 +33,8 @@ export interface SeedDocumentMigration {
   municipalityId: string;
   documentId: string;
   marker: string;
+  /** Fusiona todos los documentos y átomos del seed en una sola migración. */
+  mergeAllDocuments?: boolean;
 }
 
 /**
@@ -49,6 +51,12 @@ export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
     municipalityId: "fuente-vaqueros",
     documentId: "doc-territorial-fuente-vaqueros-plizd-2024",
     marker: "fuente-vaqueros-plizd-v1",
+  },
+  {
+    municipalityId: "loja",
+    documentId: "doc-loja-perfil-salud-local-completo",
+    marker: "loja-documentacion-base-v1",
+    mergeAllDocuments: true,
   },
 ];
 
@@ -175,32 +183,33 @@ export function applySeedDocumentMigration(
   if ((current.appliedSeedMigrations ?? []).includes(migration.marker)) {
     return current;
   }
-  const seedDoc = seed.repository.documents.find(
-    (d) => d.id === migration.documentId
-  );
-  // Defensivo: si el seed no trae el documento, NO se marca (permite reintentar).
-  if (seedDoc === undefined) return current;
+  const seedDocs = migration.mergeAllDocuments
+    ? seed.repository.documents
+    : seed.repository.documents.filter((d) => d.id === migration.documentId);
+  if (seedDocs.length === 0) return current;
 
+  const existingDocIds = new Set(current.repository.documents.map((d) => d.id));
   const existingAtomIds = new Set(current.evidenceStore.atoms.map((a) => a.id));
+  const migratedDocIds = new Set(seedDocs.map((d) => d.id));
+  const docsToAdd = seedDocs.filter((d) => !existingDocIds.has(d.id));
   const atomsToAdd = seed.evidenceStore.atoms.filter(
     (a) =>
-      a.provenance.documentId === migration.documentId &&
+      a.provenance.documentId !== undefined &&
+      migratedDocIds.has(a.provenance.documentId) &&
       !existingAtomIds.has(a.id)
   );
-  const alreadyHasDoc = current.repository.documents.some(
-    (d) => d.id === migration.documentId
-  );
-  const stamp = seedDoc.updatedAt;
+  const stamp = seed.updatedAt;
 
   const merged: MunicipalityWorkspace = {
     ...current,
-    repository: alreadyHasDoc
-      ? current.repository
-      : {
-          ...current.repository,
-          documents: [...current.repository.documents, seedDoc],
-          updatedAt: stamp,
-        },
+    repository:
+      docsToAdd.length === 0
+        ? current.repository
+        : {
+            ...current.repository,
+            documents: [...current.repository.documents, ...docsToAdd],
+            updatedAt: stamp,
+          },
     evidenceStore:
       atomsToAdd.length === 0
         ? current.evidenceStore
@@ -209,6 +218,7 @@ export function applySeedDocumentMigration(
             atoms: [...current.evidenceStore.atoms, ...atomsToAdd],
             updatedAt: stamp,
           },
+    updatedAt: stamp,
   };
   return withMarker(merged, migration.marker);
 }
