@@ -98,12 +98,12 @@ const GRANADA_INPUT = {
   territorialType: "distrito",
   createdBy: "test",
 };
-// Municipio SIN seed (Alfacar no tiene export canónico): comprueba el camino vacío.
-const ALFACAR_INPUT = {
-  id: "alfacar",
-  name: "Alfacar",
+// Municipio sin documentación canónica publicada: comprueba el camino vacío.
+const CHURRIANA_INPUT = {
+  id: "churriana",
+  name: "Churriana de la Vega",
   province: "Granada",
-  ineCode: "18011",
+  ineCode: "18062",
   createdBy: "test",
 };
 
@@ -172,14 +172,13 @@ describe("hidratación de expedientes municipales desde seed", () => {
   });
 
   it("5. un municipio sin seed crea un workspace vacío", async () => {
-    expect(hasMunicipalitySeed("alfacar")).toBe(false);
-    const result = loadOrCreateMunicipalityWorkspace("alfacar", ALFACAR_INPUT);
+    expect(hasMunicipalitySeed("churriana")).toBe(false);
+    const result = loadOrCreateMunicipalityWorkspace("churriana", CHURRIANA_INPUT);
     expect(result.seedPending).toBe(false);
     expect(result.workspace.repository.documents.length).toBe(0);
     expect(result.workspace.evidenceStore.atoms.length).toBe(0);
-    // Y el loader de seed lo rechaza aunque se le pase contenido.
     await expect(
-      loadMunicipalitySeed("alfacar", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
+      loadMunicipalitySeed("churriana", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
     ).resolves.toBeNull();
   });
 
@@ -587,5 +586,53 @@ describe("Fuente Vaqueros en navegadores sin descarga de JSON", () => {
     expect(loaded.seedPending).toBe(false);
     expect(shouldReplaceWithSeed(loaded.workspace, input.id)).toBe(false);
     expect(loaded.workspace.thematicPrioritisation).toEqual(local.thematicPrioritisation);
+  });
+});
+
+
+describe("expediente canónico de Alfacar", () => {
+  const alfacarRaw = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../public/seeds/compas-ng-workspace-alfacar.json"),
+    "utf8"
+  );
+
+  it("publica el Informe de Salud y la documentación territorial observada", () => {
+    const workspace = parseWorkspaceJSON(alfacarRaw);
+    expect(workspace?.municipality.identity.id).toBe("alfacar");
+    expect(workspace?.repository.documents.some((doc) => doc.kind === "health-report")).toBe(true);
+    expect(workspace?.repository.documents.length).toBeGreaterThan(1);
+    expect(workspace?.evidenceStore.atoms.length).toBeGreaterThan(0);
+  });
+
+  it("se carga integrado aunque el navegador bloquee la descarga JSON", async () => {
+    expect(hasMunicipalitySeed("alfacar")).toBe(true);
+    const workspace = await loadMunicipalitySeed("alfacar", {
+      baseUrl: "/COMPAS_NG/",
+      fetchImpl: throwingFetch(),
+    });
+    expect(workspace?.municipality.identity.name).toBe("Alfacar");
+    expect(workspace?.repository.documents.some((doc) => doc.kind === "health-report")).toBe(true);
+  });
+
+  it("migra toda la documentación a una copia local anterior sin sobrescribirla", async () => {
+    const migration = INCREMENTAL_SEED_MIGRATIONS.find(
+      (item) => item.municipalityId === "alfacar"
+    );
+    expect(migration?.mergeAllDocuments).toBe(true);
+    const current = createCompleteMunicipalityWorkspace({
+      id: "alfacar",
+      name: "Alfacar",
+      province: "Granada",
+      ineCode: "18011",
+      createdBy: "test",
+    });
+    const seed = await loadMunicipalitySeed("alfacar", {
+      baseUrl: "/",
+      fetchImpl: throwingFetch(),
+    });
+    expect(seed).not.toBeNull();
+    const migrated = applySeedDocumentMigration(current, seed!, migration!);
+    expect(migrated.repository.documents.length).toBe(seed!.repository.documents.length);
+    expect(migrated.evidenceStore.atoms.length).toBe(seed!.evidenceStore.atoms.length);
   });
 });
