@@ -965,7 +965,13 @@ function buildDiagnosticSynthesis(
     .map((unit) => lowerFirst(unit.title));
   const integrated = statusCounts["integrated-interpretation"];
   const hypotheses = statusCounts["plausible-hypothesis"];
-  const open = statusCounts["open-question"];
+  const contrastQuestions = unique(
+    interpretation.units.map((unit) => unit.question)
+  ).slice(0, 4);
+  // El recuento editorial describe la lista que el lector ve. El número de
+  // unidades con estado open-question se conserva en statusCounts para la
+  // trazabilidad técnica, pero no puede anunciar cinco preguntas si se muestran cuatro.
+  const open = contrastQuestions.length;
 
   const thesis =
     interpretation.units.length > 0
@@ -985,9 +991,7 @@ function buildDiagnosticSynthesis(
     thesis,
     interpretiveWeight,
     caution,
-    contrastQuestions: unique(
-      interpretation.units.map((unit) => unit.question)
-    ).slice(0, 4),
+    contrastQuestions,
     traceability: {
       unitIds: interpretation.units.map((unit) => unit.id),
       localSignalIds,
