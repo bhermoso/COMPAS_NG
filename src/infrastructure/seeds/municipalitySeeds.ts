@@ -1,3 +1,4 @@
+import alfacarSeed from "./alfacarSeed";
 import fuenteVaquerosSeed from "./fuenteVaquerosSeed";
 import lojaSeed from "./lojaSeed";
 import type { MunicipalityWorkspace } from "../../domain/workspace";
@@ -24,14 +25,17 @@ export interface MunicipalitySeed {
  * Registro genérico de seeds canónicos. SOLO se registran municipios con un export
  * real vigente y rehidratable.
  *
- * Estado (2026-09-07): expedientes canónicos cargables = Granada-Zaidín (7
- * documentos, 56 activos, 0 estudios aplicados), Atarfe (Informe de Salud + IBSE municipal: 2
- * documentos, 6 evidencias) y Fuente Vaqueros (selección territorial del PLIZD+ 2024-2028).
- * Alfacar, Churriana de la Vega y Zagra NO tienen
- * export real: se abren vacíos hasta que exista uno (no se inventa contenido; las
- * fixtures sintéticas o provinciales NO se promueven a datos de producción).
+ * Estado (2026-10-08): expedientes canónicos cargables = Granada-Zaidín,
+ * Alfacar, Atarfe, Fuente Vaqueros y Loja. Churriana de la Vega y Zagra se
+ * abren vacíos mientras no exista documentación municipal real publicada.
+ */
  */
 export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
+  alfacar: {
+    municipalityId: "alfacar",
+    expectedName: "Alfacar",
+    path: "seeds/compas-ng-workspace-alfacar.json",
+  },
   "granada-zaidin": {
     municipalityId: "granada-zaidin",
     expectedName: "Granada-Zaidín",
@@ -96,7 +100,9 @@ export async function loadMunicipalitySeed(
     // bloquean la descarga separada de JSON. Se valida con el mismo parser y se
     // crea una copia nueva en cada carga para no compartir objetos mutables.
     let raw: string;
-    if (municipalityId === "fuente-vaqueros") {
+    if (municipalityId === "alfacar") {
+      raw = JSON.stringify(alfacarSeed);
+    } else if (municipalityId === "fuente-vaqueros") {
       raw = JSON.stringify(fuenteVaquerosSeed);
     } else if (municipalityId === "loja") {
       raw = JSON.stringify(lojaSeed);
