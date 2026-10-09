@@ -68,7 +68,7 @@ function addDocument(
 }
 
 describe("Biblioteca documental COMPAS", () => {
-  it("permite consultar todos los documentos de otros expedientes y marca los asignables", () => {
+  it("solo expone marcos estrategicos transversales de otros expedientes", () => {
     let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
     const strategic = addDocument(source, {
       id: "epvsa",
@@ -86,21 +86,39 @@ describe("Biblioteca documental COMPAS", () => {
       tags: ["health-report"],
     });
     source = healthReport.workspace;
+    const localAssets = addDocument(source, {
+      id: "localiza-zaidin",
+      kind: "localiza-salud",
+      title: "Activos Localiza Salud Granada-Zaidín",
+      sourceText: "Activos concretos de un territorio concreto.",
+      tags: ["localiza-salud", "asset"],
+    });
+    source = localAssets.workspace;
+    const territorial = addDocument(source, {
+      id: "diagnostico-zaidin",
+      kind: "territorial-documentation",
+      title: "Diagnostico territorial Granada-Zaidín",
+      sourceText: "Diagnostico local no reutilizable como extra intermunicipal.",
+    });
+    source = territorial.workspace;
 
     const library = collectCompasDocumentLibrary(
       [source, makeWorkspace("alfacar", "Alfacar")],
       "alfacar"
     );
 
-    expect(library.map((item) => item.document.id)).toEqual([
-      "health-report",
-      "epvsa",
-    ]);
+    expect(library.map((item) => item.document.id)).toEqual(["epvsa"]);
     expect(library.find((item) => item.document.id === "epvsa")?.canAssign).toBe(
       true
     );
+    expect(library.some((item) => item.document.id === "health-report")).toBe(
+      false
+    );
+    expect(library.some((item) => item.document.id === "localiza-zaidin")).toBe(
+      false
+    );
     expect(
-      library.find((item) => item.document.id === "health-report")?.canAssign
+      library.some((item) => item.document.id === "diagnostico-zaidin")
     ).toBe(false);
   });
 
@@ -201,10 +219,10 @@ describe("Biblioteca documental COMPAS", () => {
   it("genera evidencia desde sourceText si el origen no tenia atomos derivados", () => {
     let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
     const added = addDocument(source, {
-      id: "informe-territorial",
-      kind: "territorial-documentation",
-      title: "Informe territorial complementario",
-      sourceText: "Tasa de envejecimiento superior a la media provincial.",
+      id: "plan-mayores",
+      kind: "strategic-framework",
+      title: "Plan estrategico de mayores",
+      sourceText: "Prioridad: envejecimiento activo y cuidados comunitarios.",
     });
     source = added.workspace;
     const target = makeWorkspace("alfacar", "Alfacar");
@@ -224,7 +242,7 @@ describe("Biblioteca documental COMPAS", () => {
     expect(result.atomsCreated[0].tags).toContain("compas-library-assigned");
   });
 
-  it("no copia automaticamente tipos no reutilizables como health-report", () => {
+  it("no expone ni copia automaticamente tipos no reutilizables como health-report", () => {
     let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
     const added = addDocument(source, {
       id: "health-report",
@@ -236,14 +254,16 @@ describe("Biblioteca documental COMPAS", () => {
     });
     source = added.workspace;
     const target = makeWorkspace("alfacar", "Alfacar");
-    const item = collectCompasDocumentLibrary([source, target], "alfacar")[0];
+    const library = collectCompasDocumentLibrary([source, target], "alfacar");
+
+    expect(library).toHaveLength(0);
 
     const result = assignLibraryDocumentToWorkspace({
       workspace: target,
-      sourceMunicipalityId: item.sourceMunicipalityId,
-      sourceMunicipalityName: item.sourceMunicipalityName,
-      document: item.document,
-      atoms: item.atoms,
+      sourceMunicipalityId: "granada-zaidin",
+      sourceMunicipalityName: "Granada-Zaidín",
+      document: added.document,
+      atoms: [],
     });
 
     expect(result.status).toBe("not-assignable");

@@ -281,11 +281,14 @@ metadatos documentales, `sourceText` disponible y referencia al archivo original
 cuando exista; la procedencia de la copia queda expresada en `source.system` y
 en los tags de trazabilidad.
 
-Solo son asignables automáticamente los tipos acumulables de contexto y
-planificación que pueden ser reutilizados entre ámbitos con revisión técnica:
-`strategic-framework`, `territorial-documentation`, `qualitative-material` y
-`longitudinal-evidence`. El resto de documentos de la biblioteca puede
-consultarse, pero no se copia automáticamente al expediente destino.
+Solo son visibles y asignables automáticamente los marcos estratégicos y
+normativos de alcance transversal (`strategic-framework`): EPVSA, ESCA,
+planes autonómicos y documentos equivalentes que no describen un expediente
+local concreto. Los documentos de ámbito municipal o inframunicipal de otro
+territorio —Informes de Salud, activos Localiza, diagnósticos territoriales,
+estudios complementarios, materiales cualitativos o evidencias longitudinales
+locales— no pertenecen a la Biblioteca COMPÁS interexpediente y no se ofrecen
+como documentación adicional del expediente activo.
 
 Si el documento origen ya tenía `EvidenceAtom` derivados, la asignación clona
 esos átomos reescribiendo `municipalityId` y `provenance.documentId` hacia el

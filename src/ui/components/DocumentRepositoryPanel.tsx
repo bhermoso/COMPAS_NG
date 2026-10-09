@@ -134,7 +134,7 @@ function LibraryDocumentRow({
         <p className="document-kind">{getDocumentKindLabel(item.document)}</p>
         <h3>{item.document.title}</h3>
         <p className="doc-repo__source">
-          Expediente origen: {item.sourceMunicipalityName}
+          Guardado en COMPÁS desde: {item.sourceMunicipalityName}
           {item.document.source.system ? ` · ${item.document.source.system}` : ""}
         </p>
       </div>
@@ -216,15 +216,15 @@ export function DocumentRepositoryPanel({
             <div>
               <p className="eyebrow">Biblioteca documental COMPÁS</p>
               <h2>
-                Documentación disponible en otros expedientes
+                Marcos estratégicos reutilizables
                 {libraryDocuments.length > 0 && (
                   <span className="doc-repo__count">{libraryDocuments.length}</span>
                 )}
               </h2>
             </div>
             <p className="panel-note">
-              Consulta documentación acumulada en COMPÁS y asigna al expediente activo
-              una copia trazable de los marcos y fuentes reutilizables.
+              Consulta la documentación transversal acumulada en COMPÁS y asigna al expediente activo
+              una copia trazable de los marcos reutilizables.
             </p>
           </div>
           {libraryMessage && (
@@ -234,7 +234,7 @@ export function DocumentRepositoryPanel({
           )}
           {libraryDocuments.length === 0 ? (
             <p className="empty-state">
-              No hay documentos guardados en otros expedientes de este navegador.
+              No hay marcos estratégicos reutilizables guardados en otros expedientes de este navegador.
             </p>
           ) : (
             <details>

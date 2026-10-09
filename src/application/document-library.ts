@@ -14,9 +14,6 @@ export const COMPAS_LIBRARY_SOURCE_DOCUMENT_TAG_PREFIX = "source-document:";
 
 export const COMPAS_LIBRARY_ASSIGNABLE_KINDS: readonly DocumentKind[] = [
   "strategic-framework",
-  "territorial-documentation",
-  "qualitative-material",
-  "longitudinal-evidence",
 ];
 
 const LIBRARY_LIMITATION =
@@ -103,6 +100,10 @@ export function isLibraryAssignableDocument(
   );
 }
 
+function isCompasLibraryVisibleDocument(document: MunicipalDocument): boolean {
+  return isLibraryAssignableDocument(document);
+}
+
 function hasAssignedSourceDocument(
   workspace: MunicipalityWorkspace | undefined,
   sourceMunicipalityId: string,
@@ -149,6 +150,8 @@ export function collectCompasDocumentLibrary(
     if (sourceMunicipalityId === targetMunicipalityId) continue;
 
     for (const document of workspace.repository.documents) {
+      if (!isCompasLibraryVisibleDocument(document)) continue;
+
       const key = libraryDocumentKey(sourceMunicipalityId, document.id);
       if (byKey.has(key)) continue;
       const alreadyAssigned = hasAssignedSourceDocument(
