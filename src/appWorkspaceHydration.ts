@@ -23,11 +23,10 @@ import { hasMunicipalitySeed } from "./infrastructure/seeds";
 
 /**
  * Migración incremental de un documento de seed a un expediente ya persistido.
- * A diferencia del reemplazo completo (`shouldReplaceWithSeed`), añade ÚNICAMENTE
- * el documento indicado y sus átomos derivados cuando faltan, preservando todo el
- * trabajo del usuario. Se controla con una marca versionada (`marker`) en
- * `MunicipalityWorkspace.appliedSeedMigrations`, de modo que un borrado deliberado
- * posterior mediante «Eliminar» se respeta (la marca gana a la ausencia del doc).
+ * A diferencia del reemplazo completo (`shouldReplaceWithSeed`), añade los
+ * documentos y átomos canónicos que falten, preservando todo el trabajo del
+ * usuario. La marca versionada evita duplicidades, pero no permite que una copia
+ * local más pobre tape la base documental oficial del expediente.
  */
 export interface SeedDocumentMigration {
   municipalityId: string;
@@ -35,6 +34,10 @@ export interface SeedDocumentMigration {
   marker: string;
   /** Fusiona todos los documentos y átomos del seed en una sola migración. */
   mergeAllDocuments?: boolean;
+  /** Umbral mínimo esperable para detectar copias locales incompletas. */
+  expectedMinDocuments?: number;
+  /** Umbral mínimo esperable de átomos de evidencia derivados del seed. */
+  expectedMinEvidenceAtoms?: number;
 }
 
 /**
@@ -47,24 +50,40 @@ export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
     documentId: "__all__",
     marker: "granada-zaidin-documentacion-canonica-v1",
     mergeAllDocuments: true,
+    expectedMinDocuments: 8,
+    expectedMinEvidenceAtoms: 56,
   },
   {
     municipalityId: "atarfe",
     documentId: "__all__",
     marker: "atarfe-documentacion-canonica-v2",
     mergeAllDocuments: true,
+    expectedMinDocuments: 3,
+    expectedMinEvidenceAtoms: 11,
+  },
+  {
+    municipalityId: "alfacar",
+    documentId: "__all__",
+    marker: "alfacar-documentacion-base-v1",
+    mergeAllDocuments: true,
+    expectedMinDocuments: 2,
+    expectedMinEvidenceAtoms: 7,
   },
   {
     municipalityId: "fuente-vaqueros",
     documentId: "__all__",
     marker: "fuente-vaqueros-documentacion-canonica-v2",
     mergeAllDocuments: true,
+    expectedMinDocuments: 1,
+    expectedMinEvidenceAtoms: 29,
   },
   {
     municipalityId: "loja",
     documentId: "__all__",
     marker: "loja-documentacion-base-v1",
     mergeAllDocuments: true,
+    expectedMinDocuments: 6,
+    expectedMinEvidenceAtoms: 0,
   },
 ];
 
@@ -128,11 +147,41 @@ export interface WorkspaceLoadResult {
   seedMigration: SeedMigrationAction;
 }
 
+function migrationForMunicipality(
+  municipalityId: string
+): SeedDocumentMigration | undefined {
+  return INCREMENTAL_SEED_MIGRATIONS.find(
+    (migration) => migration.municipalityId === municipalityId
+  );
+}
+
+function hasExpectedSeedBaseline(
+  workspace: MunicipalityWorkspace,
+  migration: SeedDocumentMigration
+): boolean {
+  const hasExpectedDocs =
+    migration.expectedMinDocuments === undefined ||
+    workspace.repository.documents.length >= migration.expectedMinDocuments;
+  const hasExpectedAtoms =
+    migration.expectedMinEvidenceAtoms === undefined ||
+    workspace.evidenceStore.atoms.length >= migration.expectedMinEvidenceAtoms;
+  return hasExpectedDocs && hasExpectedAtoms;
+}
+
+function hasSeedBaselineRegression(
+  current: MunicipalityWorkspace,
+  stored: MunicipalityWorkspace
+): boolean {
+  const migration = migrationForMunicipality(current.municipality.identity.id);
+  if (migration === undefined) return false;
+  return hasExpectedSeedBaseline(current, migration) && !hasExpectedSeedBaseline(stored, migration);
+}
+
 /**
  * Resuelve la migración incremental aplicable a un expediente. Predicado puro:
- * la marca versionada tiene prioridad absoluta sobre la presencia del documento,
- * de modo que un borrado deliberado posterior (doc ausente, marca presente) NO
- * reintroduce el documento.
+ * si la copia local no alcanza el mínimo documental del seed canónico, se fuerza
+ * la descarga y fusión aunque exista una marca antigua. La marca solo cierra la
+ * migración cuando el expediente conserva la base esperada.
  */
 export function resolveSeedMigration(
   current: MunicipalityWorkspace
@@ -143,6 +192,10 @@ export function resolveSeedMigration(
     const hasMarker = (current.appliedSeedMigrations ?? []).includes(
       migration.marker
     );
+    const hasBaseline = hasExpectedSeedBaseline(current, migration);
+    if (hasMarker && !hasBaseline) {
+      return { kind: "download-and-merge", migration };
+    }
     if (hasMarker) return { kind: "none" };
     const hasDoc = current.repository.documents.some(
       (d) => d.id === migration.documentId
@@ -187,10 +240,6 @@ export function applySeedDocumentMigration(
   seed: MunicipalityWorkspace,
   migration: SeedDocumentMigration
 ): MunicipalityWorkspace {
-  // Ya aplicada: no-op (idempotencia por marca).
-  if ((current.appliedSeedMigrations ?? []).includes(migration.marker)) {
-    return current;
-  }
   const seedDocs = migration.mergeAllDocuments
     ? seed.repository.documents
     : seed.repository.documents.filter((d) => d.id === migration.documentId);
@@ -206,6 +255,13 @@ export function applySeedDocumentMigration(
       migratedDocIds.has(a.provenance.documentId) &&
       !existingAtomIds.has(a.id)
   );
+  if (
+    (current.appliedSeedMigrations ?? []).includes(migration.marker) &&
+    docsToAdd.length === 0 &&
+    atomsToAdd.length === 0
+  ) {
+    return current;
+  }
   const stamp = seed.updatedAt;
 
   const merged: MunicipalityWorkspace = {
@@ -279,6 +335,9 @@ export function shouldRestoreIndexedDbWorkspace(
   // Una copia vacía de IndexedDB puede ser más reciente que el seed porque se
   // creó antes de que terminara la hidratación. Nunca debe borrar contenido real.
   if (!currentIsEmpty && storedIsEmpty) return false;
+  // Si el workspace actual ya contiene la base canónica de un municipio con
+  // seed, una copia persistida más pobre no puede sustituirlo por ser más nueva.
+  if (hasSeedBaselineRegression(current, stored)) return false;
   return stored.updatedAt > current.updatedAt;
 }
 

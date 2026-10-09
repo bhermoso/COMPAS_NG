@@ -98,7 +98,6 @@ const GRANADA_INPUT = {
   territorialType: "distrito",
   createdBy: "test",
 };
-// Municipio SIN seed (Alfacar no tiene export canónico): comprueba el camino vacío.
 const ALFACAR_INPUT = {
   id: "alfacar",
   name: "Alfacar",
@@ -171,16 +170,25 @@ describe("hidratación de expedientes municipales desde seed", () => {
     ).toBeNull();
   });
 
-  it("5. un municipio sin seed crea un workspace vacío", async () => {
-    expect(hasMunicipalitySeed("alfacar")).toBe(false);
+  it("5. Alfacar tiene seed canónico y arranca con hidratación pendiente", async () => {
+    const alfacarRaw = readFileSync(
+      resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "../public/seeds/compas-ng-workspace-alfacar.json"
+      ),
+      "utf8"
+    );
+    expect(hasMunicipalitySeed("alfacar")).toBe(true);
     const result = loadOrCreateMunicipalityWorkspace("alfacar", ALFACAR_INPUT);
-    expect(result.seedPending).toBe(false);
+    expect(result.seedPending).toBe(true);
     expect(result.workspace.repository.documents.length).toBe(0);
     expect(result.workspace.evidenceStore.atoms.length).toBe(0);
-    // Y el loader de seed lo rechaza aunque se le pase contenido.
     await expect(
-      loadMunicipalitySeed("alfacar", { baseUrl: "/", fetchImpl: okFetch(SEED_RAW) })
-    ).resolves.toBeNull();
+      loadMunicipalitySeed("alfacar", { baseUrl: "/", fetchImpl: okFetch(alfacarRaw) })
+    ).resolves.toMatchObject({
+      municipality: { identity: { id: "alfacar" } },
+      repository: { documents: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]) },
+    });
   });
 
   it("5b. granada-zaidin sin expediente local → seedPending true con placeholder vacío", () => {
@@ -351,6 +359,14 @@ const ATARFE_INPUT = {
   ineCode: "18022",
   createdBy: "test",
 };
+const LOJA_SEED_PATH = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../public/seeds/compas-ng-workspace-loja.json"
+);
+const LOJA_SEED_RAW = readFileSync(LOJA_SEED_PATH, "utf8");
+const LOJA_MIGRATION = INCREMENTAL_SEED_MIGRATIONS.find(
+  (m) => m.municipalityId === "loja"
+)!;
 
 /** Seed real de Atarfe (3 docs / 11 átomos, con la marca aplicada). */
 function atarfeSeed(): MunicipalityWorkspace {
@@ -466,6 +482,26 @@ describe("sincronización incremental de expedientes canónicos", () => {
     expect(result.seedPending).toBe(true);
     expect(result.seedMigration).toEqual({ kind: "none" });
   });
+
+  it("Loja recupera el seed aunque una copia local marcada haya perdido documentos", () => {
+    const seed = parseWorkspaceJSON(LOJA_SEED_RAW)!;
+    const partial: MunicipalityWorkspace = {
+      ...seed,
+      repository: {
+        ...seed.repository,
+        documents: seed.repository.documents.slice(0, 3),
+      },
+      appliedSeedMigrations: [LOJA_MIGRATION.marker],
+      updatedAt: "2026-10-09T08:00:00.000Z",
+    };
+    expect(resolveSeedMigration(partial)).toEqual({
+      kind: "download-and-merge",
+      migration: LOJA_MIGRATION,
+    });
+    const repaired = applySeedDocumentMigration(partial, seed, LOJA_MIGRATION);
+    expect(repaired.repository.documents).toHaveLength(seed.repository.documents.length);
+    expect(repaired.appliedSeedMigrations).toContain(LOJA_MIGRATION.marker);
+  });
 });
 
 describe("recuperación desde almacenamiento ampliado", () => {
@@ -485,6 +521,21 @@ describe("recuperación desde almacenamiento ampliado", () => {
     stored.updatedAt = "2026-10-08T10:00:00.000Z";
     expect(isEmptyWorkspaceForPersistenceGuard(current)).toBe(false);
     expect(isEmptyWorkspaceForPersistenceGuard(stored)).toBe(true);
+    expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(false);
+  });
+
+  it("no permite que una copia más reciente pero documentalmente más pobre tape Loja", () => {
+    const current = parseWorkspaceJSON(LOJA_SEED_RAW)!;
+    const stored: MunicipalityWorkspace = {
+      ...current,
+      repository: {
+        ...current.repository,
+        documents: current.repository.documents.slice(0, 3),
+      },
+      updatedAt: "2026-10-09T08:00:00.000Z",
+    };
+    expect(current.repository.documents).toHaveLength(6);
+    expect(stored.repository.documents).toHaveLength(3);
     expect(shouldRestoreIndexedDbWorkspace(current, stored)).toBe(false);
   });
 
