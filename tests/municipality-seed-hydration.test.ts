@@ -367,6 +367,13 @@ const LOJA_SEED_RAW = readFileSync(LOJA_SEED_PATH, "utf8");
 const LOJA_MIGRATION = INCREMENTAL_SEED_MIGRATIONS.find(
   (m) => m.municipalityId === "loja"
 )!;
+const LOJA_INPUT = {
+  id: "loja",
+  name: "Loja",
+  province: "Granada",
+  ineCode: "18122",
+  createdBy: "test",
+};
 
 /** Seed real de Atarfe (3 docs / 11 átomos, con la marca aplicada). */
 function atarfeSeed(): MunicipalityWorkspace {
@@ -501,6 +508,35 @@ describe("sincronización incremental de expedientes canónicos", () => {
     const repaired = applySeedDocumentMigration(partial, seed, LOJA_MIGRATION);
     expect(repaired.repository.documents).toHaveLength(seed.repository.documents.length);
     expect(repaired.appliedSeedMigrations).toContain(LOJA_MIGRATION.marker);
+  });
+
+  it("Loja se repara si IndexedDB aporta una copia parcial durante la hidratación del seed", () => {
+    const seed = parseWorkspaceJSON(LOJA_SEED_RAW)!;
+    const placeholder = createCompleteMunicipalityWorkspace(LOJA_INPUT);
+    const indexedPartial: MunicipalityWorkspace = {
+      ...seed,
+      repository: {
+        ...seed.repository,
+        documents: seed.repository.documents.slice(0, 2),
+      },
+      appliedSeedMigrations: [],
+      updatedAt: "2026-10-09T08:00:00.000Z",
+    };
+
+    expect(shouldRestoreIndexedDbWorkspace(placeholder, indexedPartial)).toBe(true);
+    const migration = resolveSeedMigration(indexedPartial);
+    expect(migration).toEqual({
+      kind: "download-and-merge",
+      migration: LOJA_MIGRATION,
+    });
+    const repaired =
+      migration.kind === "download-and-merge"
+        ? applySeedDocumentMigration(indexedPartial, seed, migration.migration)
+        : indexedPartial;
+    expect(repaired.repository.documents).toHaveLength(seed.repository.documents.length);
+    expect(
+      repaired.repository.documents.some((document) => document.kind === "health-report")
+    ).toBe(true);
   });
 });
 

@@ -34,6 +34,7 @@ import {
   shouldRestoreIndexedDbWorkspace,
   applySeedDocumentMigration,
   backfillSeedMigrationMarker,
+  resolveSeedMigration,
   readActiveMunicipalityId,
   saveActiveMunicipalityId,
   type WorkspaceLoadResult,
@@ -815,9 +816,32 @@ export default function App() {
         // mismo municipio. Cubre tanto el placeholder recién creado en memoria como
         // el placeholder de la versión anterior ya persistido en localStorage
         // (migración): en ambos casos el workspace en memoria está vacío.
-        setWorkspace((current) =>
-          shouldReplaceWithSeed(current, seedMunicipalityId) ? seedWorkspace : current
-        );
+        setWorkspace((current) => {
+          if (shouldReplaceWithSeed(current, seedMunicipalityId)) {
+            return seedWorkspace;
+          }
+          if (current.municipality.identity.id !== seedMunicipalityId) {
+            return current;
+          }
+          const migration = resolveSeedMigration(current);
+          if (
+            migration.kind === "download-and-merge" &&
+            migration.migration.municipalityId === seedMunicipalityId
+          ) {
+            return applySeedDocumentMigration(
+              current,
+              seedWorkspace,
+              migration.migration
+            );
+          }
+          if (
+            migration.kind === "backfill-marker" &&
+            migration.migration.municipalityId === seedMunicipalityId
+          ) {
+            return backfillSeedMigrationMarker(current, migration.migration);
+          }
+          return current;
+        });
       }
       // Éxito o fallo, la hidratación termina: se libera el guard de persistencia.
       // Si falló (municipio sin seed real), el placeholder vacío pasará a guardarse.
