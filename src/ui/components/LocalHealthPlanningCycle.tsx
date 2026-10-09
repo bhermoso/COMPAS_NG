@@ -10,7 +10,7 @@ type PhaseStatus =
   | "requires-validation";
 
 // La vista destino al hacer clic en una fase (coincide con AppView de App.tsx).
-// Se define como string genérico para no crear dependencia circular con App.tsx.
+// Se define como string generico para no crear dependencia circular con App.tsx.
 type AppViewId = string;
 
 interface CyclePhase {
@@ -20,8 +20,8 @@ interface CyclePhase {
   status: PhaseStatus;
   note?: string;
   navigateTo?: AppViewId;
-  statusLabel?: string; // sobreescribe STATUS_LABEL cuando fuente cargada ≠ producto completado
-  scopeBoundary?: boolean; // true → insertar separador visual antes de esta fase
+  statusLabel?: string; // sobreescribe STATUS_LABEL cuando fuente cargada != producto completado
+  scopeBoundary?: boolean; // true -> insertar separador visual antes de esta fase
 }
 
 export interface LocalHealthPlanningCycleProps {
@@ -32,6 +32,8 @@ export interface LocalHealthPlanningCycleProps {
   /** Existe al menos un artefacto institucional PSL-C compilado/congelado. */
   pslCompiled: boolean;
   thematicPrioritisationDone: boolean;
+  /** Seleccion deliberativa del Grupo Motor ya adoptada; opcional hasta consolidar App.tsx. */
+  prioritySelectionDone?: boolean;
   onNavigate?: (view: AppViewId) => void;
 }
 
@@ -45,8 +47,8 @@ const STATUS_LABEL: Record<PhaseStatus, string> = {
   "requires-validation":  "Revisar",
 };
 
-// ── Derivación de fases ───────────────────────────────────────────────────────
-// Inferencia prudente: solo usa señales disponibles en el workspace.
+// ── Derivacion de fases ───────────────────────────────────────────────────────
+// Inferencia prudente: solo usa senales disponibles en el workspace.
 // Nunca inventa validaciones que el sistema no puede verificar.
 
 function derivePhases({
@@ -56,21 +58,22 @@ function derivePhases({
   pslIsStale,
   pslCompiled,
   thematicPrioritisationDone,
+  prioritySelectionDone = false,
 }: LocalHealthPlanningCycleProps): CyclePhase[] {
-  const pslValidated  = pslStatus === "validated" && !pslIsStale;
-  const pslStaleNote  = pslIsStale ? "La evidencia ha cambiado" : undefined;
+  const pslReady = (pslStatus === "validated" || pslStatus === "approved") && !pslIsStale;
+  const pslStaleNote = pslIsStale ? "La evidencia ha cambiado" : undefined;
 
-  // 3 — Perfil de Salud Local
-  // «Completada» exige el artefacto institucional PSL-C compilado/congelado:
-  // la validación técnica del borrador no cierra la fase por sí sola.
+  // 2 - Perfil de salud local
+  // "Completada" exige el artefacto institucional PSL-C compilado/congelado:
+  // la validacion tecnica del borrador no cierra la fase por si sola.
   let pslPhase: PhaseStatus;
   let pslStatusLabel: string | undefined;
   let pslNote = pslStaleNote;
-  if (pslStatus === "validated" && pslIsStale) {
+  if ((pslStatus === "validated" || pslStatus === "approved") && pslIsStale) {
     pslPhase = "requires-validation";
-  } else if (pslValidated && pslCompiled) {
+  } else if (pslReady && pslCompiled) {
     pslPhase = "completed";
-  } else if (pslValidated) {
+  } else if (pslReady) {
     pslPhase = "current";
     pslStatusLabel = "Validado técnicamente";
     pslNote = "Pendiente de compilación institucional";
@@ -80,53 +83,64 @@ function derivePhases({
     pslPhase = "pending";
   }
 
-  // 4 — Priorización (formal = participación + PSL validado + deliberación)
-  // La participación ciudadana puede realizarse antes de validar el PSL.
-  // Mientras el PSL no está validado, la priorización formal permanece pendiente,
-  // no bloqueada, para reflejar el progreso real del expediente.
+  // 3 - Priorizacion (formal = participacion + PSL validado + deliberacion)
+  // La participacion ciudadana puede realizarse antes de validar el PSL.
+  // La fase permanece accesible para que no quede enterrada bajo el Plan de accion:
+  // permite preparar participacion, ver candidaturas y documentar lo que falta.
   let prioPhase: PhaseStatus;
   let prioNote: string | undefined;
-  if (pslValidated && thematicPrioritisationDone) {
+  if (pslReady && prioritySelectionDone) {
     prioPhase = "completed";
-  } else if (pslValidated && !thematicPrioritisationDone) {
+  } else if (pslReady) {
     prioPhase = "current";
-  } else if (!pslValidated && thematicPrioritisationDone) {
-    prioPhase = "pending";
-    prioNote  = "Participación ciudadana recibida";
+    prioNote = thematicPrioritisationDone
+      ? "Pendiente de selección del Grupo Motor"
+      : "Pendiente de participación ciudadana";
+  } else if (!pslReady && thematicPrioritisationDone) {
+    prioPhase = "current";
+    prioNote = "Participación ciudadana recibida; falta validar el perfil";
+  } else if (pslHasEvidence) {
+    prioPhase = "current";
+    prioNote = "Preparar participación y criterios";
   } else {
-    prioPhase = "blocked";
+    prioPhase = "pending";
   }
 
-  // 5 — Plan de Acción
+  // 4 - Plan de accion
   let planPhase: PhaseStatus;
-  if (!pslValidated) {
+  if (!pslReady) {
     planPhase = "blocked";
-  } else if (thematicPrioritisationDone) {
+  } else if (prioritySelectionDone) {
     planPhase = "current";
   } else {
     planPhase = "pending";
   }
 
+  // 5 - Implantacion
+  const implantationPhase: PhaseStatus = prioritySelectionDone ? "pending" : "blocked";
+  const implantationNote = prioritySelectionDone
+    ? "Pendiente de cierre operativo"
+    : "Requiere priorización adoptada";
+
+  // 6 - Evaluacion
+  const evaluationPhase: PhaseStatus = prioritySelectionDone ? "pending" : "blocked";
+  const evaluationNote = prioritySelectionDone
+    ? "Pendiente de implantación"
+    : "Requiere plan implantable";
+
   return [
     {
-      id:          "relas",
-      num:         1,
-      label:       "Adhesión a RELAS",
-      status:      "pending",
-      note:        "Sin datos de seguimiento",
-    },
-    {
       id:          "informe",
-      num:         2,
-      label:       "Informe de Salud",
+      num:         1,
+      label:       "Informe sobre la situación de salud",
       status:      healthReportLoaded ? "completed" : "current",
       statusLabel: healthReportLoaded ? "Disponible" : undefined,
       navigateTo:  "repositorio",
     },
     {
       id:          "psl",
-      num:         3,
-      label:       "Perfil de Salud Local",
+      num:         2,
+      label:       "Perfil de salud local",
       status:      pslPhase,
       statusLabel: pslStatusLabel,
       note:        pslNote,
@@ -134,32 +148,35 @@ function derivePhases({
     },
     {
       id:          "priorizacion",
-      num:         4,
+      num:         3,
       label:       "Priorización",
       status:      prioPhase,
       note:        prioNote,
-      navigateTo:  prioPhase !== "blocked" ? "priorizacion" : undefined,
+      navigateTo:  "priorizacion",
     },
     {
       id:          "plan-accion",
-      num:         5,
-      label:       "Plan de Acción",
+      num:         4,
+      label:       "Plan de acción",
       status:      planPhase,
       navigateTo:  planPhase !== "blocked" ? "plan" : undefined,
     },
     {
-      id:            "agendas",
-      num:           6,
-      label:         "Agendas anuales",
-      status:        pslValidated ? "pending" : "blocked",
-      navigateTo:    pslValidated ? "plan" : undefined,
+      id:            "implantacion",
+      num:           5,
+      label:         "Implantación",
+      status:        implantationPhase,
+      note:          implantationNote,
+      navigateTo:    implantationPhase !== "blocked" ? "plan-local" : undefined,
       scopeBoundary: true,
     },
     {
-      id:          "plan-local",
-      num:         7,
-      label:       "Plan Local de Salud",
-      status:      "blocked",
+      id:          "evaluacion",
+      num:         6,
+      label:       "Evaluación",
+      status:      evaluationPhase,
+      note:        evaluationNote,
+      navigateTo:  evaluationPhase !== "blocked" ? "evaluacion" : undefined,
     },
   ];
 }
@@ -171,9 +188,9 @@ export function LocalHealthPlanningCycle(props: LocalHealthPlanningCycleProps) {
   const phases = derivePhases(props);
 
   return (
-    <div className="lhpc" role="navigation" aria-label="Ciclo de planificación local de salud">
+    <div className="lhpc" role="navigation" aria-label="Proceso de planificación local de salud">
       <div className="lhpc__inner">
-        <p className="lhpc__heading">Ciclo de Planificación Local</p>
+        <p className="lhpc__heading">Expediente local de salud</p>
         <ol className="lhpc__phases" role="list">
           {phases.map((phase) => {
             const isClickable = onNavigate !== undefined && phase.navigateTo !== undefined;

@@ -6,30 +6,29 @@ import { parseWorkspaceJSON } from "../persistence/local-storage";
 /**
  * municipalitySeeds
  *
- * Hidratación inicial de expedientes municipales desde seeds canónicos
+ * Hidratacion inicial de expedientes municipales desde seeds canonicos
  * desplegables. Un seed es una copia REAL y rehidratable de un expediente
  * (mismo formato que el export/localStorage). No fabrica datos: registrar un
- * municipio aquí exige un fichero de expediente real desplegado en `public/seeds/`.
+ * municipio aqui exige un fichero de expediente real desplegado en `public/seeds/`.
  */
 
 export interface MunicipalitySeed {
   municipalityId: string;
-  /** Nombre institucional esperado — verifica la identidad del expediente. */
+  /** Nombre institucional esperado: verifica la identidad del expediente. */
   expectedName: string;
   /** Ruta del seed RELATIVA a `import.meta.env.BASE_URL` (sin barra inicial). */
   path: string;
 }
 
 /**
- * Registro genérico de seeds canónicos. SOLO se registran municipios con un export
+ * Registro generico de seeds canonicos. SOLO se registran municipios con un export
  * real vigente y rehidratable.
  *
- * Estado (2026-09-07): expedientes canónicos cargables = Granada-Zaidín (7
- * documentos, 56 activos, 0 estudios aplicados), Atarfe (Informe de Salud + IBSE municipal: 2
- * documentos, 6 evidencias) y Fuente Vaqueros (selección territorial del PLIZD+ 2024-2028).
- * Alfacar, Churriana de la Vega y Zagra NO tienen
- * export real: se abren vacíos hasta que exista uno (no se inventa contenido; las
- * fixtures sintéticas o provinciales NO se promueven a datos de producción).
+ * Estado (2026-10-09): expedientes canonicos cargables = Granada-Zaidin,
+ * Atarfe, Alfacar, Fuente Vaqueros y Loja. Churriana de la Vega y Zagra NO
+ * tienen export real: se abren vacios hasta que exista uno. No se inventa
+ * contenido; las fixtures sinteticas o provinciales NO se promueven a datos de
+ * produccion.
  */
 export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
   "granada-zaidin": {
@@ -41,6 +40,11 @@ export const MUNICIPALITY_SEEDS: Readonly<Record<string, MunicipalitySeed>> = {
     municipalityId: "atarfe",
     expectedName: "Atarfe",
     path: "seeds/compas-ng-workspace-atarfe.json",
+  },
+  alfacar: {
+    municipalityId: "alfacar",
+    expectedName: "Alfacar",
+    path: "seeds/compas-ng-workspace-alfacar.json",
   },
   "fuente-vaqueros": {
     municipalityId: "fuente-vaqueros",
@@ -78,10 +82,10 @@ export interface LoadMunicipalitySeedOptions {
 }
 
 /**
- * Carga y valida el seed canónico de un municipio. Devuelve `null` de forma segura
+ * Carga y valida el seed canonico de un municipio. Devuelve `null` de forma segura
  * ante CUALQUIER fallo: sin seed registrado, error de red, HTTP no-ok, JSON
- * inválido, esquema o colecciones básicas incorrectas, o identidad municipal que
- * no concuerda con la solicitada. Nunca lanza. No toca `localStorage`: la decisión
+ * invalido, esquema o colecciones basicas incorrectas, o identidad municipal que
+ * no concuerda con la solicitada. Nunca lanza. No toca `localStorage`: la decision
  * de si sobreescribir un expediente local es del llamador.
  */
 export async function loadMunicipalitySeed(
@@ -92,9 +96,10 @@ export async function loadMunicipalitySeed(
   if (seed === undefined) return null;
   const doFetch = options.fetchImpl ?? fetch;
   try {
-    // Fuente Vaqueros viaja con la aplicación: algunos navegadores integrados
-    // bloquean la descarga separada de JSON. Se valida con el mismo parser y se
-    // crea una copia nueva en cada carga para no compartir objetos mutables.
+    // Fuente Vaqueros y Loja viajan con la aplicacion: algunos navegadores
+    // integrados bloquean la descarga separada de JSON. Se validan con el mismo
+    // parser y se crea una copia nueva en cada carga para no compartir objetos
+    // mutables.
     let raw: string;
     if (municipalityId === "fuente-vaqueros") {
       raw = JSON.stringify(fuenteVaquerosSeed);
