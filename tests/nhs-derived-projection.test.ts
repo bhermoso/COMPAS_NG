@@ -224,18 +224,20 @@ describe("PR-D · frontera N+1 y renderer", () => {
     expect(view).not.toContain("no contiene indicadores con referencia");
   });
 
-  it("la vista se presenta como salida breve tipo Local Health Profiles, no como producto oculto", () => {
+  it("la vista se presenta como salida pública tipo Local Health Profiles, no como producto oculto", () => {
     const view = readSrc("ui/components/NHSHealthProfileView.tsx");
-    expect(view).toContain("salida breve tipo Local Health Profiles");
+    expect(view).toContain("salida pública tipo Local Health Profiles");
     expect(view).toContain("Pendiente de compilar el Perfil canónico");
     expect(view).toContain("OHID/Fingertips");
     expect(view).toContain("no es un producto autónomo ni una segunda fuente");
   });
 
-  it("la salida breve usa composición ejecutiva visual sin emitir veredictos", () => {
+  it("la salida pública usa composición ejecutiva visual sin emitir veredictos", () => {
     const view = readSrc("ui/components/NHSHealthProfileView.tsx");
     const styles = readSrc("App.css");
     expect(view).toContain("nhs-executive-hero");
+    expect(view).toContain("nhs-public-reading");
+    expect(view).toContain("nhs-determinants-panel");
     expect(view).toContain("nhs-snapshot-panel");
     expect(view).toContain("nhs-indicator-card");
     expect(view).toContain("nhs-key");
@@ -247,7 +249,7 @@ describe("PR-D · frontera N+1 y renderer", () => {
     expect(view).toContain("valor numérico, no valoración sanitaria");
     expect(view).toContain("La banda no evalúa");
     expect(view).toContain("La calidad de lectura no pondera ni corrige valores");
-    expect(view).toContain("ficha ejecutiva de indicadores");
+    expect(view).toContain("perfil público de indicadores y lectura territorial");
     expect(view).toContain("Datos disponibles y huecos declarados");
     expect(styles).toContain("nhs-range__point--province");
     expect(styles).toContain("nhs-key__item--andalusia");

@@ -5925,9 +5925,12 @@ h3 {
   .psl-doc-kpi-grid       { grid-template-columns: repeat(2, 1fr); }
   .psl-profile-map__row   { grid-template-columns: 1fr; gap: 6px; }
   .nhs-executive-hero,
+  .nhs-public-reading__body,
+  .nhs-context-grid,
   .nhs-snapshot-grid,
   .nhs-quality-grid,
   .nhs-quality-notes,
+  .nhs-determinants-list,
   .nhs-spotlight-grid,
   .nhs-domain__rows       { grid-template-columns: 1fr; }
   .nhs-executive-hero__metrics,
@@ -7953,6 +7956,18 @@ h3 {
   border-top: 3px solid #94d40b;
 }
 
+.nhs-public-reading {
+  border-top: 4px solid #00a6a6;
+}
+
+.nhs-context-panel {
+  border-top: 4px solid #0074c8;
+}
+
+.nhs-determinants-panel {
+  border-top: 4px solid #ffb61b;
+}
+
 .nhs-quality-panel {
   border-top-color: #0074c8;
 }
@@ -7969,6 +7984,153 @@ h3 {
   margin: 0;
   color: #1a2b3c;
   font-size: 1.08rem;
+}
+
+.nhs-public-reading__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.nhs-public-reading__main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nhs-public-reading__thesis {
+  margin: 0;
+  color: #14395b;
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.nhs-public-reading__text,
+.nhs-public-reading__caution {
+  margin: 0;
+  color: #526070;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.nhs-public-reading__caution {
+  padding: 10px 12px;
+  border-left: 3px solid #ffb61b;
+  border-radius: 6px;
+  background: #fff9e9;
+}
+
+.nhs-public-reading__bullets {
+  margin: 0;
+  padding-left: 18px;
+  color: #526070;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.nhs-public-reading__sources {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.nhs-mini-title {
+  margin: 0;
+  color: #526070;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nhs-source-card {
+  padding: 11px 12px;
+  border: 1px solid #d7e7f5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.nhs-source-card--informe { border-left: 4px solid #0074c8; }
+.nhs-source-card--estudio { border-left: 4px solid #00a6a6; }
+.nhs-source-card--activo  { border-left: 4px solid #94d40b; }
+.nhs-source-card--proxy   { border-left: 4px solid #ffb61b; }
+.nhs-source-card--equidad { border-left: 4px solid #b864a5; }
+
+.nhs-source-card h4 {
+  margin: 0 0 5px;
+  color: #1a2b3c;
+  font-size: 0.86rem;
+}
+
+.nhs-source-card p {
+  margin: 0;
+  color: #526070;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nhs-source-card__limit {
+  margin-top: 6px !important;
+  color: #64748b !important;
+  font-style: italic;
+}
+
+.nhs-context-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.nhs-context-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 112px;
+  padding: 13px;
+  border: 1px solid #d7e7f5;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.nhs-context-card__label {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nhs-context-card strong {
+  color: #14395b;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.nhs-context-card span:last-child {
+  color: #526070;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nhs-inline-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nhs-inline-list li {
+  padding: 5px 9px;
+  border: 1px solid #d7e7f5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #526070;
+  font-size: 0.74rem;
+  font-weight: 750;
 }
 
 .nhs-snapshot-grid {
@@ -8176,6 +8338,10 @@ h3 {
   gap: 10px;
 }
 
+.nhs-quality-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .nhs-quality-card {
   min-height: 138px;
   padding: 13px;
@@ -8247,6 +8413,56 @@ h3 {
 .nhs-quality-panel__foot {
   margin: 12px 0 0;
   color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.nhs-empty-note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #526070;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.nhs-determinants-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.nhs-determinant-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid #e2ecf6;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.nhs-determinant-row__signal {
+  margin: 0;
+  color: #1a2b3c;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.nhs-determinant-row__source {
+  margin: 3px 0 0;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.nhs-determinant-row p {
+  margin: 0;
+  color: #526070;
   font-size: 0.8rem;
   line-height: 1.5;
 }

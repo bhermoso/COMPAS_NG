@@ -63,29 +63,31 @@ describe("Fundamentos del Perfil único — CONTRACT-NHS-HEALTH-PROFILE", () => 
   const nhs = flatten(readRaw("contracts/CONTRACT-NHS-HEALTH-PROFILE.md"));
 
   it("deroga el estatuto de producto autónomo del PSL-NHS", () => {
-    expect(nhs).toContain("Estatuto revisado");
-    expect(nhs).toContain("deja de definirse como producto autónomo");
-    expect(nhs).toContain("no puede constituir una segunda fuente de verdad");
+    expect(nhs).toContain("La salida tipo Local Health Profiles no es una ficha");
+    expect(nhs).toContain("no es un producto autónomo");
+    expect(nhs).toContain("no es una segunda fuente de verdad");
   });
 
-  it("registra computePosition como descartada (la fuente rehúsa la posición)", () => {
-    expect(nhs).toContain("quedan descartadas");
-    expect(nhs).toContain("nunca se formula como posición del distrito");
-    expect(nhs).toContain("no puede fabricar una afirmación que su fuente niega");
+  it("mantiene derogados compiladores y artefactos NHS autónomos", () => {
+    expect(nhs).toContain("Quedan derogados los restos normativos");
+    expect(nhs).toContain("`NHSHealthProfileCompiler`");
+    expect(nhs).toContain("`NHSHealthProfileArtifact`");
+    expect(nhs).toContain("No se autoriza restaurar compiladores ni artefactos NHS autónomos");
   });
 
-  it("registra la migración de código NHS como ejecutada (PR-E)", () => {
-    expect(nhs).toContain("Migración ejecutada");
-    expect(nhs).toContain("el código NHS autónomo ha sido retirado");
+  it("define la salida como representación pública de alta densidad", () => {
+    expect(nhs).toContain("representación pública de alta densidad");
+    expect(nhs).toContain("lectura pública");
+    expect(nhs).toContain("determinantes/desigualdades");
+    expect(nhs).toContain("activos/capacidades");
   });
 
   it("registra la relectura vigente del referente OHID/Fingertips", () => {
-    expect(nhs).toContain("Relectura vigente del referente OHID/Fingertips");
-    expect(nhs).toContain("profile_id=26");
-    expect(nhs).toContain("group_id=1938132701");
-    expect(nhs).toContain("72 indicadores");
-    expect(nhs).toContain("salida comparativa breve tipo OHID/Fingertips");
-    expect(nhs).toContain("no como restauración de `NHSHealthProfileCompiler`");
+    expect(nhs).toContain("Referente oficial consultado");
+    expect(nhs).toContain("Local Authority Health Profiles");
+    expect(nhs).toContain("punto de conversación");
+    expect(nhs).toContain("spine chart");
+    expect(nhs).toContain("Local health: September 2026 update");
   });
 });
 

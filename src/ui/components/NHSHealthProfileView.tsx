@@ -39,6 +39,33 @@ function groupByConsecutiveBloque(
   return groups;
 }
 
+function compactText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function firstMeaningful(values: Array<string | null | undefined>): string | null {
+  for (const value of values) {
+    const normalized = compactText(value ?? "");
+    if (normalized.length > 0 && normalized.toLowerCase() !== "no disponible") {
+      return normalized;
+    }
+  }
+  return null;
+}
+
+function takeFirstUnique(values: string[], max: number): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const normalized = compactText(value);
+    if (normalized.length === 0 || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+    if (result.length >= max) break;
+  }
+  return result;
+}
+
 function isAvailableValue(value: string): boolean {
   const normalized = value.trim().toLowerCase();
   return (
@@ -243,6 +270,167 @@ function IndicatorRow({ row }: { row: NHSDerivedRow }) {
   );
 }
 
+function PublicReadingPanel({ document }: { document: CanonicalProfileDocument }) {
+  const editorial = document.editorialView;
+  const synthesis = editorial.diagnosticSynthesis;
+  const overview = editorial.overview.slice(0, 3);
+  const sources = editorial.sourceBlocks;
+  const fallbackText =
+    editorial.pendingDeclaration ??
+    firstMeaningful(overview.map((item) => item.text)) ??
+    "La representación pública se construye desde el Perfil canónico sellado y mantiene visibles las cautelas de escala, fuente y comparabilidad.";
+
+  return (
+    <section className="workspace-panel nhs-public-reading">
+      <div className="nhs-snapshot-panel__header">
+        <p className="eyebrow">Lectura pública del territorio</p>
+        <h3>{synthesis?.title ?? "Síntesis territorial disponible"}</h3>
+      </div>
+      <div className="nhs-public-reading__body">
+        <div className="nhs-public-reading__main">
+          <p className="nhs-public-reading__thesis">
+            {synthesis?.thesis ?? fallbackText}
+          </p>
+          {synthesis !== null && synthesis !== undefined && (
+            <>
+              <p className="nhs-public-reading__text">{synthesis.interpretiveWeight}</p>
+              <p className="nhs-public-reading__caution">{synthesis.caution}</p>
+            </>
+          )}
+          {synthesis === null && overview.length > 0 && (
+            <ul className="nhs-public-reading__bullets">
+              {overview.map((item) => (
+                <li key={item.id}>{item.text}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="nhs-public-reading__sources">
+          <p className="nhs-mini-title">Qué aporta cada fuente</p>
+          {sources.slice(0, 3).map((source) => (
+            <article key={source.id} className={`nhs-source-card nhs-source-card--${source.variant}`}>
+              <h4>{source.title}</h4>
+              <p>{source.whatItAdds}</p>
+              <p className="nhs-source-card__limit">{source.whatItDoesNotAllow}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TerritorialContextPanel({ document }: { document: CanonicalProfileDocument }) {
+  const header = document.editorialView.header;
+  const documentaryBase = document.technicalSpace.documentaryBase;
+  const sourceList = takeFirstUnique(header.sources, 5);
+  const warnings = takeFirstUnique(documentaryBase.scaleWarnings, 3);
+
+  return (
+    <section className="workspace-panel nhs-context-panel">
+      <div className="nhs-snapshot-panel__header">
+        <p className="eyebrow">Población, escala y base documental</p>
+        <h3>Contexto de lectura</h3>
+      </div>
+      <div className="nhs-context-grid">
+        <div className="nhs-context-card">
+          <span className="nhs-context-card__label">Ámbito</span>
+          <strong>{header.territory}</strong>
+          <span>{header.scale}</span>
+        </div>
+        <div className="nhs-context-card">
+          <span className="nhs-context-card__label">Base diagnóstica</span>
+          <strong>{documentaryBase.evidenceAtoms}</strong>
+          <span>evidencias estructuradas · {documentaryBase.complementaryStudies} estudios complementarios</span>
+        </div>
+        <div className="nhs-context-card">
+          <span className="nhs-context-card__label">Activos</span>
+          <strong>{document.provenance.diagnosticAnswersSnapshot.salutogenica.totalAssets}</strong>
+          <span>capacidades o recursos incorporados al Perfil</span>
+        </div>
+        <div className="nhs-context-card">
+          <span className="nhs-context-card__label">Fecha de lectura</span>
+          <strong>{document.generatedDateLabel}</strong>
+          <span>{header.status}</span>
+        </div>
+      </div>
+      {sourceList.length > 0 && (
+        <ul className="nhs-inline-list" aria-label="Fuentes principales">
+          {sourceList.map((source) => (
+            <li key={source}>{source}</li>
+          ))}
+        </ul>
+      )}
+      {warnings.length > 0 && (
+        <ul className="nhs-quality-notes" aria-label="Cautelas de escala">
+          {warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function DeterminantsInequalityPanel({ document }: { document: CanonicalProfileDocument }) {
+  const matrix = document.technicalSpace.epistemicMatrix;
+  const rowsWithContent = matrix.filter(
+    (row) =>
+      compactText(row.mecanismo).length > 0 ||
+      compactText(row.desigualdad ?? "").length > 0 ||
+      compactText(row.activoCapacidad ?? "").length > 0
+  );
+  const visibleRows = rowsWithContent.slice(0, 5);
+  const determinantCount = matrix.filter((row) => compactText(row.mecanismo).length > 0).length;
+  const inequalityCount = matrix.filter((row) => compactText(row.desigualdad ?? "").length > 0).length;
+  const capacityCount = matrix.filter((row) => compactText(row.activoCapacidad ?? "").length > 0).length;
+
+  return (
+    <section className="workspace-panel nhs-determinants-panel">
+      <div className="nhs-snapshot-panel__header">
+        <p className="eyebrow">Determinantes, desigualdades y capacidades</p>
+        <h3>Lo que conecta los indicadores con la vida del territorio</h3>
+      </div>
+      <div className="nhs-quality-grid nhs-quality-grid--three">
+        <div className="nhs-quality-card nhs-quality-card--info">
+          <span className="nhs-quality-card__value">{determinantCount}</span>
+          <span className="nhs-quality-card__label">mecanismos</span>
+          <span className="nhs-quality-card__text">Relaciones plausibles entre salud, condiciones de vida y organización cotidiana.</span>
+        </div>
+        <div className="nhs-quality-card nhs-quality-card--warning">
+          <span className="nhs-quality-card__value">{inequalityCount}</span>
+          <span className="nhs-quality-card__label">desigualdades</span>
+          <span className="nhs-quality-card__text">Señales explícitas de brecha, vulnerabilidad o grupo peor situado.</span>
+        </div>
+        <div className="nhs-quality-card nhs-quality-card--solid">
+          <span className="nhs-quality-card__value">{capacityCount}</span>
+          <span className="nhs-quality-card__label">capacidades</span>
+          <span className="nhs-quality-card__text">Activos o recursos que pueden sostener respuesta comunitaria si se validan territorialmente.</span>
+        </div>
+      </div>
+      {visibleRows.length === 0 ? (
+        <p className="nhs-empty-note">
+          El documento canónico aún no contiene filas suficientes para proyectar determinantes, desigualdades o capacidades sin fabricar lectura.
+        </p>
+      ) : (
+        <div className="nhs-determinants-list">
+          {visibleRows.map((row, index) => (
+            <article key={`${row.senal}-${index}`} className="nhs-determinant-row">
+              <div>
+                <p className="nhs-determinant-row__signal">{row.senal}</p>
+                <p className="nhs-determinant-row__source">{row.fuente} · {row.escala}</p>
+              </div>
+              <p><strong>Mecanismo:</strong> {row.mecanismo || "pendiente de formulación en el Perfil canónico."}</p>
+              <p><strong>Desigualdad:</strong> {row.desigualdad ?? "sin desagregación suficiente en la fuente disponible."}</p>
+              <p><strong>Capacidad:</strong> {row.activoCapacidad ?? "sin activo asociado todavía en la lectura canónica."}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function DomainStats({ rows }: { rows: NHSDerivedRow[] }) {
   const withLocalValue = rows.filter((row) => isAvailableValue(row.valor)).length;
   const withBothReferences = rows.filter(
@@ -361,7 +549,7 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
   if (!projection.available || document === null) {
     return (
       <section id={id} className="workspace-panel nhs-root">
-        <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
+        <p className="eyebrow">Perfil de Salud Local · salida pública tipo Local Health Profiles</p>
         <h2>Pendiente de compilar el Perfil canónico</h2>
         <p className="panel-note">
           Esta salida se inspira en los Local Authority Health Profiles de
@@ -389,8 +577,8 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
 
       <section className="workspace-panel nhs-executive-hero">
         <div className="nhs-executive-hero__copy">
-          <p className="eyebrow">Perfil de Salud Local · salida breve tipo Local Health Profiles</p>
-          <h2>{territory}: ficha ejecutiva de indicadores</h2>
+          <p className="eyebrow">Perfil de Salud Local · salida pública tipo Local Health Profiles</p>
+          <h2>{territory}: perfil público de indicadores y lectura territorial</h2>
           <p className="panel-note">
             Representación derivada del Perfil canónico, inspirada en OHID/Fingertips.
             Presenta valores del territorio y referencias provincial y andaluza tal
@@ -398,7 +586,7 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
             valor numérico, no valoración sanitaria.
           </p>
         </div>
-        <div className="nhs-executive-hero__metrics" aria-label="Resumen visual de la ficha">
+        <div className="nhs-executive-hero__metrics" aria-label="Resumen visual del perfil público">
           <div className="nhs-executive-metric">
             <span className="nhs-executive-metric__value">{projection.rows.length}</span>
             <span className="nhs-executive-metric__label">indicadores</span>
@@ -422,6 +610,10 @@ export function NHSHealthProfileView({ document, id }: NHSHealthProfileViewProps
         </section>
       ) : (
         <>
+          <PublicReadingPanel document={document} />
+          <TerritorialContextPanel document={document} />
+          <DeterminantsInequalityPanel document={document} />
+
           <section className="workspace-panel nhs-snapshot-panel">
             <div className="nhs-snapshot-panel__header">
               <p className="eyebrow">Lectura ejecutiva</p>
