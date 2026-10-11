@@ -308,7 +308,7 @@ describe("Granada-Zaidín reconstruido — marcos estratégicos y normativos", (
 
 // ── Separación producto: marcos estratégicos ≠ evidencia diagnóstica ─────────
 // Los marcos (EPVSA, ESCA, Plan de Mayores) están cargados y trazados como
-// strategic-framework, pero son insumo del Plan de Acción: no computan como
+// strategic-framework, pero son base del Plan de Acción: no computan como
 // fuente diagnóstica del Perfil, no generan átomos y no alimentan conclusiones.
 
 import { getCategory } from "../src/ui/components/documentRepositoryCategorization";
@@ -316,7 +316,7 @@ import { generateLT1 } from "../src/application/lt1";
 import { createEvidenceStore, createEvidenceAtom } from "../src/domain/evidence";
 
 describe("Granada-Zaidín — los marcos estratégicos no son evidencia diagnóstica", () => {
-  it("los tres marcos clasifican como insumo estratégico, no como fuente diagnóstica", () => {
+  it("los tres marcos clasifican como base estratégica, no como fuente diagnóstica", () => {
     const marcos = ws.repository.documents.filter((d) => d.kind === "strategic-framework");
     expect(marcos.length).toBe(3);
     for (const doc of marcos) {

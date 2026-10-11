@@ -555,7 +555,7 @@ de vulnerabilidad, actores y recursos con la participación de los agentes local
 
 Esta capacidad de diagnóstico comunitario está garantizada estructuralmente.
 El SSPA se compromete a producir este diagnóstico para cada UGC.
-[DCA] Para COMPÁS NG, el resultado de este diagnóstico es un insumo del EvidenceStore
+[DCA] Para COMPÁS NG, el resultado de este diagnóstico es material de base del EvidenceStore
 del municipio correspondiente.
 
 #### Capacidad de mapeo de activos

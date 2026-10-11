@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { DocumentReference } from "../Documentation";
 import type { MunicipalityWorkspace } from "../../../domain/workspace";
 import { getBadeaMunicipalContext } from "../../../application/badea";
+import { buildTerritorialInequalityReading } from "../../../application/health-profile/diagnosticAnswers";
 
 interface PerfilFuentesPanelProps {
   workspace: MunicipalityWorkspace;
@@ -70,6 +71,24 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
       (q) => q.status === "abierta"
     ).length ?? 0;
   const tieneInforme = workspace.healthReport !== undefined;
+  const desigualdadTerritorial = buildTerritorialInequalityReading(workspace);
+  const fuentesTerritoriales = desigualdadTerritorial.sourceTitles
+    .slice(0, 3)
+    .join("; ");
+  const temasTerritoriales = desigualdadTerritorial.themes
+    .slice(0, 4)
+    .join("; ");
+  const estudiosDocumentales = docs.filter(
+    (d) => d.kind === "complementary-study" && (d.sourceText?.trim().length ?? 0) > 0
+  ).length;
+  const detalleEstudios =
+    estudios > 0
+      ? `${estudios} ${estudios === 1 ? "estudio complementario estructurado" : "estudios complementarios estructurados"}`
+      : `${estudiosDocumentales} ${
+          estudiosDocumentales === 1
+            ? "documento complementario con texto"
+            : "documentos complementarios con texto"
+        }`;
 
   // Contexto BADEA/IECA real (capa no evidencial, valores verificados).
   const badea = getBadeaMunicipalContext(workspace.municipality.identity.id);
@@ -89,31 +108,51 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
   const dimensiones: DimensionImpacto[] = [
     {
       dimension: "Situación de salud",
-      estado: estudios > 0 ? "parcial" : tieneInforme ? "parcial" : "pendiente",
+      estado:
+        estudios > 0 || estudiosDocumentales > 0
+          ? "parcial"
+          : tieneInforme
+            ? "parcial"
+            : "pendiente",
       detalle:
-        tieneInforme || estudios > 0
-          ? `${tieneInforme ? "Informe de Salud" : "Sin Informe"} + ${estudios} ` +
-            `${estudios === 1 ? "estudio complementario" : "estudios complementarios"} ` +
+        tieneInforme || estudios > 0 || estudiosDocumentales > 0
+          ? `${tieneInforme ? "Informe de Salud" : "Sin Informe"} + ${detalleEstudios} ` +
             `con ${contar(indicadores, "indicador", "indicadores")}: ` +
             `fuentes disponibles para revisar la situación de salud y bienestar; su presencia no acredita cobertura completa.`
           : "Sin fuente diagnóstica primaria ni estudios todavía.",
     },
     {
       dimension: "Determinantes sociales",
-      estado: determinantes > 0 ? "cubierta" : "pendiente",
+      estado:
+        determinantes > 0
+          ? "cubierta"
+          : desigualdadTerritorial.available
+            ? "parcial"
+            : "pendiente",
       detalle:
         determinantes > 0
           ? `${contar(determinantes, "determinante", "determinantes")} con evidencia directa.`
+          : desigualdadTerritorial.available
+            ? `La documentación territorial del expediente permite lectura de determinantes ` +
+              `(${temasTerritoriales || "vulnerabilidad social y territorio"}). ` +
+              `Fuentes leídas: ${fuentesTerritoriales || "fuente territorial oficial identificada"}.`
           : `Sin evidencia directa: la lectura se sostiene por hipótesis ` +
             `epidemiológico-sociales. ${BADEA_CANDIDATA}`,
     },
     {
       dimension: "Desigualdades",
-      estado: "pendiente",
+      estado: desigualdadTerritorial.available ? "parcial" : "pendiente",
       detalle:
-        `Los agregados disponibles no están desagregados por sexo, edad ni ` +
-        `condición socioeconómica: la ausencia consta como incertidumbre. ` +
-        `${BADEA_CANDIDATA}`,
+        desigualdadTerritorial.available
+          ? `Hay señales territoriales de desigualdad en la documentación del expediente` +
+            (desigualdadTerritorial.hasEracisOrPlizd
+              ? ` y contexto oficial ERACIS/PLIZD identificado`
+              : ``) +
+            `. Falta todavía una matriz cuantitativa interna por sexo, edad, renta, barrio ` +
+            `u otros ejes; esa ausencia se mantiene como incertidumbre de equidad.`
+          : `Los agregados disponibles no están desagregados por sexo, edad ni ` +
+            `condición socioeconómica: la ausencia consta como incertidumbre. ` +
+            `${BADEA_CANDIDATA}`,
     },
     {
       dimension: "Activos y capacidades",
@@ -161,7 +200,7 @@ export function PerfilFuentesPanel({ workspace, children, onProcessReport, proce
         (territoriales > 0 || marcos > 0
           ? `${contar(territoriales, "documento territorial de contexto", "documentos territoriales de contexto")} y ` +
             `${contar(marcos, "marco estratégico", "marcos estratégicos")} de referencia (los marcos son ` +
-            `insumos para el Plan de Acción, no evidencia diagnóstica).`
+            `materiales para el Plan de Acción, no evidencia diagnóstica).`
           : "Sin documentación territorial de contexto todavía.") +
         (badea
           ? ` Contexto sociodemográfico BADEA/IECA incorporado: grado de ` +

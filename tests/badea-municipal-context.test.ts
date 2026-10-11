@@ -90,12 +90,13 @@ describe("contexto BADEA — contrato sincronizado con el fixture auditable", ()
     expect(fixture.consulta).toBe(19824);
     expect(fixture.source).toBe("IECA");
     expect(fixture.accessedAt).toBe(BADEA_CONSULTA_19824.accessedAt);
-    expect(fixture.records).toHaveLength(2);
+    expect(fixture.records).toHaveLength(3);
   });
 
   it("los valores del contrato coinciden con el fixture: nada inventado", () => {
     const granadaFixture = fixture.records.find((r) => r.ine === "18087")!;
     const atarfeFixture = fixture.records.find((r) => r.ine === "18022")!;
+    const lojaFixture = fixture.records.find((r) => r.ine === "18122")!;
     expect(granadaFixture.gradoUrbanizacion).toBe("Ciudades");
     expect(granadaFixture.medidas).toEqual([
       expect.objectContaining({
@@ -123,6 +124,14 @@ describe("contexto BADEA — contrato sincronizado con el fixture auditable", ()
         .filter((i) => typeof i.valor === "number")
         .map((i) => i.valor)
     ).toEqual(atarfeFixture.medidas.map((m) => m.valor));
+    const loja = getBadeaMunicipalContext("loja")!;
+    expect(loja.territorio).toBe("Loja");
+    expect(loja.codigoINE).toBe("18122");
+    expect(
+      loja.indicadores
+        .filter((i) => typeof i.valor === "number")
+        .map((i) => i.valor)
+    ).toEqual(lojaFixture.medidas.map((m) => m.valor));
   });
 
   it("conserva fuente, escala, año, unidad, territorio y código INE", () => {
@@ -148,6 +157,7 @@ describe("contexto BADEA — doctrina de escala territorial", () => {
     expect(ctx.codigoINE).toBe("18087");
     // Atarfe sí es municipio BADEA directo
     expect(getBadeaMunicipalContext("atarfe")!.esProxyMunicipioMatriz).toBe(false);
+    expect(getBadeaMunicipalContext("loja")!.esProxyMunicipioMatriz).toBe(false);
     // Ámbitos sin ejecución verificada: sin contexto, sin inventar
     expect(getBadeaMunicipalContext("zagra")).toBeUndefined();
     expect(getBadeaMunicipalContext("desconocido")).toBeUndefined();

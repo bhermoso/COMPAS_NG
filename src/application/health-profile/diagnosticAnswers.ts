@@ -42,6 +42,8 @@ import type { ComplementaryIndicatorReferencesReading } from "./complementaryInd
 import { buildIndicatorComparisonReferences } from "./complementaryIndicatorReferences";
 import type { BadeaMunicipalContext } from "../badea";
 import { getBadeaMunicipalContext } from "../badea";
+import type { EracisMunicipalContext } from "../eracis";
+import { getEracisMunicipalContext } from "../eracis";
 import type { HealthReportSanitaryReading } from "./healthReportSanitaryReading";
 import { buildHealthReportSanitaryReading } from "./healthReportSanitaryReading";
 import type { UGCAssistanceQuestion } from "../ugc-clinical-assistance";
@@ -86,6 +88,19 @@ export interface SalutogenicReading {
   sinClasificar: number;
 }
 
+export interface TerritorialInequalityReading {
+  available: boolean;
+  sourceTitles: string[];
+  sourceCount: number;
+  themes: string[];
+  determinantStatements: string[];
+  hasEracisOrPlizd: boolean;
+  hasNeighbourhoodSignals: boolean;
+  hasParticipatoryPrioritisation: boolean;
+  cautions: string[];
+  eracisContexto?: EracisMunicipalContext;
+}
+
 export interface SpaceKnowledge {
   interpretaciones: Array<{ enunciado: string; certeza: string; autorNombre: string }>;
   hipotesis: Array<{ enunciado: string; plausibilidad: string; preguntasResolutoras: string[] }>;
@@ -107,6 +122,10 @@ export interface DiagnosticAnswers {
   referencias: ComplementaryIndicatorReferencesReading;
   /** Contexto municipal BADEA/IECA verificado, si existe para el ámbito. */
   badeaContexto?: BadeaMunicipalContext;
+  /** Lectura de documentación territorial sobre desigualdades y determinantes. */
+  desigualdadTerritorial: TerritorialInequalityReading;
+  /** Contexto oficial ERACIS/PLIZD identificado, si existe para el ámbito. */
+  eracisContexto?: EracisMunicipalContext;
   /** Hilo sanitario: lectura por presencia del cuerpo del Informe de salud. */
   sanitaria: HealthReportSanitaryReading;
   /**
@@ -227,6 +246,207 @@ function detectarSenales(workspace: MunicipalityWorkspace): Senal[] {
   ];
 }
 
+const TERRITORIAL_SOURCE_KINDS = new Set([
+  "territorial-documentation",
+  "complementary-study",
+  "qualitative-material",
+]);
+
+interface TerritorialThemeRule {
+  theme: string;
+  determinantStatement: string;
+  keywords: string[];
+}
+
+const TERRITORIAL_THEME_RULES: TerritorialThemeRule[] = [
+  {
+    theme: "vulnerabilidad social, barrios y desigualdad territorial",
+    determinantStatement:
+      "concentración territorial de vulnerabilidad social y exclusión",
+    keywords: [
+      "eracis",
+      "plizd",
+      "zona desfavorecida",
+      "zonas desfavorecidas",
+      "necesidades de transformacion social",
+      "barrio",
+      "barriada",
+      "barriadas",
+      "nucleos de poblacion",
+      "exclusion social",
+      "desigualdades sociales",
+      "vulnerabilidad social",
+    ],
+  },
+  {
+    theme: "empleo, precariedad, renta y condiciones materiales de vida",
+    determinantStatement:
+      "empleo, precariedad, renta y condiciones materiales de vida",
+    keywords: [
+      "desempleo",
+      "precariedad laboral",
+      "paro registrado",
+      "personas paradas",
+      "renta",
+      "ingreso minimo",
+      "economia sumergida",
+      "temporalidad",
+    ],
+  },
+  {
+    theme: "vivienda, espacio público, accesibilidad y entorno urbano",
+    determinantStatement:
+      "vivienda, espacio público, accesibilidad y entorno urbano",
+    keywords: [
+      "vivienda",
+      "habitabilidad",
+      "barreras arquitectonicas",
+      "espacios verdes",
+      "espacio publico",
+      "limpieza",
+      "iluminacion",
+      "contaminacion",
+      "ruidos",
+      "accesibilidad",
+      "entorno urbano",
+      "medio rural",
+    ],
+  },
+  {
+    theme: "educación, infancia, juventud y trayectorias de aprendizaje",
+    determinantStatement:
+      "educación, infancia, juventud y trayectorias de aprendizaje",
+    keywords: [
+      "educacion",
+      "absentismo",
+      "acoso escolar",
+      "centros educativos",
+      "juventud",
+      "jovenes",
+      "formacion",
+      "abandono escolar",
+    ],
+  },
+  {
+    theme: "redes familiares, salud mental, soledad y cuidados",
+    determinantStatement:
+      "redes de apoyo, salud mental, soledad y cuidados",
+    keywords: [
+      "salud emocional",
+      "salud mental",
+      "soledad",
+      "aislamiento",
+      "relaciones familiares",
+      "cuidados",
+      "personas mayores",
+      "envejecimiento",
+      "dependencia",
+    ],
+  },
+  {
+    theme: "participación ciudadana y priorización comunitaria",
+    determinantStatement:
+      "participación ciudadana y capacidad comunitaria",
+    keywords: [
+      "grupo motor",
+      "priorizacion",
+      "problemas priorizados",
+      "cuestionario",
+    ],
+  },
+];
+
+function sourceTextForTerritorialReading(
+  document: MunicipalityWorkspace["repository"]["documents"][number]
+): string {
+  return normalize(
+    [
+      document.title,
+      document.sourceFileName ?? "",
+      document.tags.join(" "),
+      document.sourceText ?? "",
+    ].join(" ")
+  );
+}
+
+export function buildTerritorialInequalityReading(
+  workspace: MunicipalityWorkspace
+): TerritorialInequalityReading {
+  const eracisContexto = getEracisMunicipalContext(
+    workspace.municipality.identity.id
+  );
+  const candidateDocs = workspace.repository.documents.filter(
+    (document) =>
+      TERRITORIAL_SOURCE_KINDS.has(document.kind) &&
+      (document.sourceText?.trim().length ?? 0) > 0
+  );
+  const sourceTitles = candidateDocs.map((document) => document.title);
+  const texts = candidateDocs.map(sourceTextForTerritorialReading);
+  const allText = texts.join(" ");
+
+  const matchedRules = TERRITORIAL_THEME_RULES.filter((rule) =>
+    rule.keywords.some((keyword) => allText.includes(normalize(keyword)))
+  );
+  const hasEracisOrPlizd =
+    eracisContexto !== undefined ||
+    ["eracis", "plizd", "zona desfavorecida", "zonas desfavorecidas"].some(
+      (keyword) => allText.includes(normalize(keyword))
+    );
+  const hasNeighbourhoodSignals = [
+    "barrio",
+    "barriada",
+    "barriadas",
+    "nucleos de poblacion",
+    "medio rural",
+  ].some((keyword) => allText.includes(normalize(keyword)));
+  const hasParticipatoryPrioritisation = [
+    "priorizacion",
+    "problemas priorizados",
+    "grupo motor",
+    "cuestionario",
+  ].some((keyword) => allText.includes(normalize(keyword)));
+  const hasMaterialInequalitySignals = [
+    "desempleo",
+    "precariedad laboral",
+    "renta",
+    "vivienda",
+    "barreras arquitectonicas",
+    "espacios verdes",
+    "exclusion social",
+    "desigualdades sociales",
+    "vulnerabilidad social",
+    "condiciones de vida",
+  ].some((keyword) => allText.includes(normalize(keyword)));
+  const available =
+    hasEracisOrPlizd ||
+    hasMaterialInequalitySignals ||
+    hasParticipatoryPrioritisation;
+  const activeRules = available ? matchedRules : [];
+
+  const cautions = [
+    "La documentación territorial no sustituye una desagregación cuantitativa por sexo, edad, renta u otros ejes de desigualdad.",
+    "La lectura identifica determinantes y desigualdades plausibles o documentadas en el expediente; no atribuye causalidad sanitaria directa.",
+  ];
+  if (eracisContexto?.accessStatus === "listed-url-unreachable") {
+    cautions.push(
+      "El PLIZD/ERACIS consta en el listado oficial de la Junta, pero el PDF municipal enlazado no está incorporado como texto descargado al expediente."
+    );
+  }
+
+  return {
+    available,
+    sourceTitles,
+    sourceCount: candidateDocs.length,
+    themes: activeRules.map((rule) => rule.theme),
+    determinantStatements: activeRules.map((rule) => rule.determinantStatement),
+    hasEracisOrPlizd,
+    hasNeighbourhoodSignals,
+    hasParticipatoryPrioritisation,
+    cautions,
+    eracisContexto,
+  };
+}
+
 /**
  * Lectura desde la epidemiología social: determinantes plausibles inferidos
  * con cautela del patrón de señales realmente presente. No afirma causalidad;
@@ -235,7 +455,10 @@ function detectarSenales(workspace: MunicipalityWorkspace): Senal[] {
 export function inferSocialEpidemiologyDeterminants(
   workspace: MunicipalityWorkspace,
   determinantTitles: string[],
-  salutogenica: SalutogenicReading
+  salutogenica: SalutogenicReading,
+  desigualdadTerritorial: TerritorialInequalityReading = buildTerritorialInequalityReading(
+    workspace
+  )
 ): DiagnosticDeterminantReading[] {
   const lecturas: DiagnosticDeterminantReading[] = [];
   const senales = detectarSenales(workspace).filter((s) => s.presente);
@@ -248,6 +471,37 @@ export function inferSocialEpidemiologyDeterminants(
       kind: "documentado",
       enunciado: titulo,
       base: "determinante documentado directamente en la evidencia del repositorio",
+    });
+  }
+  const fuentesTerritoriales = desigualdadTerritorial.sourceTitles
+    .slice(0, 3)
+    .join("; ");
+  if (desigualdadTerritorial.hasEracisOrPlizd) {
+    lecturas.push({
+      kind: "documentado",
+      enunciado:
+        "vulnerabilidad territorial reconocida por ERACIS/PLIZD como eje de desigualdad",
+      base:
+        desigualdadTerritorial.eracisContexto !== undefined
+          ? `${desigualdadTerritorial.eracisContexto.municipalityName} figura en el listado oficial de Planes Locales de Intervención en Zonas Desfavorecidas; el texto del plan debe incorporarse al expediente para lectura completa`
+          : `señal ERACIS/PLIZD detectada en la documentación territorial del expediente (${fuentesTerritoriales})`,
+    });
+  }
+  for (const statement of desigualdadTerritorial.determinantStatements.slice(0, 4)) {
+    if (
+      lecturas.some(
+        (lectura) => normalize(lectura.enunciado) === normalize(statement)
+      )
+    ) {
+      continue;
+    }
+    lecturas.push({
+      kind: "documentado",
+      enunciado: statement,
+      base:
+        fuentesTerritoriales.length > 0
+          ? `documentación territorial o participativa del expediente: ${fuentesTerritoriales}`
+          : "fuente territorial oficial identificada para el ámbito",
     });
   }
 
@@ -302,16 +556,27 @@ export function inferSocialEpidemiologyDeterminants(
   lecturas.push({
     kind: "no-evaluable",
     enunciado:
-      "desigualdades internas por sexo, edad o condición socioeconómica",
+      desigualdadTerritorial.available
+        ? "brechas cuantitativas internas por sexo, edad, renta u otros ejes"
+        : "desigualdades internas por sexo, edad o condición socioeconómica",
     base:
-      "los agregados disponibles no están desagregados; la ausencia de dato " +
-      "no equivale a ausencia de desigualdad",
+      desigualdadTerritorial.available
+        ? "la documentación territorial aporta señales de desigualdad y determinantes, pero no una matriz cuantitativa desagregada; esa ausencia no equivale a equidad"
+        : "los agregados disponibles no están desagregados; la ausencia de dato " +
+          "no equivale a ausencia de desigualdad",
   });
-  lecturas.push({
-    kind: "no-evaluable",
-    enunciado: "condiciones materiales de vivienda, renta y empleo del ámbito",
-    base: "no constan fuentes directas de escala suficiente en el expediente actual",
-  });
+  if (
+    !desigualdadTerritorial.themes.some((theme) =>
+      /empleo|renta|vivienda|condiciones materiales/i.test(theme)
+    )
+  ) {
+    lecturas.push({
+      kind: "no-evaluable",
+      enunciado: "condiciones materiales de vivienda, renta y empleo del ámbito",
+      base:
+        "no constan fuentes directas de escala suficiente en el expediente actual",
+    });
+  }
 
   return lecturas;
 }
@@ -419,6 +684,8 @@ export function buildDiagnosticAnswers(
     workspace.evidenceStore.atoms
       .filter((a) => a.kind === "indicator")
       .map((a) => a.title);
+  const desigualdadTerritorial = buildTerritorialInequalityReading(workspace);
+  const eracisContexto = getEracisMunicipalContext(workspace.municipality.identity.id);
 
   return {
     porEspacio: knowledgeBySpace(workspace.perfilLocalDeSalud),
@@ -426,13 +693,16 @@ export function buildDiagnosticAnswers(
     determinantes: inferSocialEpidemiologyDeterminants(
       workspace,
       input.determinantTitles,
-      salutogenica
+      salutogenica,
+      desigualdadTerritorial
     ),
     senalesPresentes,
     salutogenica,
     estudios: buildComplementaryStudiesReading({ workspace, indicatorTitles }),
     referencias: buildIndicatorComparisonReferences({ workspace, indicatorTitles }),
     badeaContexto: getBadeaMunicipalContext(workspace.municipality.identity.id),
+    desigualdadTerritorial,
+    eracisContexto,
     sanitaria: buildHealthReportSanitaryReading(workspace.healthReport),
     ugcAssistanceQuestions: buildUGCAssistanceQuestions(
       buildUGCClinicalAssistanceReading(workspace)

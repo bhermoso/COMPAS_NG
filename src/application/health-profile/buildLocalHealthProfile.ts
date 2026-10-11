@@ -269,7 +269,13 @@ export function buildLocalHealthProfile(
       content: buildConclusionesScaffold(mit, reconciliacion, oitParaDecision, hrTitle, workspace.ibseStudy, scope, {
         complementaryStudyCount,
         territorialDocTitles: workspace.repository.documents
-          .filter((d) => d.kind === "territorial-documentation")
+          .filter(
+            (d) =>
+              (d.kind === "territorial-documentation" ||
+                d.kind === "complementary-study" ||
+                d.kind === "qualitative-material") &&
+              (d.sourceText?.trim().length ?? 0) > 0
+          )
           .map((d) => d.title),
         scopeName: workspace.municipality.identity.name,
         province: workspace.municipality.identity.province,
@@ -397,7 +403,15 @@ function buildConclusionesScaffold(
 ): string {
   const lt1 = mit.dimensionDiagnostica;
 
-  if (mit.totalEvidencias === 0) {
+  const hasReadableDiagnosticDocuments = extras.workspace.repository.documents.some(
+    (d) =>
+      (d.kind === "territorial-documentation" ||
+        d.kind === "complementary-study" ||
+        d.kind === "qualitative-material") &&
+      (d.sourceText?.trim().length ?? 0) > 0
+  );
+
+  if (mit.totalEvidencias === 0 && !hasReadableDiagnosticDocuments) {
     return (
       "El Perfil aún no dispone de información territorial suficiente para formular " +
       "conclusiones sustantivas. Incorpora fuentes diagnósticas al repositorio " +
@@ -491,21 +505,24 @@ function buildCierreInterpretativoScaffold(
 
   const parts: string[] = [];
 
-  // ── Propósito del cierre: comprensión del territorio ─────────────────────
   parts.push(
-    "El cierre interpretativo es la lectura integrada del territorio que emerge " +
-    "del conjunto del diagnóstico. No formula actuaciones ni recomendaciones: " +
-    `establece qué comprensión del ${scopeNoun} queda disponible para orientar ` +
-    "la priorización y el proceso comunitario."
+    `La salud del ${scopeNoun} no queda explicada por una lista de patologías ` +
+    "ni por la acumulación de indicadores aislados. La lectura disponible señala " +
+    "un territorio cuya situación sanitaria debe entenderse a través de las " +
+    "condiciones de vida, las oportunidades cotidianas de salud, los apoyos " +
+    "comunitarios y los límites de la evidencia incorporada. No formula " +
+    "actuaciones ni recomendaciones: fija la comprensión diagnóstica que debe " +
+    "llegar a la deliberación pública."
   );
 
   // ── Escala de la evidencia: contexto exploratorio, no estimación propia ───
   if (hasProxyScale) {
     parts.push(
-      "Parte de la evidencia utilizada procede de escalas más amplias que el " +
-      `${scopeNoun} (provincial u origen externo) y tiene carácter de contexto ` +
-      "exploratorio: su lectura requiere contraste territorial antes de sustentar " +
-      `interpretaciones específicas del ${scopeNoun}.`
+      "La evidencia que procede de escalas más amplias no autoriza por sí sola " +
+      `una afirmación específica sobre el ${scopeNoun}. Sí permite situar el ` +
+      "análisis en un contexto epidemiológico y social reconocible, siempre que " +
+      "sus implicaciones se contrasten con fuentes locales y con el conocimiento " +
+      "del Grupo Motor."
     );
   }
 
@@ -515,11 +532,10 @@ function buildCierreInterpretativoScaffold(
 
   if (hasConflictos || hasTensionesNoEscaladas) {
     parts.push(
-      "El proceso diagnóstico ha identificado aspectos del territorio donde " +
-      "las distintas fuentes ofrecen lecturas que no convergen plenamente. " +
-      "Estas tensiones no son un defecto del diagnóstico: señalan dónde el " +
-      "conocimiento disponible es más incierto y donde la deliberación con " +
-      "el Grupo Motor resulta más necesaria."
+      "Las fuentes no convergen plenamente en todos los puntos. Esa falta de " +
+      "cierre empírico no debe maquillarse: delimita los asuntos donde el juicio " +
+      "técnico necesita contraste comunitario, revisión documental y una lectura " +
+      "prudente antes de convertirse en prioridad institucional."
     );
   }
 
@@ -532,17 +548,18 @@ function buildCierreInterpretativoScaffold(
         (options.isDistrict
           ? "En este ámbito inframunicipal, los activos incorporados pueden " +
             "incluir recursos del municipio matriz o del entorno funcional más amplio. " +
-            "Requieren validación territorial fina antes de ser interpretados " +
-            "como activos propios del ámbito y antes de respaldar decisiones de planificación."
-          : "Requieren validación territorial antes de ser incorporados " +
-            "como activos propios del proceso de planificación participativa.")
+            "Por eso expresan capacidad potencial, no cobertura demostrada: deben " +
+            "validarse territorialmente antes de sostener decisiones de planificación."
+          : "Expresan capacidad potencial del proceso local, no cobertura demostrada " +
+            "ni suficiencia comunitaria: deben validarse antes de sostener decisiones " +
+            "de planificación.")
       );
     } else {
       parts.push(
-        "El territorio dispone de activos y capacidades comunitarias que pueden " +
-        "sostener el proceso de planificación participativa. " +
-        "La fortaleza del tejido comunitario es un factor de viabilidad de cualquier " +
-        "plan que se adopte."
+        "Los activos comunitarios incorporados muestran que el territorio no se " +
+        "reduce a sus necesidades. También contiene capacidades, vínculos y recursos " +
+        "que pueden hacer viable una respuesta local si el plan los reconoce sin " +
+        "idealizarlos."
       );
     }
   }
@@ -550,10 +567,10 @@ function buildCierreInterpretativoScaffold(
   // ── Incertidumbres: hacerlas explícitas, no ocultarlas ────────────────────
   if (mit.dimensionDiagnostica.methodologicalCautions.length > 0) {
     parts.push(
-      "El diagnóstico tiene límites que deben hacerse explícitos antes de la " +
-      "priorización. No toda la información relevante está disponible a escala " +
-      "municipal. Las decisiones de planificación deben considerar estas " +
-      "incertidumbres, no ignorarlas."
+      "Las lagunas de información forman parte del diagnóstico. Cuando faltan " +
+      "desagregaciones por edad, sexo, barrio o posición social, el Perfil no debe " +
+      "convertir hipótesis plausibles en certezas; debe nombrar la incertidumbre " +
+      "y usarla para orientar la búsqueda de evidencia y la conversación pública."
     );
   }
 
@@ -564,20 +581,20 @@ function buildCierreInterpretativoScaffold(
 
   if (realCount > 0) {
     parts.push(
-      `El Perfil deja preparadas ${realCount} área(s) ` +
-      `territorial(es) para el proceso de priorización con el Grupo Motor. ` +
-      `La priorización es el paso siguiente: no la conclusión del diagnóstico, ` +
-      `sino su traducción en decisión comunitaria.`
+      `De esta lectura emergen ${realCount} asunto(s) que merecen llegar mejor ` +
+      "formulados a la priorización. No son una votación ni una orden de actuación: " +
+      "son materias que concentran evidencia, incertidumbre o relevancia comunitaria " +
+      "y que deben someterse a contraste técnico, político y ciudadano."
     );
   }
 
-  // ── Validación por el equipo técnico ──────────────────────────────────────
   parts.push(
-    "El cierre interpretativo queda formulado como borrador: recoge la " +
-    "comprensión global que emerge del diagnóstico, las tensiones que deben " +
-    "contrastarse con el Grupo Motor, las capacidades que pueden sostener el " +
-    "proceso comunitario y las incertidumbres que deben quedar explícitas. " +
-    "El equipo técnico lo revisa, matiza y valida antes de su uso institucional."
+    "Por tanto, el expediente no queda cerrado por acumulación documental, sino " +
+    "por una posición interpretativa: avanzar exige contrastar lo observado, " +
+    "completar lo que falta, reconocer los determinantes probables sin fingir " +
+    "pruebas que no existen y usar la priorización ciudadana como información " +
+    "organizada para decidir mejor, no como sustituto del juicio técnico y " +
+    "comunitario."
   );
 
   return parts.join("\n\n");

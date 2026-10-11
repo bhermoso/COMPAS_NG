@@ -17,9 +17,9 @@ export function ThematicPrioritisationPanel({
           <h2>Temáticas prioritarias del Plan Local</h2>
         </div>
         <p className="panel-note">
-          Selección de hasta {MAX_SELECTED_TOPICS} temáticas de salud para el Plan Local
-          2027–2030. Refleja resultados documentados del proceso de participación
-          ciudadana; no equivale a la decisión posterior del Grupo Motor.
+          Registro informativo de hasta {MAX_SELECTED_TOPICS} temáticas procedentes
+          de la encuesta ciudadana REDCap. COMPÁS no recoge votos: incorpora el
+          resultado documentado para que el Grupo Motor lo interprete junto al Perfil.
         </p>
       </div>
 
@@ -39,13 +39,13 @@ export function ThematicPrioritisationPanel({
         </div>
       ) : (
         <p className="empty-state">
-          Ninguna temática seleccionada aún para este municipio. Abre el selector para
-          elegir hasta {MAX_SELECTED_TOPICS} temáticas.
+          Ninguna temática incorporada aún para este municipio. Importa el CSV REDCap
+          o registra una transcripción técnica validada de hasta {MAX_SELECTED_TOPICS} temáticas.
         </p>
       )}
 
       <button type="button" className="tp-panel__open-btn" onClick={onOpen}>
-        {savedIds.length > 0 ? "Modificar selección" : "Seleccionar temáticas"}
+        {savedIds.length > 0 ? "Revisar resultados" : "Incorporar resultados"}
       </button>
     </section>
   );

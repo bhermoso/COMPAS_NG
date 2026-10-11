@@ -24,6 +24,8 @@ import {
   generateRedcapDictionaryArtifact,
   generateMethodologicalSpecArtifact,
 } from "../../application/questionnaire";
+import { generateThematicPrioritisationRedcapDictionaryArtifact } from "../../application/thematic-prioritisation";
+import { MAX_SELECTED_TOPICS, THEMATIC_TOPICS } from "../../domain/thematic-prioritisation";
 
 // ── Mapeos estáticos de producto ──────────────────────────────────────────────
 
@@ -278,6 +280,11 @@ export function GESPanel({
     downloadText(artifact.content, artifact.name, artifact.mimeType);
   }
 
+  function downloadPrioritisationREDCap() {
+    const artifact = generateThematicPrioritisationRedcapDictionaryArtifact();
+    downloadText(artifact.content, artifact.name, artifact.mimeType);
+  }
+
   // ── Derived ──────────────────────────────────────────────────────────────────
 
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) : undefined;
@@ -344,6 +351,25 @@ export function GESPanel({
       {section === "projects" && (
 
         <>
+          <section className="ges-detail__section">
+            <p className="ges-detail__section-title">Priorización ciudadana REDCap</p>
+            <div className="ges-export-card">
+              <p className="ges-export-card__name">Diccionario REDCap · papeleta_pri_tematica</p>
+              <p className="ges-export-card__desc">
+                Formulario de selección temática para REDCap: {THEMATIC_TOPICS.length} temáticas,
+                límite de {MAX_SELECTED_TOPICS} elecciones mediante @MAXCHECKED y campo exportable
+                como temas___1…temas___10 para su importación posterior en COMPÁS.
+              </p>
+              <button
+                type="button"
+                className="ges-btn ges-btn--primary"
+                onClick={downloadPrioritisationREDCap}
+              >
+                Descargar diccionario de priorización
+              </button>
+            </div>
+          </section>
+
           {/* ── Vista: LISTA ─────────────────────────────────────────────── */}
           {projView === "list" && (
             <div className="ges-projects">

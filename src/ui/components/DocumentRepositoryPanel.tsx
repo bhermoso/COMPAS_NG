@@ -188,7 +188,7 @@ export function DocumentRepositoryPanel({
     repository.documents.filter((d) => getCategory(d) === "other-source")
   );
 
-  // Los marcos estratégicos y normativos se muestran aparte: son insumo de la
+  // Los marcos estratégicos y normativos se muestran aparte: son base de la
   // fase de Plan de Acción / Plan Local de Salud, no evidencia diagnóstica.
   const strategicDocs = sortWithinCategory(
     repository.documents.filter((d) => getCategory(d) === "strategic-input")
@@ -210,7 +210,7 @@ export function DocumentRepositoryPanel({
         </details>
       </section>
 
-      {libraryDocuments !== undefined && (
+      {libraryDocuments !== undefined && libraryDocuments.length > 0 && (
         <section className="workspace-panel">
           <div className="panel-header">
             <div>
@@ -305,7 +305,7 @@ export function DocumentRepositoryPanel({
         <section className="workspace-panel">
           <div className="panel-header">
             <div>
-              <p className="eyebrow">Insumos para planificación</p>
+              <p className="eyebrow">Bases para la planificación</p>
               <h2>
                 Marcos estratégicos para Plan de Acción
                 <span className="doc-repo__count">{strategicDocs.length}</span>
@@ -313,7 +313,7 @@ export function DocumentRepositoryPanel({
             </div>
             <p className="panel-note">
               Marcos estratégicos y normativos de referencia (<FrameworkReference name="epvsa" />, <FrameworkReference name="esca" />, planes
-              autonómicos). Son insumo para la fase de Plan de Acción / Plan Local
+              autonómicos). Sirven como base para la fase de Plan de Acción / Plan Local
               de Salud: no forman parte de la evidencia diagnóstica del Perfil ni
               generan conclusiones o recomendaciones dentro de él.
             </p>

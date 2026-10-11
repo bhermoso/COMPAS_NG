@@ -342,7 +342,7 @@ existe un objetivo que lo define como relevante.
 
 `PAI` → [PROHIBIDO] → `PA` (Plan de Acción) sin deliberación
 
-La Propuesta de Articulación Institucional es un insumo para la deliberación del
+La Propuesta de Articulación Institucional es una base para la deliberación del
 Grupo Motor. No es el Plan de Acción. El Plan de Acción emerge de la deliberación;
 la PAI la facilita pero no la sustituye.
 

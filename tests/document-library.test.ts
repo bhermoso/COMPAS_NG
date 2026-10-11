@@ -2,13 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   assignLibraryDocumentToWorkspace,
   collectCompasDocumentLibrary,
-  libraryDocumentAssignmentId,
 } from "../src/application/document-library";
-import {
-  addEvidenceAtom,
-  createEvidenceAtom,
-  createEvidenceStore,
-} from "../src/domain/evidence";
+import { createEvidenceStore } from "../src/domain/evidence";
 import { createMunicipalityContext } from "../src/domain/municipality";
 import {
   addMunicipalDocument,
@@ -68,7 +63,7 @@ function addDocument(
 }
 
 describe("Biblioteca documental COMPAS", () => {
-  it("solo expone marcos estrategicos transversales de otros expedientes", () => {
+  it("no expone documentos locales de otros expedientes como marcos reutilizables", () => {
     let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
     const strategic = addDocument(source, {
       id: "epvsa",
@@ -107,10 +102,7 @@ describe("Biblioteca documental COMPAS", () => {
       "alfacar"
     );
 
-    expect(library.map((item) => item.document.id)).toEqual(["epvsa"]);
-    expect(library.find((item) => item.document.id === "epvsa")?.canAssign).toBe(
-      true
-    );
+    expect(library).toHaveLength(0);
     expect(library.some((item) => item.document.id === "health-report")).toBe(
       false
     );
@@ -122,101 +114,7 @@ describe("Biblioteca documental COMPAS", () => {
     ).toBe(false);
   });
 
-  it("asigna una copia local y reescribe los atomos derivados hacia el municipio destino", () => {
-    let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
-    const added = addDocument(source, {
-      id: "plan-estrategico",
-      kind: "strategic-framework",
-      title: "Plan estrategico complementario",
-      sourceText: "Prioridad: promover envejecimiento activo.",
-    });
-    source = added.workspace;
-    const atom = createEvidenceAtom({
-      id: "source-atom-1",
-      municipalityId: "granada-zaidin",
-      kind: "strategic-priority",
-      title: "Promover envejecimiento activo",
-      content: "Prioridad: promover envejecimiento activo.",
-      provenance: {
-        origin: "strategic-framework",
-        documentId: added.document.id,
-        sourceLabel: added.document.title,
-        extractedAt: "2026-01-01T00:00:00.000Z",
-      },
-      tags: ["strategic-framework"],
-    });
-    source = {
-      ...source,
-      evidenceStore: addEvidenceAtom(source.evidenceStore, atom),
-    };
-    const target = makeWorkspace("alfacar", "Alfacar");
-    const item = collectCompasDocumentLibrary([source, target], "alfacar")[0];
-
-    const result = assignLibraryDocumentToWorkspace({
-      workspace: target,
-      sourceMunicipalityId: item.sourceMunicipalityId,
-      sourceMunicipalityName: item.sourceMunicipalityName,
-      document: item.document,
-      atoms: item.atoms,
-    });
-
-    const targetDocumentId = libraryDocumentAssignmentId(
-      "granada-zaidin",
-      "plan-estrategico"
-    );
-    expect(result.status).toBe("assigned");
-    expect(source.repository.documents).toHaveLength(1);
-    expect(result.workspace.repository.documents).toHaveLength(1);
-    const copiedDocument = result.workspace.repository.documents[0];
-    expect(copiedDocument.id).toBe(targetDocumentId);
-    expect(copiedDocument.municipalityId).toBe("alfacar");
-    expect(copiedDocument.tags).toContain("compas-library-assigned");
-    expect(copiedDocument.tags).toContain("source-municipality:granada-zaidin");
-    expect(copiedDocument.tags).toContain("source-document:plan-estrategico");
-
-    expect(result.atomsCreated).toHaveLength(1);
-    const copiedAtom = result.workspace.evidenceStore.atoms[0];
-    expect(copiedAtom.municipalityId).toBe("alfacar");
-    expect(copiedAtom.provenance.documentId).toBe(targetDocumentId);
-    expect(copiedAtom.tags).toContain("compas-library-assigned");
-    expect(copiedAtom.methodology.limitations.join(" ")).toContain(
-      "aplicabilidad"
-    );
-  });
-
-  it("es idempotente: asignar dos veces el mismo origen no duplica documentos ni atomos", () => {
-    let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
-    const added = addDocument(source, {
-      id: "epvsa",
-      kind: "strategic-framework",
-      title: "EPVSA",
-      sourceText: "Linea 1: accion local en salud.",
-    });
-    source = added.workspace;
-    const target = makeWorkspace("alfacar", "Alfacar");
-    const item = collectCompasDocumentLibrary([source, target], "alfacar")[0];
-    const first = assignLibraryDocumentToWorkspace({
-      workspace: target,
-      sourceMunicipalityId: item.sourceMunicipalityId,
-      sourceMunicipalityName: item.sourceMunicipalityName,
-      document: item.document,
-      atoms: item.atoms,
-    });
-    const second = assignLibraryDocumentToWorkspace({
-      workspace: first.workspace,
-      sourceMunicipalityId: item.sourceMunicipalityId,
-      sourceMunicipalityName: item.sourceMunicipalityName,
-      document: item.document,
-      atoms: item.atoms,
-    });
-
-    expect(first.status).toBe("assigned");
-    expect(second.status).toBe("already-assigned");
-    expect(second.workspace.repository.documents).toHaveLength(1);
-    expect(second.workspace.evidenceStore.atoms).toHaveLength(1);
-  });
-
-  it("genera evidencia desde sourceText si el origen no tenia atomos derivados", () => {
+  it("no copia marcos estrategicos procedentes de expedientes municipales concretos", () => {
     let source = makeWorkspace("granada-zaidin", "Granada-Zaidín");
     const added = addDocument(source, {
       id: "plan-mayores",
@@ -226,20 +124,18 @@ describe("Biblioteca documental COMPAS", () => {
     });
     source = added.workspace;
     const target = makeWorkspace("alfacar", "Alfacar");
-    const item = collectCompasDocumentLibrary([source, target], "alfacar")[0];
 
     const result = assignLibraryDocumentToWorkspace({
       workspace: target,
-      sourceMunicipalityId: item.sourceMunicipalityId,
-      sourceMunicipalityName: item.sourceMunicipalityName,
-      document: item.document,
-      atoms: item.atoms,
+      sourceMunicipalityId: "granada-zaidin",
+      sourceMunicipalityName: "Granada-Zaidín",
+      document: added.document,
+      atoms: [],
     });
 
-    expect(result.status).toBe("assigned");
-    expect(result.atomsCreated.length).toBeGreaterThan(0);
-    expect(result.atomsCreated[0].municipalityId).toBe("alfacar");
-    expect(result.atomsCreated[0].tags).toContain("compas-library-assigned");
+    expect(result.status).toBe("not-assignable");
+    expect(result.workspace.repository.documents).toHaveLength(0);
+    expect(result.atomsCreated).toHaveLength(0);
   });
 
   it("no expone ni copia automaticamente tipos no reutilizables como health-report", () => {

@@ -477,12 +477,38 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
       );
     }
     partes.push(...redactarConocimiento(input.answers, ["situacion-salud", "desigualdades"]));
-    partes.push(
-      `Con la evidencia disponible no es posible caracterizar desigualdades internas ` +
-      `del ${scopeNoun}: los agregados no están desagregados por sexo, edad ni ` +
-      `condición socioeconómica. Esta ausencia es una incertidumbre del diagnóstico, ` +
-      `no un indicio de equidad.`
-    );
+    const desigualdadTerritorial = input.answers?.desigualdadTerritorial;
+    if (desigualdadTerritorial?.available) {
+      const fuentes = desigualdadTerritorial.sourceTitles.slice(0, 3).join("; ");
+      const temas = desigualdadTerritorial.themes.slice(0, 4).join("; ");
+      const eracis = desigualdadTerritorial.eracisContexto;
+      partes.push(
+        `La desigualdad no queda reducida aquí a la falta de tablas desagregadas. ` +
+        `La documentación territorial del expediente` +
+        (fuentes.length > 0 ? ` (${fuentes})` : "") +
+        ` aporta señales sobre ${temas || "vulnerabilidad social y territorio"}: ` +
+        `barrios o núcleos, condiciones materiales, entorno urbano, participación ` +
+        `y experiencia local aparecen como claves para interpretar la situación ` +
+        `de salud. ` +
+        (eracis !== undefined
+          ? `${eracis.municipalityName} figura además en el listado oficial de ` +
+            `Planes Locales de Intervención en Zonas Desfavorecidas; este dato ` +
+            `confirma que la desigualdad territorial es una fuente pertinente, ` +
+            `aunque el PDF municipal enlazado deba incorporarse al expediente ` +
+            `para lectura completa. `
+          : "") +
+        `Lo que sigue faltando es la matriz cuantitativa fina: sexo, edad, renta, ` +
+        `barrios y otros ejes no están armonizados en una serie interna comparable. ` +
+        `Esa ausencia es una incertidumbre de equidad, no un indicio de equidad.`
+      );
+    } else {
+      partes.push(
+        `Con la evidencia disponible no es posible caracterizar desigualdades internas ` +
+        `del ${scopeNoun}: los agregados no están desagregados por sexo, edad ni ` +
+        `condición socioeconómica. Esta ausencia es una incertidumbre del diagnóstico, ` +
+        `no un indicio de equidad.`
+      );
+    }
 
     chapters.push({
       numeral: "III",
@@ -494,12 +520,22 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
   // ── IV. Determinantes sociales, comunitarios y ambientales ────────────────
   {
     const partes: string[] = [];
+    const territorialReading = input.answers?.desigualdadTerritorial;
     if (input.determinantCount > 0) {
       partes.push(
         `Se han documentado ${input.determinantCount} determinantes de la salud ` +
         `en el territorio; entre ellos: ${muestra(input.determinantTitles)}. ` +
         `Su interpretación corresponde al equipo técnico y al Grupo Motor en su ` +
         `contexto local.`
+      );
+    } else if (territorialReading?.available) {
+      partes.push(
+        `El repositorio no contiene todavía átomos específicos de tipo determinante, ` +
+        `pero sí documentación territorial capaz de sostener una lectura de ` +
+        `determinantes sociales. La diferencia es importante: el problema no es ` +
+        `ausencia de contenido, sino falta de atomización fina de documentos que ya ` +
+        `hablan del territorio, sus barrios, sus condiciones materiales y sus ` +
+        `procesos participativos.`
       );
     } else {
       partes.push(
@@ -514,9 +550,20 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
     // Lectura desde la epidemiología social: documentado / plausible /
     // no evaluable / a contrastar. Hipótesis, nunca causalidad demostrada.
     const lecturas = input.answers?.determinantes ?? [];
+    const documentados = lecturas.filter((d) => d.kind === "documentado");
     const plausibles = lecturas.filter((d) => d.kind === "plausible");
     const aContrastar = lecturas.filter((d) => d.kind === "a-contrastar");
     const noEvaluables = lecturas.filter((d) => d.kind === "no-evaluable");
+    if (documentados.length > 0) {
+      partes.push(
+        `Determinantes documentados por las fuentes del expediente: ` +
+        documentados
+          .map((d) => `${d.enunciado} (${d.base})`)
+          .join("; ") +
+        `. Esta lectura no convierte la documentación territorial en prueba ` +
+        `causal, pero impide tratar como vacío lo que el expediente ya describe.`
+      );
+    }
     if (plausibles.length > 0) {
       partes.push(
         `Lectura desde la epidemiología social. La evidencia disponible sugiere, ` +

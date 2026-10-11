@@ -317,7 +317,7 @@ El Producto 6 recibe los escenarios seleccionados como unidades ya coherentes. N
 clustering; no busca frameworks; no detecta tensiones. El MTE realizó ese
 trabajo. La compuerta deliberativa documenta por separado las candidaturas
 técnicas, la priorización ciudadana disponible y la decisión motivada del
-Grupo Motor. Solo después, el Producto 6 convierte los insumos seleccionados en objetivos y actuaciones,
+Grupo Motor. Solo después, el Producto 6 convierte las bases seleccionadas en objetivos y actuaciones,
 con revisión humana obligatoria.
 
 Cuando el Producto 6 se diseñe, su contrato debe referenciar

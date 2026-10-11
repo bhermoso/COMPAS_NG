@@ -82,13 +82,14 @@ export function ThematicPrioritisationModal({
         {/* ── Cabecera ─────────────────────────────────────── */}
         <div className="tp-modal__header">
           <div className="tp-modal__header-text">
-            <p className="eyebrow">Participación ciudadana · Priorización Temática</p>
+            <p className="eyebrow">Participación ciudadana · Resultados REDCap</p>
             <h2 id="tp-modal-title" className="tp-modal__title">
-              ¿Cuáles son las temáticas más importantes para la salud de tu municipio?
+              Temáticas ciudadanas incorporadas a la priorización
             </h2>
             <p className="tp-modal__desc">
-              Selecciona hasta <strong>{MAX_SELECTED_TOPICS} temáticas</strong>.
-              Esta selección reflejará las prioridades ciudadanas para el Plan Local de Salud 2027–2030.
+              Registra hasta <strong>{MAX_SELECTED_TOPICS} temáticas</strong> procedentes
+              de la encuesta REDCap o de una transcripción técnica validada. Su valor
+              es informativo para la deliberación; no sustituye la votación ciudadana.
             </p>
           </div>
           <button
@@ -157,7 +158,7 @@ export function ThematicPrioritisationModal({
           <p className="tp-modal__import-desc">
             Carga la exportación CSV del formulario{" "}
             <code>papeleta_pri_tematica</code>. COMPÁS NG calculará el
-            ranking y aplicará automáticamente el Top&nbsp;5 como selección temática.
+            ranking y propondrá el Top&nbsp;5 como lectura informativa.
           </p>
 
           <div className="tp-import-zone">
@@ -233,7 +234,7 @@ export function ThematicPrioritisationModal({
 
               {topFiveMatchesSelection && (
                 <p className="tp-study__status">
-                  Top 5 aplicado. No hay cambios pendientes que guardar.
+                  Top 5 incorporado. No hay cambios pendientes que guardar.
                 </p>
               )}
 
@@ -246,10 +247,10 @@ export function ThematicPrioritisationModal({
                 disabled={!canApplyTopFive}
               >
                 {topFiveMatchesSelection
-                  ? "Top 5 aplicado como selección temática"
+                  ? "Top 5 incorporado como resultado informativo"
                   : selectedIds.length > 0
-                    ? "Restaurar Top 5 como selección temática"
-                    : "Aplicar Top 5 como selección temática"}
+                    ? "Restaurar Top 5 como resultado informativo"
+                    : "Incorporar Top 5 como resultado informativo"}
               </button>
             </div>
           )}
@@ -266,7 +267,7 @@ export function ThematicPrioritisationModal({
             onClick={onSave}
             disabled={!hasChanges}
           >
-            {hasChanges ? "Guardar selección" : "Selección guardada"}
+            {hasChanges ? "Guardar resultado" : "Resultado guardado"}
           </button>
         </div>
       </div>

@@ -47,7 +47,7 @@ export function getCategory(document: MunicipalDocument): DocCategory {
   ) {
     return "complementary-study";
   }
-  // Los marcos estratégicos y normativos son insumo de la fase de Plan de
+  // Los marcos estratégicos y normativos son base de la fase de Plan de
   // Acción / Plan Local de Salud. El Perfil concluye, pero no recomienda:
   // estos documentos no forman parte del diagnóstico territorial.
   if (document.kind === "strategic-framework") return "strategic-input";

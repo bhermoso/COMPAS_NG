@@ -68,7 +68,7 @@ export interface BadeaMunicipalContext {
 export const BADEA_CONSULTA_19824 = {
   consulta: 19824,
   actividad: "Clasificación del grado de urbanización",
-  accessedAt: "2026-07-07",
+  accessedAt: "2026-10-10",
 } as const;
 
 const CAUTELAS_BASE: string[] = [
@@ -143,6 +143,45 @@ function indicadoresAtarfe(): BadeaIndicadorContexto[] {
   ];
 }
 
+function indicadoresLoja(): BadeaIndicadorContexto[] {
+  const base = {
+    fuente: "BADEA/IECA" as const,
+    consulta: BADEA_CONSULTA_19824.consulta,
+    actividad: BADEA_CONSULTA_19824.actividad,
+    anio: "2024",
+    territorio: "Loja",
+    codigoINE: "18122",
+    escala: "municipio" as const,
+    dimension: "contexto-sociodemografico" as const,
+    cautelas: CAUTELAS_BASE,
+  };
+  return [
+    {
+      ...base,
+      indicador: "Grado de urbanización según tipología de celda",
+      valor: "Zona de densidad intermedia",
+    },
+    {
+      ...base,
+      indicador: "Porcentaje de población en centros urbanos",
+      valor: 0.0,
+      unidad: "%",
+    },
+    {
+      ...base,
+      indicador: "Porcentaje de población en agrupaciones urbanas",
+      valor: 80.6,
+      unidad: "%",
+    },
+    {
+      ...base,
+      indicador: "Porcentaje de población en celdas de malla rurales",
+      valor: 19.4,
+      unidad: "%",
+    },
+  ];
+}
+
 // ── Resolución por ámbito COMPÁS ──────────────────────────────────────────────
 // Asociación EXPLÍCITA por id de municipio COMPÁS. Granada-Zaidín no es
 // municipio BADEA: recibe el contexto de su municipio matriz como proxy.
@@ -167,6 +206,15 @@ export function getBadeaMunicipalContext(
         anio: "2024",
         esProxyMunicipioMatriz: false,
         indicadores: indicadoresAtarfe(),
+        accessedAt: BADEA_CONSULTA_19824.accessedAt,
+      };
+    case "loja":
+      return {
+        territorio: "Loja",
+        codigoINE: "18122",
+        anio: "2024",
+        esProxyMunicipioMatriz: false,
+        indicadores: indicadoresLoja(),
         accessedAt: BADEA_CONSULTA_19824.accessedAt,
       };
     default:

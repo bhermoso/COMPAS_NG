@@ -36,7 +36,7 @@ y lo pone en relación con los instrumentos estratégicos institucionales que le
 corresponden, para que los productos de planificación (Productos 6–9) puedan
 operar sobre esa información de forma estructurada, trazable y sin ambigüedad.
 
-El escenario no planifica: proporciona el insumo estructurado sobre el que la
+El escenario no planifica: proporciona la base estructurada sobre la que la
 planificación puede construirse.
 
 ---

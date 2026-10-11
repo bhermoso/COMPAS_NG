@@ -12,9 +12,7 @@ export const COMPAS_LIBRARY_SOURCE_MUNICIPALITY_TAG_PREFIX =
   "source-municipality:";
 export const COMPAS_LIBRARY_SOURCE_DOCUMENT_TAG_PREFIX = "source-document:";
 
-export const COMPAS_LIBRARY_ASSIGNABLE_KINDS: readonly DocumentKind[] = [
-  "strategic-framework",
-];
+export const COMPAS_LIBRARY_ASSIGNABLE_KINDS: readonly DocumentKind[] = [];
 
 const LIBRARY_LIMITATION =
   "Copia documental reutilizada desde otro expediente COMPAS; requiere revisar su aplicabilidad al ambito activo.";

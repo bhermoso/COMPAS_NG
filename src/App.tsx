@@ -193,14 +193,14 @@ const TERRITORIAL_TYPE_LABEL: Record<string, string> = {
 // ── Municipios de demostración ───────────────────────────────
 
 const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
-  { id: "atarfe",         name: "Atarfe",              province: "Granada", ineCode: "18022", createdBy: "COMPÁS NG" },
   { id: "alfacar",        name: "Alfacar",              province: "Granada", ineCode: "18011", createdBy: "COMPÁS NG" },
-  { id: "fuente-vaqueros", name: "Fuente Vaqueros",      province: "Granada", ineCode: "18079", createdBy: "COMPÁS NG" },
-  { id: "loja",            name: "Loja",                  province: "Granada", ineCode: "18122", createdBy: "COMPÁS NG" },
+  { id: "atarfe",         name: "Atarfe",              province: "Granada", ineCode: "18022", createdBy: "COMPÁS NG" },
   { id: "churriana",      name: "Churriana de la Vega", province: "Granada", ineCode: "18062", createdBy: "COMPÁS NG" },
-  { id: "zagra",          name: "Zagra",               province: "Granada", ineCode: "18913", createdBy: "COMPÁS NG" },
+  { id: "fuente-vaqueros", name: "Fuente Vaqueros",      province: "Granada", ineCode: "18079", createdBy: "COMPÁS NG" },
   // Distrito inframunicipal — sin código INE propio. BADEA solo como contexto de Granada capital (18087).
   { id: "granada-zaidin", name: "Granada-Zaidín",       province: "Granada", territorialType: "distrito", createdBy: "COMPÁS NG" },
+  { id: "loja",            name: "Loja",                  province: "Granada", ineCode: "18122", createdBy: "COMPÁS NG" },
+  { id: "zagra",          name: "Zagra",               province: "Granada", ineCode: "18913", createdBy: "COMPÁS NG" },
 ];
 
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
@@ -210,10 +210,20 @@ const WORKSPACE_PERSISTENCE_FAILURE_MESSAGE =
 const WORKSPACE_EXTENDED_STORAGE_MESSAGE =
   "Expediente guardado en almacenamiento ampliado de este navegador. Para abrirlo en otro equipo o conservarlo en el remoto, descarga una copia de recuperación o crea un seed.";
 
+function sortMunicipalitiesByName<T extends { name: string }>(
+  municipalities: readonly T[]
+): T[] {
+  return [...municipalities].sort((a, b) =>
+    a.name.localeCompare(b.name, "es", { sensitivity: "base" })
+  );
+}
+
 function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextInput[] {
   try {
     const raw = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
-    return raw ? (JSON.parse(raw) as CreateMunicipalityContextInput[]) : [];
+    return raw
+      ? sortMunicipalitiesByName(JSON.parse(raw) as CreateMunicipalityContextInput[])
+      : [];
   } catch {
     return [];
   }
@@ -222,7 +232,10 @@ function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextIn
 function resolveInitialMunicipality(
   customMunicipalities: readonly CreateMunicipalityContextInput[]
 ): CreateMunicipalityContextInput {
-  const municipalities = [...DEMO_MUNICIPALITIES, ...customMunicipalities];
+  const municipalities = sortMunicipalitiesByName([
+    ...DEMO_MUNICIPALITIES,
+    ...customMunicipalities,
+  ]);
   const fallback =
     municipalities.find((municipality) => municipality.id === DEFAULT_MUNICIPALITY_ID) ??
     DEMO_MUNICIPALITIES[0];
@@ -445,7 +458,7 @@ export default function App() {
             createdBy: stored.municipality.metadata.createdBy ?? "Usuario",
           });
         }
-        const recovered = Array.from(byId.values());
+        const recovered = sortMunicipalitiesByName(Array.from(byId.values()));
         if (
           recovered.length === current.length &&
           recovered.every((municipality, index) => municipality.id === current[index]?.id)
@@ -1150,7 +1163,7 @@ export default function App() {
   const municipality = runtime.workspace.municipality.identity;
 
   const allMunicipalities = useMemo(
-    () => [...DEMO_MUNICIPALITIES, ...customMunicipalities],
+    () => sortMunicipalitiesByName([...DEMO_MUNICIPALITIES, ...customMunicipalities]),
     [customMunicipalities]
   );
   const compasDocumentLibrary = useMemo(
@@ -3001,7 +3014,7 @@ export default function App() {
       createdBy: "Usuario",
     };
 
-    const updatedCustom = [...customMunicipalities, newMuni];
+    const updatedCustom = sortMunicipalitiesByName([...customMunicipalities, newMuni]);
     setCustomMunicipalities(updatedCustom);
     try {
       localStorage.setItem(CUSTOM_MUNICIPALITIES_KEY, JSON.stringify(updatedCustom));
@@ -3437,7 +3450,7 @@ export default function App() {
 
               // Capa 4: Otras fuentes documentales (excluye capas 1–3).
               // Los marcos estratégicos y normativos (strategic-framework) se
-              // excluyen también: son insumo del Plan de Acción / Plan Local de
+              // excluyen también: son base del Plan de Acción / Plan Local de
               // Salud, no fuente diagnóstica del Perfil.
               const STUDY_TAGS = ["ibse", "duke-eas", "predimed-eas", "sf12-eas", "sueno-eas", "cage-eas", "auditc", "ipaq-eas", "ghq12", "phq9", "psqi", "fagerstrom", "sbq"];
               const otherDocCount = docs.filter(
@@ -3745,11 +3758,11 @@ export default function App() {
               <p className="eyebrow">Plan Local de Salud 2027–2030</p>
               <h2>Priorización territorial</h2>
               <p className="panel-note">
-                La priorización integra dos fuentes complementarias: las áreas
-                candidatas derivadas del Perfil de Salud Local y las temáticas
-                expresadas por la ciudadanía en el proceso de participación.
-                La decisión definitiva corresponde al equipo técnico y a la comunidad,
-                no al sistema.
+                COMPÁS organiza información para la deliberación: áreas candidatas
+                derivadas del Perfil de Salud Local y resultados de la encuesta
+                ciudadana en REDCap. No recoge votos dentro de la aplicación ni
+                sustituye la encuesta; interpreta sus resultados cuando se importa
+                el CSV del proyecto participativo.
               </p>
             </section>
             {/* Candidaturas técnicas — derivadas del PSL */}

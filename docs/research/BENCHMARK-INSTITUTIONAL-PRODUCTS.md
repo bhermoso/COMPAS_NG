@@ -234,7 +234,7 @@ El año 2026 se destina exclusivamente a diagnóstico territorial.
 **Vinculación con RELAS y COMPÁS NG:** La línea 2.1.1 de la ESCA establece que el
 diagnóstico de salud comunitaria por UGC debe realizarse "en coordinación con los Planes
 Locales de Salud en aquellos municipios adheridos a RELAS". El PLS que genera COMPÁS NG
-es, por tanto, un insumo explícito del Plan Operativo ESCA.
+es, por tanto, una base explícita del Plan Operativo ESCA.
 
 ### IV.2 Estructura del Plan Operativo ESCA
 
@@ -728,4 +728,4 @@ del documento.
 
 *Este benchmark es una síntesis metodológica basada en análisis de documentos disponibles
 y conocimiento acumulado sobre salud pública. No reproduce ningún formato propietario.
-Sus conclusiones son insumos para el diseño de contratos documentales, no normas implementables directamente.*
+Sus conclusiones son materiales de base para el diseño de contratos documentales, no normas implementables directamente.*
