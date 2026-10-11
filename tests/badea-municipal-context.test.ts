@@ -189,7 +189,15 @@ describe("contexto BADEA — impacto en el Perfil", () => {
   });
 
   it("capa no evidencial: el expediente 56/92 permanece intacto", () => {
-    expect(ws.repository.documents.length).toBe(20);
+    expect(ws.repository.documents.length).toBe(21);
+    expect(
+      ws.repository.documents.some((document) =>
+        [document.title, document.sourceFileName, document.source.system]
+          .join(" ")
+          .toLowerCase()
+          .includes("badea")
+      )
+    ).toBe(false);
     expect(ws.evidenceStore.atoms.length).toBe(92);
     expect(
       ws.evidenceStore.atoms.filter(

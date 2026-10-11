@@ -432,6 +432,14 @@ export function buildTerritorialInequalityReading(
       "El PLIZD/ERACIS consta en el listado oficial de la Junta, pero el PDF municipal enlazado no está incorporado como texto descargado al expediente."
     );
   }
+  if (
+    eracisContexto?.accessStatus === "officially-listed" &&
+    eracisContexto.planUrl === undefined
+  ) {
+    cautions.push(
+      "ERACIS/PLIZD consta como reconocimiento territorial oficial; el diagnóstico local completo no está incorporado como texto al expediente."
+    );
+  }
 
   return {
     available,
@@ -477,13 +485,17 @@ export function inferSocialEpidemiologyDeterminants(
     .slice(0, 3)
     .join("; ");
   if (desigualdadTerritorial.hasEracisOrPlizd) {
+    const zonasEracis =
+      desigualdadTerritorial.eracisContexto?.disadvantagedZones.join(", ");
     lecturas.push({
       kind: "documentado",
       enunciado:
         "vulnerabilidad territorial reconocida por ERACIS/PLIZD como eje de desigualdad",
       base:
         desigualdadTerritorial.eracisContexto !== undefined
-          ? `${desigualdadTerritorial.eracisContexto.municipalityName} figura en el listado oficial de Planes Locales de Intervención en Zonas Desfavorecidas; el texto del plan debe incorporarse al expediente para lectura completa`
+          ? `${desigualdadTerritorial.eracisContexto.municipalityName} figura en fuente oficial de la Junta de Andalucía como municipio con zona desfavorecida` +
+            (zonasEracis ? ` (${zonasEracis})` : "") +
+            `; el diagnóstico local completo debe incorporarse al expediente para lectura completa`
           : `señal ERACIS/PLIZD detectada en la documentación territorial del expediente (${fuentesTerritoriales})`,
     });
   }

@@ -482,6 +482,7 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
       const fuentes = desigualdadTerritorial.sourceTitles.slice(0, 3).join("; ");
       const temas = desigualdadTerritorial.themes.slice(0, 4).join("; ");
       const eracis = desigualdadTerritorial.eracisContexto;
+      const zonasEracis = eracis?.disadvantagedZones.join(", ");
       partes.push(
         `La desigualdad no queda reducida aquí a la falta de tablas desagregadas. ` +
         `La documentación territorial del expediente` +
@@ -491,11 +492,12 @@ export function buildNarrativeChapters(input: NarrativeChaptersInput): Narrative
         `y experiencia local aparecen como claves para interpretar la situación ` +
         `de salud. ` +
         (eracis !== undefined
-          ? `${eracis.municipalityName} figura además en el listado oficial de ` +
-            `Planes Locales de Intervención en Zonas Desfavorecidas; este dato ` +
-            `confirma que la desigualdad territorial es una fuente pertinente, ` +
-            `aunque el PDF municipal enlazado deba incorporarse al expediente ` +
-            `para lectura completa. `
+          ? `${eracis.municipalityName} figura además en fuente oficial de la ` +
+            `Junta de Andalucía como municipio con zona desfavorecida` +
+            (zonasEracis ? ` (${zonasEracis})` : "") +
+            `; este dato confirma que la desigualdad territorial es una fuente ` +
+            `pertinente, aunque el diagnóstico local completo deba incorporarse ` +
+            `al expediente para lectura completa. `
           : "") +
         `Lo que sigue faltando es la matriz cuantitativa fina: sexo, edad, renta, ` +
         `barrios y otros ejes no están armonizados en una serie interna comparable. ` +

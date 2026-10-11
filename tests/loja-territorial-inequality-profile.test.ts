@@ -38,6 +38,12 @@ describe("Loja — determinantes y desigualdades desde documentación territoria
       "Perfil de Salud Local de Loja — documento completo"
     );
     expect(answers.desigualdadTerritorial.eracisContexto?.listedByJunta).toBe(true);
+    expect(answers.desigualdadTerritorial.eracisContexto?.sourcePageUrl).toBe(
+      "https://www.juntadeandalucia.es/boja/2026/68/8"
+    );
+    expect(answers.desigualdadTerritorial.eracisContexto?.disadvantagedZones).toEqual([
+      "Alcazaba y Alfaguara",
+    ]);
     expect(answers.desigualdadTerritorial.themes.join(" ")).toMatch(
       /vulnerabilidad|empleo|vivienda|participación/
     );
@@ -55,6 +61,14 @@ describe("Loja — determinantes y desigualdades desde documentación territoria
           d.enunciado === "condiciones materiales de vivienda, renta y empleo del ámbito"
       )
     ).toBe(false);
+    expect(
+      answers.determinantes.some(
+        (d) =>
+          d.kind === "documentado" &&
+          d.enunciado.includes("ERACIS/PLIZD") &&
+          d.base.includes("Alcazaba y Alfaguara")
+      )
+    ).toBe(true);
   });
 
   it("genera narrativa sustantiva aunque Loja aún no tenga EvidenceAtoms", () => {
@@ -65,7 +79,8 @@ describe("Loja — determinantes y desigualdades desde documentación territoria
     expect(texto).not.toContain("El Perfil aún no dispone de información territorial suficiente");
     expect(texto).toContain("El repositorio no contiene todavía átomos específicos");
     expect(texto).toContain("La desigualdad no queda reducida aquí a la falta de tablas desagregadas");
-    expect(texto).toContain("Loja figura además en el listado oficial");
+    expect(texto).toContain("Loja figura además en fuente oficial de la Junta de Andalucía");
+    expect(texto).toContain("Alcazaba y Alfaguara");
     expect(texto).toContain("Determinantes documentados por las fuentes del expediente");
     expect(texto).toContain("no un indicio de equidad");
   });
