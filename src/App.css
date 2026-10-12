@@ -324,6 +324,34 @@ h3 {
 .pcm-generation-prompt p { margin: 4px 0 0; }
 .pcm-traceability-map { margin: 18px 0; padding: 14px 0 0; border-top: 1px solid #dbe5ee; }
 .pcm-traceability-map h3 { margin: 4px 0 0; font-size: 1rem; }
+.pcm-operational-tree { display: grid; gap: 14px; margin: 14px 0; }
+.pcm-tree-module { border: 1px solid #cbd8df; border-radius: 8px; background: #f8fbfc; padding: 14px; }
+.pcm-tree-module__header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.pcm-tree-module__header h4 { margin: 3px 0 0; font-size: 1rem; line-height: 1.35; color: #17384a; }
+.pcm-tree-strategic { margin: 10px 0 12px; font-size: .86rem; line-height: 1.55; color: #334155; }
+.pcm-tree-block { border-top: 1px solid #d8e4ea; padding-top: 10px; margin-top: 10px; }
+.pcm-tree-block > summary { cursor: pointer; display: flex; justify-content: space-between; gap: 12px; font-weight: 800; color: #135d66; }
+.pcm-tree-block > summary small { color: #64748b; font-weight: 700; }
+.pcm-tree-branches { display: grid; gap: 12px; margin-top: 12px; }
+.pcm-tree-branch { position: relative; display: grid; gap: 8px; padding-left: 16px; }
+.pcm-tree-branch::before { content: ""; position: absolute; left: 4px; top: 3px; bottom: 3px; width: 2px; background: #c4d7de; border-radius: 2px; }
+.pcm-tree-node, .pcm-tree-action, .pcm-tree-empty { position: relative; border: 1px solid #dbe5ee; border-radius: 6px; background: #fff; padding: 10px 12px; }
+.pcm-tree-node::before, .pcm-tree-action::before, .pcm-tree-empty::before { content: ""; position: absolute; left: -13px; top: 18px; width: 13px; height: 2px; background: #c4d7de; }
+.pcm-tree-node__label { display: block; margin-bottom: 5px; color: #64748b; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0; }
+.pcm-tree-node p, .pcm-tree-action p { margin: 0; font-size: .84rem; line-height: 1.5; color: #253744; }
+.pcm-tree-node--objective { border-left: 4px solid #2f7d5b; }
+.pcm-tree-node--indicator { border-left: 4px solid #0074c8; }
+.pcm-tree-node--linked-actions { border-left: 4px solid #2f7d5b; }
+.pcm-tree-node--draft { border-left: 4px solid #d39e22; }
+.pcm-tree-node--missing { border-left: 4px solid #94a3b8; }
+.pcm-tree-actions { display: grid; gap: 10px; }
+.pcm-tree-action h5 { margin: 0 0 8px; font-size: .93rem; line-height: 1.35; color: #17384a; }
+.pcm-tree-action dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 8px 0; }
+.pcm-tree-action dt { color: #64748b; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0; }
+.pcm-tree-action dd { margin: 3px 0 0; font-size: .82rem; line-height: 1.45; color: #253744; }
+.pcm-tree-activities { display: grid; gap: 6px; margin: 8px 0; padding-left: 18px; font-size: .82rem; line-height: 1.45; }
+.pcm-tree-activities span { display: block; color: #526070; }
+.pcm-tree-deliveries, .pcm-tree-empty { color: #64748b; font-size: .82rem; line-height: 1.45; }
 .pcm-traceability-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
 .pcm-traceability-card { padding: 12px; border: 1px solid #dbe5ee; border-radius: 6px; background: #fff; }
 .pcm-traceability-card--linked-actions { border-left: 4px solid #2f7d5b; }
@@ -11158,6 +11186,7 @@ h3 {
 .indicator-worksheet__footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border-top: 1px solid #cedcdf; padding-top: 14px; }
 .indicator-worksheet__footer span { font-size: .75rem; color: #526070; }
 @media (max-width: 800px) { .indicator-worksheet__fields { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .pcm-tree-module__header, .pcm-tree-block > summary { display: grid; } .pcm-tree-action dl { grid-template-columns: 1fr; } }
 
 /* Jerarquía editorial del borrador: procedencia, orientación y objetivo. */
 .pcm-preparation .pcm-editorial-header { margin-bottom: 24px; }

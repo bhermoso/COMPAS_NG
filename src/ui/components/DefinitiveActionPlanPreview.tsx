@@ -10,6 +10,35 @@ import { buildActionPlanTraceability } from "../../domain/action-plan-catalog/Ac
 import type { PlanPreparationDraft } from "../../domain/action-plan-catalog/PlanPreparationDraft";
 import type { IndicatorWorksheet } from "../../domain/action-plan-catalog/IndicatorWorksheet";
 import { compareActionPlanNotation, thematicBlockNameFor } from "../../domain/action-plan-catalog/PlanPreparationDraft";
+import type { ActionPlanTraceabilityLink } from "../../domain/action-plan-catalog/ActionPlanTraceability";
+
+function fichaStatusLabel(status: ActionPlanTraceabilityLink["indicatorFichaStatus"]): string {
+  if (status === "missing") return "ficha pendiente";
+  if (status === "draft") return "ficha abierta sin actuaciones";
+  return "ficha con actuaciones vinculadas";
+}
+
+function countLabel(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function groupTraceabilityByBlock(links: ActionPlanTraceabilityLink[]): Array<{
+  code: string;
+  name: string;
+  links: ActionPlanTraceabilityLink[];
+}> {
+  const byBlock = new Map<string, { code: string; name: string; links: ActionPlanTraceabilityLink[] }>();
+  for (const link of links) {
+    const current = byBlock.get(link.thematicBlockCode) ?? {
+      code: link.thematicBlockCode,
+      name: link.thematicBlock,
+      links: [],
+    };
+    current.links.push(link);
+    byBlock.set(link.thematicBlockCode, current);
+  }
+  return Array.from(byBlock.values());
+}
 
 export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, worksheets = [], validatedActionPlans, onValidatePlan}: {
   validatedActionPlans?: import("../../domain/action-plan-catalog/PlanDocument").PlanDocument[];
@@ -71,17 +100,92 @@ export function DefinitiveActionPlanPreview({municipalityId, modules, drafts, wo
         <div className="pcm-module__header">
           <div>
             <p className="eyebrow">Mapa de vínculos</p>
-            <h3>Objetivos, indicadores, fichas y seguimiento</h3>
+            <h3>Árbol operativo de objetivos, indicadores y actividades</h3>
           </div>
           <span className="status-pill">{linkedActionCards} fichas · {linkedActivities} actividades</span>
         </div>
-        <p className="panel-note">Cada fila conserva la cadena línea estratégica → bloque → objetivo → indicador → ficha. Si falta una pieza, se declara como pendiente.</p>
+        <p className="panel-note">Cada rama conserva la cadena línea estratégica → bloque → objetivo → indicador → ficha → actuación → actividades y entregas. Si falta una pieza, se declara como pendiente.</p>
+        <div className="pcm-operational-tree" aria-label="Árbol operativo de actividades vinculadas a objetivos e indicadores">
+          {active.map(({ module, moduleDecision }) => {
+            const moduleLinks = traceability.filter((link) => link.moduleId === module.id);
+            if (moduleLinks.length === 0) return null;
+            return <article className="pcm-tree-module" key={module.id}>
+              <div className="pcm-tree-module__header">
+                <div>
+                  <p className="eyebrow">Línea estratégica</p>
+                  <h4>{module.title}</h4>
+                </div>
+                <span className="status-pill">{countLabel(moduleLinks.length, "indicador", "indicadores")}</span>
+              </div>
+              <p className="pcm-tree-strategic"><strong>Objetivo estratégico:</strong> {resolvedPlanDecisionText(moduleDecision, module.strategicObjective)}</p>
+              {groupTraceabilityByBlock(moduleLinks).map((block) => (
+                <details className="pcm-tree-block" key={block.code} open>
+                  <summary>
+                    <span>{block.name}</span>
+                    <small>{block.links.length} indicador{block.links.length === 1 ? "" : "es"}</small>
+                  </summary>
+                  <div className="pcm-tree-branches">
+                    {block.links.map((link) => (
+                      <article className="pcm-tree-branch" key={link.indicatorWorksheetKey}>
+                        <div className="pcm-tree-node pcm-tree-node--objective">
+                          <span className="pcm-tree-node__label">Objetivo específico</span>
+                          <p><strong>{link.objectiveCode}</strong> · {link.objectiveTitle}</p>
+                        </div>
+                        <div className="pcm-tree-node pcm-tree-node--indicator">
+                          <span className="pcm-tree-node__label">Indicador de seguimiento</span>
+                          <p><strong>{link.indicatorCode}</strong> · {link.indicatorTitle}</p>
+                        </div>
+                        <div className={`pcm-tree-node pcm-tree-node--ficha pcm-tree-node--${link.indicatorFichaStatus}`}>
+                          <span className="pcm-tree-node__label">Ficha del indicador</span>
+                          <p>{fichaStatusLabel(link.indicatorFichaStatus)} · {countLabel(link.actionCards.length, "actuación", "actuaciones")} · {countLabel(link.consolidationCount, "consolidación", "consolidaciones")}</p>
+                        </div>
+                        {link.actionCards.length === 0 ? (
+                          <p className="pcm-tree-empty">Sin actuaciones vinculadas todavía.</p>
+                        ) : (
+                          <div className="pcm-tree-actions">
+                            {link.actionCards.map((action) => (
+                              <article className="pcm-tree-action" key={action.id}>
+                                <span className="pcm-tree-node__label">Actuación → actividades → entregas</span>
+                                <h5>{action.name}</h5>
+                                <dl>
+                                  <div><dt>Responsable</dt><dd>{action.owner}</dd></div>
+                                  <div><dt>Calendario</dt><dd>{action.schedule}</dd></div>
+                                  <div><dt>Datos que entrega</dt><dd>{action.requestedData}</dd></div>
+                                </dl>
+                                {action.activities.length > 0 ? (
+                                  <ul className="pcm-tree-activities">
+                                    {action.activities.map((activity) => (
+                                      <li key={activity.id}>
+                                        <strong>{activity.name}</strong>
+                                        <span>{activity.status} · {activity.schedule} · evidencia: {activity.evidence}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="pcm-tree-empty">Actividad concreta pendiente.</p>
+                                )}
+                                <p className="pcm-tree-deliveries">{countLabel(action.deliveryCount, "entrega registrada", "entregas registradas")}.</p>
+                                {action.missingFields.length > 0 && (
+                                  <p className="pcm-tree-empty">Falta completar: {action.missingFields.join(", ")}.</p>
+                                )}
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </article>;
+          })}
+        </div>
         <div className="pcm-traceability-grid">
           {traceability.map((link) => <article key={link.indicatorWorksheetKey} className={`pcm-traceability-card pcm-traceability-card--${link.indicatorFichaStatus}`}>
             <h4>{link.indicatorCode} · {link.indicatorTitle}</h4>
             <p className="pcm-source">{link.moduleTitle} · {link.thematicBlock} · {link.objectiveCode}</p>
             <p><strong>Objetivo:</strong> {link.objectiveTitle}</p>
-            <p><strong>Ficha del indicador:</strong> {link.indicatorFichaStatus === "missing" ? "pendiente" : link.indicatorFichaStatus === "draft" ? "abierta sin actuaciones" : "con actuaciones vinculadas"}</p>
+            <p><strong>Ficha del indicador:</strong> {fichaStatusLabel(link.indicatorFichaStatus)}</p>
             <p><strong>Actuaciones:</strong> {link.actionCards.length} · <strong>Actividades:</strong> {link.actionCards.reduce((total, action) => total + action.activities.length, 0)} · <strong>Entregas:</strong> {link.actionCards.reduce((total, action) => total + action.deliveryCount, 0)} · <strong>Consolidaciones:</strong> {link.consolidationCount}</p>
             {link.actionCards.length > 0 && <ul>
               {link.actionCards.map((action) => <li key={action.id}>
