@@ -1779,6 +1779,24 @@ h3 {
   border-color: #cf4b4b;
 }
 
+.workspace-delete-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  overflow: auto;
+  border: 1px solid #d9e2ef;
+  border-radius: 8px;
+  padding: 24px;
+  color: #172033;
+  background: white;
+}
+.workspace-delete-dialog::backdrop { background: rgb(0 0 0 / 40%); }
+.workspace-delete-dialog h2 { font-size: 1.2rem; margin: 0 0 16px; }
+.workspace-delete-dialog p { line-height: 1.5; }
+.workspace-delete-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.workspace-delete-dialog__actions button { font: inherit; padding: 10px 14px; cursor: pointer; }
+.workspace-delete-dialog__actions button:last-child { background: #9f1d1d; color: white; border: 1px solid #9f1d1d; border-radius: 4px; }
+
 .municipality-selector__cancel {
   border: none;
   background: none;

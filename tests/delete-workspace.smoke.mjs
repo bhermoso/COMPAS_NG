@@ -24,9 +24,14 @@ try {
     const files = await import('/COMPAS_NG/src/infrastructure/document-files/originalFiles.ts');
     await files.saveOriginalFile('prueba-borrado', 'original', new File(['prueba'], 'original.txt'));
   });
-  page.on('dialog', dialog => dialog.accept());
+  // Native confirmations are unavailable in some embedded browsers.
+  await page.evaluate(() => { window.confirm = () => false; });
   await openSelector();
   await page.getByRole('button', { name: 'Eliminar expediente de Prueba borrado', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancelar', exact: true }).click();
+  assert.ok(await page.evaluate(() => localStorage.getItem('compas-ng:workspace:prueba-borrado')));
+  await page.getByRole('button', { name: 'Eliminar expediente de Prueba borrado', exact: true }).click();
+  await page.getByRole('button', { name: 'Eliminar de este navegador', exact: true }).click();
   await page.waitForFunction(() => localStorage.getItem('compas-ng:active-municipality') !== 'prueba-borrado');
   await page.reload();
   await page.locator('.app-nav__tab').filter({ hasText: 'Plan de Acción' }).click();
@@ -41,6 +46,7 @@ try {
   });
   assert.deepEqual(saved, { local: null, indexed: null, originals: 0 });
   await page.getByRole('button', { name: 'Eliminar expediente de Fuente Vaqueros', exact: true }).click();
+  await page.getByRole('button', { name: 'Eliminar de este navegador', exact: true }).click();
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('compas-ng:deleted-municipalities')).includes('fuente-vaqueros'));
   await page.reload();
   await page.locator('.app-nav__tab').filter({ hasText: 'Plan de Acción' }).click();

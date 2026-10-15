@@ -1,4 +1,5 @@
 import { InitialLocalHealthPlanPanel } from "./ui/components/InitialLocalHealthPlanPanel";
+import { DeleteWorkspaceDialog } from "./ui/components/DeleteWorkspaceDialog";
 import { replaceZaidinFinalDraft } from "./application/workspace/replaceZaidinFinalDraft";
 import { processPdfHealthReport } from './application/health-report/ProcessPdfHealthReport';
 import { extractPdfText } from './infrastructure/pdf/extractPdfText';
@@ -211,7 +212,6 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
   { id: "zagra",          name: "Zagra",               province: "Granada", ineCode: "18913", createdBy: "COMPÁS NG" },
 ];
 const DEMO_MUNICIPALITY_IDS = DEMO_MUNICIPALITIES.map((municipality) => municipality.id);
-const DEMO_MUNICIPALITY_ID_SET = new Set(DEMO_MUNICIPALITY_IDS);
 
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
 const DELETED_MUNICIPALITIES_KEY = "compas-ng:deleted-municipalities";
@@ -441,6 +441,7 @@ export default function App() {
   const [remotePersistenceMessage, setRemotePersistenceMessage] =
     useState<string | null>(null);
   const [showMunicipalitySelector, setShowMunicipalitySelector] = useState(false);
+  const [municipalityToDelete, setMunicipalityToDelete] = useState<CreateMunicipalityContextInput | null>(null);
   const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
   const [initialCustomMunicipalities] = useState<CreateMunicipalityContextInput[]>(
     readCustomMunicipalitiesFromLocalStorage
@@ -2963,9 +2964,10 @@ export default function App() {
 
   function switchToMunicipality(
     municipalityId: string,
-    input: CreateMunicipalityContextInput
+    input: CreateMunicipalityContextInput,
+    discardConfirmed = false
   ) {
-    if (!canLeavePreparation()) return;
+    if (!discardConfirmed && !canLeavePreparation()) return;
     const nextWorkspaceLoad = loadOrCreateMunicipalityWorkspace(municipalityId, input);
     // `backfill-marker` se aplica de forma síncrona (local); `download-and-merge`
     // viaja en `pendingMigration` y lo resuelve el efecto asíncrono.
@@ -3063,16 +3065,9 @@ export default function App() {
     municipalityId: string,
     input: CreateMunicipalityContextInput
   ) {
-    if (!canLeavePreparation()) return;
-    const demoMunicipality = DEMO_MUNICIPALITY_ID_SET.has(municipalityId);
     if (allMunicipalities.length < 2) {
-      setPersistenceMessage("Añade otro ámbito antes de eliminar el último expediente abierto.");
-      return;
+      throw new Error("Añade otro ámbito antes de eliminar el último expediente abierto.");
     }
-    const confirmMessage = demoMunicipality
-      ? `Eliminar el expediente de «${input.name}» en este navegador?\n\nSe quitará del selector y se borrarán sus datos y originales locales. Podrás volver a incorporarlo añadiendo el ámbito. La copia compartida de Firebase se conserva.`
-      : `Eliminar por completo el expediente de «${input.name}» en este navegador?\n\nSe borrará del selector, de localStorage, de IndexedDB y de los archivos originales conservados localmente. La copia compartida de Firebase no se borra desde esta acción.`;
-    if (!window.confirm(confirmMessage)) return;
 
     locallyDeletedWorkspaceIdsRef.current.add(municipalityId);
     try {
@@ -3081,8 +3076,7 @@ export default function App() {
       ));
     } catch {
       locallyDeletedWorkspaceIdsRef.current.delete(municipalityId);
-      setPersistenceMessage("No se pudo registrar la eliminación. El expediente se conserva.");
-      return;
+      throw new Error("No se pudo registrar la eliminación. El expediente se conserva.");
     }
     clearWorkspaceFromLocalStorage(municipalityId);
     const indexedDbCleared = await clearWorkspaceFromIndexedDB(municipalityId);
@@ -3116,7 +3110,7 @@ export default function App() {
       );
       const fallback = nextCatalog.find((municipality) =>
         !locallyDeletedWorkspaceIdsRef.current.has(municipality.id));
-      if (fallback) switchToMunicipality(fallback.id, fallback);
+      if (fallback) switchToMunicipality(fallback.id, fallback, true);
     }
 
     setPersistenceMessage(
@@ -3130,6 +3124,12 @@ export default function App() {
 
   return (
     <DocumentationProvider key={municipality.id} workspace={workspace}>
+      {municipalityToDelete && <DeleteWorkspaceDialog
+        name={municipalityToDelete.name}
+        discardDraft={preparationDirtyRef.current && municipalityToDelete.id === municipality.id}
+        onCancel={() => setMunicipalityToDelete(null)}
+        onConfirm={() => handleDeleteMunicipality(municipalityToDelete.id, municipalityToDelete)}
+      />}
       {/* Barra de navegación con contexto municipal */}
       <nav className={view === "inicio" ? "app-nav app-nav--home" : "app-nav"}>
         <div className="app-nav__bar" />
@@ -3254,7 +3254,7 @@ export default function App() {
                     type="button"
                     className="municipality-selector__delete"
                     aria-label={`Eliminar expediente de ${m.name}`}
-                    onClick={() => { void handleDeleteMunicipality(m.id, m); }}
+                    onClick={() => setMunicipalityToDelete(m)}
                   >
                     Eliminar
                   </button>
