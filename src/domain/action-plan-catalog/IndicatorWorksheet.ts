@@ -44,6 +44,7 @@ export const actionFields = [
   ["delivery", "Destinatario, fecha límite y canal de entrega"],
 ] as const;
 
+/** Actividades: ejecución verificable dentro de una actuación, no decisiones autónomas del Plan. */
 export const activityFields = [
   ["name", "Nombre de la actividad, hito o producto verificable"],
   ["type", "Tipo: sesión, taller, campaña, reunión, intervención, hito o producto"],
@@ -90,7 +91,11 @@ export interface WorksheetActivity {
 export interface WorksheetAction {
   id: string;
   values: WorksheetValues;
-  /** Actividades concretas dentro de la actuación. Ausente en expedientes anteriores. */
+  /**
+   * Actividades concretas dentro de la actuación. La actuación es la unidad
+   * comprometida; la actividad es ejecución verificable y no se independiza del
+   * Plan salvo decisión explícita del equipo técnico.
+   */
   activities?: WorksheetActivity[];
   returns: WorksheetReturn[];
 }

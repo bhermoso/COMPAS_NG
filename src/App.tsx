@@ -2,13 +2,17 @@ import { InitialLocalHealthPlanPanel } from "./ui/components/InitialLocalHealthP
 import { replaceZaidinFinalDraft } from "./application/workspace/replaceZaidinFinalDraft";
 import { processPdfHealthReport } from './application/health-report/ProcessPdfHealthReport';
 import { extractPdfText } from './infrastructure/pdf/extractPdfText';
-import { loadOriginalFile } from './infrastructure/document-files/originalFiles';
+import {
+  loadOriginalFile,
+  saveOriginalFile,
+  deleteOriginalFile,
+  deleteOriginalFilesForMunicipality,
+} from './infrastructure/document-files/originalFiles';
 import { bundledDocuments } from './ui/components/documentAccessUtils';
 import { BackupPanel } from './ui/components/BackupPanel';
 import { DocumentationProvider } from "./ui/components/Documentation";
 import { profileSourceChanged } from './application/health-profile/profileSourceChanged';
 import { DocumentAccess } from './ui/components/DocumentAccess.tsx';
-import { saveOriginalFile, deleteOriginalFile } from './infrastructure/document-files/originalFiles';
 import type { PlanPreparationDraft } from "./domain/action-plan-catalog/PlanPreparationDraft";
 import { worksheetKey, type IndicatorWorksheet } from "./domain/action-plan-catalog/IndicatorWorksheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,6 +41,8 @@ import {
   resolveSeedMigration,
   readActiveMunicipalityId,
   saveActiveMunicipalityId,
+  sanitizeCustomMunicipalities,
+  mergeMunicipalityCatalog,
   type WorkspaceLoadResult,
   type SeedDocumentMigration,
 } from "./appWorkspaceHydration";
@@ -123,11 +129,13 @@ import type { ThematicPrioritisationStudy } from "./domain/thematic-prioritisati
 import {
   parseWorkspaceJSON,
   saveWorkspaceToLocalStorage,
+  clearWorkspaceFromLocalStorage,
 } from "./infrastructure/persistence/local-storage";
 import {
   loadWorkspaceFromIndexedDB,
   loadAllWorkspacesFromIndexedDB,
   saveWorkspaceToIndexedDB,
+  clearWorkspaceFromIndexedDB,
 } from "./infrastructure/persistence/indexed-db-workspace";
 import { loadMunicipalitySeed } from "./infrastructure/seeds";
 import { createBrowserRelasClient } from "./infrastructure/relas/BrowserRelasClient";
@@ -202,27 +210,33 @@ const DEMO_MUNICIPALITIES: CreateMunicipalityContextInput[] = [
   { id: "loja",            name: "Loja",                  province: "Granada", ineCode: "18122", createdBy: "COMPÁS NG" },
   { id: "zagra",          name: "Zagra",               province: "Granada", ineCode: "18913", createdBy: "COMPÁS NG" },
 ];
+const DEMO_MUNICIPALITY_IDS = DEMO_MUNICIPALITIES.map((municipality) => municipality.id);
+const DEMO_MUNICIPALITY_ID_SET = new Set(DEMO_MUNICIPALITY_IDS);
 
 const CUSTOM_MUNICIPALITIES_KEY = "compas-ng:custom-municipalities";
+const DELETED_MUNICIPALITIES_KEY = "compas-ng:deleted-municipalities";
+function readDeletedMunicipalityIds(): string[] {
+  try {
+    const ids: unknown = JSON.parse(localStorage.getItem(DELETED_MUNICIPALITIES_KEY) ?? "[]");
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [];
+  } catch { return []; }
+}
 const DEFAULT_MUNICIPALITY_ID = "granada-zaidin";
 const WORKSPACE_PERSISTENCE_FAILURE_MESSAGE =
   "No se pudo guardar el espacio de trabajo en este navegador. Descarga una copia de recuperación antes de recargar.";
 const WORKSPACE_EXTENDED_STORAGE_MESSAGE =
   "Expediente guardado en almacenamiento ampliado de este navegador. Para abrirlo en otro equipo o conservarlo en el remoto, descarga una copia de recuperación o crea un seed.";
 
-function sortMunicipalitiesByName<T extends { name: string }>(
-  municipalities: readonly T[]
-): T[] {
-  return [...municipalities].sort((a, b) =>
-    a.name.localeCompare(b.name, "es", { sensitivity: "base" })
-  );
-}
-
 function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextInput[] {
   try {
     const raw = localStorage.getItem(CUSTOM_MUNICIPALITIES_KEY);
-    return raw
-      ? sortMunicipalitiesByName(JSON.parse(raw) as CreateMunicipalityContextInput[])
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? sanitizeCustomMunicipalities(
+          parsed as CreateMunicipalityContextInput[],
+          DEMO_MUNICIPALITY_IDS
+        )
       : [];
   } catch {
     return [];
@@ -232,13 +246,13 @@ function readCustomMunicipalitiesFromLocalStorage(): CreateMunicipalityContextIn
 function resolveInitialMunicipality(
   customMunicipalities: readonly CreateMunicipalityContextInput[]
 ): CreateMunicipalityContextInput {
-  const municipalities = sortMunicipalitiesByName([
-    ...DEMO_MUNICIPALITIES,
-    ...customMunicipalities,
-  ]);
+  const municipalities = mergeMunicipalityCatalog(
+    DEMO_MUNICIPALITIES,
+    customMunicipalities
+  ).filter((municipality) => !readDeletedMunicipalityIds().includes(municipality.id));
   const fallback =
     municipalities.find((municipality) => municipality.id === DEFAULT_MUNICIPALITY_ID) ??
-    DEMO_MUNICIPALITIES[0];
+    municipalities[0] ?? DEMO_MUNICIPALITIES[0];
   const activeId = readActiveMunicipalityId(municipalities, fallback.id);
   return municipalities.find((municipality) => municipality.id === activeId) ?? fallback;
 }
@@ -446,6 +460,7 @@ export default function App() {
         const byId = new Map(current.map((municipality) => [municipality.id, municipality]));
         for (const stored of storedWorkspaces) {
           const identity = stored.municipality.identity;
+          if (readDeletedMunicipalityIds().includes(identity.id)) continue;
           if (DEMO_MUNICIPALITIES.some((municipality) => municipality.id === identity.id)) {
             continue;
           }
@@ -458,7 +473,10 @@ export default function App() {
             createdBy: stored.municipality.metadata.createdBy ?? "Usuario",
           });
         }
-        const recovered = sortMunicipalitiesByName(Array.from(byId.values()));
+        const recovered = sanitizeCustomMunicipalities(
+          Array.from(byId.values()),
+          DEMO_MUNICIPALITY_IDS
+        );
         if (
           recovered.length === current.length &&
           recovered.every((municipality, index) => municipality.id === current[index]?.id)
@@ -518,6 +536,7 @@ export default function App() {
     useState<string | null>(
       initialWorkspaceLoad.workspace.municipality.identity.id
     );
+  const locallyDeletedWorkspaceIdsRef = useRef<Set<string>>(new Set(readDeletedMunicipalityIds()));
 
   useEffect(() => {
     if (pendingSeedId || protectedEmptyWorkspaceIdRef.current === workspace.municipality.identity.id) return;
@@ -581,6 +600,7 @@ export default function App() {
     // persiste el placeholder vacío. Si se guardara, la comprobación "no hay
     // expediente local" fallaría y el seed nunca se cargaría, dejando el
     // expediente vacío de forma permanente.
+    if (locallyDeletedWorkspaceIdsRef.current.has(workspace.municipality.identity.id)) return;
     if (
       shouldSkipPersistence({
         workspaceMunicipalityId: workspace.municipality.identity.id,
@@ -724,6 +744,13 @@ export default function App() {
   // remota antigua sustituya trabajo local más reciente.
   useEffect(() => {
     const municipalityId = workspace.municipality.identity.id;
+    if (locallyDeletedWorkspaceIdsRef.current.has(municipalityId)) {
+      setRemoteHydratedMunicipalityId(null);
+      setRemotePersistenceMessage(
+        "Expediente local eliminado. La copia compartida de Firebase no se modifica desde esta acción."
+      );
+      return;
+    }
     const user = remoteClient.auth.currentUser;
     if (!user) {
       setRemoteHydratedMunicipalityId(municipalityId);
@@ -1163,7 +1190,8 @@ export default function App() {
   const municipality = runtime.workspace.municipality.identity;
 
   const allMunicipalities = useMemo(
-    () => sortMunicipalitiesByName([...DEMO_MUNICIPALITIES, ...customMunicipalities]),
+    () => mergeMunicipalityCatalog(DEMO_MUNICIPALITIES, customMunicipalities)
+      .filter((municipality) => !readDeletedMunicipalityIds().includes(municipality.id)),
     [customMunicipalities]
   );
   const compasDocumentLibrary = useMemo(
@@ -2999,6 +3027,10 @@ export default function App() {
 
   function handleAddMunicipality(name: string, province: string, type: string) {
     const id = slugifyMunicipalityId(name);
+    localStorage.setItem(DELETED_MUNICIPALITIES_KEY, JSON.stringify(
+      readDeletedMunicipalityIds().filter((deletedId) => deletedId !== id)
+    ));
+    locallyDeletedWorkspaceIdsRef.current.delete(id);
 
     const existing = allMunicipalities.find((m) => m.id === id);
     if (existing) {
@@ -3014,7 +3046,10 @@ export default function App() {
       createdBy: "Usuario",
     };
 
-    const updatedCustom = sortMunicipalitiesByName([...customMunicipalities, newMuni]);
+    const updatedCustom = sanitizeCustomMunicipalities(
+      [...customMunicipalities, newMuni],
+      DEMO_MUNICIPALITY_IDS
+    );
     setCustomMunicipalities(updatedCustom);
     try {
       localStorage.setItem(CUSTOM_MUNICIPALITIES_KEY, JSON.stringify(updatedCustom));
@@ -3022,6 +3057,73 @@ export default function App() {
       // localStorage lleno o deshabilitado
     }
     switchToMunicipality(id, newMuni);
+  }
+
+  async function handleDeleteMunicipality(
+    municipalityId: string,
+    input: CreateMunicipalityContextInput
+  ) {
+    if (!canLeavePreparation()) return;
+    const demoMunicipality = DEMO_MUNICIPALITY_ID_SET.has(municipalityId);
+    if (allMunicipalities.length < 2) {
+      setPersistenceMessage("Añade otro ámbito antes de eliminar el último expediente abierto.");
+      return;
+    }
+    const confirmMessage = demoMunicipality
+      ? `Eliminar el expediente de «${input.name}» en este navegador?\n\nSe quitará del selector y se borrarán sus datos y originales locales. Podrás volver a incorporarlo añadiendo el ámbito. La copia compartida de Firebase se conserva.`
+      : `Eliminar por completo el expediente de «${input.name}» en este navegador?\n\nSe borrará del selector, de localStorage, de IndexedDB y de los archivos originales conservados localmente. La copia compartida de Firebase no se borra desde esta acción.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    locallyDeletedWorkspaceIdsRef.current.add(municipalityId);
+    try {
+      localStorage.setItem(DELETED_MUNICIPALITIES_KEY, JSON.stringify(
+        [...locallyDeletedWorkspaceIdsRef.current]
+      ));
+    } catch {
+      locallyDeletedWorkspaceIdsRef.current.delete(municipalityId);
+      setPersistenceMessage("No se pudo registrar la eliminación. El expediente se conserva.");
+      return;
+    }
+    clearWorkspaceFromLocalStorage(municipalityId);
+    const indexedDbCleared = await clearWorkspaceFromIndexedDB(municipalityId);
+    let deletedOriginals = 0;
+    let originalsCleared = true;
+    try {
+      deletedOriginals = await deleteOriginalFilesForMunicipality(municipalityId);
+    } catch {
+      originalsCleared = false;
+    }
+
+    const nextCustomMunicipalities = sanitizeCustomMunicipalities(
+      customMunicipalities.filter((municipality) => municipality.id !== municipalityId),
+      DEMO_MUNICIPALITY_IDS
+    );
+    setCustomMunicipalities(nextCustomMunicipalities);
+    try {
+      localStorage.setItem(
+        CUSTOM_MUNICIPALITIES_KEY,
+        JSON.stringify(nextCustomMunicipalities)
+      );
+    } catch {
+      // IndexedDB sigue conservando los demás expedientes recuperables.
+    }
+
+    const deletedCurrentMunicipality = workspace.municipality.identity.id === municipalityId;
+    if (deletedCurrentMunicipality) {
+      const nextCatalog = mergeMunicipalityCatalog(
+        DEMO_MUNICIPALITIES,
+        nextCustomMunicipalities
+      );
+      const fallback = nextCatalog.find((municipality) =>
+        !locallyDeletedWorkspaceIdsRef.current.has(municipality.id));
+      if (fallback) switchToMunicipality(fallback.id, fallback);
+    }
+
+    setPersistenceMessage(
+      indexedDbCleared && originalsCleared
+        ? `Expediente de ${input.name} eliminado de este navegador. Originales borrados: ${deletedOriginals}.`
+        : `El expediente de ${input.name} se ha retirado, pero su limpieza local está incompleta. Almacenamiento ampliado: ${indexedDbCleared ? "borrado" : "pendiente"}; originales: ${originalsCleared ? "borrados" : "pendientes"}.`
+    );
   }
 
   // ── Render ──────────────────────────────────────────────────
@@ -3126,25 +3228,37 @@ export default function App() {
             </p>
             <div className="municipality-selector__options">
               {allMunicipalities.map((m) => (
-                <button
+                <div
                   key={m.id}
-                  type="button"
                   className={
                     municipality.id === m.id
                       ? "municipality-selector__option municipality-selector__option--active"
                       : "municipality-selector__option"
                   }
-                  onClick={() => handleChangeMunicipality(m.id)}
                 >
-                  <span className="municipality-selector__option-name">{m.name}</span>
-                  <span className="municipality-selector__option-meta">
-                    {m.province}
-                    {m.territorialType && m.territorialType !== "municipio"
-                      ? ` · ${TERRITORIAL_TYPE_LABEL[m.territorialType] ?? m.territorialType}`
-                      : ""}
-                    {m.ineCode ? ` · INE ${m.ineCode}` : ""}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    className="municipality-selector__option-main"
+                    onClick={() => handleChangeMunicipality(m.id)}
+                  >
+                    <span className="municipality-selector__option-name">{m.name}</span>
+                    <span className="municipality-selector__option-meta">
+                      {m.province}
+                      {m.territorialType && m.territorialType !== "municipio"
+                        ? ` · ${TERRITORIAL_TYPE_LABEL[m.territorialType] ?? m.territorialType}`
+                        : ""}
+                      {m.ineCode ? ` · INE ${m.ineCode}` : ""}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="municipality-selector__delete"
+                    aria-label={`Eliminar expediente de ${m.name}`}
+                    onClick={() => { void handleDeleteMunicipality(m.id, m); }}
+                  >
+                    Eliminar
+                  </button>
+                </div>
               ))}
               <button
                 type="button"

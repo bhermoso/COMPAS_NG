@@ -89,6 +89,34 @@ export async function loadWorkspaceFromIndexedDB(
   }
 }
 
+export async function clearWorkspaceFromIndexedDB(
+  municipalityId: string
+): Promise<boolean> {
+  let db: IDBDatabase;
+  try {
+    db = await database();
+  } catch {
+    return false;
+  }
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).delete(municipalityId);
+      tx.oncomplete = () => resolve();
+      tx.onabort = () =>
+        reject(new Error("No se pudo borrar el expediente completo."));
+      tx.onerror = () =>
+        reject(new Error("No se pudo borrar el expediente completo."));
+    });
+    return true;
+  } catch {
+    return false;
+  } finally {
+    db.close();
+  }
+}
+
 
 /**
  * Recupera todos los expedientes del almacenamiento ampliado. Permite reconstruir

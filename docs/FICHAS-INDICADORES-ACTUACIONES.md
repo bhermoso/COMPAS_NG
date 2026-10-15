@@ -7,6 +7,28 @@ indicador, y el indicador permite comprobar el avance de un objetivo específico
 El objetivo general agrupa los objetivos específicos, pero no tiene una ficha de
 recogida propia.
 
+La distinción entre **actuación** y **actividad** queda fijada así:
+
+- **Actuación**: unidad de intervención comprometida en el Plan. Puede ser un
+  programa, una línea de trabajo o una medida operativa con finalidad, población
+  destinataria, responsable, calendario, recursos, datos que debe entregar y
+  vínculo explícito con uno o varios indicadores. La actuación es el nivel donde
+  se decide qué se va a hacer y qué evidencia debe producir para el seguimiento.
+- **Actividad**: unidad concreta de ejecución dentro de una actuación. Puede ser
+  una sesión, taller, reunión, campaña, hito, producto o entrega verificable. La
+  actividad no sustituye a la actuación ni crea por sí sola una decisión del Plan:
+  documenta cómo se materializa la actuación, con fecha, lugar, responsable
+  operativo, participantes previstos, justificante y producto o dato esperado.
+- **Entrega**: comunicación periódica de datos desde una actuación hacia la
+  persona que consolida el indicador. Puede apoyarse en una o varias actividades,
+  pero su función es alimentar el cálculo o la lectura del indicador.
+- **Consolidación**: revisión técnica del indicador, agregando las entregas de
+  las actuaciones sin duplicar personas, asistencias ni fuentes.
+
+Regla de frontera: una actuación puede contener varias actividades; una actividad
+siempre pertenece a una actuación. COMPÁS no eleva una actividad aislada a
+actuación salvo decisión explícita del equipo técnico.
+
 La interfaz mantiene un espacio de seguimiento por indicador para reunir:
 
 - el marco común de medición y consolidación del indicador;

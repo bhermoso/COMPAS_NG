@@ -36,6 +36,24 @@ export async function deleteOriginalFile(municipalityId:string,documentId:string
  }); } finally { db.close(); }
 }
 
+export async function deleteOriginalFilesForMunicipality(municipalityId:string):Promise<number>{
+ const db=await database();
+ try { return await new Promise<number>((resolve,reject)=>{
+  let deleted=0; const tx=db.transaction('files','readwrite');
+  const request=tx.objectStore('files').openCursor();
+  request.onsuccess=()=>{
+   const cursor=request.result; if(!cursor)return;
+   const key=cursor.key;
+   if(Array.isArray(key)&&key[0]===municipalityId){ cursor.delete(); deleted++; }
+   cursor.continue();
+  };
+  request.onerror=()=>reject(new Error('No se pudieron localizar los archivos originales del expediente.'));
+  tx.oncomplete=()=>resolve(deleted);
+  tx.onabort=()=>reject(new Error('No se pudieron eliminar todos los archivos originales del expediente.'));
+  tx.onerror=()=>reject(new Error('No se pudieron eliminar los archivos originales del expediente.'));
+ }); } finally { db.close(); }
+}
+
 export interface OriginalEntry { municipalityId: string; documentId: string; file: File }
 /** Includes unreferenced originals, so a backup does not silently discard them. */
 export async function listOriginalFiles(): Promise<OriginalEntry[]> {

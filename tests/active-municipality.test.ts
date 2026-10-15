@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   ACTIVE_MUNICIPALITY_STORAGE_KEY,
+  mergeMunicipalityCatalog,
   readActiveMunicipalityId,
+  sanitizeCustomMunicipalities,
   saveActiveMunicipalityId,
 } from "../src/appWorkspaceHydration";
 
@@ -49,5 +51,26 @@ describe("ámbito activo del expediente", () => {
     expect(readActiveMunicipalityId(municipalities, "granada-zaidin")).toBe(
       "granada-zaidin"
     );
+  });
+
+  it("ordena el catálogo, elimina duplicados y no duplica municipios base como Fuente Vaqueros", () => {
+    const base = [
+      { id: "fuente-vaqueros", name: "Fuente Vaqueros", province: "Granada" },
+      { id: "atarfe", name: "Atarfe", province: "Granada" },
+    ];
+    const custom = [
+      { id: "fuente-vaqueros", name: "Fuente Vaqueros duplicado", province: "Granada" },
+      { id: "loja", name: "Loja", province: "Granada" },
+      { id: "loja", name: "Loja repetida", province: "Granada" },
+    ];
+
+    expect(sanitizeCustomMunicipalities(custom, ["fuente-vaqueros"])).toEqual([
+      { id: "loja", name: "Loja", province: "Granada" },
+    ]);
+    expect(mergeMunicipalityCatalog(base, custom).map((municipality) => municipality.id)).toEqual([
+      "atarfe",
+      "fuente-vaqueros",
+      "loja",
+    ]);
   });
 });

@@ -89,6 +89,51 @@ export const INCREMENTAL_SEED_MIGRATIONS: readonly SeedDocumentMigration[] = [
 
 export const ACTIVE_MUNICIPALITY_STORAGE_KEY = "compas-ng:active-municipality";
 
+export function sortMunicipalitiesByName<T extends { name: string }>(
+  municipalities: readonly T[]
+): T[] {
+  return [...municipalities].sort((a, b) =>
+    a.name.localeCompare(b.name, "es", { sensitivity: "base" })
+  );
+}
+
+export function sanitizeCustomMunicipalities(
+  municipalities: readonly CreateMunicipalityContextInput[],
+  reservedMunicipalityIds: readonly string[] = []
+): CreateMunicipalityContextInput[] {
+  const seen = new Set(reservedMunicipalityIds);
+  const normalized: CreateMunicipalityContextInput[] = [];
+
+  for (const municipality of municipalities) {
+    const id = municipality.id?.trim();
+    const name = municipality.name?.trim();
+    if (!id || !name || seen.has(id)) continue;
+    seen.add(id);
+    normalized.push({
+      ...municipality,
+      id,
+      name,
+      province: municipality.province?.trim() || "Granada",
+      territorialType: municipality.territorialType?.trim() || undefined,
+      ineCode: municipality.ineCode?.trim() || undefined,
+      createdBy: municipality.createdBy?.trim() || undefined,
+    });
+  }
+
+  return sortMunicipalitiesByName(normalized);
+}
+
+export function mergeMunicipalityCatalog(
+  defaultMunicipalities: readonly CreateMunicipalityContextInput[],
+  customMunicipalities: readonly CreateMunicipalityContextInput[]
+): CreateMunicipalityContextInput[] {
+  const defaultIds = defaultMunicipalities.map((municipality) => municipality.id);
+  return sortMunicipalitiesByName([
+    ...defaultMunicipalities,
+    ...sanitizeCustomMunicipalities(customMunicipalities, defaultIds),
+  ]);
+}
+
 export function readActiveMunicipalityId(
   municipalities: readonly Pick<CreateMunicipalityContextInput, "id">[],
   fallbackId: string

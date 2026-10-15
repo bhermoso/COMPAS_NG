@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { Packer } from "docx";
 import mammoth from "mammoth";
-import { createIndicatorWorksheet, worksheetContextChanged, worksheetKey } from "../src/domain/action-plan-catalog/IndicatorWorksheet";
+import {
+  actionFields,
+  activityFields,
+  createIndicatorWorksheet,
+  worksheetContextChanged,
+  worksheetKey,
+} from "../src/domain/action-plan-catalog/IndicatorWorksheet";
 import { actionProposalsForIndicator } from "../src/domain/action-plan-catalog/ActionWorksheetProposal";
 import { buildIndicatorWorksheetDocument } from "../src/application/action-plan/exportIndicatorWorksheet";
 import { createCompleteMunicipalityWorkspace } from "../src/application/workspace";
@@ -49,6 +57,25 @@ describe("Fichas cumplimentables — integridad y entrega", () => {
     expect(restored.actionPlanModuleReviews).toBeUndefined();
     expect(restored.validatedPSL).toBeUndefined();
     expect(parseWorkspaceJSON(JSON.stringify({ ...workspace, indicatorWorksheets: undefined }))?.indicatorWorksheets).toBeUndefined();
+  });
+
+  it("contrata la frontera entre actuación y actividad", () => {
+    const contract = readFileSync(
+      resolve(process.cwd(), "docs/FICHAS-INDICADORES-ACTUACIONES.md"),
+      "utf8"
+    );
+    const contractText = contract.replace(/\s+/g, " ");
+    expect(contract).toContain("Actuación");
+    expect(contract).toContain("unidad de intervención comprometida");
+    expect(contract).toContain("Actividad");
+    expect(contract).toContain("unidad concreta de ejecución");
+    expect(contractText).toContain("una actividad siempre pertenece a una actuación");
+    expect(actionFields.map(([, label]) => label)).toContain(
+      "Qué se hará y cómo contribuirá al objetivo"
+    );
+    expect(activityFields.map(([, label]) => label)).toContain(
+      "Producto o dato que aportará a la actuación"
+    );
   });
 
   it("Word conserva texto, cero observado y ausencia de datos; la ficha individual excluye otras actuaciones", async () => {
