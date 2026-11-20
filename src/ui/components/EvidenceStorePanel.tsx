@@ -71,7 +71,7 @@ export function EvidenceStorePanel({ evidenceStore, defaultOpen = true }: Eviden
           )}
         </span>
         <span className="ev-store-panel__toggle-sub">
-          Representaciones estructuradas de la documentación municipal
+          Información derivada de las fuentes registradas, disponible para revisar su procedencia y contenido
         </span>
         <span className="ev-store-panel__toggle-arrow" aria-hidden="true">
           {open ? "▲" : "▼"}
@@ -82,8 +82,7 @@ export function EvidenceStorePanel({ evidenceStore, defaultOpen = true }: Eviden
         <div className="ev-store-panel__body">
           {atoms.length === 0 ? (
             <p className="empty-state">
-              Todavía no hay evidencias estructuradas. Añade documentación en el
-              Repositorio para generar las primeras unidades de evidencia.
+              Todavía no hay evidencias estructuradas. Añade fuentes al diagnóstico; las evidencias que puedan derivarse aparecerán aquí para su revisión.
             </p>
           ) : (
             <>

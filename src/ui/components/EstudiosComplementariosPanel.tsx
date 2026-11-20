@@ -413,11 +413,12 @@ export function EstudiosComplementariosPanel({
           <h2>Estudios Complementarios</h2>
         </div>
         <p className="panel-note">
-          Instrumentos de medición sobre bienestar, apoyo social, alimentación y
-          conductas de salud, aplicados sobre microdatos de la Encuesta Andaluza de Salud.{" "}
+          Reúne estudios e instrumentos sobre bienestar, apoyo social, alimentación y
+          conductas de salud. Antes de interpretar resultados, comprueba su fuente,
+          población y cautelas metodológicas.{" "}
           {loadedCount > 0
-            ? `${loadedCount} de ${studySlots.length} disponibles en este espacio de trabajo.`
-            : "Ningún estudio cargado en este espacio de trabajo."}
+            ? `${loadedCount} de ${studySlots.length} registrados en este ámbito.`
+            : "Aún no se han registrado estudios complementarios."}
         </p>
       </div>
 

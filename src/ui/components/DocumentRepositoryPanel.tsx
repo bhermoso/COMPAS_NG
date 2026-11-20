@@ -269,7 +269,7 @@ export function DocumentRepositoryPanel({
         </section>
       )}
 
-      <section className="workspace-panel">
+      <section id="diag-source-other-documents" className="workspace-panel">
         <div className="panel-header">
           <div>
             <p className="eyebrow">Diagnóstico territorial</p>
@@ -282,7 +282,7 @@ export function DocumentRepositoryPanel({
           </div>
           <p className="panel-note">
             Memorias, planes, diagnósticos sectoriales, encuestas y otros documentos
-            incorporados al análisis territorial del ámbito.
+            que amplían el contexto del diagnóstico territorial del ámbito.
           </p>
         </div>
 
