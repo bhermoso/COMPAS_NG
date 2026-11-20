@@ -70,35 +70,55 @@ export function DocumentIngestionPanel({
   const submissionHint = acceptsDocumentFile
     ? "La carga desde archivo se registra automáticamente. Este formulario solo se usa si prefieres pegar el contenido manualmente."
     : hint;
+  const diagnosisKinds = documentKinds.filter(
+    (option) => option.value !== "strategic-framework"
+  );
+  const planningKinds = documentKinds.filter(
+    (option) => option.value === "strategic-framework"
+  );
 
   return (
     <section className="workspace-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Añadir o sustituir fuentes</p>
-          <h2>Incorporar nueva documentación</h2>
+          <p className="eyebrow">Diagnóstico territorial</p>
+          <h2>Añadir o sustituir fuentes</h2>
         </div>
         <p className="panel-note">
-          Selecciona un archivo para registrarlo directamente o utiliza el
-          formulario manual como alternativa. Los documentos con texto extraíble
-          alimentan el análisis territorial con evidencias trazables.
+          Elige el tipo de material para ver las vías de incorporación disponibles.
+          Algunas fuentes generan evidencias derivadas; otras se conservan para su consulta.
         </p>
+      </div>
+
+      <div className="diag-source-kind">
+        <label htmlFor="diagnostic-source-kind">Tipo de material</label>
+        <select
+          id="diagnostic-source-kind"
+          value={kind}
+          onChange={(event) => onKindChange(event.target.value as DocumentKind)}
+          className="docx-upload__kind"
+        >
+          <optgroup label="Fuentes del diagnóstico">
+            {diagnosisKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Materiales para la planificación">
+            {planningKinds.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </optgroup>
+        </select>
       </div>
 
       {isHealthReport ? (
         /* ── Carga del Informe de Salud (DOCX o PDF) ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
 
           <div className="docx-upload__zone">
             <label htmlFor="hr-file-input" className="docx-upload__label">
@@ -132,17 +152,7 @@ export function DocumentIngestionPanel({
       ) : isStrategicFramework ? (
         /* ── Carga de marcos estratégicos y normativos ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
           <p className="ingestion-hint">
             Registra marcos estratégicos, planes normativos o guías metodológicas que
             orientan el diagnóstico y la planificación local de salud: <FrameworkReference name="epvsa" />, <FrameworkReference name="esca" />,
@@ -224,26 +234,14 @@ export function DocumentIngestionPanel({
       ) : isComplementaryStudy ? (
         /* ── Orientación para Estudios Complementarios tipificados ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
           <p className="ingestion-hint">
-            Los instrumentos tipificados (IBSE, DUKE-EAS, PREDIMED-EAS, SF-12) se cargan
-            mediante subida de CSV desde el panel <strong>«Estudios Complementarios»</strong>
-            más abajo en esta misma página.
+            Los resultados CSV de instrumentos tipificados se cargan desde el panel{" "}
+            <a href="#diag-source-studies">«Estudios complementarios»</a>.
           </p>
           <p className="ingestion-hint">
-            Usa esta opción sólo para registrar textuales complementarios genéricos (estudios
-            publicados, informes de referencia, documentación de contexto) que no sean
-            instrumentos EAS tipificados.
+            Usa esta opción para registrar fuentes complementarias en texto.
+            No sirve para importar resultados de instrumentos tipificados.
           </p>
           <textarea
             value={plainText}
@@ -280,17 +278,7 @@ export function DocumentIngestionPanel({
       ) : isLocalizaSalud ? (
         /* ── Carga de activos Localiza Salud ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
           <p className="ingestion-hint">
             Pega el listado de activos copiado desde Localiza Salud.
             Formatos admitidos: <strong>Nombre | Descripción</strong> (recomendado)
@@ -348,17 +336,7 @@ export function DocumentIngestionPanel({
       ) : isTerritorialDocumentation ? (
         /* ── Documentación Territorial de Contexto ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
           <p className="ingestion-hint">
             Registra documentación territorial de contexto: Informes Vigía de zona de salud,
             diagnósticos de barrio o distrito, informes municipales socioeconómicos, datos
@@ -437,17 +415,7 @@ export function DocumentIngestionPanel({
       ) : isQualitativeMaterial ? (
         /* ── Material Cualitativo y Participativo ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
           <p className="ingestion-hint">
             Registra material cualitativo o participativo: actas del Grupo Motor, resultados
             de grupos focales, resúmenes de entrevistas comunitarias, formularios de necesidades
@@ -527,17 +495,7 @@ export function DocumentIngestionPanel({
       ) : isLongitudinalEvidence ? (
         /* ── Evidencia longitudinal o comparativa entre ciclos ── */
         <div className="docx-upload">
-          <select
-            value={kind}
-            onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            className="docx-upload__kind"
-          >
-            {documentKinds.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+
           <p className="ingestion-hint">
             Registra evidencia comparativa entre ciclos de planificación: datos de series
             históricas, evolución de indicadores de salud en años anteriores, resultados de
@@ -593,16 +551,7 @@ export function DocumentIngestionPanel({
           />
 
           <div className="document-form">
-            <select
-              value={kind}
-              onChange={(event) => onKindChange(event.target.value as DocumentKind)}
-            >
-              {documentKinds.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+
 
             <input
               value={title}

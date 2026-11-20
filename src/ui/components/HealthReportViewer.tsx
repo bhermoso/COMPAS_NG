@@ -51,7 +51,7 @@ export function HealthReportViewer({ healthReport, repository }: HealthReportVie
               </p>
             </div>
             <p className="empty-state">
-              No hay ningún Informe de Salud cargado en este espacio de trabajo.
+              No hay un Informe de Salud registrado para este ámbito.
             </p>
           </div>
 

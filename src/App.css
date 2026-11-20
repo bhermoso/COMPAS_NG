@@ -2051,6 +2051,59 @@ h3 {
   color: #94a3b8;
 }
 
+.diag-status__label-link {
+  color: #526070;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+.diag-status__label-link:hover,
+.diag-status__label-link:focus-visible {
+  color: #0074c8;
+  text-decoration: underline;
+}
+
+.diag-status__label-link:focus-visible {
+  outline: 2px solid #0074c8;
+  outline-offset: 3px;
+}
+
+.diag-status__shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0 0 12px;
+}
+
+.diag-status__shortcuts a {
+  color: #0074c8;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .diag-status__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .diag-status__list {
+    grid-template-columns: 1fr;
+  }
+
+  .diag-status__item {
+    padding: 12px;
+  }
+}
+
+.diag-anchor,
+#diag-source-other-documents {
+  scroll-margin-top: 1.25rem;
+}
+
 .diag-status__value {
   font-size: 0.88rem;
   font-weight: 600;
@@ -2061,33 +2114,15 @@ h3 {
 .diag-status__item--missing .diag-status__value { color: #dc143c; }
 .diag-status__item--pending .diag-status__value { color: #94a3b8; }
 
-/* Conclusión del estado */
-.diag-status__conclusion {
-  padding: 10px 16px;
-  border-radius: 4px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  line-height: 1.5;
-  border-left: 3px solid transparent;
-  text-align: left;
-}
-
-.diag-status__conclusion--ready {
-  background: #f0fdf4;
-  color: #059669;
-  border-left-color: #059669;
-}
-
-.diag-status__conclusion--partial {
-  background: #fff7ed;
-  color: #b45309;
-  border-left-color: #ffb61b;
-}
-
-.diag-status__conclusion--empty {
-  background: #f8fafc;
+/* Nota sobre el alcance del resumen */
+.diag-status__note {
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid #e2e8f0;
   color: #64748b;
-  border-left-color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 /* ── Añadir o sustituir fuentes ─────────────────────────── */
@@ -3093,6 +3128,35 @@ h3 {
   flex-direction: column;
   gap: 14px;
   margin-bottom: 22px;
+}
+
+.diag-source-kind {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 18px;
+}
+
+.diag-source-kind label {
+  color: #526070;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.diag-source-kind .docx-upload__kind {
+  width: min(360px, 100%);
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  .diag-source-kind {
+    align-items: stretch;
+  }
+
+  .diag-source-kind .docx-upload__kind {
+    width: 100%;
+  }
 }
 
 .docx-upload__kind {

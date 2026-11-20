@@ -3532,7 +3532,6 @@ export default function App() {
             {(() => {
               const hrLoaded = runtime.workspace.healthReport !== undefined;
               const atoms = runtime.workspace.evidenceStore.atoms;
-              const atomCount = atoms.length;
               const studies = [
                 runtime.workspace.ibseStudy,
                 runtime.workspace.dukeStudy,
@@ -3577,18 +3576,6 @@ export default function App() {
                   !(d.kind === "redcap-export" && d.tags.some((t) => STUDY_TAGS.includes(t)))
               ).length;
 
-              type DiagState = "ready" | "partial" | "empty";
-              const diagState: DiagState =
-                hrLoaded && atomCount > 0 ? "ready"
-                : (hrLoaded || atomCount > 0 || docs.length > 0) ? "partial"
-                : "empty";
-
-              const conclusionMsg: Record<DiagState, string> = {
-                ready:   "Diagnóstico con evidencia complementaria disponible para revisar el Perfil de Salud Local.",
-                partial: "Diagnóstico en elaboración. Incorpora el Informe de Salud y fuentes complementarias para enriquecer el análisis territorial.",
-                empty:   "El diagnóstico está vacío. Comienza incorporando el Informe de Salud del ámbito territorial.",
-              };
-
               return (
                 <section className="diag-header workspace-panel">
                   <div className="diag-header__title-row">
@@ -3596,149 +3583,167 @@ export default function App() {
                       <p className="eyebrow">Diagnóstico territorial</p>
                       <h2 className="diag-header__municipality">{municipality.name}</h2>
                       <p className="diag-header__subtitle">
-                        Estado metodológico del diagnóstico del ámbito territorial.
+                        Fuentes, estudios, activos y evidencias registrados para este ámbito.
                       </p>
                     </div>
                   </div>
 
                   <div className="diag-status">
-                    <p className="diag-status__heading">Estado del diagnóstico</p>
+                    <p className="diag-status__heading">Fuentes registradas</p>
                     <ul className="diag-status__list">
                       <li className={`diag-status__item diag-status__item--${hrLoaded ? "ok" : "missing"}`}>
-                        <span className="diag-status__label">Informe de Salud</span>
+                        <a className="diag-status__label diag-status__label-link" href="#diag-source-health-report">Informe de Salud</a>
                         <span className="diag-status__value">
-                          {hrLoaded ? "Fuente primaria disponible" : "No incorporado"}
+                          {hrLoaded ? "Informe registrado" : "No incorporado"}
                         </span>
                       </li>
                       <li className={`diag-status__item diag-status__item--${studiesLoaded > 0 ? "ok" : "pending"}`}>
-                        <span className="diag-status__label">Estudios complementarios</span>
+                        <a className="diag-status__label diag-status__label-link" href="#diag-source-studies">Estudios complementarios</a>
                         <span className="diag-status__value">
                           {studiesLoaded > 0
-                            ? `${studiesLoaded} de 13 · ${ibseAtoms + studyAtoms} evidencias`
-                            : "Ninguno incorporado"}
+                            ? `${studiesLoaded} de ${studies.length} registrados · ${ibseAtoms + studyAtoms} evidencias derivadas`
+                            : "Ningún estudio registrado"}
                         </span>
                       </li>
                       <li className={`diag-status__item diag-status__item--${assetCount > 0 ? "ok" : "pending"}`}>
-                        <span className="diag-status__label">Activos para la salud</span>
+                        <a className="diag-status__label diag-status__label-link" href="#diag-source-assets">Activos para la salud</a>
                         <span className="diag-status__value">
-                          {assetCount > 0 ? `${assetCount} activos incorporados` : "Sin activos registrados"}
+                          {assetCount > 0 ? `${assetCount} activos registrados` : "Sin activos registrados"}
                         </span>
                       </li>
                       <li className={`diag-status__item diag-status__item--${otherDocCount > 0 ? "ok" : "pending"}`}>
-                        <span className="diag-status__label">Otras fuentes documentales</span>
+                        <a className="diag-status__label diag-status__label-link" href="#diag-source-other-documents">Otras fuentes documentales</a>
                         <span className="diag-status__value">
-                          {otherDocCount > 0 ? `${otherDocCount} registradas` : "Ninguna registrada"}
+                          {otherDocCount > 0 ? `${otherDocCount} documentos registrados` : "Ninguna registrada"}
                         </span>
                       </li>
                     </ul>
 
-                    <div className={`diag-status__conclusion diag-status__conclusion--${diagState}`}>
-                      {conclusionMsg[diagState]}
-                    </div>
+                    <nav className="diag-status__shortcuts" aria-label="Accesos directos del diagnóstico">
+                      <a href="#diag-document-catalogue">Abrir catálogo documental ↓</a>
+                      <a href="#diag-add-sources">Añadir o sustituir fuentes ↓</a>
+                      <a href="#diag-derived-evidence">Revisar evidencias derivadas ↓</a>
+                    </nav>
+
+                    <p className="diag-status__note">
+                      La presencia de fuentes no acredita por sí sola la suficiencia, calidad ni validación del diagnóstico.
+                    </p>
                   </div>
                 </section>
               );
             })()}
 
             {/* ── Capas del diagnóstico ── */}
-            <HealthReportViewer
-              healthReport={runtime.workspace.healthReport}
-              repository={runtime.workspace.repository}
-            />
-            <EstudiosComplementariosPanel
-              municipalityName={municipality.name}
-              ibseStudy={runtime.workspace.ibseStudy}
-              isLoadingIBSE={isLoadingIBSE}
-              ibseMessage={ibseMessage}
-              onLoadIBSECSV={handleLoadIBSECSV}
-              dukeStudy={runtime.workspace.dukeStudy}
-              isLoadingDUKE={isLoadingDUKE}
-              dukeMessage={dukeMessage}
-              onLoadDUKECSV={handleLoadDUKECSV}
-              predimedStudy={runtime.workspace.predimedStudy}
-              isLoadingPREDIMED={isLoadingPREDIMED}
-              predimedMessage={predimedMessage}
-              onLoadPREDIMEDCSV={handleLoadPREDIMEDCSV}
-              sf12Study={runtime.workspace.sf12Study}
-              isLoadingSF12={isLoadingSF12}
-              sf12Message={sf12Message}
-              onLoadSF12CSV={handleLoadSF12CSV}
-              suenoStudy={runtime.workspace.suenoStudy}
-              isLoadingSueno={isLoadingSueno}
-              suenoMessage={suenoMessage}
-              onLoadSuenoCSV={handleLoadSuenoCSV}
-              cageStudy={runtime.workspace.cageStudy}
-              isLoadingCAGE={isLoadingCAGE}
-              cageMessage={cageMessage}
-              onLoadCAGECSV={handleLoadCAGECSV}
-              auditcStudy={runtime.workspace.auditcStudy}
-              isLoadingAUDITC={isLoadingAUDITC}
-              auditcMessage={auditcMessage}
-              onLoadAUDITCCSV={handleLoadAUDITCCSV}
-              ipaqStudy={runtime.workspace.ipaqStudy}
-              isLoadingIPAQ={isLoadingIPAQ}
-              ipaqMessage={ipaqMessage}
-              onLoadIPAQCSV={handleLoadIPAQCSV}
-              ghq12Study={runtime.workspace.ghq12Study}
-              isLoadingGHQ12={isLoadingGHQ12}
-              ghq12Message={ghq12Message}
-              onLoadGHQ12CSV={handleLoadGHQ12CSV}
-              phq9Study={runtime.workspace.phq9Study}
-              isLoadingPHQ9={isLoadingPHQ9}
-              phq9Message={phq9Message}
-              onLoadPHQ9CSV={handleLoadPHQ9CSV}
-              psqiStudy={runtime.workspace.psqiStudy}
-              isLoadingPSQI={isLoadingPSQI}
-              psqiMessage={psqiMessage}
-              onLoadPSQICSV={handleLoadPSQICSV}
-              fagerstromStudy={runtime.workspace.fagerstromStudy}
-              isLoadingFagerstrom={isLoadingFagerstrom}
-              fagerstromMessage={fagerstromMessage}
-              onLoadFagerstromCSV={handleLoadFagerstromCSV}
-              sbqStudy={runtime.workspace.sbqStudy}
-              isLoadingSBQ={isLoadingSBQ}
-              sbqMessage={sbqMessage}
-              onLoadSBQCSV={handleLoadSBQCSV}
-              repository={runtime.workspace.repository}
-              onDeleteDocument={handleDeleteDocument}
-            />
-            <ActivosSaludPanel
-              repository={runtime.workspace.repository}
-              onDeleteDocument={handleDeleteDocument}
-            />
-            <DocumentRepositoryPanel
-              repository={runtime.workspace.repository}
-              onDelete={handleDeleteDocument}
-              libraryDocuments={compasDocumentLibrary}
-              libraryMessage={documentLibraryMessage}
-              onAssignLibraryDocument={handleAssignLibraryDocument}
-            />
+            <div id="diag-source-health-report" className="diag-anchor">
+              <HealthReportViewer
+                healthReport={runtime.workspace.healthReport}
+                repository={runtime.workspace.repository}
+              />
+            </div>
+            <div id="diag-source-studies" className="diag-anchor">
+              <EstudiosComplementariosPanel
+                municipalityName={municipality.name}
+                ibseStudy={runtime.workspace.ibseStudy}
+                isLoadingIBSE={isLoadingIBSE}
+                ibseMessage={ibseMessage}
+                onLoadIBSECSV={handleLoadIBSECSV}
+                dukeStudy={runtime.workspace.dukeStudy}
+                isLoadingDUKE={isLoadingDUKE}
+                dukeMessage={dukeMessage}
+                onLoadDUKECSV={handleLoadDUKECSV}
+                predimedStudy={runtime.workspace.predimedStudy}
+                isLoadingPREDIMED={isLoadingPREDIMED}
+                predimedMessage={predimedMessage}
+                onLoadPREDIMEDCSV={handleLoadPREDIMEDCSV}
+                sf12Study={runtime.workspace.sf12Study}
+                isLoadingSF12={isLoadingSF12}
+                sf12Message={sf12Message}
+                onLoadSF12CSV={handleLoadSF12CSV}
+                suenoStudy={runtime.workspace.suenoStudy}
+                isLoadingSueno={isLoadingSueno}
+                suenoMessage={suenoMessage}
+                onLoadSuenoCSV={handleLoadSuenoCSV}
+                cageStudy={runtime.workspace.cageStudy}
+                isLoadingCAGE={isLoadingCAGE}
+                cageMessage={cageMessage}
+                onLoadCAGECSV={handleLoadCAGECSV}
+                auditcStudy={runtime.workspace.auditcStudy}
+                isLoadingAUDITC={isLoadingAUDITC}
+                auditcMessage={auditcMessage}
+                onLoadAUDITCCSV={handleLoadAUDITCCSV}
+                ipaqStudy={runtime.workspace.ipaqStudy}
+                isLoadingIPAQ={isLoadingIPAQ}
+                ipaqMessage={ipaqMessage}
+                onLoadIPAQCSV={handleLoadIPAQCSV}
+                ghq12Study={runtime.workspace.ghq12Study}
+                isLoadingGHQ12={isLoadingGHQ12}
+                ghq12Message={ghq12Message}
+                onLoadGHQ12CSV={handleLoadGHQ12CSV}
+                phq9Study={runtime.workspace.phq9Study}
+                isLoadingPHQ9={isLoadingPHQ9}
+                phq9Message={phq9Message}
+                onLoadPHQ9CSV={handleLoadPHQ9CSV}
+                psqiStudy={runtime.workspace.psqiStudy}
+                isLoadingPSQI={isLoadingPSQI}
+                psqiMessage={psqiMessage}
+                onLoadPSQICSV={handleLoadPSQICSV}
+                fagerstromStudy={runtime.workspace.fagerstromStudy}
+                isLoadingFagerstrom={isLoadingFagerstrom}
+                fagerstromMessage={fagerstromMessage}
+                onLoadFagerstromCSV={handleLoadFagerstromCSV}
+                sbqStudy={runtime.workspace.sbqStudy}
+                isLoadingSBQ={isLoadingSBQ}
+                sbqMessage={sbqMessage}
+                onLoadSBQCSV={handleLoadSBQCSV}
+                repository={runtime.workspace.repository}
+                onDeleteDocument={handleDeleteDocument}
+              />
+            </div>
+            <div id="diag-source-assets" className="diag-anchor">
+              <ActivosSaludPanel
+                repository={runtime.workspace.repository}
+                onDeleteDocument={handleDeleteDocument}
+              />
+            </div>
+            <div id="diag-document-catalogue" className="diag-anchor">
+              <DocumentRepositoryPanel
+                repository={runtime.workspace.repository}
+                onDelete={handleDeleteDocument}
+                libraryDocuments={compasDocumentLibrary}
+                libraryMessage={documentLibraryMessage}
+                onAssignLibraryDocument={handleAssignLibraryDocument}
+              />
+            </div>
 
             {/* ── BLOQUE 4: Añadir o sustituir fuentes ── */}
-            <DocumentIngestionPanel
-              documentKinds={DOCUMENT_KINDS}
-              kind={kind}
-              title={title}
-              plainText={plainText}
-              lastProcessedDocument={lastProcessedDocument}
-              atomsCreated={lastAtomCount}
-              isLoadingHealthReport={isLoadingHealthReport}
-              healthReportMessage={lastHealthReportMessage}
-              onKindChange={setKind}
-              onTitleChange={setTitle}
-              onPlainTextChange={setPlainText}
-              onProcessDocument={handleProcessDocument}
-              onLoadHealthReport={handleLoadHealthReport}
-              onLoadDocumentFile={handleLoadDocumentFile}
-              isLoadingDocumentFile={isLoadingDocumentFile}
-              documentFileMessage={documentFileMessage}
-            />
+            <div id="diag-add-sources" className="diag-anchor">
+              <DocumentIngestionPanel
+                documentKinds={DOCUMENT_KINDS}
+                kind={kind}
+                title={title}
+                plainText={plainText}
+                lastProcessedDocument={lastProcessedDocument}
+                atomsCreated={lastAtomCount}
+                isLoadingHealthReport={isLoadingHealthReport}
+                healthReportMessage={lastHealthReportMessage}
+                onKindChange={setKind}
+                onTitleChange={setTitle}
+                onPlainTextChange={setPlainText}
+                onProcessDocument={handleProcessDocument}
+                onLoadHealthReport={handleLoadHealthReport}
+                onLoadDocumentFile={handleLoadDocumentFile}
+                isLoadingDocumentFile={isLoadingDocumentFile}
+                documentFileMessage={documentFileMessage}
+              />
+            </div>
 
             {/* ── BLOQUE 5: Evidencias incorporadas al análisis ── */}
-            <EvidenceStorePanel
-              evidenceStore={runtime.workspace.evidenceStore}
-              defaultOpen={false}
-            />
+            <div id="diag-derived-evidence" className="diag-anchor">
+              <EvidenceStorePanel
+                evidenceStore={runtime.workspace.evidenceStore}
+                defaultOpen={false}
+              />
+            </div>
 
             {/* ── BLOQUE 6: Continuación del proceso ── */}
             <section className="diag-continue workspace-panel">
